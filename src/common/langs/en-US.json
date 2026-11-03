@@ -155,5 +155,16 @@
   "workspacePortHint": "Manage local and device ports",
   "workspaceRemoteHint": "Control device buttons",
   "workspaceCliHint": "Open the local command line",
-  "workspaceCopyValue": "Copy {{name}}: {{value}}"
+  "workspaceCopyValue": "Copy {{name}}: {{value}}",
+  "applicationDescription": "Browse, install and manage apps on this device.",
+  "applicationSearch": "Search name or package",
+  "applicationMaintenance": "Maintenance",
+  "applicationPartialError": "Some app details could not be loaded. Refresh to try again.",
+  "applicationLoadError": "Apps could not be loaded. Check the connection and try again.",
+  "applicationNoResults": "No matching apps",
+  "applicationEmpty": "No apps to display",
+  "applicationSearchHint": "Try a different name or package.",
+  "applicationInstallHint": "Install a HAP file or include system apps.",
+  "applicationLoadingMore": "Loading more apps…",
+  "applicationDropHint": "Drop HAP files anywhere in this window to install."
 }

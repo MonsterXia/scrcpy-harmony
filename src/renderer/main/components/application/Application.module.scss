@@ -45,3 +45,210 @@
     transform: scale3d(4, 4, 1);
   }
 }
+
+.page {
+  position: absolute;
+  inset: 0;
+  background: var(--workspace-surface);
+  color: var(--workspace-text);
+}
+.surface {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 24px 20px;
+  flex-shrink: 0;
+  h1 {
+    font-size: 23px;
+    letter-spacing: -0.5px;
+    font-weight: 650;
+    margin: 0 0 7px;
+  }
+  p {
+    color: var(--workspace-secondary);
+    margin: 0;
+    font-size: 13px;
+  }
+}
+.primary {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid #2469db;
+  background: #2469db;
+  color: white;
+  border-radius: 8px;
+  min-height: 34px;
+  padding: 7px 14px;
+  white-space: nowrap;
+  &:hover:not(:disabled) {
+    background: #1d59bb;
+  }
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 0 24px;
+  padding: 14px 0;
+  border-top: 1px solid var(--workspace-line);
+  border-bottom: 1px solid var(--workspace-line);
+  input[type='search'] {
+    background: var(--workspace-bg);
+    color: var(--workspace-text);
+    border: 1px solid var(--workspace-line);
+    border-radius: 7px;
+    width: 230px;
+    height: 32px;
+    padding: 0 10px;
+    font: inherit;
+    outline-color: var(--workspace-accent);
+  }
+}
+.checkbox {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--workspace-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  input {
+    accent-color: var(--workspace-accent);
+  }
+}
+.count {
+  color: var(--workspace-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.controls {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  button {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--workspace-secondary);
+    height: 30px;
+    width: 30px;
+    font-size: 16px;
+    &:hover:not(:disabled) {
+      background: var(--workspace-hover);
+    }
+    &[aria-pressed='true'] {
+      background: var(--workspace-selected);
+      color: var(--workspace-accent);
+    }
+  }
+}
+.body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  margin: 12px 24px 0;
+  border: 1px solid var(--workspace-line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.footer {
+  padding: 10px 24px 14px;
+  font-size: 11px;
+  color: var(--workspace-secondary);
+}
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  pointer-events: none;
+  color: var(--workspace-secondary);
+  span {
+    font-size: 30px;
+    opacity: 0.65;
+  }
+  h2 {
+    margin: 16px 0 8px;
+    color: var(--workspace-text);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  p {
+    margin: 0;
+    font-size: 12px;
+    text-align: center;
+  }
+}
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 24px 0;
+  border: 1px solid var(--workspace-line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--workspace-danger);
+  font-size: 12px;
+  button {
+    background: transparent;
+    border: 0;
+    color: var(--workspace-accent);
+  }
+}
+.progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 7px 12px;
+  background: var(--workspace-selected);
+  color: var(--workspace-accent);
+  font-size: 12px;
+}
+.applications {
+  :global(.luna-data-grid) {
+    color: var(--workspace-text);
+    :global(.luna-data-grid-header) {
+      background: var(--workspace-bg);
+    }
+  }
+  :global(.luna-icon-list) {
+    padding: 10px;
+  }
+  :global(.luna-icon-list-item) {
+    border-radius: 8px;
+  }
+}
+@media (max-width: 1099px) {
+  .heading {
+    padding: 20px 20px 16px;
+  }
+  .toolbar {
+    margin: 0 20px;
+    gap: 9px;
+    input[type='search'] {
+      width: 210px;
+    }
+  }
+  .body {
+    margin-inline: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .open-effect-animation {
+    animation: none;
+  }
+}

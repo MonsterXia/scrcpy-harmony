@@ -155,5 +155,16 @@
   "workspacePortHint": "管理设备与本地端口",
   "workspaceRemoteHint": "便捷控制设备按键",
   "workspaceCliHint": "打开本地命令行工具",
-  "workspaceCopyValue": "复制{{name}}：{{value}}"
+  "workspaceCopyValue": "复制{{name}}：{{value}}",
+  "applicationDescription": "查看、安装和管理设备上的应用。",
+  "applicationSearch": "搜索应用名称或包名",
+  "applicationMaintenance": "应用维护",
+  "applicationPartialError": "部分应用信息加载失败，请刷新重试。",
+  "applicationLoadError": "应用列表加载失败，请检查连接后重试。",
+  "applicationNoResults": "没有匹配的应用",
+  "applicationEmpty": "暂无可显示的应用",
+  "applicationSearchHint": "尝试其他名称或包名。",
+  "applicationInstallHint": "安装 HAP 文件，或开启系统应用筛选。",
+  "applicationLoadingMore": "正在加载更多应用…",
+  "applicationDropHint": "将 HAP 文件拖入窗口即可安装。"
 }
