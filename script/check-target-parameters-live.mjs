@@ -29,6 +29,8 @@ const sockets = new Set()
 const violations = []
 let inject = false
 let application
+let overviewIsolated = false
+const deferredEnumerations = []
 let child
 const commands = new Set(['alive', 'list targets', 'shell echo ready\n', 'shell param get'])
 const counts = Object.fromEntries([...commands].map((command) => [command.trim(), 0]))
@@ -81,21 +83,25 @@ const server = net.createServer((downstream) => {
         } else downstream.end()
         return
       }
-      upstream.write(frame)
+      // Hold initial enumeration until the unrelated overview IPC is isolated.
+      // Keep the real enumeration, parameter reads and fault injection intact.
+      if (!overviewIsolated && command === 'list targets') {
+        deferredEnumerations.push(() => { if (!upstream.destroyed) upstream.write(frame) })
+      } else upstream.write(frame)
     }
   })
 })
 let deadline
 try {
   await mkdir(path.join(profile, 'data'), { recursive: true })
-  // An unused panel keeps all device-operation panels unmounted. The real
-  // toolbar, store, preload, IPC handlers and HDC transport remain untouched.
-  await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'm2-5-validation' }))
+  // Use a valid saved page. Only unrelated overview data is stubbed below;
+  // this probe validates the real device selector and enumeration pipeline.
+  await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'overview' }))
   const forbiddenBin = path.join(profile, 'forbidden-hdc.exe')
   // Existing empty file prevents fallback to bundled HDC and cannot start a server.
   await writeFile(forbiddenBin, '')
   await writeFile(path.join(profile, 'data/settings.json'), JSON.stringify({
-    hdcPath: forbiddenBin, killHdcWhenExit: false, theme: 'light',
+    hdcPath: forbiddenBin, killHdcWhenExit: false, theme: 'light', language: 'zh-CN',
   }))
   server.listen(0, '127.0.0.1')
   await once(server, 'listening')
@@ -112,6 +118,13 @@ try {
   child.stdout?.resume()
   child.stderr?.resume()
   const page = await application.firstWindow({ timeout: 20_000 })
+  await application.evaluate(({ ipcMain }) => {
+    ipcMain.removeHandler('getOverview')
+    ipcMain.handle('getOverview', () => ({}))
+  })
+  overviewIsolated = true
+  for (const forward of deferredEnumerations.splice(0)) forward()
+  report.overviewIpcStubbed = true
   page.setDefaultTimeout(15_000)
   const waitFor = async (predicate) => {
     const until = Date.now() + 15_000
@@ -139,7 +152,8 @@ try {
   assert.equal(report.realDevice.selectedMatches, true)
   assert.equal(report.realDevice.optionMatches, true)
   assert.ok(report.realDevice.softwareVersion)
-  const refresh = page.locator('#app .icon-refresh')
+  await page.locator('summary[aria-label="选择设备"]').click()
+  const refresh = page.locator('[data-action="refresh-devices"]')
   await refresh.click()
   await page.getByText('设备已刷新', { exact: true }).waitFor()
   inject = true
@@ -149,7 +163,7 @@ try {
     const failed = await page.evaluate(async () => ({
       count: (await main.getMemStore('targets')).length,
       selectedIsNull: (await main.getMainStore('target')) === null,
-      label: document.querySelector('#app select option')?.textContent,
+      label: document.querySelector('[data-workspace] [role="alert"]')?.textContent,
     }))
     assert.equal(failed.count, 0)
     assert.equal(failed.selectedIsNull, true)

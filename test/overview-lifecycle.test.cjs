@@ -85,10 +85,9 @@ async function fixture(t, { strict = false } = {}) {
     requests, notifications, unmount, store,
     text: () => container.textContent,
     loading: () => !!container.querySelector('[data-loading]'),
-    busy: () => container.querySelector('.icon-refresh').closest('.luna-toolbar-item')
-      .classList.contains('luna-toolbar-disabled'),
-    click: () => container.querySelector('.icon-refresh').closest('button').click(),
-    invoke: () => onClick(),
+    busy: () => container.querySelector('[data-action="refresh"]')?.disabled ?? false,
+    click: () => container.querySelector('[data-action="refresh"]').click(),
+    invoke: () => container.querySelector('[data-action="refresh"]').click(),
     change: next => act(async () => runInAction(() => { store.target = next })),
   }
 }

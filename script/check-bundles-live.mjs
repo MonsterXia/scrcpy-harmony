@@ -34,7 +34,7 @@ try {
   child.stdout?.on('data', append); child.stderr?.on('data', append)
   const page = await application.firstWindow()
   page.setDefaultTimeout(30_000)
-  await page.locator('#app .panel-with-toolbar').first().waitFor()
+  await page.locator('[data-workspace]').waitFor()
   report.runtime = await application.evaluate(({ app }) => ({ packaged: app.isPackaged, version: app.getVersion(), electron: process.versions.electron }))
   const targets = await page.evaluate(() => main.getTargets())
   assert.equal(targets.length, 1, 'Connect one authorized Harmony device')

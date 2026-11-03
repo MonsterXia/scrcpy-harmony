@@ -1,0 +1,329 @@
+.workspace {
+  // Main-window-only tokens: mirroring and update windows keep their design.
+  --workspace-bg: #f5f6f8;
+  --workspace-surface: #fff;
+  --workspace-text: #20242b;
+  --workspace-secondary: #636d7b;
+  --workspace-line: #e3e7ee;
+  --workspace-accent: #2469db;
+  --workspace-selected: #e8f0ff;
+  --workspace-hover: #eef1f5;
+  --workspace-danger: #b8303a;
+  --workspace-success: #20734f;
+  display: flex;
+  position: absolute;
+  inset: 0;
+  color: var(--workspace-text);
+  background: var(--workspace-surface);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  &[data-theme='dark'] {
+    --workspace-bg: #17191d;
+    --workspace-surface: #202329;
+    --workspace-text: #f0f2f5;
+    --workspace-secondary: #a6afbd;
+    --workspace-line: #363d47;
+    --workspace-accent: #79adff;
+    --workspace-selected: #273c5c;
+    --workspace-hover: #2b3039;
+    --workspace-danger: #ff9ca3;
+    --workspace-success: #8ad1ae;
+  }
+  button,
+  select {
+    font: inherit;
+  }
+  button {
+    cursor: default;
+  }
+  button:disabled {
+    opacity: 0.5;
+  }
+  button:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--workspace-accent);
+    outline-offset: 2px;
+  }
+}
+.sidebar {
+  width: 200px;
+  flex: 0 0 200px;
+  background: var(--workspace-bg);
+  border-right: 1px solid var(--workspace-line);
+  display: flex;
+  flex-direction: column;
+  padding: 22px 12px 12px;
+  min-height: 0;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 8px 22px;
+  font-weight: 650;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.brandMark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: #2469db;
+  color: white;
+  font-size: 19px;
+}
+.brandName {
+  letter-spacing: -0.3px;
+}
+.navigation {
+  min-height: 0;
+  overflow-y: auto;
+  flex: 1;
+  padding: 2px;
+  margin: 0 -2px;
+}
+.group + .group {
+  margin-top: 20px;
+}
+.groupTitle {
+  padding: 0 12px;
+  margin-bottom: 7px;
+  font-size: 11px;
+  color: var(--workspace-secondary);
+}
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  margin: 2px 0;
+  padding: 8px 12px;
+  background: transparent;
+  color: var(--workspace-secondary);
+  border: 0;
+  border-radius: 7px;
+  text-align: left;
+}
+.navItem > span:first-child {
+  font-size: 17px;
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+.navItem:hover {
+  background: var(--workspace-hover);
+  color: var(--workspace-text);
+}
+.navItem[aria-current='page'] {
+  background: var(--workspace-selected);
+  color: var(--workspace-accent);
+  font-weight: 600;
+}
+.navLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebarFooter {
+  padding-top: 12px;
+  border-top: 1px solid var(--workspace-line);
+  margin-top: 12px;
+}
+.device {
+  position: relative;
+  margin-bottom: 22px;
+  flex-shrink: 0;
+}
+.device summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 10px;
+  border: 1px solid var(--workspace-line);
+  background: var(--workspace-surface);
+  border-radius: 9px;
+  list-style: none;
+  cursor: default;
+}
+.device summary::-webkit-details-marker {
+  display: none;
+}
+.device summary > span:first-child {
+  font-size: 19px;
+  color: var(--workspace-secondary);
+}
+.deviceSummary {
+  min-width: 0;
+  flex: 1;
+}
+.deviceSummary strong {
+  display: block;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.deviceSummary small {
+  display: block;
+  color: var(--workspace-secondary);
+  font-size: 10px;
+  margin-top: 4px;
+}
+.deviceChevron {
+  color: var(--workspace-secondary);
+}
+.devicePopover {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 7px);
+  width: 300px;
+  padding: 16px;
+  background: var(--workspace-surface);
+  border: 1px solid var(--workspace-line);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px #0003;
+  z-index: 20;
+}
+.devicePopover label {
+  display: block;
+  margin-bottom: 9px;
+  font-weight: 600;
+}
+.devicePopover select {
+  width: 100%;
+  color: var(--workspace-text);
+  background: var(--workspace-bg);
+  border: 1px solid var(--workspace-line);
+  border-radius: 6px;
+  padding: 8px;
+}
+.devicePopover p {
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  color: var(--workspace-secondary);
+}
+.devicePopover button {
+  margin-top: 12px;
+  width: 100%;
+}
+.deviceKey {
+  font-family: ui-monospace, monospace;
+  user-select: text;
+}
+.main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  min-height: 54px;
+  flex-shrink: 0;
+  margin: 0 28px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--workspace-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  min-width: 0;
+}
+.breadcrumbGroup,
+.breadcrumbDivider {
+  color: var(--workspace-secondary);
+}
+.currentPage {
+  font-weight: 550;
+}
+.content {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+}
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 6px 12px;
+  border: 1px solid var(--workspace-line);
+  background: var(--workspace-surface);
+  color: var(--workspace-text);
+  border-radius: 7px;
+  font-size: 12px !important;
+}
+.secondaryButton:hover:not(:disabled) {
+  background: var(--workspace-hover);
+}
+@media (max-width: 1099px) {
+  .sidebar {
+    width: 64px;
+    flex-basis: 64px;
+    padding: 20px 8px 10px;
+  }
+  .brand {
+    padding: 0 8px 20px;
+  }
+  .brandName,
+  .deviceSummary,
+  .deviceChevron,
+  .groupTitle,
+  .navLabel {
+    display: none;
+  }
+  .navItem {
+    justify-content: center;
+    padding: 9px;
+  }
+  .device {
+    margin-bottom: 15px;
+  }
+  .device summary {
+    justify-content: center;
+    padding: 11px;
+  }
+  .devicePopover {
+    left: calc(100% + 8px);
+    top: 0;
+  }
+  .group + .group {
+    margin-top: 12px;
+  }
+  .topbar {
+    margin: 0 20px;
+  }
+}
+@media (max-height: 650px) {
+  .sidebar {
+    padding-top: 14px;
+  }
+  .brand {
+    padding-bottom: 15px;
+  }
+  .device {
+    margin-bottom: 14px;
+  }
+  .group + .group {
+    margin-top: 12px;
+  }
+  .navItem {
+    min-height: 32px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+}

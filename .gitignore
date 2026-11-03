@@ -2,6 +2,7 @@ node_modules/
 dist/
 release/
 resources/
+.superpowers/
 vendor/packages/hdckit/dist/
 vendor/packages/luna-*/cjs/
 vendor/packages/luna-*/esm/

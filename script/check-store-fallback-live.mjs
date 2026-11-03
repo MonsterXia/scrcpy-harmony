@@ -88,7 +88,7 @@ async function verify({ step, acquire, signal }) {
   child.stdout?.on('data', capture); child.stderr?.on('data', capture)
   const page = await step(() => application.firstWindow())
   page.setDefaultTimeout(15000)
-  await step(() => page.locator('#app .luna-toolbar').first().waitFor())
+  await step(() => page.locator('[data-workspace]').waitFor())
   report.runtime = await step(() => application.evaluate(({ app }) => ({ platform: process.platform, arch: process.arch, electron: process.versions.electron, packaged: app.isPackaged })))
   await step(() => application.evaluate(({ ipcMain }, names) => {
     ipcMain.removeHandler('getBundles')

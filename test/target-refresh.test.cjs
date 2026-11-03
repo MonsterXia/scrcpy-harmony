@@ -40,7 +40,7 @@ function loadSource(file, imports, globals = {}) {
 
 // Minimal host-side HDC framing, not a device or a daemon implementation.
 // The actual installed hdckit performs handshake, parsing and target commands.
-async function fixture(t, badHello = false) {
+async function fixture(t, badHello = false, savedPanel = null) {
   const state = { keys: [KEY], badHello, parameters: new Map(), requests: [] }
   const sockets = new Set()
   const errors = []
@@ -142,7 +142,7 @@ async function fixture(t, badHello = false) {
   await loadSource('src/main/lib/hdc.ts', imports).init()
   const getTargets = handlers.get('getTargets')
   const events = new Map()
-  const main = { getTargets, getMainStore: async () => null,
+  const main = { getTargets, getMainStore: async name => name === 'panel' ? savedPanel : null,
     on: (name, handler) => events.set(name, handler) }
   const store = loadSource('src/renderer/main/store/index.ts', {
     '../../lib/util': { setMainStore() {} },
@@ -176,6 +176,20 @@ async function fixture(t, badHello = false) {
   }
   return { state, logs, getTargets, store, toolbar, events, server }
 }
+
+test('unknown persisted panel falls back to overview while valid navigation remains compatible', async t => {
+  const { store } = await fixture(t, false, 'obsolete-panel')
+  assert.equal(store.panel, 'overview')
+  store.selectPanel('shell')
+  assert.equal(store.panel, 'shell')
+  store.selectPanel('invalid-panel')
+  assert.equal(store.panel, 'overview')
+})
+
+test('valid persisted panel is restored', async t => {
+  const { store } = await fixture(t, false, 'webview')
+  assert.equal(store.panel, 'webview')
+})
 
 test('fixture cleanup closes a peer whose accept event arrives after teardown starts', { timeout: 3000 }, async (t) => {
   let cleanup, closing, f, emit, peer, client, timer

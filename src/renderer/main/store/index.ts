@@ -11,6 +11,21 @@ import isEmpty from 'licia/isEmpty'
 import { Process } from './process'
 import { Layout } from './layout'
 
+function normalizePanel(panel: string) {
+  return [
+    'overview',
+    'application',
+    'process',
+    'shell',
+    'layout',
+    'screenshot',
+    'hilog',
+    'webview',
+  ].includes(panel)
+    ? panel
+    : 'overview'
+}
+
 class Store extends BaseStore {
   targets: ITarget[] = []
   target: ITarget | null = null
@@ -49,8 +64,8 @@ class Store extends BaseStore {
     setMainStore('target', this.target)
   }
   selectPanel(panel: string) {
-    this.panel = panel
-    setMainStore('panel', panel)
+    this.panel = normalizePanel(panel)
+    setMainStore('panel', this.panel)
   }
   refreshTargets = async () => {
     const refreshId = ++this.targetsRefreshId
@@ -90,7 +105,7 @@ class Store extends BaseStore {
   private async init() {
     const panel = await main.getMainStore('panel')
     if (panel) {
-      runInAction(() => (this.panel = panel))
+      runInAction(() => (this.panel = normalizePanel(panel)))
     }
 
     const target = await main.getMainStore('target')

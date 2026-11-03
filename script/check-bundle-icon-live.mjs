@@ -63,7 +63,7 @@ async function verify() {
   const child = application.process()
   const page = await application.firstWindow()
   page.setDefaultTimeout(30_000)
-  await page.locator('#app .luna-toolbar').first().waitFor()
+  await page.locator('[data-workspace]').waitFor()
   await application.evaluate(({ ipcMain }, bundleName) => {
     ipcMain.removeHandler('getBundles')
     ipcMain.handle('getBundles', () => [bundleName])

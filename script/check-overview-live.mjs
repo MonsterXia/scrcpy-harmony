@@ -134,8 +134,8 @@ try {
       const suffix = Math.floor(Math.log(overview.memTotal) / Math.log(1024))
       const memory = +((overview.memTotal / 1024 ** suffix).toFixed(2)) + ['', 'K', 'M', 'G', 'T'][suffix]
       globalThis.overviewVerificationExpected = [overview.name, overview.brand, overview.model,
-        overview.serialNum || '未知', `OpenHarmony ${target.ohosVersion} (API ${target.sdkVersion})`,
-        overview.kernelVersion, `${overview.processor || '未知'} (${overview.abi})`, overview.physicalResolution, memory]
+        overview.serialNum || '未知', target.ohosVersion ? `OpenHarmony ${target.ohosVersion}${target.sdkVersion ? ` (API ${target.sdkVersion})` : ''}` : '未知',
+        overview.kernelVersion, overview.processor ? `${overview.processor}${overview.abi ? ` (${overview.abi})` : ''}` : (overview.abi || '未知'), overview.physicalResolution, memory]
       return { elapsedMs: Math.round(performance.now() - start),
         descriptiveFields: ['name', 'brand', 'model', 'abi', 'kernelVersion'].every(k => typeof overview[k] === 'string' && overview[k].length > 0),
         resolutionValid: /^[1-9]\d*x[1-9]\d*$/.test(overview.physicalResolution),
@@ -146,14 +146,14 @@ try {
     report.successes.push(result)
   }
   for (let i = 0; i < 3; i++) await validateIpc()
-  await page.getByText('概览', { exact: true }).click()
-  const panel = page.locator('.panel-with-toolbar')
-  const refresh = panel.locator('.icon-refresh')
-  const values = panel.locator('[class*="_value_"]')
+  await page.locator('[data-navigation="overview"]').click()
+  const panel = page.locator('[data-panel="overview"]')
+  const refresh = panel.locator('[data-action="refresh"]')
+  const values = panel.locator('[data-overview-field]')
   const uiValid = async () => {
     await values.nth(8).waitFor()
     await page.waitForFunction(() => {
-      const values = [...document.querySelectorAll('.panel-with-toolbar [class*="_value_"]')].map(n => n.textContent)
+      const values = ['name', 'brand', 'model', 'serialNum', 'ohosVersion', 'kernelVersion', 'processor', 'physicalResolution', 'memory'].map(field => document.querySelector(`[data-overview-field="${field}"]`)?.textContent).filter(value => value !== undefined)
       const expected = globalThis.overviewVerificationExpected
       return values.length === 9 && expected?.length === 9 && values.every((value, i) => value === expected[i]) &&
         /^[1-9]\d*x[1-9]\d*$/.test(values[7]) && /^\d+(?:\.\d+)?[KMGT]?$/.test(values[8]) && parseFloat(values[8]) > 0
@@ -174,9 +174,10 @@ try {
       await page.getByText('出错了', { exact: true }).waitFor()
       await values.nth(8).waitFor()
       const clearedFields = await values.evaluateAll(nodes => {
-        const text = nodes.map(n => n.textContent)
+        const fields = ['name', 'brand', 'model', 'serialNum', 'ohosVersion', 'kernelVersion', 'processor', 'physicalResolution', 'memory']
+        const text = fields.map(field => nodes.find(n => n.dataset.overviewField === field)?.textContent)
         return { descriptive: [0, 1, 2, 3, 5, 7].every(i => text[i] === '未知'),
-          processor: text[6] === '未知 (undefined)', memory: text[8] === '未知' }
+          processor: text[6] === '未知', memory: text[8] === '未知' }
       })
       report.lastClearedFields = clearedFields
       const cleared = clearedFields.descriptive && clearedFields.processor && clearedFields.memory

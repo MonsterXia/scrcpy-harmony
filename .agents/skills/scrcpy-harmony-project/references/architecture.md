@@ -109,7 +109,7 @@ HAP 拖入由主窗口和投屏根组件各注册一次 `src/renderer/lib/useHap
 
 概览 `Overview.refresh()` 在读取失败后清空旧概览并提示错误，释放加载状态后允许再次刷新，避免将上次数据呈现为当前结果。
 
-`hdc.ts` 的 `getTargets` 对每个设备单独读取参数并隔离失败，保留可读取设备的原始顺序。版本从可识别的点分数字字段提取；缺失或未知版本返回空字符串并记警告，名称缺失回退到 connectKey，API 字段缺失返回空字符串。`listTargets` 失败记录 error，非空设备列表全部读取失败记录 warn，两者均拒绝 IPC；正常无设备记录 info 并返回空数组；部分设备失败仍返回其余设备。成功返回类型仍为 `ITarget[]`。主窗口 `refreshTargets()` 捕获失败、清空列表和选择、设置 `targetsError` 并返回 false；初始化和设备事件刷新也使用此路径。工具栏区分读取失败与正常无设备，手动刷新按布尔结果提示成功或错误。
+`hdc.ts` 的 `getTargets` 对每个设备单独读取参数并隔离失败，保留可读取设备的原始顺序。版本从可识别的点分数字字段提取；缺失或未知版本返回空字符串并记警告，名称缺失回退到 connectKey，API 字段缺失返回空字符串。`listTargets` 失败记录 error，非空设备列表全部读取失败记录 warn，两者均拒绝 IPC；正常无设备记录 info 并返回空数组；部分设备失败仍返回其余设备。成功返回类型仍为 `ITarget[]`。主窗口 `refreshTargets()` 捕获失败、清空列表和选择、设置 `targetsError` 并返回 false；初始化和设备事件刷新也使用此路径。`workspace/DeviceSwitcher.tsx` 区分读取失败与正常无设备，手动刷新按布尔结果提示成功或错误，并在组件卸载后忽略通知。
 
 并发设备刷新按发起顺序分配序号，只有最新请求可以发布列表、选择、错误状态及持久化写入。已被后续请求取代的调用返回 `undefined`，工具栏不显示这次调用的通知；有效调用继续返回成功/失败布尔值。此保护不取消已发送 IPC，也不限制 HDC 等待时间。
 
@@ -122,10 +122,11 @@ HAP 拖入由主窗口和投屏根组件各注册一次 `src/renderer/lib/useHap
 - `src/renderer/main/store/index.ts` 是主窗口 MobX store，持有 targets、target、panel，以及 settings/application/process/layout 子 store。
 - `src/main/lib/store.ts` 通过 Licia `FileStore` 存储用户数据目录下的 `data/main.json`、`settings.json`、`screencast.json`；目录路径由共享 `getUserDataPath()` 决定。
 - `src/renderer/lib/util.ts` 的 `setMainStore()` 将 MobX observable 转为普通 JS 值后传过 IPC。
-- `src/renderer/main/App.tsx` 的 `Panel` 第一次访问后一直保留子组件，通过透明度和 pointer-events 控制显示。隐藏不等于卸载；轮询等需检查是否在隐藏状态继续运行。
+- `src/renderer/main/App.tsx` 使用 `components/workspace/Workspace.tsx` 提供分组侧栏、设备选择和公共页头；`workspace/Panel.tsx` 首次访问后保留子组件，隐藏时通过 visibility、inert 和 aria-hidden 隔离布局显示、焦点与辅助技术访问。隐藏不等于卸载；轮询仍需根据活动 panel 管理。设置弹窗位于设备 key 边界外。
+- store 保留八个既有 panel ID，初始化和选择时将未知 ID 归一为 overview。`overview/Overview.tsx` 保留刷新代次隔离，已有详情刷新时仍显示，失败后清空并提供重试；字段复制按钮在未知值时禁用。
 - 主面板容器和投屏组件都使用设备 key 参与重建。投屏 store 监听 `changeMainStore`：target 为 null 时关窗，换设备时销毁旧客户端并创建新客户端。
 - `overview/PortMappingModal.tsx` 只在弹窗可见且有目标时读取映射；关闭/目标变更使旧读取失效，同一会话仅接受最后发起的当前方向结果。读取失败清空列表和选择并提示，恢复依赖手动刷新或重开；写入成功后的读取绑定原可见期，不取消已发送 IPC。
-- 新增主面板通常需要同时修改 `App.tsx`、`components/toolbar/Tabs.tsx`、语言字典，状态逻辑按需要放入 `store/`。
+- 新增主面板通常需要同时修改 `App.tsx`、`components/workspace/Workspace.tsx`、store 中的 panel 白名单、语言字典，状态逻辑按需要放入 `store/`。
 
 ## 投屏与输入链路
 
@@ -188,7 +189,8 @@ Canvas pointer 事件
 - 使用 React 函数组件、`mobx-react-lite` 的 `observer`、Luna React 封装和局部 `.module.scss`；CSS Modules 配置为 `camelCaseOnly`。
 - `src/common/util.ts` 注册独立 `en-US` / `zh-CN` 业务词典，与 `src/share/common/langs` 合并；`t()` 在缺词时兜底英文，未知 key 原样显示。主进程启动解析已保存/系统语言；renderer 在页面懒加载前同步 i18n、HTML lang 和 LunaModal。设置页语言保存后由用户重启生效，包含菜单和各窗口。开发步骤与检查器边界见[国际化开发流程](internationalization.md)。
 - `src/main/lib/SettingsStore.ts` 为低频 settings.json 保留 Store 的 get/set/change 接口，使用同步临时文件替换，在设置 IPC 返回前完成落盘，保证立即重启可读取。主窗口/投屏状态仍用 FileStore 防抖写盘。持久化回归在 `test/settings-persistence.test.cjs`。
-- 主题源是 `src/common/theme.json`，`npm run gen:theme` 生成 `src/renderer/theme.scss` 与 `src/common/theme.ts`。
+- 1.0.5 主窗口新语义 token 暂集中在 `workspace/Workspace.module.scss`，由 workspace 根的 data-theme 选择；不向独立投屏/升级窗口或全局 Luna 选择器扩散。旧页逐阶段接入，旧 toolbar 文件尚保留。
+- 共享主题源是 `src/common/theme.json`，`npm run gen:theme` 生成 `src/renderer/theme.scss` 与 `src/common/theme.ts`。
 - 图标配置是 `src/renderer/icon.json`，图标源在本仓 `src/renderer/icon`，`npm run gen:icon` 生成 `src/renderer/icon.css`。
 - Prettier 配置为无分号、单引号、80 列；避免为局部任务运行全仓库重写格式。
 

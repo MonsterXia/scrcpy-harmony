@@ -1,6 +1,4 @@
-import { FC, PropsWithChildren, useState } from 'react'
-import Toolbar from './components/toolbar/Toolbar'
-import Style from './App.module.scss'
+import { useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import store from './store'
 import Overview from './components/overview/Overview'
@@ -11,78 +9,51 @@ import Shell from './components/shell/Shell'
 import Layout from './components/layout/Layout'
 import Webview from './components/webview/Webview'
 import Hilog from './components/hilog/Hilog'
+import SettingsModal from './components/toolbar/SettingsModal'
+import Workspace from './components/workspace/Workspace'
+import Panel from './components/workspace/Panel'
+import { PannelLoading } from './components/common/loading'
 import useHapDrop from '../lib/useHapDrop'
 
 export default observer(function App() {
   useHapDrop(store.target?.key)
-
+  const [settingsVisible, setSettingsVisible] = useState(false)
+  const panels = [
+    {
+      id: 'overview',
+      content: <Overview onOpenSettings={() => setSettingsVisible(true)} />,
+    },
+    { id: 'application', content: <Application /> },
+    { id: 'process', content: <Process /> },
+    { id: 'shell', content: <Shell /> },
+    { id: 'layout', content: <Layout /> },
+    { id: 'screenshot', content: <Screenshot /> },
+    { id: 'hilog', content: <Hilog /> },
+    { id: 'webview', content: <Webview /> },
+  ]
   return (
     <>
-      <Toolbar />
-      {store.ready && (
-        <div className={Style.workspace}>
-          <div
-            className={Style.panels}
-            key={store.target ? store.target.key : ''}
-          >
-            <Panel panel="overview">
-              <Overview />
-            </Panel>
-            <Panel panel="application">
-              <Application />
-            </Panel>
-            <Panel panel="process">
-              <Process />
-            </Panel>
-            <Panel panel="shell">
-              <Shell />
-            </Panel>
-            <Panel panel="layout">
-              <Layout />
-            </Panel>
-            <Panel panel="screenshot">
-              <Screenshot />
-            </Panel>
-            <Panel panel="hilog">
-              <Hilog />
-            </Panel>
-            <Panel panel="webview">
-              <Webview />
-            </Panel>
+      <Workspace onOpenSettings={() => setSettingsVisible(true)}>
+        {store.ready ? (
+          <div key={store.target?.key || ''}>
+            {panels.map((panel) => (
+              <Panel
+                key={panel.id}
+                id={panel.id}
+                active={store.panel === panel.id}
+              >
+                {panel.content}
+              </Panel>
+            ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <PannelLoading />
+        )}
+      </Workspace>
+      <SettingsModal
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+      />
     </>
-  )
-})
-
-interface IPanelProps {
-  panel: string
-}
-
-const Panel: FC<PropsWithChildren<IPanelProps>> = observer(function Panel(
-  props
-) {
-  const [used, setUsed] = useState(false)
-
-  let visible = false
-
-  if (store.panel === props.panel) {
-    if (!used) {
-      setUsed(true)
-    }
-    visible = true
-  }
-
-  const style: React.CSSProperties = {}
-  if (!visible) {
-    style.opacity = 0
-    style.pointerEvents = 'none'
-  }
-
-  return (
-    <div className={Style.panel} style={style}>
-      {used ? props.children : null}
-    </div>
   )
 })

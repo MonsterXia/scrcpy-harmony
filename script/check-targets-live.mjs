@@ -44,7 +44,7 @@ try {
   child.stderr?.on('data', append)
   const page = await application.firstWindow({ timeout: 30_000 })
   page.setDefaultTimeout(20_000)
-  await page.locator('#app .panel-with-toolbar').first().waitFor({ state: 'visible' })
+  await page.locator('[data-workspace]').waitFor({ state: 'visible' })
   report.runtime = await application.evaluate(({ app }) => ({
     version: app.getVersion(), packaged: app.isPackaged, electron: process.versions.electron,
   }))
@@ -57,7 +57,7 @@ try {
       const select = document.querySelector('#app select')
       return { ipcTargets: await main.getTargets(), rendererTargets: await main.getMemStore('targets'),
         selected: await main.getMainStore('target'), events: window.targetChangeCount,
-        select: { disabled: select.closest('.luna-toolbar-item').classList.contains('luna-toolbar-disabled'),
+        select: { disabled: select.disabled,
           nativeDisabled: select.disabled, value: select.value,
           labels: [...select.options].map((option) => option.text) } }
     })
@@ -91,7 +91,7 @@ try {
       const targets = await main.getMemStore('targets')
       return Array.isArray(targets) && targets.length === 0 &&
         (await main.getMainStore('target')) === null &&
-        document.querySelector('#app select').closest('.luna-toolbar-item').classList.contains('luna-toolbar-disabled')
+        document.querySelector('#workspace-device').disabled
     }), 240_000)
     const disconnected = await snapshot('disconnected')
     assert.deepEqual(disconnected.ipcTargets, [])

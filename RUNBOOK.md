@@ -1,5 +1,11 @@
 # Scrcpy Harmony 分阶段维护 RUNBOOK
 
+## 1.0.5 全量 UI 重构（2026-11-03）
+
+状态：**设计已确认；UI-1 源码与本机验证完成，真机/跨平台待验收；UI-2～7 未开始**。用户批准“轻量桌面工作台”设计并授权分阶段推进，投屏和升级界面严格保留现有设计。已形成[设计规划](docs/superpowers/specs/2026-11-03-v1.0.5-ui-design.md)、[交互草图](docs/design/1.0.5-ui-preview.html)、[七阶段实施路线](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md)和 [UI-1 执行计划](docs/superpowers/plans/2026-11-03-v1.0.5-ui-phase1.md)。
+
+本批已实现主窗口分组导航、设备入口、局部双主题、概览/无设备/失败重试及隐藏面板生命周期兼容。最终应用测试 802/802，Licia 两模式各 606 passing / 4 pending，lint/i18n、完整构建与独立复核通过；本机隔离 Electron 已检查中文空设备双主题和英文模拟设备/紧凑布局。详细边界与截图见[阶段证据](docs/maintenance/v1.0.5-ui-phase1.md)。没有连接真机、三平台安装或发布；不把模拟数据当作设备验收。下一步 UI-2 应用管理与详情抽屉；原设置与其他页内布局后续迁移。版本号保持 1.0.4，历史功能与长期运行待办保持原状态。
+
 ## 1.0.4 正式发行（2026-10-31）
 
 状态：**2026-10-31 20:06:57（UTC+8）已正式发布**。[v1.0.4](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.4) 已设为 Latest，PR #79 合入后以固定源 `2cce9e1` 完成五项 CI、三平台安装启动、两条直接升级路径及公开前后各 63 场景的实际更新检查；14 附件重新下载核验通过。Windows 未签名、双 Mac 有效 ad-hoc，仍无 Developer ID/公证。用户确认沿用开发版已有真机证据，未补测物理换线及 2 小时活动/8 小时空闲，后续观察也未标记完成。完整证据与失败重试见[发行记录](docs/releases/1.0.4.md)。

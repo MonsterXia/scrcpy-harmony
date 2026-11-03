@@ -173,8 +173,8 @@ try {
       const suffix = Math.floor(Math.log(value.memTotal) / Math.log(1024))
       const memory = +((value.memTotal / 1024 ** suffix).toFixed(2)) + ['', 'K', 'M', 'G', 'T'][suffix]
       globalThis.physicalExpectedUi = [value.name, value.brand, value.model, value.serialNum || '未知',
-        `OpenHarmony ${target.ohosVersion} (API ${target.sdkVersion})`, value.kernelVersion,
-        `${value.processor || '未知'} (${value.abi})`, value.physicalResolution, memory]
+        target.ohosVersion ? `OpenHarmony ${target.ohosVersion}${target.sdkVersion ? ` (API ${target.sdkVersion})` : ''}` : '未知', value.kernelVersion,
+        value.processor ? `${value.processor}${value.abi ? ` (${value.abi})` : ''}` : (value.abi || '未知'), value.physicalResolution, memory]
       return { ok: true, elapsedMs: Math.round(performance.now() - start), sameDevice: target.key === globalThis.physicalOriginalKey,
         descriptiveValid: ['name', 'brand', 'model', 'abi', 'kernelVersion'].every(k => typeof value[k] === 'string' && value[k].length > 0),
         resolutionValid: /^[1-9]\d*x[1-9]\d*$/.test(value.physicalResolution),
@@ -191,14 +191,14 @@ try {
   }
   async function assertUi() {
     await waitFor(() => page.evaluate(() => {
-      const text = [...document.querySelectorAll('.panel-with-toolbar [class*="_value_"]')].map(n => n.textContent)
+      const text = ['name', 'brand', 'model', 'serialNum', 'ohosVersion', 'kernelVersion', 'processor', 'physicalResolution', 'memory'].map(field => document.querySelector(`[data-overview-field="${field}"]`)?.textContent).filter(value => value !== undefined)
       const expected = globalThis.physicalExpectedUi
       return text.length === 9 && expected?.length === 9 && text.every((value, i) => value === expected[i]) &&
         /^\d+(?:\.\d+)?[KMGT]?$/.test(text[8]) && parseFloat(text[8]) > 0
     }), 65_000)
   }
   await readOverview('before-unplug')
-  await page.getByText('概览', { exact: true }).click()
+  await page.locator('[data-navigation="overview"]').click()
   await assertUi()
   // Let startup's delayed changeTarget settle before observing physical removal.
   await delay(3000)
@@ -207,11 +207,11 @@ try {
   await waitFor(() => page.evaluate(async () => {
     const targets = await main.getMemStore('targets')
     return Array.isArray(targets) && targets.length === 0 && (await main.getMainStore('target')) === null &&
-      document.querySelector('#app select')?.closest('.luna-toolbar-item').classList.contains('luna-toolbar-disabled')
+      document.querySelector('#workspace-device')?.disabled
   }), 300_000)
   const disconnectedEvents = await page.evaluate(() => globalThis.physicalTargetEvents)
   assert.ok(disconnectedEvents > initialEvents)
-  assert.equal(await page.evaluate(() => document.querySelectorAll('.panel-with-toolbar [class*="_value_"]').length), 0)
+  assert.equal(await page.evaluate(() => document.querySelectorAll('[data-overview-field]').length), 0)
   assert.equal(await page.evaluate(async () => (await main.getTargets()).length), 0)
   report.disconnected = { observedByTracker: true, selectionCleared: true, oldDetailsRemoved: true, ipcTargetsEmpty: true }
   const rejected = await page.evaluate(async () => {
@@ -237,18 +237,18 @@ try {
   try { await assertUi() } catch {
     automaticUiRecovered = false
     report.automaticUiState = await page.evaluate(() => {
-      const text = [...document.querySelectorAll('.panel-with-toolbar [class*="_value_"]')].map(n => n.textContent)
-      return { loading: !!document.querySelector('.panel-with-toolbar .panel-loading'),
+      const text = ['name', 'brand', 'model', 'serialNum', 'ohosVersion', 'kernelVersion', 'processor', 'physicalResolution', 'memory'].map(field => document.querySelector(`[data-overview-field="${field}"]`)?.textContent).filter(value => value !== undefined)
+      return { loading: !!document.querySelector('[data-panel="overview"] .panel-loading'),
         fieldCount: text.length, matchesExpected: text.map((value, i) => value === globalThis.physicalExpectedUi?.[i]),
         unknownFields: text.map(value => value === '未知') }
     })
     await phase('RECONNECTED_MANUAL_REFRESH')
-    await page.locator('.panel-with-toolbar .icon-refresh').click()
-    await page.locator('.panel-with-toolbar .panel-loading').waitFor({ state: 'visible' })
-    await page.locator('.panel-with-toolbar .panel-loading').waitFor({ state: 'hidden', timeout: 65_000 })
+    await page.locator('[data-panel="overview"] [data-action="refresh"]').click()
+    await page.waitForFunction(() => document.querySelector('[data-panel="overview"] [data-action="refresh"]')?.disabled === true)
+    await page.waitForFunction(() => document.querySelector('[data-panel="overview"] [data-action="refresh"]')?.disabled === false, null, { timeout: 65_000 })
     await assertUi()
   }
-  assert.equal(await page.locator('.panel-with-toolbar .panel-loading').count(), 0)
+  assert.equal(await page.locator('[data-panel="overview"] .panel-loading').count(), 0)
   await readOverview('after-reconnect')
   await assertUi()
   report.reconnected = { sameDevice: true, observedByTracker: true, automaticUiRecovered,
@@ -283,9 +283,9 @@ try {
   assert.equal(report.idleOperationCountsUnchanged, true)
   await phase('IDLE_FINISHED_VERIFYING')
   await readOverview('after-idle')
-  await page.locator('.panel-with-toolbar .icon-refresh').click()
-  await page.locator('.panel-with-toolbar .panel-loading').waitFor({ state: 'visible' })
-  await page.locator('.panel-with-toolbar .panel-loading').waitFor({ state: 'hidden' })
+  await page.locator('[data-panel="overview"] [data-action="refresh"]').click()
+  await page.waitForFunction(() => document.querySelector('[data-panel="overview"] [data-action="refresh"]')?.disabled === true)
+  await page.waitForFunction(() => document.querySelector('[data-panel="overview"] [data-action="refresh"]')?.disabled === false)
   await assertUi()
   await readOverview('after-idle-refresh')
   report.afterIdleUiRecovered = true
