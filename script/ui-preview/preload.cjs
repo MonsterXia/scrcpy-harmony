@@ -38,4 +38,10 @@ const main = {
 contextBridge.exposeInMainWorld('main',main)
 contextBridge.exposeInMainWorld('preload',{setTitle:()=>{},getPathForFile:()=>''})
 contextBridge.exposeInMainWorld('node',{existsSync:()=>false})
-window.addEventListener('DOMContentLoaded',()=>document.body.classList.toggle('-theme-with-dark-background',settings.theme==='dark'))
+async function syncTheme() {
+  const theme = await ipcRenderer.invoke('fixture-theme')
+  if (document.body) document.body.classList.toggle('-theme-with-dark-background',theme==='dark')
+  emit('updateTheme')
+}
+ipcRenderer.on('fixture-theme-updated',()=>void syncTheme())
+window.addEventListener('DOMContentLoaded',()=>void syncTheme())

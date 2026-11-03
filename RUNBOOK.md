@@ -2,9 +2,9 @@
 
 ## 1.0.5 全量 UI 重构（2026-11-03）
 
-状态：**连续实施中；UI-1～4 源码与本机验证完成，UI-5 进行中，UI-6～7 待推进**。用户批准“轻量桌面工作台”并明确“不用和我确认，推进直到最终”；投屏和升级界面保留现有设计。入口：[设计](docs/superpowers/specs/2026-11-03-v1.0.5-ui-design.md)、[交互草图](docs/design/1.0.5-ui-preview.html)、[七阶段路线](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md)、[连续执行计划](docs/superpowers/plans/2026-11-03-v1.0.5-ui-completion.md)。
+状态：**连续实施中；UI-1～5 源码与本机验证完成，UI-6 进行中，UI-7 待推进**。用户批准“轻量桌面工作台”并明确“不用和我确认，推进直到最终”；投屏和升级界面保留现有设计。入口：[设计](docs/superpowers/specs/2026-11-03-v1.0.5-ui-design.md)、[交互草图](docs/design/1.0.5-ui-preview.html)、[七阶段路线](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md)、[连续执行计划](docs/superpowers/plans/2026-11-03-v1.0.5-ui-completion.md)。
 
-已交付分组导航/概览、应用管理与详情抽屉、应用级设置及常用工具主要实现。验证、提交、截图与未验收矩阵见[连续实施证据](docs/maintenance/v1.0.5-ui-completion.md)；UI-1完整测试的历史证据见[阶段一](docs/maintenance/v1.0.5-ui-phase1.md)。真实设备概览读取及刷新已通过，其余模拟设备交互不代表真机通过。下一步串行推进UI-5～7，最终构建候选和草稿PR执行CI，不自动发布或合并。历史功能与长期运行待办保持原状态。
+已交付分组导航/概览、应用管理与详情抽屉、应用级设置及常用工具主要实现。验证、提交、截图与未验收矩阵见[连续实施证据](docs/maintenance/v1.0.5-ui-completion.md)；UI-1完整测试的历史证据见[阶段一](docs/maintenance/v1.0.5-ui-phase1.md)。真实设备概览读取及刷新已通过，其余模拟设备交互不代表真机通过。下一步完成UI-6统一样式与工具窗口后执行UI-7整体验收，最终构建候选和草稿PR执行CI，不自动发布或合并。历史功能与长期运行待办保持原状态。
 
 ## 1.0.4 正式发行（2026-10-31）
 
