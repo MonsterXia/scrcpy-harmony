@@ -30,7 +30,7 @@ function realWidget(name) {
 const RealGrid = realWidget('data-grid')
 const RealIcons = realWidget('icon-list')
 
-async function fixture(t, listView) {
+async function fixture(t, listView, count = 1) {
   const host = document.body.appendChild(document.createElement('div'))
   const root = createRoot(host)
   const store = observable({ target: { key: 'device-a' }, application: {
@@ -52,7 +52,7 @@ async function fixture(t, listView) {
     'luna-icon-list/react': RealIcons,
     'licia/copy': () => {},
     'luna-modal': { confirm: async () => true },
-  }, { main: { getBundles: async () => [info.bundleName], getBundleInfos: async () => [info], on: (event, callback) => { listeners.set(event, callback); return () => listeners.delete(event) }, stopBundle: async (...args) => stopped.push(args) } }).default
+  }, { main: { getBundles: async () => count === 1 ? [info.bundleName] : Array.from({ length: count }, (_, i) => `com.example.app${i}`), getBundleInfos: async (_, names) => names.map(bundleName => ({ ...info, bundleName })), on: (event, callback) => { listeners.set(event, callback); return () => listeners.delete(event) }, stopBundle: async (...args) => stopped.push(args) } }).default
   await act(async () => root.render(React.createElement(Application)))
   // Luna batches virtual DOM insertion on its own timer.
   await act(async () => new Promise(resolve => setTimeout(resolve, 40)))
@@ -115,4 +115,45 @@ test('refreshing an open real-widget detail restores focus to the stable search 
   await act(async () => new Promise(resolve => setTimeout(resolve, 40)))
   assert.equal(f.host.querySelector('[role="dialog"]'), null)
   assert.equal(document.activeElement, f.host.querySelector('input[type="search"]'))
+})
+
+async function scrollGrid(f, top) {
+  const scroller = f.host.querySelector('.luna-data-grid-data-container')
+  Object.defineProperty(scroller, 'scrollHeight', { value: 2000, configurable: true })
+  scroller.scrollTop = top
+  await act(async () => scroller.dispatchEvent(new window.Event('scroll')))
+  await act(async () => new Promise(resolve => setTimeout(resolve, 150)))
+}
+
+test('100-item Luna grid retains focused row through virtual scroll reinsertion', async t => {
+  const f = await fixture(t, true, 100)
+  const item = f.item()
+  item.focus()
+  await scrollGrid(f, 100)
+  assert.equal(item.isConnected, true)
+  assert.equal(document.activeElement === item, true, 'focus remains on original row')
+})
+
+test('virtual scroll moves evicted row focus to a visible row without growing the rendered range', async t => {
+  const f = await fixture(t, true, 100)
+  const item = f.item()
+  item.focus()
+  await scrollGrid(f, 1400)
+  assert.equal(item.isConnected, false)
+  const active = document.activeElement
+  assert.ok(active.hasAttribute('data-application-item'), 'focus transfers to an application row')
+  const index = Number(active.dataset.applicationItem.replace('com.example.app', ''))
+  assert.ok(index >= 70 && index < 90, 'replacement focus is in the viewport, not only overscan')
+  assert.ok(f.host.querySelectorAll('[data-application-item]').length < 100, 'virtualization stays bounded')
+  assert.equal(f.host.querySelector('.luna-data-grid-data-container').scrollTop, 1400)
+})
+
+test('virtual grid rendering never steals focus from an open details drawer', async t => {
+  const f = await fixture(t, true, 100)
+  f.item().focus()
+  await act(async () => f.item().dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })))
+  const active = document.activeElement
+  assert.ok(f.host.querySelector('[role="dialog"]').contains(active))
+  await scrollGrid(f, 1400)
+  assert.equal(document.activeElement, active)
 })

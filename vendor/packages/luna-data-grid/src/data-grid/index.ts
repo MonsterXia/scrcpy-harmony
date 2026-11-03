@@ -914,6 +914,13 @@ export default class DataGrid extends Component<IOptions> {
       }
 
       const { dataContainer, displayNodes, tableBody } = this
+      // Moving a focused row through the fragment clears browser focus, even
+      // when the same row is reinserted. Capture only focus owned by this grid.
+      const active = document.activeElement as HTMLElement | null
+      const focused = active && tableBody.contains(active) ? active : null
+      const focusedIndex = focused
+        ? displayNodes.findIndex((node) => node.container.contains(focused))
+        : -1
       const { scrollTop, clientHeight } = dataContainer
       const top = scrollTop - topTolerance
       const bottom = scrollTop + clientHeight + bottomTolerance
@@ -955,6 +962,50 @@ export default class DataGrid extends Component<IOptions> {
 
       tableBody.textContent = ''
       tableBody.appendChild(frag)
+      if (focused) {
+        // Let consumers annotate newly inserted rows before choosing a new
+        // keyboard target. Never reclaim focus moved to another control/dialog.
+        queueMicrotask(() => {
+          const current = document.activeElement
+          if (!this.container.isConnected || this.container.closest('[inert]'))
+            return
+          if (
+            current &&
+            current !== document.body &&
+            current !== document.documentElement
+          )
+            return
+          if (focused.isConnected && tableBody.contains(focused)) {
+            focused.focus({ preventScroll: true })
+            return
+          }
+          // The old row left the virtual range. Keep virtualization bounded:
+          // focus the nearest focusable row in the viewport, then the grid root.
+          const first = Math.max(0, Math.floor(scrollTop / height))
+          const last = Math.min(
+            len - 1,
+            Math.ceil((scrollTop + clientHeight) / height) - 1,
+          )
+          const anchor = Math.min(last, Math.max(first, focusedIndex))
+          const visible = displayNodes.slice(first, last + 1)
+            .map((node, offset) => ({ node, index: first + offset }))
+            .sort((a, b) => Math.abs(a.index - anchor) - Math.abs(b.index - anchor))
+          for (const { node } of visible) {
+            if (!tableBody.contains(node.container)) continue
+            const target =
+              node.container.tabIndex >= 0
+                ? node.container
+                : node.container.querySelector<HTMLElement>(
+                    'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])',
+                  )
+            if (target) {
+              target.focus({ preventScroll: true })
+              return
+            }
+          }
+          this.container.focus({ preventScroll: true })
+        })
+      }
     },
     16
   )
