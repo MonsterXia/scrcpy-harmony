@@ -1,0 +1,835 @@
+{
+  "source": "2f5b84e56d1b0d2850e4004823187e044d3169ba",
+  "buildRun": 41618002713,
+  "preflightRun": 41618959497,
+  "preflight": [
+    {
+      "mode": "preflight",
+      "source": "2f5b84e56d1b0d2850e4004823187e044d3169ba",
+      "build": 41618002713,
+      "platform": "mac",
+      "arch": "arm64",
+      "passed": true,
+      "versions": [
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.4",
+          "scenarios": 6,
+          "settingsPreserved": false
+        },
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.5-dev.0",
+          "scenarios": 6,
+          "settingsPreserved": true
+        }
+      ],
+      "reports": [
+        {
+          "version": "1.0.4",
+          "platform": "darwin",
+          "arch": "arm64",
+          "passed": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        },
+        {
+          "version": "1.0.5-dev.0",
+          "platform": "darwin",
+          "arch": "arm64",
+          "passed": true,
+          "settingsPreserved": true,
+          "preservedBeta": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "preflight",
+      "source": "2f5b84e56d1b0d2850e4004823187e044d3169ba",
+      "build": 41618002713,
+      "platform": "mac",
+      "arch": "x64",
+      "passed": true,
+      "versions": [
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.4",
+          "scenarios": 6,
+          "settingsPreserved": false
+        },
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.5-dev.0",
+          "scenarios": 6,
+          "settingsPreserved": true
+        }
+      ],
+      "reports": [
+        {
+          "version": "1.0.4",
+          "platform": "darwin",
+          "arch": "x64",
+          "passed": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        },
+        {
+          "version": "1.0.5-dev.0",
+          "platform": "darwin",
+          "arch": "x64",
+          "passed": true,
+          "settingsPreserved": true,
+          "preservedBeta": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "preflight",
+      "source": "2f5b84e56d1b0d2850e4004823187e044d3169ba",
+      "build": 41618002713,
+      "platform": "win",
+      "arch": "x64",
+      "passed": true,
+      "versions": [
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.4",
+          "scenarios": 6,
+          "settingsPreserved": false
+        },
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.5-dev.0",
+          "scenarios": 6,
+          "settingsPreserved": true
+        }
+      ],
+      "reports": [
+        {
+          "version": "1.0.4",
+          "platform": "win32",
+          "arch": "x64",
+          "passed": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        },
+        {
+          "version": "1.0.5-dev.0",
+          "platform": "win32",
+          "arch": "x64",
+          "passed": true,
+          "settingsPreserved": true,
+          "preservedBeta": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "postrelease": [
+    {
+      "mode": "postrelease",
+      "source": "2f5b84e56d1b0d2850e4004823187e044d3169ba",
+      "build": 41618002713,
+      "platform": "mac",
+      "arch": "arm64",
+      "passed": true,
+      "versions": [
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.4",
+          "scenarios": 6,
+          "settingsPreserved": false
+        },
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.5-dev.0",
+          "scenarios": 6,
+          "settingsPreserved": true
+        }
+      ],
+      "reports": [
+        {
+          "version": "1.0.4",
+          "platform": "darwin",
+          "arch": "arm64",
+          "passed": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "available",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "available",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        },
+        {
+          "version": "1.0.5-dev.0",
+          "platform": "darwin",
+          "arch": "arm64",
+          "passed": true,
+          "settingsPreserved": true,
+          "preservedBeta": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "postrelease",
+      "source": "2f5b84e56d1b0d2850e4004823187e044d3169ba",
+      "build": 41618002713,
+      "platform": "mac",
+      "arch": "x64",
+      "passed": true,
+      "versions": [
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.4",
+          "scenarios": 6,
+          "settingsPreserved": false
+        },
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.5-dev.0",
+          "scenarios": 6,
+          "settingsPreserved": true
+        }
+      ],
+      "reports": [
+        {
+          "version": "1.0.4",
+          "platform": "darwin",
+          "arch": "x64",
+          "passed": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "available",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "available",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        },
+        {
+          "version": "1.0.5-dev.0",
+          "platform": "darwin",
+          "arch": "x64",
+          "passed": true,
+          "settingsPreserved": true,
+          "preservedBeta": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "postrelease",
+      "source": "2f5b84e56d1b0d2850e4004823187e044d3169ba",
+      "build": 41618002713,
+      "platform": "win",
+      "arch": "x64",
+      "passed": true,
+      "versions": [
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.4",
+          "scenarios": 6,
+          "settingsPreserved": false
+        },
+        {
+          "upgradePath": "from-stable",
+          "version": "1.0.5-dev.0",
+          "scenarios": 6,
+          "settingsPreserved": true
+        }
+      ],
+      "reports": [
+        {
+          "version": "1.0.4",
+          "platform": "win32",
+          "arch": "x64",
+          "passed": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "available",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "available",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        },
+        {
+          "version": "1.0.5-dev.0",
+          "platform": "win32",
+          "arch": "x64",
+          "passed": true,
+          "settingsPreserved": true,
+          "preservedBeta": true,
+          "scenarios": [
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": true,
+              "expected": "error",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": false,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.4",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            },
+            {
+              "beta": true,
+              "cancelled": true,
+              "noLateWindow": true,
+              "held": 1,
+              "released": 1
+            },
+            {
+              "beta": true,
+              "offline": false,
+              "expected": "upToDate",
+              "target": "1.0.5-dev.0",
+              "held": 0,
+              "released": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scope": "Actual installed binaries, isolated profiles and real updater network; no device operations or full manual UI matrix.",
+  "postreleaseRun": 41621068593,
+  "operationsSha": "9a85273",
+  "postreleaseFirstAttempt": {
+    "run": 41620509822,
+    "windowsX64": "passed",
+    "macX64": "passed",
+    "macArm64": "failed while cancelling update in old 1.0.4; page close event timed out at 30 seconds",
+    "retry": "Same operations source, binaries, expectations and timeouts; full matrix passed on 41621068593. Original transient failure retained; precise cause not proven."
+  }
+}

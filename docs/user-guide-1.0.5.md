@@ -1,6 +1,6 @@
 # 1.0.5 工作台使用指南
 
-适用于本分支的 1.0.5 开发候选。公开安装包仍以 [Releases](https://github.com/MonsterXia/scrcpy-harmony/releases) 为准；原 1.0.4 安装、设备授权与投屏说明见[用户指南](user-guide.md)。验证进度和限制见[实施记录](maintenance/v1.0.5-ui-completion.md)。
+适用于已公开的 [1.0.5-dev.0 开发预发布](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.0)，稳定版仍为 1.0.4；原 1.0.4 安装、设备授权与投屏说明见[用户指南](user-guide.md)。验证进度和限制见[发行记录](releases/1.0.5-dev.0.md)与[实施记录](maintenance/v1.0.5-ui-completion.md)。
 
 ## 主窗口
 
