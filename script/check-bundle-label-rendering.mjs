@@ -6,6 +6,8 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import os from 'node:os'
 import { _electron } from 'playwright-core'
+import probeContract from './lib/application-probe-contract.cjs'
+const { confirmationActions, findConfirmationAction } = probeContract
 
 const profile = await mkdtemp(path.join(os.tmpdir(), 'scrcpy-label-rendering-'))
 await mkdir(path.join(profile, 'data'))
@@ -59,15 +61,14 @@ try {
   const row = panel.locator('.luna-data-grid-data-container tr').filter({ hasText: 'test.label' })
   await row.waitFor()
   assert.ok((await row.textContent()).includes(label))
-  for (const action of [3, 5, 6, 7]) {
+  for (const action of confirmationActions) {
     await app.evaluate(() => { globalThis.labelTestMenu = null })
     await row.locator('td').first().dispatchEvent('contextmenu', { clientX: 20, clientY: 80 })
     await page.waitForTimeout(200)
-    await app.evaluate(({ BrowserWindow }, action) => {
-      const item = globalThis.labelTestMenu?.[action]
-      if (!item) throw new Error(`Missing menu action: ${action}`)
-      BrowserWindow.getAllWindows()[0].webContents.send('clickContextMenu', item.click)
-    }, action)
+    const item = findConfirmationAction(await app.evaluate(() => globalThis.labelTestMenu), action)
+    await app.evaluate(({ BrowserWindow }, click) => {
+      BrowserWindow.getAllWindows()[0].webContents.send('clickContextMenu', click)
+    }, item.click)
     const modal = page.locator('.luna-modal:not(.luna-modal-hidden), [role="alertdialog"]')
     await modal.waitFor()
     assert.ok((await modal.textContent()).includes(label), `${action} must display literal label text`)

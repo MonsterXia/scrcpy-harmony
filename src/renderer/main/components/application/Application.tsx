@@ -120,6 +120,9 @@ export default observer(function Application() {
             const chunk: string[] = chunks[i]
             const infos = await main.getBundleInfos(target.key, chunk)
             if (!isCurrent()) return
+            // Per-bundle metadata failures resolve with only successful records.
+            const loadedNames = new Set(infos.map((info) => info.bundleName))
+            if (chunk.some((name) => !loadedNames.has(name))) setLoadError(true)
             bundleInfos = concat(bundleInfos, infos)
             iconsRef.current = map(bundleInfos, (info) => ({
               info,
