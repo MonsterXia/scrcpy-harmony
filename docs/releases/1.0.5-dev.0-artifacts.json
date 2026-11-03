@@ -1,0 +1,174 @@
+{
+  "artifactDigests": [
+    {
+      "digest": "sha256:df34ae6f24475ffc835b24cb09f8c8a97ef9f19bca64f0e9b13f2e32b7829ed9",
+      "id": 13221504967,
+      "name": "macos-15",
+      "size_in_bytes": 126407971
+    },
+    {
+      "digest": "sha256:d766f82cc6fa8c4e8a81a824394063a1d33f7aefc4adef9d0aa2ccf3b19dca10",
+      "id": 13221918880,
+      "name": "macos-15-intel",
+      "size_in_bytes": 132723619
+    },
+    {
+      "digest": "sha256:03d55277017aece508905f51ccd3d1032c0ef1d52c517fbf9d198a0755b4eb1c",
+      "id": 13223145208,
+      "name": "windows-latest",
+      "size_in_bytes": 119911225
+    }
+  ],
+  "assets": [
+    {
+      "name": "Scrcpy-Harmony-1.0.5-dev.0-mac-arm64.dmg",
+      "sha256": "8c6bc83ba1a0e39e55480ccd0441191a6a4249e6a9fde7346ca1c27784c80f5b",
+      "size": 126549749
+    },
+    {
+      "name": "Scrcpy-Harmony-1.0.5-dev.0-mac-arm64.dmg.blockmap",
+      "sha256": "b485a3cdf04825a3146cdaa97a02f036b0c62ba89bd31f3deacb375b0c4752ca",
+      "size": 133605
+    },
+    {
+      "name": "Scrcpy-Harmony-1.0.5-dev.0-mac-x64.dmg",
+      "sha256": "997f8a9cc10b4ee2d2c216d5add72c5ea1750306db6e6e2992defca24f5837b7",
+      "size": 132854155
+    },
+    {
+      "name": "Scrcpy-Harmony-1.0.5-dev.0-mac-x64.dmg.blockmap",
+      "sha256": "c47921f33975a7a708c183fd720737d078ddae6e7aa9355e957afd167c034add",
+      "size": 138229
+    },
+    {
+      "name": "Scrcpy-Harmony-1.0.5-dev.0-win-x64.exe",
+      "sha256": "5678da4d1fccc61f1669cbc886f4f9b8b83093a9867b617791cd00e67c56b8cd",
+      "size": 119775178
+    },
+    {
+      "name": "Scrcpy-Harmony-1.0.5-dev.0-win-x64.exe.blockmap",
+      "sha256": "8acdf2254e522667ea034f4638cd31ebd076d1b9c79f1b5469b5c2be3429b255",
+      "size": 126284
+    },
+    {
+      "name": "latest-mac.yml",
+      "sha256": "89f74039c490add8edab50774d50597f4d0087f29d1fc2cea7481ee161c7bfa6",
+      "size": 383
+    },
+    {
+      "name": "latest-x64-mac.yml",
+      "sha256": "17b6f3194eb564fa0ecb02759ef47e0cb9bfb06b456155cc648cc001db3404c4",
+      "size": 379
+    },
+    {
+      "name": "latest.yml",
+      "sha256": "f97e310e44ced0eabeded81c317ce373a78aa07a579d8caa901d5ea5dce41654",
+      "size": 379
+    },
+    {
+      "name": "verification-mac-arm64.txt",
+      "sha256": "58bc65b0efb335d3a9b51b81352257ebb5292560f88ac9da65d337dc3d0976bc",
+      "size": 4993
+    },
+    {
+      "name": "verification-mac-x64.txt",
+      "sha256": "9769071e94c39e851985252fc81e2bc917a1b2abb85d57db8e2d5419e8a01dd7",
+      "size": 4992
+    },
+    {
+      "name": "verification-win-x64.json",
+      "sha256": "b8a30aa82ec27b321ad5097f6d31fd50685347ff3795004df4e1d813febbc13c",
+      "size": 389
+    }
+  ],
+  "buildRun": "https://github.com/MonsterXia/scrcpy-harmony/actions/runs/41618002713",
+  "ciRun": "https://github.com/MonsterXia/scrcpy-harmony/actions/runs/41612972079",
+  "ignoredArtifactFiles": [
+    {
+      "artifact": "macos-15",
+      "path": "1.0.5-dev.0/builder-debug.yml",
+      "reason": "electron-builder auxiliary configuration; excluded from release assets",
+      "sha256": "ccf506815c141d816ad48e79c946960f80f701eb545703791311d7a14b83dbac",
+      "size": 940
+    },
+    {
+      "artifact": "macos-15",
+      "path": "1.0.5-dev.0/mac-arm64/Scrcpy Harmony.app/Contents/Resources/app-update.yml",
+      "reason": "electron-builder auxiliary configuration; excluded from release assets",
+      "sha256": "369202738bf6d0a812d1e7ffe944625d65447e4bf263c4ec564066f2bb452890",
+      "size": 116
+    },
+    {
+      "artifact": "macos-15-intel",
+      "path": "1.0.5-dev.0/builder-debug.yml",
+      "reason": "electron-builder auxiliary configuration; excluded from release assets",
+      "sha256": "576f1d9a58ea103defcff7677efa77785374b9df0d8d0ba841dd15f62dd04d60",
+      "size": 938
+    },
+    {
+      "artifact": "macos-15-intel",
+      "path": "1.0.5-dev.0/mac/Scrcpy Harmony.app/Contents/Resources/app-update.yml",
+      "reason": "electron-builder auxiliary configuration; excluded from release assets",
+      "sha256": "fda6ee0c628d37b1e1c5e27638d203a47b66a822d2773820490bb0f4645f250b",
+      "size": 120
+    },
+    {
+      "artifact": "windows-latest",
+      "path": "1.0.5-dev.0/builder-debug.yml",
+      "reason": "electron-builder auxiliary configuration; excluded from release assets",
+      "sha256": "58de5d1ca9a5ef625bb0e07cbd2cce90a0d20ac7680f2b057be1137b300c6d1a",
+      "size": 7531
+    }
+  ],
+  "installationAndStartup": "passed on all three platforms",
+  "installers": [
+    {
+      "name": "Scrcpy-Harmony-1.0.5-dev.0-mac-arm64.dmg",
+      "sha256": "8c6bc83ba1a0e39e55480ccd0441191a6a4249e6a9fde7346ca1c27784c80f5b",
+      "size": 126549749
+    },
+    {
+      "name": "Scrcpy-Harmony-1.0.5-dev.0-mac-x64.dmg",
+      "sha256": "997f8a9cc10b4ee2d2c216d5add72c5ea1750306db6e6e2992defca24f5837b7",
+      "size": 132854155
+    },
+    {
+      "name": "Scrcpy-Harmony-1.0.5-dev.0-win-x64.exe",
+      "sha256": "5678da4d1fccc61f1669cbc886f4f9b8b83093a9867b617791cd00e67c56b8cd",
+      "size": 119775178
+    }
+  ],
+  "latest": false,
+  "preparationPr": 81,
+  "prerelease": true,
+  "scope": "CI and Build evidence; no additional device, manual visual, long-duration or cross-firmware acceptance is implied.",
+  "signatures": {
+    "mac-arm64": {
+      "codesignDetailsExit": 0,
+      "codesignVerifyExit": 0,
+      "details": [
+        "Signature=adhoc",
+        "TeamIdentifier=not set"
+      ],
+      "gatekeeperExit": 3,
+      "staplerExit": 65
+    },
+    "mac-x64": {
+      "codesignDetailsExit": 0,
+      "codesignVerifyExit": 0,
+      "details": [
+        "Signature=adhoc",
+        "TeamIdentifier=not set"
+      ],
+      "gatekeeperExit": 3,
+      "staplerExit": 65
+    },
+    "windows-x64": {
+      "authenticodeStatus": "NotSigned",
+      "signer": null
+    }
+  },
+  "signingNote": "macOS strict signature verification is required; Developer ID, notarization and OS trust are recorded separately. Installation/startup does not imply OS trust approval.",
+  "sourceCommit": "2f5b84e56d1b0d2850e4004823187e044d3169ba",
+  "version": "1.0.5-dev.0"
+}

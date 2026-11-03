@@ -1,0 +1,27 @@
+{
+  "fromVersion": "1.0.4-dev.2",
+  "toVersion": "1.0.5-dev.0",
+  "architecture": "arm64",
+  "installedPath": "/Applications/Scrcpy Harmony.app",
+  "publicAssetSha256": "8c6bc83ba1a0e39e55480ccd0441191a6a4249e6a9fde7346ca1c27784c80f5b",
+  "codesignDeepStrict": true,
+  "backupVerifiedBeforeInstall": true,
+  "backupRegularProfileFiles": 60,
+  "installedAt": "2026-11-03T10:35:44.674106+00:00",
+  "uiVerified": true,
+  "settingsExistingKeysPreserved": true,
+  "settingsKeyCount": 5,
+  "betaMenuAndSettingsAgree": true,
+  "aboutVersion": "1.0.5-dev.0",
+  "darkNativeTitleBarVerified": true,
+  "settingsDropdownChevronsVerified": true,
+  "mainWindowConnectedOverviewRead": true,
+  "evidenceScreenshot": "1.0.5-dev.0-local-about.png",
+  "actualLocalOnlineUpdate": {
+    "beta": true,
+    "status": "upToDate",
+    "version": "1.0.5-dev.0",
+    "windowClosed": true,
+    "screenshot": "1.0.5-dev.0-local-update.png"
+  }
+}
