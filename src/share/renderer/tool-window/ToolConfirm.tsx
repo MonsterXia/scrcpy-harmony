@@ -64,8 +64,8 @@ export default function ConfirmDialog({
           }
           if (event.key !== 'Tab') return
           const controls = Array.from(
-            dialog.current?.querySelectorAll<HTMLButtonElement>(
-              'button:not(:disabled)',
+            dialog.current?.querySelectorAll<HTMLElement>(
+              'button:not(:disabled), [tabindex="0"]',
             ) || [],
           )
           const first = controls[0],
@@ -80,7 +80,14 @@ export default function ConfirmDialog({
         }}
       >
         <h2 id={titleId}>{title}</h2>
-        <p id={messageId}>{message}</p>
+        <div
+          className={Style.content}
+          role="region"
+          aria-labelledby={titleId}
+          tabIndex={0}
+        >
+          <p id={messageId}>{message}</p>
+        </div>
         <div className={Style.actions}>
           <button type="button" data-confirm-cancel onClick={onCancel}>
             {t('cancel')}

@@ -72,9 +72,21 @@ export default observer(function DeviceSwitcher() {
             )}
           </small>
         </span>
-        <span className={Style.deviceChevron} aria-hidden="true">
-          ⌄
-        </span>
+        <svg
+          className={Style.deviceChevron}
+          viewBox="0 0 16 16"
+          fill="none"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="m4 6 4 4 4-4"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </summary>
       <div className={Style.devicePopover}>
         <label htmlFor="workspace-device">{t('workspaceSelectDevice')}</label>

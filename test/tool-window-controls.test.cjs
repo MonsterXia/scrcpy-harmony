@@ -4,8 +4,8 @@ const { observable, runInAction } = require('mobx')
 const { setup, load, React } = require('./helpers/workspace-renderer.cjs')
 const createRoot = setup()
 const { act } = React
-async function fixture(t) {
-  const item = { pid: 42, name: '<renderer>', webContentsId: 3, type: 'Tab' }
+async function fixture(t, name = '<renderer>') {
+  const item = { pid: 42, name, webContentsId: 3, type: 'Tab' }
   const store = observable({ processes: [item], process: item, theme: 'dark', filter: '', loading: false,
     setFilter(value) { this.filter = value }, refresh: async () => {} })
   const killed = [], inspected = []
@@ -47,5 +47,28 @@ test('disappearing auxiliary process cannot be killed after an open confirmation
   await act(async () => f.button('stop').click())
   await act(async () => runInAction(() => { f.store.processes = []; f.store.process = null }))
   await act(async () => f.host.querySelector('[data-confirm-accept]').click())
+  assert.deepEqual(f.killed, [])
+})
+
+test('long process confirmation exposes a keyboard-scrollable message without moving default cancel focus', async t => {
+  const name = '<long title> ' + 'very long process title '.repeat(250)
+  const f = await fixture(t, name)
+  f.button('stop').focus()
+  await act(async () => f.button('stop').click())
+  const dialog = f.host.querySelector('[role="alertdialog"]')
+  const message = dialog.querySelector('[role="region"][tabindex="0"]')
+  assert.ok(message, 'the message has its own keyboard scroll target')
+  assert.ok(message.textContent.includes(name))
+  const cancel = dialog.querySelector('[data-confirm-cancel]')
+  const accept = dialog.querySelector('[data-confirm-accept]')
+  assert.equal(document.activeElement, cancel, 'long content must not replace the safe default')
+  accept.focus()
+  await act(async () => accept.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })))
+  assert.equal(document.activeElement, message)
+  await act(async () => message.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true })))
+  assert.equal(document.activeElement, accept)
+  await act(async () => message.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })))
+  assert.equal(f.host.querySelector('[role="alertdialog"]'), null)
+  assert.equal(document.activeElement, f.button('stop'))
   assert.deepEqual(f.killed, [])
 })

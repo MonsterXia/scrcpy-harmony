@@ -1,6 +1,8 @@
 @use '../../../../share/renderer/tool-window/tokens' as tokens;
+@use './SelectControl' as controls;
 .workspace {
   @include tokens.data-grid;
+  @include controls.native-select;
   // Main-window-only tokens: mirroring and update windows keep their design.
   --workspace-bg: #f5f6f8;
   --workspace-surface: #fff;
@@ -145,7 +147,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 10px;
+  padding: 11px 12px;
   border: 1px solid var(--workspace-line);
   background: var(--workspace-surface);
   border-radius: 9px;
@@ -178,7 +180,13 @@
   margin-top: 4px;
 }
 .deviceChevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
   color: var(--workspace-secondary);
+}
+.device[open] .deviceChevron {
+  transform: rotate(180deg);
 }
 .devicePopover {
   position: absolute;
