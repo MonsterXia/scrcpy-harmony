@@ -42,7 +42,7 @@ export default class UiDriver extends Emitter {
     let launched = false
     let uiTestPid = trim(await this.shell('pidof uitest'))
     if (uiTestPid && !/^\d+(?:\s+\d+)*$/.test(uiTestPid)) throw new Error('UITest process inventory unconfirmed')
-    const shouldUpdateSdk = await this.shouldUpdateSdk()
+    const shouldUpdateSdk = await this.shouldUpdateSdk(Boolean(uiTestPid))
     if (uiTestPid && shouldUpdateSdk && !this.allowDaemonRestart) {
       throw Object.assign(new Error('Background preparation cannot replace an existing UITest daemon'), {
         code: 'UITEST_SDK_UPDATE_REQUIRED',
@@ -215,7 +215,7 @@ export default class UiDriver extends Emitter {
 
     return port
   }
-  private async shouldUpdateSdk() {
+  private async shouldUpdateSdk(daemonActive = false) {
     const output = trim(await this.shell(
       `if [ -f ${AGENT_PATH} ]; then grep -a UITEST_AGENT_LIBRARY ${AGENT_PATH}; result=$?; [ "$result" -le 1 ] && echo UITEST_AGENT_INSPECTED; elif [ ! -e ${AGENT_PATH} ]; then echo UITEST_AGENT_MISSING; fi`
     ))
@@ -227,7 +227,17 @@ export default class UiDriver extends Emitter {
     }
     const deviceSdkVersion = getSdkVersion(result)
     if (!/^\d+(?:\.\d+)+$/.test(deviceSdkVersion)) throw new Error('UITest SDK version unconfirmed')
-    return cmpVersion(deviceSdkVersion, this.sdkVersion) < 0
+    // Agent minor versions select different protocols (1.1 TCP vs 1.2 Unix).
+    // A numerically newer agent is not necessarily compatible with this client.
+    const family = (version: string) => version.split('.').slice(0, 2).join('.')
+    const incompatible = family(deviceSdkVersion) !== family(this.sdkVersion)
+    // Recovery checks TCP peers for the supported protocol. They cannot prove
+    // that a different protocol (for example Unix sockets) is idle.
+    if (daemonActive && incompatible) {
+      throw new Error('An existing UITest daemon uses an incompatible protocol; close the other debugging tool before retrying')
+    }
+    return incompatible ||
+      cmpVersion(deviceSdkVersion, this.sdkVersion) < 0
   }
   private async updateSdk() {
     await this.shell(`rm ${AGENT_PATH}`)
@@ -425,5 +435,9 @@ class Connection {
 }
 
 function getSdkVersion(raw: string) {
-  return trim(raw.slice(raw.indexOf('@v') + 2))
+  // New Hypium agents use a compatibility prefix, e.g. v0.0.0#1.2.5.
+  // Keep malformed/ambiguous inspections closed rather than guessing a version
+  // and authorizing replacement of a device resource.
+  const match = /^UITEST_AGENT_LIBRARY@v(\d+\.\d+\.\d+)(?:#(\d+\.\d+\.\d+))?$/.exec(trim(raw))
+  return match ? match[2] || match[1] : ''
 }

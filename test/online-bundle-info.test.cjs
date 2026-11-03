@@ -20,6 +20,31 @@ function loadStore(post, Clock = Date) {
   return module.exports.getOnlineBundleInfo
 }
 
+test('an empty successful store response is a per-app miss, not a service outage', async () => {
+  let now = Date.now()
+  const requests = []
+  class Clock extends Date { static now() { return now } }
+  const get = loadStore(async (_url, body) => {
+    requests.push(body.pkgName)
+    return { data: body.pkgName === 'side.loaded' ? '' : { icon: 'https://example.com/icon.png' } }
+  }, Clock)
+  assert.equal(Object.keys(await get('side.loaded')).length, 0)
+  assert.equal((await get('store.app')).icon, 'https://example.com/icon.png')
+  await get('side.loaded')
+  assert.deepEqual(requests, ['side.loaded', 'store.app'])
+  now += 300001
+  await get('side.loaded')
+  assert.deepEqual(requests, ['side.loaded', 'store.app', 'side.loaded'])
+})
+
+test('nonempty malformed store responses still open the service cooldown', async () => {
+  let requests = 0
+  const get = loadStore(async () => { requests++; return { data: '<html>Service unavailable</html>' } })
+  await assert.rejects(get('first.app'), /INVALID_RESPONSE/)
+  assert.equal(Object.keys(await get('next.app')).length, 0)
+  assert.equal(requests, 1)
+})
+
 test('real HTTP transport aborts a silent store and recovers after cooldown', async t => {
   const sockets = new Set()
   let requests = 0, reply = false, now = Date.now()

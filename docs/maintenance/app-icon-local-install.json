@@ -1,0 +1,19 @@
+{
+  "source": "31bf35df17ef3f7a70dd11c4035a043c0534dbe8",
+  "version": "1.0.5-dev.0",
+  "localPatch": true,
+  "publicReleaseChanged": false,
+  "dmgSha256": "91c16a0d8631bc6a0c975ce3720156faa5e084bef27bb931fa04564fc6d39e70",
+  "installedAsarSha256": "c7e4822b0f660361ffbed0f0066616633ab2df0f9e45553052b598145c0e1a65",
+  "oldAsarSha256": "6cbe302ec9ddae227bff4b70e55b8a8bf7d8fb1aad87a4cd3e4c2d2ba8295c4b",
+  "backupRegularFiles": 68,
+  "backupVerified": true,
+  "codesignDeepStrict": true,
+  "installedAt": "2026-11-03T11:12:21.434819+00:00",
+  "uiVerified": true,
+  "installedMainMatchesBuild": true,
+  "existingSettingsPreserved": true,
+  "settingsKeyCount": 5,
+  "bilibiliIconVisible": true,
+  "mirroringRestored": true
+}

@@ -3,6 +3,96 @@ const { test } = require('node:test')
 const net = require('node:net')
 const { loadConnection, loadTransport, packet } = require('./helpers/uitest-stream.cjs')
 
+for (const [marker, required, update] of [
+  ['UITEST_AGENT_LIBRARY@v1.1.0', '1.1.0', false],
+  ['UITEST_AGENT_LIBRARY@v1.1.5', '1.1.0', false],
+  ['UITEST_AGENT_LIBRARY@v0.0.0#1.1.5', '1.1.0', false],
+  ['UITEST_AGENT_LIBRARY@v0.0.0#1.2.5', '1.1.0', true],
+  ['UITEST_AGENT_LIBRARY@v0.0.0#1.2.5', '1.2.2', false],
+  ['UITEST_AGENT_LIBRARY@v0.0.0#1.0.5', '1.1.0', true],
+  ['UITEST_AGENT_LIBRARY@v2.0.0', '1.1.0', true],
+]) {
+  test(`SDK compatibility compares the effective version and protocol family: ${marker} / ${required}`, async () => {
+    const Driver = loadTransport().default
+    const driver = new Driver({}, undefined, required)
+    driver.shell = async () => `${marker}\nUITEST_AGENT_INSPECTED`
+    assert.equal(await driver.shouldUpdateSdk(), update)
+  })
+}
+
+for (const marker of ['UITEST_AGENT_LIBRARY@v0.0.0#1.2.5', 'UITEST_AGENT_LIBRARY@v1.2.5', 'UITEST_AGENT_LIBRARY@v2.0.0']) {
+  for (const allowRestart of [false, true]) {
+    test(`an existing incompatible daemon is never replaced or offered for automatic recovery: ${marker} / ${allowRestart}`, async () => {
+      const Driver = loadTransport().default
+      const commands = []
+      let uploads = 0, forwards = 0
+      const driver = new Driver({ sendFile: async () => { uploads++ } })
+      driver.allowDaemonRestart = allowRestart
+      driver.shell = async command => {
+        commands.push(command)
+        return command === 'pidof uitest' ? '4242' : `${marker}\nUITEST_AGENT_INSPECTED`
+      }
+      driver.forwardTcp = async () => { forwards++; return 8012 }
+      await assert.rejects(driver.start(), error => {
+        assert.match(error.message, /existing UITest daemon.*incompatible protocol/)
+        assert.notEqual(error.code, 'UITEST_SDK_UPDATE_REQUIRED')
+        assert.notEqual(error.code, 'UITEST_TRANSPORT')
+        return true
+      })
+      assert.equal(uploads, 0)
+      assert.equal(forwards, 0)
+      assert.equal(commands.some(command => /^(kill|rm |param set|uitest start)/.test(command)), false)
+    })
+  }
+}
+
+test('foreground capture initialization cannot recover an incompatible active Unix daemon', async () => {
+  const fs = require('node:fs'), path = require('node:path'), Module = require('node:module')
+  const { transformSync } = require('esbuild')
+  const Driver = loadTransport().default
+  const file = path.resolve(__dirname, '../src/main/lib/hdc/captureDriver.ts')
+  const mod = new Module(file, module)
+  mod.paths = Module._nodeModulePaths(path.dirname(file))
+  const originalRequire = mod.require.bind(mod)
+  mod.require = name => name === 'hdckit' ? { UiDriver: Driver } : originalRequire(name)
+  mod._compile(transformSync(fs.readFileSync(file, 'utf8'), { loader: 'ts', format: 'cjs' }).code, file)
+  const driver = new mod.exports.CaptureUiDriver({})
+  let resets = 0, uploads = 0
+  const commands = []
+  driver.shell = async command => {
+    commands.push(command)
+    return command === 'pidof uitest' ? '4242' : 'UITEST_AGENT_LIBRARY@v0.0.0#1.2.5\nUITEST_AGENT_INSPECTED'
+  }
+  driver.updateSdk = async () => { uploads++ }
+  driver.controlRecovery = { async remember() {}, async reset() { resets++ } }
+  driver.nativeVideo = { async recoverOrphans() {}, async available() { return true }, async stop() {} }
+  await assert.rejects(driver.initializeControl(), /incompatible protocol/)
+  assert.equal(resets, 0)
+  assert.equal(uploads, 0)
+  assert.equal(commands.some(command => /^(kill|rm |param set|uitest start)/.test(command)), false)
+})
+
+for (const marker of [
+  'UITEST_AGENT_LIBRARY@v0.0.0#',
+  'UITEST_AGENT_LIBRARY@v0.0.0#1.2.5garbage',
+  'UITEST_AGENT_LIBRARY@v0.0.0#1.2.5#1.1.0',
+  'UITEST_AGENT_LIBRARY@v1.1.0\nUITEST_AGENT_LIBRARY@v1.2.5',
+]) {
+  test(`unconfirmed agent marker cannot change device resources: ${JSON.stringify(marker)}`, async () => {
+    const Driver = loadTransport().default
+    const commands = []
+    let uploads = 0
+    const driver = new Driver({ sendFile: async () => { uploads++ } })
+    driver.shell = async command => {
+      commands.push(command)
+      return command === 'pidof uitest' ? '' : `${marker}\nUITEST_AGENT_INSPECTED`
+    }
+    await assert.rejects(driver.start(), /version unconfirmed/)
+    assert.equal(uploads, 0)
+    assert.equal(commands.some(command => /^(kill|rm |param set|uitest start)/.test(command)), false)
+  })
+}
+
 test('SDK inspection command does not confirm a failed file read as an outdated agent', async t => {
   const fs = require('node:fs'), os = require('node:os'), path = require('node:path')
   const { spawnSync } = require('node:child_process')
