@@ -11,7 +11,7 @@ Scrcpy Harmony 是面向鸿蒙设备的 HDC 图形化桌面工具，集成投屏
 [下载应用](https://github.com/MonsterXia/scrcpy-harmony/releases/latest) · [更新日志](CHANGELOG.md) · [问题反馈](https://github.com/MonsterXia/scrcpy-harmony/issues)
 
 
-**1.0.5-dev.0 开发预发布：** 首个 1.0.5 开发版本已实现确认的轻量桌面工作台设计，见[新版使用指南](docs/user-guide-1.0.5.md)、[分阶段路线](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md)与[验收记录](docs/maintenance/v1.0.5-ui-completion.md)。投屏和升级窗口保留现有设计；已公开[开发预发布](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.0)，稳定 Latest 仍为 1.0.4。
+**1.0.5-dev.1 候选：** 修复应用图标查询与 UITest 代理兼容性，保护外部工具的活动会话。1.0.5 系列已实现确认的轻量桌面工作台设计，见[新版使用指南](docs/user-guide-1.0.5.md)、[分阶段路线](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md)与[验收记录](docs/maintenance/v1.0.5-ui-completion.md)。投屏和升级窗口保留现有设计；当前公开开发版仍为 [dev.0](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.0)，[dev.1 验证](docs/releases/1.0.5-dev.1.md)进行中；稳定 Latest 仍为 1.0.4。
 
 ![1.0.5 应用工作区，模拟数据](docs/design/1.0.5-evidence/applications-en-dark-compact-final.jpg)
 
@@ -44,7 +44,7 @@ macOS 需要 **13 或更新版本**。当前未提供 Linux 安装包。
 
 **[1.0.4 已作为正式 Latest 发布](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.4)。** 三平台安装与直接升级/更新检查通过；签名限制和未补测真机范围继续在发布记录中明确列出。
 
-当前源码版本为已公开的 **1.0.5-dev.0** 开发预发布，保留 1.0.4 的功能，包括 H.264 投屏与 JPEG 回退、键盘/IME 和文本粘贴、HAP 拖入安装、空闲投屏残留的受限恢复、商店请求有限等待、中英文选择，以及清楚显示开启/关闭、文字对齐的 **Beta Update／接收预发布更新** 菜单。升级可选择[稳定版 1.0.4](https://github.com/MonsterXia/scrcpy-harmony/releases/latest)或[开发版 1.0.5-dev.0](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.0)；应用配置目录保持不变。Beta Update 位于应用菜单，默认关闭，发现开发预发布需开启；[发行证据与限制](docs/releases/1.0.5-dev.0.md)另行记录。
+当前源码版本为 **1.0.5-dev.1** 开发预发布候选，保留 1.0.4 的功能，包括 H.264 投屏与 JPEG 回退、键盘/IME 和文本粘贴、HAP 拖入安装、空闲投屏残留的受限恢复、商店请求有限等待、中英文选择，以及清楚显示开启/关闭、文字对齐的 **Beta Update／接收预发布更新** 菜单。升级可选择[稳定版 1.0.4](https://github.com/MonsterXia/scrcpy-harmony/releases/latest)或[开发版 1.0.5-dev.0](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.0)；应用配置目录保持不变。Beta Update 位于应用菜单，默认关闭，发现开发预发布需开启；[发行证据与限制](docs/releases/1.0.5-dev.0.md)另行记录。
 
 **1.0.3** 保留为依赖源码迁移前的恢复版本。从 ECHO 切换时需要重新配置设置，其独立配置目录不会自动迁移。设备兼容和待验收范围见发布记录；反馈问题时请附版本和提交号。
 
