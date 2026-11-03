@@ -119,7 +119,7 @@ test('refreshing an open real-widget detail restores focus to the stable search 
 
 async function scrollGrid(f, top) {
   const scroller = f.host.querySelector('.luna-data-grid-data-container')
-  Object.defineProperty(scroller, 'scrollHeight', { value: 2000, configurable: true })
+  Object.defineProperty(scroller, 'scrollHeight', { value: 3200, configurable: true })
   scroller.scrollTop = top
   await act(async () => scroller.dispatchEvent(new window.Event('scroll')))
   await act(async () => new Promise(resolve => setTimeout(resolve, 150)))
@@ -138,14 +138,14 @@ test('virtual scroll moves evicted row focus to a visible row without growing th
   const f = await fixture(t, true, 100)
   const item = f.item()
   item.focus()
-  await scrollGrid(f, 1400)
+  await scrollGrid(f, 2240)
   assert.equal(item.isConnected, false)
   const active = document.activeElement
   assert.ok(active.hasAttribute('data-application-item'), 'focus transfers to an application row')
   const index = Number(active.dataset.applicationItem.replace('com.example.app', ''))
   assert.ok(index >= 70 && index < 90, 'replacement focus is in the viewport, not only overscan')
   assert.ok(f.host.querySelectorAll('[data-application-item]').length < 100, 'virtualization stays bounded')
-  assert.equal(f.host.querySelector('.luna-data-grid-data-container').scrollTop, 1400)
+  assert.equal(f.host.querySelector('.luna-data-grid-data-container').scrollTop, 2240)
 })
 
 test('virtual grid rendering never steals focus from an open details drawer', async t => {

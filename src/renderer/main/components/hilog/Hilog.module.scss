@@ -8,3 +8,8 @@
 .body {
   margin-top: 12px;
 }
+
+.body :global(.luna-logcat) {
+  background: var(--workspace-surface);
+  border-color: var(--workspace-line);
+}

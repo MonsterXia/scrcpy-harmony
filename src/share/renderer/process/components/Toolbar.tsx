@@ -1,72 +1,115 @@
 import { observer } from 'mobx-react-lite'
-import LunaToolbar, {
-  LunaToolbarInput,
-  LunaToolbarSeparator,
-  LunaToolbarSpace,
-  LunaToolbarText,
-} from 'luna-toolbar/react'
+import { useEffect, useRef, useState } from 'react'
 import store from '../store'
 import { t } from '../../../common/i18n'
-import ToolbarIcon from '../../components/ToolbarIcon'
-import LunaModal from 'luna-modal'
+import { IProcess } from '../../../common/types'
 import { isDev } from '../../../common/util'
-import toBool from 'licia/toBool'
+import ToolConfirm from '../../tool-window/ToolConfirm'
 import Style from './Toolbar.module.scss'
 
 export default observer(function Toolbar() {
+  const [confirmation, setConfirmation] = useState<IProcess | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(false)
+  const mounted = useRef(true)
+  const busyRef = useRef(false)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
   async function stop() {
-    const process = store.process!
-    const result = await LunaModal.confirm(
-      t('killProcessConfirm', { name: process.name })
+    const process = confirmation
+    setConfirmation(null)
+    if (
+      !process ||
+      busyRef.current ||
+      !store.processes.some((item) => item.pid === process.pid)
     )
-    if (result) {
-      main.killProcess(process.pid)
-      store.refresh()
+      return
+    busyRef.current = true
+    setBusy(true)
+    setError(false)
+    try {
+      await main.killProcess(process.pid)
+      if (mounted.current) await store.refresh()
+    } catch {
+      if (mounted.current) setError(true)
+    } finally {
+      busyRef.current = false
+      if (mounted.current) setBusy(false)
     }
   }
-
-  function inspect() {
-    const process = store.process!
-    if (process.webContentsId) {
-      main.openDevtools(process.webContentsId!)
-    } else {
-      main.debugMainProcess()
+  async function inspect() {
+    const process = store.process
+    if (!process) return
+    try {
+      if (process.webContentsId) await main.openDevtools(process.webContentsId)
+      else await main.debugMainProcess()
+    } catch {
+      if (mounted.current) setError(true)
     }
   }
-
-  let isDebuggable = false
   const process = store.process
-  if (process) {
-    isDebuggable = toBool(
-      process.webContentsId || (isDev() && process.type === 'Browser')
-    )
-  }
-
+  const debuggable = !!(
+    process &&
+    (process.webContentsId || (isDev() && process.type === 'Browser'))
+  )
   return (
-    <LunaToolbar className={Style.container}>
-      <LunaToolbarInput
-        keyName="filter"
-        value={store.filter}
-        placeholder={t('filter')}
-        onChange={(val) => store.setFilter(val)}
-      />
-      <LunaToolbarText
-        text={t('totalProcess', { total: store.processes.length })}
-      />
-      <LunaToolbarSpace />
-      <ToolbarIcon
-        disabled={!isDebuggable}
-        icon="debug"
-        title={t('inspect')}
-        onClick={inspect}
-      />
-      <LunaToolbarSeparator />
-      <ToolbarIcon
-        disabled={store.process === null}
-        icon="delete"
+    <>
+      <div className={Style.container} inert={confirmation ? true : undefined}>
+        <input
+          type="search"
+          value={store.filter}
+          placeholder={t('filter')}
+          aria-label={t('filter')}
+          onChange={(event) => store.setFilter(event.target.value)}
+        />
+        <span className={Style.total}>
+          {t('totalProcess', { total: store.processes.length })}
+        </span>
+        <button
+          type="button"
+          disabled={!debuggable || busy}
+          onClick={() => {
+            void inspect()
+          }}
+        >
+          {t('inspect')}
+        </button>
+        <button
+          type="button"
+          disabled={!process || busy}
+          onClick={() => setConfirmation(process)}
+        >
+          {t('stop')}
+        </button>
+        <button
+          type="button"
+          disabled={store.loading || busy}
+          onClick={() => {
+            void store.refresh()
+          }}
+        >
+          {t('refresh')}
+        </button>
+      </div>
+      {error && (
+        <div role="alert" className={Style.error}>
+          {t('toolProcessActionError')}
+        </div>
+      )}
+      <ToolConfirm
+        visible={!!confirmation}
         title={t('stop')}
-        onClick={stop}
+        message={t('killProcessConfirm', { name: confirmation?.name || '' })}
+        confirmLabel={t('stop')}
+        onConfirm={() => {
+          void stop()
+        }}
+        onCancel={() => setConfirmation(null)}
       />
-    </LunaToolbar>
+    </>
   )
 })

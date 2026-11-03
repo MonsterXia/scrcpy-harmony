@@ -65,5 +65,20 @@
   "fileNotSelected": "未选择文件",
   "noPreview": "没有预览",
   "commonErr": "出错了",
-  "useNativeTitlebar": "使用原生标题栏"
+  "useNativeTitlebar": "使用原生标题栏",
+  "cancel": "取消",
+  "retry": "重试",
+  "refresh": "刷新",
+  "applicationLogs": "应用日志",
+  "applicationLogsDescription": "Scrcpy Harmony 的运行日志。",
+  "applicationLogsError": "无法读取或清空应用日志，请重新打开此窗口。",
+  "aboutDescription": "鸿蒙设备桌面工具",
+  "toolProcessDescription": "查看 Scrcpy Harmony 的运行进程。",
+  "toolMetrics": "资源使用",
+  "toolMetricsError": "暂时无法读取资源指标，正在重试…",
+  "toolProcessLoadError": "无法刷新进程，正在重试…",
+  "toolProcessActionError": "进程操作未完成，请重试。",
+  "toolProcessEmpty": "暂无可显示的进程。",
+  "toolProcessUnavailable": "暂时无法读取进程。",
+  "toolLoading": "正在加载…"
 }

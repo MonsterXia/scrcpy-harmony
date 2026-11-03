@@ -161,18 +161,7 @@ async function fixture(t, badHello = false, savedPanel = null) {
   }
   function toolbar() {
     const notifications = []
-    const Component = loadSource('src/renderer/main/components/toolbar/Target.tsx', {
-      'luna-toolbar/react': { __esModule: true, default: 'toolbar', LunaToolbarSelect: 'select' },
-      './Target.module.scss': {},
-      'mobx-react-lite': { observer: (component) => component },
-      '../../store': { __esModule: true, default: store },
-      'common/util': { t: (key) => key },
-      'share/renderer/components/ToolbarIcon': 'icon',
-      'share/renderer/lib/util': { notify: (...args) => notifications.push(args) },
-    }, { main }).default
-    const children = Component().props.children.props.children
-    return { notifications, select: children[0].props,
-      refresh: children.find((child) => child.props.icon === 'refresh').props.onClick }
+    return require('./helpers/target-picker.cjs')((file, imports) => loadSource(file, imports, { main }), store, notifications)
   }
   return { state, logs, getTargets, store, toolbar, events, server }
 }
@@ -292,7 +281,8 @@ test('startup failure finishes initialization and a device event restores the se
   assert.equal(store.ready, true)
   assert.equal(store.targetsError, true)
   assert.equal(store.target, null)
-  assert.deepEqual(Object.keys(toolbar().select.options), ['targetRefreshFailed'])
+  assert.deepEqual(Object.keys(toolbar().select.options), ['targetNotConnected'])
+  assert.equal(store.targetsError, true, 'the new picker keeps refresh failure in its separate visible alert')
   state.badHello = false
   await events.get('changeTarget')()
   assert.equal(store.targetsError, false)

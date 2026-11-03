@@ -92,3 +92,14 @@ test('settings footer has current navigation and header without device mirroring
   assert.ok(f.host.querySelector('header').textContent.includes('settings'))
   assert.equal(f.host.querySelector('[data-action="screencast"]'), null)
 })
+
+test('main feedback scope follows the workspace theme and is released on unmount', async t => {
+  const f = await fixture(t)
+  assert.equal(document.documentElement.dataset.workspaceWindow, 'true')
+  assert.equal(document.documentElement.dataset.theme, 'light')
+  await act(async () => runInAction(() => { f.store.theme = 'dark' }))
+  assert.equal(document.documentElement.dataset.theme, 'dark')
+  await act(async () => f.unmount())
+  assert.equal(document.documentElement.hasAttribute('data-workspace-window'), false)
+  assert.equal(document.documentElement.hasAttribute('data-theme'), false)
+})

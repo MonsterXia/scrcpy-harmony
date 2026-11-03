@@ -268,6 +268,7 @@ export default observer(function PortMappingModal(props: IModalProps) {
             }}
           >
             <LunaDataGrid
+              rowHeight={28}
               onSelect={(node) => setSelected(node.data)}
               onDeselect={() => setSelected(null)}
               onCreate={(instance) => {

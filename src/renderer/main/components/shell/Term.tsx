@@ -6,14 +6,8 @@ import { FitAddon } from '@xterm/addon-fit'
 import { CanvasAddon } from '@xterm/addon-canvas'
 import { WebglAddon } from '@xterm/addon-webgl'
 import { Unicode11Addon } from '@xterm/addon-unicode11'
-import {
-  colorBgContainer,
-  colorBgContainerDark,
-  colorPrimary,
-  colorText,
-  colorTextDark,
-  fontFamilyCode,
-} from 'common/theme'
+import { fontFamilyCode } from 'common/theme'
+
 import copy from 'licia/copy'
 import isHidden from 'licia/isHidden'
 import { t } from 'common/util'
@@ -230,24 +224,12 @@ export default observer(function Term(props: ITermProps) {
   )
 })
 
-function getTheme(dark = false) {
-  let theme: ITheme = {
-    background: colorBgContainer,
-    foreground: colorText,
-    cursor: colorText,
-  }
-
-  if (dark) {
-    theme = {
-      background: colorBgContainerDark,
-      foreground: colorTextDark,
-      cursor: colorTextDark,
-    }
-  }
-
+function getTheme(dark = false): ITheme {
   return {
-    selectionForeground: '#fff',
-    selectionBackground: colorPrimary,
-    ...theme,
+    background: dark ? '#202329' : '#ffffff',
+    foreground: dark ? '#f0f2f5' : '#20242b',
+    cursor: dark ? '#f0f2f5' : '#20242b',
+    selectionForeground: dark ? '#f0f2f5' : '#20242b',
+    selectionBackground: dark ? '#273c5c' : '#e8f0ff',
   }
 }

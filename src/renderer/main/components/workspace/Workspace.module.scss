@@ -1,4 +1,6 @@
+@use '../../../../share/renderer/tool-window/tokens' as tokens;
 .workspace {
+  @include tokens.data-grid;
   // Main-window-only tokens: mirroring and update windows keep their design.
   --workspace-bg: #f5f6f8;
   --workspace-surface: #fff;

@@ -413,6 +413,7 @@ export default observer(function Application() {
     >
       {store.application.listView ? (
         <LunaDataGrid
+          rowHeight={32}
           onClick={(e: any, node) => {
             showInfo((node.data as any).bundleName, node.container)
           }}

@@ -64,6 +64,8 @@ export interface IOptions extends IComponentOptions {
   maxHeight?: number
   /** Min table height. */
   minHeight?: number
+  /** Row height in CSS pixels (16–80, rounded to an integer). Default 20. */
+  rowHeight?: number
   /** Data filter. */
   filter?: string | RegExp | types.AnyFn
   /** Default selectable for all nodes. */
@@ -83,6 +85,12 @@ export interface IDataGridNodeOptions {
 }
 
 const ROW_HEIGHT = 20
+
+function normalizeRowHeight(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 16 && value <= 80
+    ? Math.round(value)
+    : ROW_HEIGHT
+}
 
 /**
  * Grid for displaying datasets.
@@ -172,6 +180,7 @@ export default class DataGrid extends Component<IOptions> {
       options.minHeight = options.height
     }
     this.initOptions(options, {
+      rowHeight: ROW_HEIGHT,
       minHeight: 41,
       maxHeight: Infinity,
       filter: '',
@@ -179,6 +188,10 @@ export default class DataGrid extends Component<IOptions> {
       multiSelections: false,
       headerContextMenu: false,
     })
+    this.options.rowHeight = normalizeRowHeight(this.options.rowHeight)
+    container.style.setProperty(
+      '--luna-data-grid-row-height', `${this.options.rowHeight}px`
+    )
     const { columns, minHeight, maxHeight } = this.options
     each(columns, (column) => {
       defaults(column, {
@@ -454,7 +467,7 @@ export default class DataGrid extends Component<IOptions> {
     const len = this.displayNodes.length
     let height = 0
     if (len > 0) {
-      height = ROW_HEIGHT * len
+      height = this.options.rowHeight! * len
     }
 
     if (height > minHeight) {
@@ -693,6 +706,14 @@ export default class DataGrid extends Component<IOptions> {
 
     this.on('changeOption', (name, val, oldVal) => {
       switch (name) {
+        case 'rowHeight':
+          this.options.rowHeight = normalizeRowHeight(val)
+          this.container.style.setProperty(
+            '--luna-data-grid-row-height', `${this.options.rowHeight}px`
+          )
+          this.updateHeight()
+          this.renderData()
+          break
         case 'minHeight':
         case 'maxHeight':
           this.updateHeight()
@@ -931,7 +952,7 @@ export default class DataGrid extends Component<IOptions> {
       const len = displayNodes.length
 
       const renderNodes = []
-      const height = ROW_HEIGHT
+      const height = this.options.rowHeight!
 
       for (let i = 0; i < len; i++) {
         const node = displayNodes[i]

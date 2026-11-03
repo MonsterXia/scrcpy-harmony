@@ -105,9 +105,7 @@ export default observer(function DeviceSwitcher() {
           className={Style.secondaryButton}
           data-action="refresh-devices"
           disabled={!store.ready || refreshing}
-          onClick={() => {
-            void refresh()
-          }}
+          onClick={refresh}
         >
           <span className="icon-refresh" aria-hidden="true" />
           {t(refreshing ? 'workspaceRefreshing' : 'workspaceDetectDevices')}

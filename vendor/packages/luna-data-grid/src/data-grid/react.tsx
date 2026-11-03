@@ -30,6 +30,7 @@ const LunaDataGrid: FC<IDataGridProps> = (props) => {
     dataGridRef.current = new DataGrid(containerRef.current!, {
       columns: props.columns,
       height: props.height,
+      rowHeight: props.rowHeight,
       maxHeight: props.maxHeight,
       minHeight: props.minHeight,
       filter: props.filter,
@@ -81,6 +82,7 @@ const LunaDataGrid: FC<IDataGridProps> = (props) => {
     [
       'theme',
       'height',
+      'rowHeight',
       'maxHeight',
       'minHeight',
       'filter',

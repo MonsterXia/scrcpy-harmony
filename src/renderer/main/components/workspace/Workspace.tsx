@@ -4,12 +4,14 @@ import { t } from 'common/util'
 import { notify } from 'share/renderer/lib/util'
 import store from '../../store'
 import DeviceSwitcher from './DeviceSwitcher'
+import useMainFeedback from './useMainFeedback'
 import Style from './Workspace.module.scss'
 
 export default observer(function Workspace({
   children,
   onOpenSettings,
 }: PropsWithChildren<{ onOpenSettings: () => void }>) {
+  useMainFeedback(store.theme)
   const groups = [
     {
       title: t('workspaceDevices'),

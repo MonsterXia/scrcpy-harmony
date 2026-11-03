@@ -1,8 +1,18 @@
 .container {
-  background: var(--color-bg-container);
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10;
-  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  input {
+    width: 170px;
+    flex: 1 1 140px;
+  }
+}
+.total {
+  color: var(--workspace-secondary);
+  font-size: 12px;
+}
+.error {
+  color: var(--workspace-danger);
 }

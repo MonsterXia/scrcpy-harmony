@@ -243,6 +243,7 @@ export default observer(function Process() {
           }}
         >
           <LunaDataGrid
+            rowHeight={28}
             data={visibleProcesses}
             columns={columns}
             uniqueId="pid"

@@ -51,17 +51,7 @@ async function fixture({ initialize = true } = {}) {
     assert.equal(store.ready, true)
     writes.length = 0
   }
-  const Component = load('src/renderer/main/components/toolbar/Target.tsx', {
-    'luna-toolbar/react': { __esModule: true, default: 'toolbar', LunaToolbarSelect: 'select' },
-    './Target.module.scss': {},
-    'mobx-react-lite': { observer: (component) => component },
-    '../../store': { __esModule: true, default: store },
-    'common/util': { t: (key) => key },
-    'share/renderer/components/ToolbarIcon': 'icon',
-    'share/renderer/lib/util': { notify: (...args) => notifications.push(args) },
-  }, main).default
-  const manual = () => Component().props.children.props.children
-    .find((child) => child.props.icon === 'refresh').props.onClick()
+  const manual = () => require('./helpers/target-picker.cjs')((file, imports) => load(file, imports, main), store, notifications).refresh()
   const event = () => events.get('changeTarget')()
   return { store, requests, writes, notifications, manual, event }
 }

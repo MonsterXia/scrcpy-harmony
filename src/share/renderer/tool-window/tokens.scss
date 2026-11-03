@@ -1,0 +1,70 @@
+// Explicitly opted-in window surfaces; never attach these tokens to body globally.
+@mixin palette {
+  --workspace-bg: #f5f6f8;
+  --workspace-surface: #fff;
+  --workspace-text: #20242b;
+  --workspace-secondary: #636d7b;
+  --workspace-line: #e3e7ee;
+  --workspace-accent: #2469db;
+  --workspace-selected: #e8f0ff;
+  --workspace-hover: #eef1f5;
+  --workspace-danger: #b8303a;
+  --workspace-success: #20734f;
+  &[data-theme='dark'] {
+    --workspace-bg: #17191d;
+    --workspace-surface: #202329;
+    --workspace-text: #f0f2f5;
+    --workspace-secondary: #a6afbd;
+    --workspace-line: #363d47;
+    --workspace-accent: #79adff;
+    --workspace-selected: #273c5c;
+    --workspace-hover: #2b3039;
+    --workspace-danger: #ff9ca3;
+    --workspace-success: #8ad1ae;
+  }
+}
+
+@mixin data-grid {
+  :global(.luna-data-grid) {
+    color: var(--workspace-text);
+    background: var(--workspace-surface);
+    border-color: var(--workspace-line);
+    th,
+    td {
+      border-color: var(--workspace-line);
+    }
+    :global(.luna-data-grid-header) th {
+      color: var(--workspace-secondary);
+      background: var(--workspace-bg);
+      &:hover {
+        background: var(--workspace-hover);
+      }
+    }
+    :global(.luna-data-grid-data-container) {
+      tr:nth-child(even) {
+        background: var(--workspace-bg);
+      }
+      :global(.luna-data-grid-node.luna-data-grid-selectable):hover {
+        background: var(--workspace-hover);
+      }
+      :global(.luna-data-grid-node.luna-data-grid-selected),
+      :global(.luna-data-grid-node.luna-data-grid-selected):hover {
+        color: var(--workspace-text);
+        background: var(--workspace-selected);
+      }
+    }
+    :global(.luna-data-grid-node.luna-data-grid-selected)
+      + :global(.luna-data-grid-node.luna-data-grid-selected)
+      td {
+      border-top-color: var(--workspace-line);
+    }
+    &:focus :global(.luna-data-grid-node.luna-data-grid-selected) {
+      color: var(--workspace-text);
+      background: var(--workspace-selected);
+    }
+    :global(.luna-data-grid-node):focus-visible {
+      outline: 2px solid var(--workspace-accent);
+      outline-offset: -2px;
+    }
+  }
+}

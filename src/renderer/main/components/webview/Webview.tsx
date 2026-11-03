@@ -245,6 +245,7 @@ export default observer(function Webview() {
         }}
       >
         <LunaDataGrid
+          rowHeight={28}
           key={topBundle.pid}
           onSelect={(node) => setSelected(node.data)}
           onDeselect={() => setSelected(null)}
