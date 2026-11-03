@@ -166,5 +166,6 @@
   "applicationSearchHint": "尝试其他名称或包名。",
   "applicationInstallHint": "安装 HAP 文件，或开启系统应用筛选。",
   "applicationLoadingMore": "正在加载更多应用…",
-  "applicationDropHint": "将 HAP 文件拖入窗口即可安装。"
+  "applicationDropHint": "将 HAP 文件拖入窗口即可安装。",
+  "cancel": "取消"
 }

@@ -13,6 +13,8 @@ interface IProps extends IModalProps {
   bundleInfo: IBundleInfo
   busy: boolean
   returnFocus?: HTMLElement | null
+  restoreFocus?: () => void
+  suspended?: boolean
   onAction: (action: BundleAction) => void
 }
 
@@ -25,6 +27,8 @@ export default function BundleInfoModal({
   busy,
   onAction,
   returnFocus,
+  restoreFocus,
+  suspended = false,
 }: IProps) {
   const dialog = useRef<HTMLElement>(null)
   useEffect(() => {
@@ -32,9 +36,10 @@ export default function BundleInfoModal({
     const opener = returnFocus || (document.activeElement as HTMLElement | null)
     dialog.current?.querySelector<HTMLButtonElement>('button')?.focus()
     return () => {
-      if (opener?.isConnected) opener.focus()
+      if (restoreFocus) restoreFocus()
+      else if (opener?.isConnected) opener.focus()
     }
-  }, [visible, returnFocus])
+  }, [visible, returnFocus, restoreFocus])
   if (!visible) return null
   function item(title: string, value: string | number) {
     const text = String(value ?? '')
@@ -68,7 +73,9 @@ export default function BundleInfoModal({
         ref={dialog}
         className={Style.drawer}
         role="dialog"
-        aria-modal="true"
+        aria-modal={!suspended || undefined}
+        aria-hidden={suspended || undefined}
+        inert={suspended}
         aria-label={t('bundleInfo')}
         onKeyDown={(event) => {
           if (event.key === 'Escape') {

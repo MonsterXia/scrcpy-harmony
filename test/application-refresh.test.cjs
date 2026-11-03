@@ -107,7 +107,6 @@ async function fixture(
     'share/renderer/lib/contextMenu': (_event, template) => {
       menu = template
     },
-    'luna-modal': { confirm: () => confirmation ? confirmation.promise : Promise.resolve(true) },
     'licia/toEl': (html) => html,
     'luna-toolbar/react': {
       __esModule: true,
@@ -161,6 +160,8 @@ async function fixture(
       require(id) {
         if (id in mocks) return mocks[id]
         if (id === '../../../lib/util') return load('src/renderer/lib/util.ts')
+        if (id === '../workspace/ConfirmDialog') return load('src/renderer/main/components/workspace/ConfirmDialog.tsx')
+        if (id.endsWith('.scss')) return {}
         return require(id)
       },
     })
@@ -223,6 +224,8 @@ async function fixture(
         // Do not await an operation whose IPC completion is controlled by test.
         menu.find((item) => item.label === 'uninstall').click()
       })
+      if (confirmation) confirmation.promise.then(accepted => container.querySelector(accepted ? '[data-confirm-accept]' : '[data-confirm-cancel]')?.click())
+      else await act(async () => container.querySelector('[data-confirm-accept]')?.click())
     },
     gridNames: () => gridProps.data.map((row) => row.bundleName),
     filterMatches: value => iconProps.filter({ data: { info: value } }),
@@ -541,6 +544,7 @@ test('an old native context-menu action cannot operate on refreshed data', async
   const menu = f.captureMenu('old')
   await f.click('refresh')
   await act(async () => { menu.find(item => item.label === 'uninstall').click() })
+  assert.equal(f.host.querySelector('[role="alertdialog"]'), null)
   assert.equal(f.calls.uninstalls.length, 0)
   await f.settle(f.calls.lists[1], ['current'])
 })

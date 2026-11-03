@@ -166,5 +166,6 @@
   "applicationSearchHint": "Try a different name or package.",
   "applicationInstallHint": "Install a HAP file or include system apps.",
   "applicationLoadingMore": "Loading more apps…",
-  "applicationDropHint": "Drop HAP files anywhere in this window to install."
+  "applicationDropHint": "Drop HAP files anywhere in this window to install.",
+  "cancel": "Cancel"
 }

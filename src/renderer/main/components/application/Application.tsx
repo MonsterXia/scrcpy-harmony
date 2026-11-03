@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import store from '../../store'
 import map from 'licia/map'
 import LunaIconList from 'luna-icon-list/react'
@@ -18,7 +18,7 @@ import toEl from 'licia/toEl'
 import escape from 'licia/escape'
 import dateFormat from 'licia/dateFormat'
 import contextMenu from 'share/renderer/lib/contextMenu'
-import LunaModal from 'luna-modal'
+import ConfirmDialog from '../workspace/ConfirmDialog'
 import className from 'licia/className'
 import { isFileDrop, notify } from 'share/renderer/lib/util'
 import { installBundles } from '../../../lib/util'
@@ -31,6 +31,14 @@ export default observer(function Application() {
   const [actionBusy, setActionBusy] = useState(false)
   const actionLock = useRef(false)
   const actionEpoch = useRef(0)
+  const [confirmation, setConfirmation] = useState<{
+    title: string
+    message: string
+  } | null>(null)
+  const confirmationResolve = useRef<((accepted: boolean) => void) | null>(null)
+  const applicationsRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const detailsBundle = useRef('')
   const detailsOpener = useRef<HTMLElement | null>(null)
   const [bundleInfo, setBundleInfo] = useState<IBundleInfo | null>(null)
   const [bundleInfos, setBundleInfos] = useState<IBundleInfo[]>([])
@@ -63,6 +71,8 @@ export default observer(function Application() {
       if (connectKey === target?.key) void refresh()
     })
     return () => {
+      confirmationResolve.current?.(false)
+      confirmationResolve.current = null
       actionEpoch.current++
       state.active = false
       state.pending = false
@@ -78,6 +88,7 @@ export default observer(function Application() {
     }
 
     // React state is for display; old install/menu closures must share this lock.
+    finishConfirmation(false)
     actionEpoch.current++
     setBundleInfoModalVisible(false)
     state.pending = true
@@ -146,15 +157,23 @@ export default observer(function Application() {
       (info) => info.bundleName === bunldeName,
     )
     if (bundleInfo) {
+      detailsBundle.current = bundleInfo.bundleName
       detailsOpener.current =
         opener || (document.activeElement as HTMLElement | null)
       if (opener) {
-        opener.tabIndex = -1
+        opener.tabIndex = 0
         opener.focus()
       }
       setBundleInfo(bundleInfo)
       setBundleInfoModalVisible(true)
     }
+  }
+
+  function finishConfirmation(accepted: boolean) {
+    const resolve = confirmationResolve.current
+    confirmationResolve.current = null
+    setConfirmation(null)
+    resolve?.(accepted)
   }
 
   async function runAction(action: BundleAction, info: IBundleInfo) {
@@ -175,12 +194,15 @@ export default observer(function Application() {
     try {
       if (action !== 'open') {
         const messages = {
-          stop: t('stopBundleConfirm', { name: escape(info.label) }),
-          cleanCache: t('cleanCacheConfirm', { name: escape(info.label) }),
-          cleanData: t('cleanDataConfirm', { name: escape(info.label) }),
-          uninstall: t('uninstallConfirm', { name: escape(info.label) }),
+          stop: t('stopBundleConfirm', { name: info.label }),
+          cleanCache: t('cleanCacheConfirm', { name: info.label }),
+          cleanData: t('cleanDataConfirm', { name: info.label }),
+          uninstall: t('uninstallConfirm', { name: info.label }),
         }
-        const confirmed = await LunaModal.confirm(messages[action])
+        const confirmed = await new Promise<boolean>((resolve) => {
+          confirmationResolve.current = resolve
+          setConfirmation({ title: labels[action], message: messages[action] })
+        })
         if (!confirmed || !isCurrent()) return
       }
       if (action === 'open' && info.mainAbility)
@@ -206,19 +228,21 @@ export default observer(function Application() {
     }
   }
 
+  const labels = {
+    open: t('open'),
+    stop: t('stop'),
+    cleanCache: t('cleanCache'),
+    cleanData: t('cleanData'),
+    uninstall: t('uninstall'),
+  }
+
   function onContextMenu(e: PointerEvent, info: IBundleInfo) {
     const epoch = actionEpoch.current
     const current = () =>
       epoch === actionEpoch.current &&
       store.target?.key === target?.key &&
       refreshRef.current?.active
-    const labels = {
-      open: t('open'),
-      stop: t('stop'),
-      cleanCache: t('cleanCache'),
-      cleanData: t('cleanData'),
-      uninstall: t('uninstall'),
-    }
+
     const template: any[] = [
       {
         label: t('bundleInfo'),
@@ -249,14 +273,106 @@ export default observer(function Application() {
   }
 
   const query = filter.trim().toLowerCase()
-  const matches = (info: IBundleInfo) =>
-    [info.label, info.bundleName].some((value) =>
-      value.toLowerCase().includes(query),
+  const matches = useCallback(
+    (info: IBundleInfo) =>
+      [info.label, info.bundleName].some((value) =>
+        value.toLowerCase().includes(query),
+      ),
+    [query],
+  )
+  const filteredInfos = useMemo(
+    () => bundleInfos.filter(matches),
+    [bundleInfos, matches],
+  )
+  const gridData = useMemo(
+    () =>
+      map(filteredInfos, (info: IBundleInfo) => ({
+        info,
+        label: toEl(
+          `<span><img src="${escape(info.icon || defaultIcon)}" />${escape(info.label)}</span>`,
+        ),
+        bundleName: info.bundleName,
+        versionName: info.versionName,
+        vendor: info.vendor,
+        apiTargetVersion: info.apiTargetVersion,
+        installTime: dateFormat(
+          new Date(info.installTime),
+          'yyyy-mm-dd HH:MM:ss',
+        ),
+        releaseType: info.releaseType,
+      })),
+    [filteredInfos],
+  )
+  const iconFilter = useCallback(
+    (icon: any) => matches(icon.data.info),
+    [matches],
+  )
+  const restoreDetailsFocus = useCallback(() => {
+    const items = Array.from(
+      applicationsRef.current?.querySelectorAll<HTMLElement>(
+        '[data-application-item]',
+      ) || [],
     )
-  const filteredInfos = bundleInfos.filter(matches)
+    const current = items.find(
+      (item) => item.dataset.applicationItem === detailsBundle.current,
+    )
+    const opener =
+      current ||
+      (detailsOpener.current?.isConnected
+        ? detailsOpener.current
+        : searchRef.current)
+    if (!opener?.closest('[inert]')) opener?.focus()
+  }, [])
+  useEffect(() => {
+    const surface = applicationsRef.current
+    if (!surface) return
+    const enhance = () => {
+      surface.querySelector('.luna-data-grid')?.setAttribute('tabindex', '-1')
+      surface
+        .querySelectorAll<HTMLElement>(
+          '.luna-data-grid-node, .luna-icon-list-item',
+        )
+        .forEach((item) => {
+          const info =
+            (item as any).dataGridNode?.data.info ||
+            (item as any).icon?.data.info
+          if (!info) return
+          item.tabIndex = 0
+          item.dataset.applicationItem = info.bundleName
+          item.setAttribute('aria-label', `${info.label}, ${info.bundleName}`)
+          if ((item as any).icon) item.setAttribute('role', 'button')
+        })
+    }
+    enhance()
+    const observer = new window.MutationObserver(enhance)
+    observer.observe(surface, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [isLoading, filteredInfos, store.application.listView])
   const applications = (
     <div
       className={Style.applications}
+      ref={applicationsRef}
+      onKeyDown={(event) => {
+        const item = (event.target as HTMLElement).closest<HTMLElement>(
+          '[data-application-item]',
+        )
+        if (!item) return
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          showInfo(item.dataset.applicationItem!, item)
+        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault()
+          const items = Array.from(
+            applicationsRef.current?.querySelectorAll<HTMLElement>(
+              '[data-application-item]',
+            ) || [],
+          )
+          const next =
+            items[items.indexOf(item) + (event.key === 'ArrowDown' ? 1 : -1)]
+          next?.focus()
+          next?.scrollIntoView?.({ block: 'nearest' })
+        }
+      }}
       style={{
         overflowY: store.application.listView ? 'hidden' : 'auto',
       }}
@@ -311,25 +427,7 @@ export default observer(function Application() {
           }}
           filter=""
           columns={columns}
-          data={map(filteredInfos, (info: IBundleInfo) => {
-            return {
-              info,
-              label: toEl(
-                `<span><img src="${escape(info.icon || defaultIcon)}" />${escape(
-                  info.label,
-                )}</span>`,
-              ),
-              bundleName: info.bundleName,
-              versionName: info.versionName,
-              vendor: info.vendor,
-              apiTargetVersion: info.apiTargetVersion,
-              installTime: dateFormat(
-                new Date(info.installTime),
-                'yyyy-mm-dd HH:MM:ss',
-              ),
-              releaseType: info.releaseType,
-            }
-          })}
+          data={gridData}
           selectable={true}
           uniqueId="bundleName"
           onCreate={(dataGrid) => {
@@ -341,7 +439,7 @@ export default observer(function Application() {
         <LunaIconList
           icons={iconsRef.current}
           size={store.application.itemSize}
-          filter={(icon) => matches((icon.data as any).info)}
+          filter={iconFilter}
           onClick={(e: any, icon) => {
             const info = (icon.data as any).info
             showInfo(info.bundleName, icon.container)
@@ -382,8 +480,10 @@ export default observer(function Application() {
     <div className={Style.page} data-application>
       <div
         className={Style.surface}
-        inert={bundleInfoModalVisible}
-        aria-hidden={bundleInfoModalVisible || undefined}
+        inert={bundleInfoModalVisible || Boolean(confirmation)}
+        aria-hidden={
+          bundleInfoModalVisible || Boolean(confirmation) || undefined
+        }
       >
         <header className={Style.heading}>
           <div>
@@ -404,6 +504,7 @@ export default observer(function Application() {
         <div className={Style.toolbar}>
           <input
             type="search"
+            ref={searchRef}
             aria-label={t('applicationSearch')}
             placeholder={t('applicationSearch')}
             value={filter}
@@ -559,10 +660,20 @@ export default observer(function Application() {
           visible={bundleInfoModalVisible}
           busy={actionBusy}
           returnFocus={detailsOpener.current}
+          restoreFocus={restoreDetailsFocus}
+          suspended={Boolean(confirmation)}
           onAction={(action) => void runAction(action, bundleInfo)}
           onClose={() => setBundleInfoModalVisible(false)}
         />
       )}
+      <ConfirmDialog
+        visible={Boolean(confirmation)}
+        title={confirmation?.title || ''}
+        message={confirmation?.message || ''}
+        confirmLabel={confirmation?.title}
+        onConfirm={() => finishConfirmation(true)}
+        onCancel={() => finishConfirmation(false)}
+      />
     </div>
   )
 })
