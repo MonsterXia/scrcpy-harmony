@@ -94,7 +94,7 @@ try {
     report.hashes[path.relative(root, file).replaceAll('\\', '/')] = hash(await readFile(file))
   }
   await mkdir(path.join(profile, 'data'))
-  await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'overview-validation' }))
+  await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'settings' }))
   const forbiddenBin = path.join(profile, 'forbidden-hdc.exe')
   await writeFile(forbiddenBin, '')
   await writeFile(path.join(profile, 'data/settings.json'), JSON.stringify({

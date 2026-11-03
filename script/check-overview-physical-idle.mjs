@@ -126,7 +126,7 @@ try {
   }
   for (const file of files) report.hashes[file] = createHash('sha256').update(await readFile(path.join(root, file))).digest('hex')
   await mkdir(path.join(profile, 'data'))
-  await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'physical-idle-validation' }))
+  await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'settings' }))
   const forbiddenBin = path.join(profile, 'forbidden-hdc.exe')
   await writeFile(forbiddenBin, '')
   await writeFile(path.join(profile, 'data/settings.json'), JSON.stringify({

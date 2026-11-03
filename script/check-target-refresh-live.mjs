@@ -22,15 +22,13 @@ const temporaryRoot = await realpath(os.tmpdir())
 const profile = await mkdtemp(path.join(temporaryRoot, 'scrcpy-m2-5-'))
 const upstreamPort = Number(process.env.OHOS_HDC_SERVER_PORT || 8710)
 assert.ok(Number.isInteger(upstreamPort) && upstreamPort > 0 && upstreamPort < 65536)
-const report = { fault, platform: process.platform, arch: process.arch,
+const report = { fault, startupPanel: 'settings', platform: process.platform, arch: process.arch,
   sourceSha256: createHash('sha256').update(await readFile(path.join(root, 'src/main/lib/hdc.ts'))).digest('hex'),
   realDevice: null, syntheticFault: false, recovered: false, passed: false }
 const sockets = new Set()
 const violations = []
 let inject = false
 let application
-let overviewIsolated = false
-const deferredEnumerations = []
 let child
 const commands = new Set(['alive', 'list targets', 'shell echo ready\n', 'shell param get'])
 const counts = Object.fromEntries([...commands].map((command) => [command.trim(), 0]))
@@ -83,20 +81,16 @@ const server = net.createServer((downstream) => {
         } else downstream.end()
         return
       }
-      // Hold initial enumeration until the unrelated overview IPC is isolated.
-      // Keep the real enumeration, parameter reads and fault injection intact.
-      if (!overviewIsolated && command === 'list targets') {
-        deferredEnumerations.push(() => { if (!upstream.destroyed) upstream.write(frame) })
-      } else upstream.write(frame)
+      upstream.write(frame)
     }
   })
 })
 let deadline
 try {
   await mkdir(path.join(profile, 'data'), { recursive: true })
-  // Use a valid saved page. Only unrelated overview data is stubbed below;
-  // this probe validates the real device selector and enumeration pipeline.
-  await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'overview' }))
+  // The application-level settings page mounts no device-operation panels.
+  // Device selector, enumeration, parameter reads and all IPC remain real.
+  await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'settings' }))
   const forbiddenBin = path.join(profile, 'forbidden-hdc.exe')
   // Existing empty file prevents fallback to bundled HDC and cannot start a server.
   await writeFile(forbiddenBin, '')
@@ -118,13 +112,6 @@ try {
   child.stdout?.resume()
   child.stderr?.resume()
   const page = await application.firstWindow({ timeout: 20_000 })
-  await application.evaluate(({ ipcMain }) => {
-    ipcMain.removeHandler('getOverview')
-    ipcMain.handle('getOverview', () => ({}))
-  })
-  overviewIsolated = true
-  for (const forward of deferredEnumerations.splice(0)) forward()
-  report.overviewIpcStubbed = true
   page.setDefaultTimeout(15_000)
   const waitFor = async (predicate) => {
     const until = Date.now() + 15_000
@@ -137,7 +124,7 @@ try {
   await waitFor(async () => {
     const items = await main.getMemStore('targets')
     return items?.length === 1 && (await main.getMainStore('target'))?.key === items[0].key &&
-      document.querySelector('#app select')?.value === items[0].key
+      document.querySelector('#workspace-device')?.value === items[0].key
   })
   report.realDevice = await page.evaluate(async () => {
     const targets = await main.getTargets()
@@ -146,7 +133,7 @@ try {
     return { count: targets.length, transport: item.key.includes(':') ? 'network' : 'USB',
       softwareVersion: item.ohosVersion, apiVersion: item.sdkVersion,
       selectedMatches: selected?.key === item.key,
-      optionMatches: document.querySelector('#app select')?.value === item.key }
+      optionMatches: document.querySelector('#workspace-device')?.value === item.key }
   })
   assert.equal(report.realDevice.count, 1)
   assert.equal(report.realDevice.selectedMatches, true)
@@ -178,12 +165,12 @@ try {
   await waitFor(async () => {
     const items = await main.getMemStore('targets')
     return items?.length === 1 && (await main.getMainStore('target'))?.key === items[0].key &&
-      document.querySelector('#app select')?.value === items[0].key
+      document.querySelector('#workspace-device')?.value === items[0].key
   })
   report.recovered = await page.evaluate(async () => {
     const items = await main.getTargets()
     return items.length === 1 && (await main.getMainStore('target'))?.key === items[0].key &&
-      document.querySelector('#app select')?.value === items[0].key
+      document.querySelector('#workspace-device')?.value === items[0].key
   })
   assert.equal(report.recovered, true)
   assert.deepEqual(violations, [])

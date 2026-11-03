@@ -65,7 +65,7 @@ async function verify({ step, acquire, signal }) {
   profile = await acquire(() => mkdtemp(path.join(os.tmpdir(), 'scrcpy-store-fallback-')),
     value => rm(value, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }))
   await acquire(() => mkdir(path.join(profile, 'data')), async () => {})
-  await acquire(() => writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'store-validation', application: { sysBundle: false, listView: true } })), async () => {})
+  await acquire(() => writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'settings', application: { sysBundle: false, listView: true } })), async () => {})
   report.sha256 = {}
   for (const file of ['src/main/lib/hdc/bundle.ts', 'src/main/lib/hdc/onlineBundleInfo.ts', 'dist/main/index.js']) {
     report.sha256[file] = createHash('sha256').update(await step(() => readFile(file))).digest('hex')

@@ -77,6 +77,7 @@ HAP 拖入由主窗口和投屏根组件各注册一次 `src/renderer/lib/useHap
 | `changeTarget` | HDC 设备增删后通知主窗口刷新设备列表 |
 | `bundleInstalled` | 安装成功后的 connectKey；应用面板按当前设备过滤并合并刷新，覆盖投屏/其他面板发起的安装，订阅随面板生命周期清理 |
 | `changeMainStore` | 主 store 的 name/value 变更，投屏用它同步当前设备 |
+| `changeSettingsStore` | settings store 的 name/value 变更，主窗口设置页接收菜单等外部修改；按字段修订号隔离迟到的初始读取和保存结果 |
 | `captureScreen` | 直发原 WebFrameMain 的 sessionId、generation、图像字节；H.264 附 codec/timestamp/config/keyFrame 元数据，运行错误用 codec=error |
 | `shellData` | 发给主窗口的 sessionId 与终端文本 |
 | `hilogEntry` | 发给主窗口的 hilogId 与日志条目 |
@@ -89,7 +90,7 @@ HAP 拖入由主窗口和投屏根组件各注册一次 `src/renderer/lib/useHap
 
 | 功能 | UI 入口 | 设备实现 |
 | --- | --- | --- |
-| 设备选择、概览、按键、截图 | `toolbar/Target.tsx`、`overview/`、`screenshot/` | `hdc.ts` |
+| 设备选择、概览、按键、截图 | `workspace/DeviceSwitcher.tsx`、`overview/`、`screenshot/` | `hdc.ts` |
 | 应用安装、启停、卸载、信息 | `application/`，安装公共方法在 `src/renderer/lib/util.ts` | `hdc/bundle.ts` |
 | 进程列表 | `process/Process.tsx` | `hdc/base.ts` 的 `getProcesses` |
 | 交互 shell | `shell/Shell.tsx`、`shell/Term.tsx` | `hdc/shell.ts` 的 HdcPty/sessionId |
@@ -97,7 +98,7 @@ HAP 拖入由主窗口和投屏根组件各注册一次 `src/renderer/lib/useHap
 | 端口转发 | `overview/PortMappingModal.tsx` | `hdc/port.ts`，通用 `forwardTcp` 在 `hdc/base.ts` |
 | WebView 调试 | `webview/Webview.tsx` | `hdc/webview.ts` 查 unix socket、建立转发并取 `/json` |
 | HiLog | `hilog/Hilog.tsx` | `hdc/hilog.ts`，pid 名称缓存依赖 `hdc/base.ts` |
-| 设置 | `toolbar/SettingsModal.tsx`、`src/renderer/main/store/settings.ts` | `src/main/lib/store.ts` 和 `src/main/window/main.ts` |
+| 设置 | `settings/SettingsContent.tsx`、`src/renderer/main/store/settings.ts` | `src/main/lib/store.ts` 和 `src/main/window/main.ts` |
 
 `hdc/hilog.ts` 在暂停或关闭时使当前流的在途 PID 名称补全失效；恢复只接受恢复后的记录。关闭解除 reader 的 entry 监听并结束 reader，迟到的暂停/恢复/关闭 IPC 为无操作。PID 查询失败时保留活动记录，以 `pid-<数字>` 回退并记警告；已失效回调不更新缓存或发送记录。此边界不取消共享 PID 查询，也不撤回已发送 IPC；renderer 的“清除”仅清空本地记录。
 
@@ -122,8 +123,8 @@ HAP 拖入由主窗口和投屏根组件各注册一次 `src/renderer/lib/useHap
 - `src/renderer/main/store/index.ts` 是主窗口 MobX store，持有 targets、target、panel，以及 settings/application/process/layout 子 store。
 - `src/main/lib/store.ts` 通过 Licia `FileStore` 存储用户数据目录下的 `data/main.json`、`settings.json`、`screencast.json`；目录路径由共享 `getUserDataPath()` 决定。
 - `src/renderer/lib/util.ts` 的 `setMainStore()` 将 MobX observable 转为普通 JS 值后传过 IPC。
-- `src/renderer/main/App.tsx` 使用 `components/workspace/Workspace.tsx` 提供分组侧栏、设备选择和公共页头；`workspace/Panel.tsx` 首次访问后保留子组件，隐藏时通过 visibility、inert 和 aria-hidden 隔离布局显示、焦点与辅助技术访问。隐藏不等于卸载；轮询仍需根据活动 panel 管理。设置弹窗位于设备 key 边界外。
-- store 保留八个既有 panel ID，初始化和选择时将未知 ID 归一为 overview。`overview/Overview.tsx` 保留刷新代次隔离，已有详情刷新时仍显示，失败后清空并提供重试；字段复制按钮在未知值时禁用。
+- `src/renderer/main/App.tsx` 使用 `components/workspace/Workspace.tsx` 提供分组侧栏、设备选择和公共页头；`workspace/Panel.tsx` 首次访问后保留子组件，隐藏时通过 visibility、inert 和 aria-hidden 隔离布局显示、焦点与辅助技术访问。隐藏不等于卸载；轮询仍需根据活动 panel 管理。应用级 settings 面板位于设备 key 边界外，设备变化不重建表单；设备初始化等待期间也可访问。
+- store 保留八个既有设备 panel ID，并增加 settings；初始化和选择时将未知 ID 归一为 overview。`overview/Overview.tsx` 保留刷新代次隔离，已有详情刷新时仍显示，失败后清空并提供重试；字段复制按钮在未知值时禁用。
 - 主面板容器和投屏组件都使用设备 key 参与重建。投屏 store 监听 `changeMainStore`：target 为 null 时关窗，换设备时销毁旧客户端并创建新客户端。
 - `overview/PortMappingModal.tsx` 只在弹窗可见且有目标时读取映射；关闭/目标变更使旧读取失效，同一会话仅接受最后发起的当前方向结果。读取失败清空列表和选择并提示，恢复依赖手动刷新或重开；写入成功后的读取绑定原可见期，不取消已发送 IPC。
 - 新增主面板通常需要同时修改 `App.tsx`、`components/workspace/Workspace.tsx`、store 中的 panel 白名单、语言字典，状态逻辑按需要放入 `store/`。

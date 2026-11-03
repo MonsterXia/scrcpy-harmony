@@ -38,9 +38,9 @@ async function verify() {
   await mkdir(output, { recursive: true })
   profile = await mkdtemp(path.join(os.tmpdir(), 'scrcpy-icon-'))
   await mkdir(path.join(profile, 'data'))
-  // An unused panel avoids querying any application before installing the selector.
+  // The settings page avoids device-operation panels before installing the selector.
   await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({
-    panel: 'icon-validation', application: { sysBundle: false, listView: true },
+    panel: 'settings', application: { sysBundle: false, listView: true },
   }))
   Object.assign(report, {
     sourceSha256: hash(await readFile('src/main/lib/hdc/bundle.ts')),
