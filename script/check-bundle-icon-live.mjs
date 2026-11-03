@@ -151,9 +151,9 @@ async function verify() {
   report.stage = 'application-panel'
   await page.evaluate(() => main.setMainStore('panel', 'application'))
   await page.reload()
-  const panel = page.locator('.panel-with-toolbar').filter({ hasText: '共 1 个应用' })
+  const panel = page.locator('[data-application]')
   await panel.waitFor()
-  await panel.locator('input[type="text"]').fill(bundleName)
+  await panel.locator('input[type="search"]').fill(bundleName)
   const row = panel.locator('.luna-data-grid-data-container tr').filter({ hasText: bundleName })
   await row.waitFor()
   assert.ok((await row.innerText()).includes('哔哩哔哩'))
@@ -174,9 +174,9 @@ async function verify() {
   report.ui = { list: await inspectImage(row.locator('img')) }
   await panel.screenshot({ path: path.join(output, 'bilibili-list.png') })
   report.stage = 'icon-view'
-  // Icon view searches names; the list view also searches package columns.
-  await panel.locator('input[type="text"]').fill('哔哩哔哩')
-  await panel.locator('.icon-grid').click()
+  // Both views search names and package identifiers; verify the localized label as well.
+  await panel.locator('input[type="search"]').fill('哔哩哔哩')
+  await panel.locator('[data-action="grid-view"]').click()
   const icon = panel.locator('.luna-icon-list-name-wrapper').filter({ hasText: '哔哩哔哩' }).locator('../..')
   report.ui.icons = await inspectImage(icon.locator('img'))
   await panel.screenshot({ path: path.join(output, 'bilibili-icons.png') })

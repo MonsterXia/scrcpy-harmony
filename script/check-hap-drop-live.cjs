@@ -131,10 +131,12 @@ async function drop(page, files, selector = 'canvas', point) {
         return send(channel, ...args)
       }
     }, mainContentsId)
-    await mainPage.getByPlaceholder(labels.filter, { exact: true }).waitFor()
+    // Support both the current workspace and an explicitly supplied older installed build.
+    const applicationSearch = mainPage.locator('[data-application] input[type="search"]').or(mainPage.getByPlaceholder(labels.filter, { exact: true }))
+    await applicationSearch.waitFor()
     const targets = await mainPage.evaluate(() => main.getTargets()); assert.equal(targets.length, 1); key = targets[0].key
-    const panel = mainPage.locator('.panel-with-toolbar').filter({ has: mainPage.getByPlaceholder(labels.filter, { exact: true }) })
-    const ready = () => panel.locator(`[title="${labels.refresh}"]`).evaluate(el => !el.closest('.luna-toolbar-disabled'))
+    const panel = mainPage.locator('[data-application], .panel-with-toolbar').filter({ has: applicationSearch })
+    const ready = () => panel.locator(`[title="${labels.refresh}"]`).evaluate(el => !el.disabled && !el.closest('.luna-toolbar-disabled'))
     await until(ready, 'Initial list not ready')
     const before = await mainPage.evaluate(key => main.getBundles(key, false), key)
     const hadSample = before.includes(bundleName)
@@ -142,7 +144,7 @@ async function drop(page, files, selector = 'canvas', point) {
     if (hadSample) await mainPage.evaluate(({ key, bundleName }) => main.uninstallBundle(key, bundleName), { key, bundleName })
     await panel.locator(`[title="${labels.refresh}"]`).click()
     await until(ready, 'Reset list not ready')
-    await mainPage.getByPlaceholder(labels.filter, { exact: true }).fill(bundleName)
+    await applicationSearch.fill(bundleName)
     await observe(mainPage)
     const calls = () => app.evaluate(() => globalThis.hapCalls)
     const queries = () => app.evaluate((_, { key, id }) => globalThis.hapLists

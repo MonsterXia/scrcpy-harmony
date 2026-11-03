@@ -16,7 +16,7 @@ try {
   app = await _electron.launch({ executablePath: createRequire(import.meta.url)('electron'),
     args: [path.resolve('dist'), `--user-data-dir=${profile}`], chromiumSandbox: true })
   const page = await app.firstWindow()
-  await page.locator('#app .panel-with-toolbar').first().waitFor()
+  await page.locator('[data-workspace]').waitFor()
   await app.evaluate(({ ipcMain }, label) => {
     const responses = {
       getTargets: [{ key: 'LABEL_FIXTURE', name: 'Label fixture', ohosVersion: '', sdkVersion: '' }],
@@ -40,7 +40,7 @@ try {
     })
   }, label)
   await page.reload()
-  const panel = page.locator('.panel-with-toolbar').filter({ hasText: '共 2 个应用' })
+  const panel = page.locator('[data-application]')
   await panel.waitFor()
   const icons = panel.locator('.luna-icon-list-name-wrapper')
   const icon = icons.filter({ hasText: label })
@@ -49,13 +49,13 @@ try {
   assert.equal(await page.locator('[data-label-injection]').count(), 0)
   await icon.hover()
   assert.equal(await icon.locator('..').getAttribute('title'), label)
-  await panel.locator('input[type="text"]').fill('A&B')
+  await panel.locator('input[type="search"]').fill('A&B')
   await page.waitForFunction(() => document.querySelectorAll('.luna-icon-list-name-wrapper').length === 1)
   assert.equal(await icons.count(), 1, 'Nonmatching labels must be excluded')
   assert.equal(await icon.count(), 1, 'Search must use raw label text')
-  await panel.locator('input[type="text"]').fill('')
+  await panel.locator('input[type="search"]').fill('')
   await page.waitForFunction(() => document.querySelectorAll('.luna-icon-list-name-wrapper').length === 2)
-  await panel.locator('.icon-list').click()
+  await panel.locator('[data-action="list-view"]').click()
   const row = panel.locator('.luna-data-grid-data-container tr').filter({ hasText: 'test.label' })
   await row.waitFor()
   assert.ok((await row.textContent()).includes(label))
@@ -68,11 +68,11 @@ try {
       if (!item) throw new Error(`Missing menu action: ${action}`)
       BrowserWindow.getAllWindows()[0].webContents.send('clickContextMenu', item.click)
     }, action)
-    const modal = page.locator('.luna-modal:not(.luna-modal-hidden)')
+    const modal = page.locator('.luna-modal:not(.luna-modal-hidden), [role="alertdialog"]')
     await modal.waitFor()
     assert.ok((await modal.textContent()).includes(label), `${action} must display literal label text`)
     assert.equal(await modal.locator('[data-label-injection]').count(), 0)
-    await modal.locator('.luna-modal-button').filter({ hasText: /^(取消|Cancel)$/ }).click()
+    await modal.locator('.luna-modal-button, button').filter({ hasText: /^(取消|Cancel)$/ }).click()
   }
   assert.equal(await page.evaluate(() => !!window.__labelInjected), false)
   console.log('Literal labels passed icon view, list view and four cancelled confirmation dialogs')

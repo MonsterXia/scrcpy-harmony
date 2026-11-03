@@ -122,7 +122,7 @@ async function verify({ step, acquire, signal }) {
   report.silentRequestCancelled = true
   await step(() => page.evaluate(() => main.setMainStore('panel', 'application')))
   await step(() => page.reload())
-  const panel = page.locator('.panel-with-toolbar').filter({ has: page.locator('.luna-data-grid') })
+  const panel = page.locator('[data-application]')
   for (const name of names) await step(() => panel.locator('.luna-data-grid-data-container tr').filter({ hasText: name }).waitFor())
   const refresh = panel.locator('[title="刷新"], [title="Refresh"]')
   const completed = await step(() => application.evaluate(() => globalThis.storeQueriesCompleted))
