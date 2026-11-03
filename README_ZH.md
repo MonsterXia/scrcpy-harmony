@@ -10,6 +10,9 @@ Scrcpy Harmony 是面向鸿蒙设备的 HDC 图形化桌面工具，集成投屏
 
 [下载应用](https://github.com/MonsterXia/scrcpy-harmony/releases/latest) · [更新日志](CHANGELOG.md) · [问题反馈](https://github.com/MonsterXia/scrcpy-harmony/issues)
 
+
+**1.0.5 UI 重构进行中：** 本分支按已确认的轻量桌面工作台设计推进，见[新版使用指南](docs/user-guide-1.0.5.md)、[分阶段路线](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md)与[验收记录](docs/maintenance/v1.0.5-ui-completion.md)。投屏和升级窗口保留现有设计；这不代表已公开发布新版本。
+
 ## 功能
 
 | 功能 | 说明 |
