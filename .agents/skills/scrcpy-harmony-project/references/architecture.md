@@ -194,7 +194,7 @@ Canvas pointer 事件
 - 使用 React 函数组件、`mobx-react-lite` 的 `observer`、Luna React 封装和局部 `.module.scss`；CSS Modules 配置为 `camelCaseOnly`。
 - `src/common/util.ts` 注册独立 `en-US` / `zh-CN` 业务词典，与 `src/share/common/langs` 合并；`t()` 在缺词时兜底英文，未知 key 原样显示。主进程启动解析已保存/系统语言；renderer 在页面懒加载前同步 i18n、HTML lang 和 LunaModal。设置页语言保存后由用户重启生效，包含菜单和各窗口。开发步骤与检查器边界见[国际化开发流程](internationalization.md)。
 - `src/main/lib/SettingsStore.ts` 为低频 settings.json 保留 Store 的 get/set/change 接口，使用同步临时文件替换，在设置 IPC 返回前完成落盘，保证立即重启可读取。主窗口/投屏状态仍用 FileStore 防抖写盘。持久化回归在 `test/settings-persistence.test.cjs`。
-- 1.0.5 主窗口语义 token 集中在 `workspace/Workspace.module.scss`，由 workspace 根的 data-theme 选择；主窗口拥有的反馈由 `useMainFeedback` 加显式作用域。关于、应用日志和 Electron 进程管理器使用 `share/renderer/tool-window/` 局部 token；不向独立投屏/升级窗口或共享全局主题扩散。旧主 Toolbar/Tabs/Target/SettingsModal 已由工作台、DeviceSwitcher 与独立设置页替代。
+- 1.0.5 主窗口语义 token 集中在 `workspace/Workspace.module.scss`，由 workspace 根的 data-theme 选择；主窗口拥有的反馈由 `useMainFeedback` 加显式作用域。关于、应用日志和 Electron 进程管理器使用 `share/renderer/tool-window/` 局部 token；不向独立投屏/升级窗口或共享全局主题扩散。旧主 Toolbar/Tabs/Target/SettingsModal 已由工作台、DeviceSwitcher 与独立设置页替代。主窗口原生选择框统一使用 `workspace/SelectControl` 的 SVG 箭头与留白，设备摘要复用同一箭头；保留原生键盘和下拉行为。
 - 本地 Luna DataGrid 的可选 `rowHeight` 同步 CSS 与虚拟滚动位置；默认 20px 保持兼容，应用列表显式用 32px，调试列表和独立进程工具用 28px。不能只改行 CSS 高度。
 - 独立进程工具的 store 由窗口组件显式启动/停止轮询，图表忽略卸载后的采样；应用日志卸载时取消 addLog 订阅和 resize 监听，忽略迟到的初始日志。
 - 共享主题源是 `src/common/theme.json`，`npm run gen:theme` 生成 `src/renderer/theme.scss` 与 `src/common/theme.ts`。

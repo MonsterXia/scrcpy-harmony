@@ -7,6 +7,7 @@ const values = { panel: process.env.UI_PAGE || 'overview', target: process.env.U
 let infos = [ ['Notes','com.example.notes','1.2.0',false], ['Browser','com.example.browser','5.0.1',false], ['Photos','com.example.photos','2.4.0',false], ['Development application with a long display name','com.example.long.application.name','1.0.0',false], ['Settings','com.example.settings','6.0.0',true] ].map(([label,bundleName,versionName,system]) => ({label,bundleName,versionName,system,icon:'',apiTargetVersion:20,vendor:'Example vendor',installTime:1793600000000,releaseType:'release',mainAbility:'EntryAbility'}))
 if (process.env.UI_MANY) infos = Array.from({length:100}, (_,index)=>({...infos[index%infos.length],label:`Sample application ${String(index+1).padStart(3,'0')}`,bundleName:`com.example.sample${index+1}`,system:false}))
 if (process.env.UI_ZERO) infos=[]
+if (process.env.UI_LONG_APP && infos[0]) infos[0].label = 'Very long sample application name '.repeat(60)
 const image = require('node:fs').readFileSync(require('node:path').join(__dirname,'sample-screen.png')).toString('base64')
 const guarded = async value => { if(process.env.UI_ERROR) throw new Error('Simulated read failure'); return value }
 let next = 1
@@ -21,7 +22,7 @@ const main = {
   on: (event, callback) => { if (!listeners.has(event)) listeners.set(event, []); listeners.get(event).push(callback); return () => { listeners.set(event, listeners.get(event).filter(fn => fn !== callback)) } },
   getOverview: async () => guarded({ name: target.name, brand:'Example vendor',model:'Development model',serialNum:target.key,kernelVersion:'Linux 5.10 (sample)',processor:'Example processor',abi:'arm64',physicalResolution:'360x720',memTotal:12884901888 }),
   getBundles: async (_,system) => guarded(infos.filter(x=>system||!x.system).map(x=>x.bundleName)),
-  getBundleInfos: async (_,names) => guarded(infos.filter(x=>names.includes(x.bundleName))),
+  getBundleInfos: async (_,names) => guarded(process.env.UI_METADATA_EMPTY ? [] : infos.filter(x=>names.includes(x.bundleName) && (!process.env.UI_PARTIAL || x.bundleName !== 'com.example.notes'))),
   startBundle: async () => {},stopBundle:async()=>{},cleanBundleCache:async()=>{},cleanBundleData:async()=>{},uninstallBundle:async()=>{},
   getProcesses: async () => guarded([{name:'com.example.notes','%cpu':'0.4','time+':'0:12.14',res:'96M',pid:'1234',user:'u0_a10'},{name:'com.example.browser','%cpu':'1.2','time+':'0:28.21',res:'120M',pid:'1235',user:'u0_a11'}]),
   getTopBundle: async () => guarded({name:'com.example.browser',pid:1235}),
