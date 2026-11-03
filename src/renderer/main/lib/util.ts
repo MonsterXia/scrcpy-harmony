@@ -4,9 +4,10 @@ import trim from 'licia/trim'
 
 export const toPng = async (src: string): Promise<string> => {
   const img = new Image()
-  img.src = src
-  await new Promise((resolve) => {
-    img.onload = resolve
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve()
+    img.onerror = () => reject(new Error('Image decode failed'))
+    img.src = src
   })
   const canvas = document.createElement('canvas')
   canvas.width = img.width

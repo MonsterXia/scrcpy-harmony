@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { observer } from 'mobx-react-lite'
 import store from './store'
 import Overview from './components/overview/Overview'
@@ -9,7 +8,7 @@ import Shell from './components/shell/Shell'
 import Layout from './components/layout/Layout'
 import Webview from './components/webview/Webview'
 import Hilog from './components/hilog/Hilog'
-import SettingsModal from './components/toolbar/SettingsModal'
+import SettingsContent from './components/settings/SettingsContent'
 import Workspace from './components/workspace/Workspace'
 import Panel from './components/workspace/Panel'
 import { PannelLoading } from './components/common/loading'
@@ -17,11 +16,11 @@ import useHapDrop from '../lib/useHapDrop'
 
 export default observer(function App() {
   useHapDrop(store.target?.key)
-  const [settingsVisible, setSettingsVisible] = useState(false)
+  const openSettings = () => store.selectPanel('settings')
   const panels = [
     {
       id: 'overview',
-      content: <Overview onOpenSettings={() => setSettingsVisible(true)} />,
+      content: <Overview onOpenSettings={openSettings} />,
     },
     { id: 'application', content: <Application /> },
     { id: 'process', content: <Process /> },
@@ -33,7 +32,10 @@ export default observer(function App() {
   ]
   return (
     <>
-      <Workspace onOpenSettings={() => setSettingsVisible(true)}>
+      <Workspace onOpenSettings={openSettings}>
+        <Panel id="settings" active={store.panel === 'settings'}>
+          <SettingsContent />
+        </Panel>
         {store.ready ? (
           <div key={store.target?.key || ''}>
             {panels.map((panel) => (
@@ -46,14 +48,10 @@ export default observer(function App() {
               </Panel>
             ))}
           </div>
-        ) : (
+        ) : store.panel !== 'settings' ? (
           <PannelLoading />
-        )}
+        ) : null}
       </Workspace>
-      <SettingsModal
-        visible={settingsVisible}
-        onClose={() => setSettingsVisible(false)}
-      />
     </>
   )
 })

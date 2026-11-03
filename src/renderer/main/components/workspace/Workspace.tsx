@@ -76,6 +76,8 @@ export default observer(function Workspace({
             title={t('settings')}
             aria-label={t('settings')}
             data-action="settings"
+            aria-current={store.panel === 'settings' ? 'page' : undefined}
+            aria-controls="panel-settings"
             onClick={onOpenSettings}
           >
             <span className="icon-setting" aria-hidden="true" />
@@ -86,13 +88,19 @@ export default observer(function Workspace({
       <main className={Style.main}>
         <header className={Style.topbar}>
           <div className={Style.breadcrumb}>
-            <span className={Style.breadcrumbGroup}>{currentGroup?.title}</span>
+            <span className={Style.breadcrumbGroup}>
+              {store.panel === 'settings'
+                ? t('workspaceProduct')
+                : currentGroup?.title}
+            </span>
             <span className={Style.breadcrumbDivider} aria-hidden="true">
               /
             </span>
-            <span className={Style.currentPage}>{current?.label}</span>
+            <span className={Style.currentPage}>
+              {store.panel === 'settings' ? t('settings') : current?.label}
+            </span>
           </div>
-          {store.panel !== 'overview' && (
+          {store.panel !== 'overview' && store.panel !== 'settings' && (
             <button
               className={Style.secondaryButton}
               type="button"

@@ -187,7 +187,19 @@ function refreshMenu() {
   }
 }
 
+let settingsListenerRegistered = false
 export function init() {
+  if (!settingsListenerRegistered) {
+    settingsListenerRegistered = true
+    getSettingsStore().on('change', (name, value) => {
+      if (name !== 'betaUpdate') return
+      const item = Menu.getApplicationMenu()?.getMenuItemById('beta-update')
+      if (!item) return
+      item.checked = value === true
+      item.label = t(item.checked ? 'betaUpdateOn' : 'betaUpdateOff')
+      refreshMenu()
+    })
+  }
   updateMenu()
 
   handleEvent('updateMenu', updateMenu)

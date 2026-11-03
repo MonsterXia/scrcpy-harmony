@@ -57,6 +57,7 @@ export default function ConfirmDialog({
         aria-describedby={messageId}
         onKeyDown={(event) => {
           if (event.key === 'Escape') {
+            event.preventDefault()
             event.stopPropagation()
             onCancel()
             return

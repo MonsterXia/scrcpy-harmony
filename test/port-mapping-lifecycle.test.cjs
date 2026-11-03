@@ -24,6 +24,13 @@ window.ResizeObserver = class {
 }
 const { createRoot } = require('react-dom/client')
 const { observer } = require('mobx-react-lite')
+const { load: loadWorkspace } = require('./helpers/workspace-renderer.cjs')
+window.HTMLDialogElement.prototype.showModal = function () {
+  this.setAttribute('open', '')
+}
+window.HTMLDialogElement.prototype.close = function () {
+  this.removeAttribute('open')
+}
 
 // Vite resolves these extensionless ESM imports too. Use the installed Luna
 // implementations with shared React, substituting only layout-only browser APIs.
@@ -140,6 +147,7 @@ async function fixture(
         ...props,
         onCreate(instance) {
           grid = instance
+          props.onCreate?.(instance)
         },
       }),
     'share/renderer/components/ToolbarIcon': (props) => {
@@ -166,7 +174,11 @@ async function fixture(
     vm.runInContext(source, context)
     return context.module.exports
   }
-  const Modal = load(component).default
+  const Modal = loadWorkspace(
+    'src/renderer/main/components/overview/PortMappingModal.tsx',
+    { ...mocks, '../../lib/util': load(util) },
+    { main },
+  ).default
   const Tree = observer(() =>
     h(Modal, {
       key: keyed ? state.target?.key || '' : 'stable',
@@ -197,28 +209,49 @@ async function fixture(
   return {
     calls,
     notifications,
+    container,
     unmount,
     rows: () => Array.from(grid.nodes, (n) => n.data.local),
     selected: () => grid.getSelected().length,
-    disabled: (action) => controls[action].disabled,
+    disabled: (action) =>
+      container.querySelector(`[data-action="${action}"]`)?.disabled,
     change: async (values) =>
       act(async () => runInAction(() => Object.assign(state, values))),
     select: async () => act(async () => grid.selectSingle(grid.nodes[0])),
     direction: async (direction) =>
       act(async () => {
-        const select = document.querySelector(
-          '.luna-toolbar-item-select select',
-        )
+        const select = document.querySelector('[data-port-direction]')
         select.value = direction
         select.dispatchEvent(new window.Event('change', { bubbles: true }))
       }),
-    input: async (key, value) => act(async () => controls[key].onChange(value)),
-    start: async (action) => {
+    input: async (key, value) =>
+      act(async () => {
+        const input = container.querySelector(`[data-port-input="${key}"]`)
+        Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          'value',
+        ).set.call(input, value)
+        input.dispatchEvent(new window.Event('input', { bubbles: true }))
+      }),
+    confirm: async () =>
+      act(async () =>
+        container.querySelector('[data-confirm-accept]')?.click(),
+      ),
+    cancel: async () =>
+      act(async () =>
+        container.querySelector('[data-confirm-cancel]')?.click(),
+      ),
+    start: async (action, confirm = true) => {
       let pending
       await act(async () => {
-        pending = Promise.resolve(controls[action].onClick())
+        container.querySelector(`[data-action="${action}"]`).click()
+        pending = Promise.resolve()
         pending.catch(() => {})
       })
+      if (action === 'delete' && confirm)
+        await act(async () =>
+          container.querySelector('[data-confirm-accept]')?.click(),
+        )
       return { pending }
     },
     settle: async (request, value, fail = false) =>
@@ -438,4 +471,60 @@ test('write failures keep the existing error notification and do not request a r
   assert.equal(f.calls.listForwards.length, 1)
   assert.equal(f.notifications.length, 2)
   assert.deepEqual(f.rows(), ['tcp:1001'])
+})
+
+test('port deletion requires confirmation and cancellation performs no device write', async (t) => {
+  const f = await fixture(t)
+  await f.settle(f.calls.listForwards[0], [row()])
+  await f.select()
+  await f.start('delete', false)
+  assert.equal(f.calls.removeForward.length, 0)
+  await f.cancel()
+  assert.equal(f.calls.removeForward.length, 0)
+})
+test('port deletion confirmation is invalidated by a direction change', async (t) => {
+  const f = await fixture(t)
+  await f.settle(f.calls.listForwards[0], [row()])
+  await f.select()
+  await f.start('delete', false)
+  await f.direction('reverse')
+  await f.confirm()
+  assert.equal(f.calls.removeForward.length, 0)
+  assert.equal(f.calls.removeReverse.length, 0)
+})
+test('reopened port session can write while an old session is settling', async (t) => {
+  const f = await fixture(t)
+  await f.settle(f.calls.listForwards[0], [])
+  await f.input('local', '1001')
+  await f.input('remote', '2001')
+  await f.start('add')
+  await f.change({ visible: false })
+  await f.change({ visible: true })
+  await f.settle(f.calls.listForwards[1], [])
+  assert.equal(f.disabled('add'), false)
+  await f.start('add')
+  assert.equal(f.calls.forward.length, 2)
+  await f.settle(f.calls.forward[0])
+  await f.settle(f.calls.forward[1])
+  await f.settle(f.calls.listForwards.at(-1), [])
+})
+test('port rows are keyboard reachable and Enter selects the mapping for deletion', async (t) => {
+  const f = await fixture(t)
+  await f.settle(f.calls.listForwards[0], [row()])
+  await act(async () => new Promise((resolve) => setTimeout(resolve, 60)))
+  const node = f.container.querySelector('[aria-label="tcp:1001 → tcp:2001"]')
+  assert.ok(node)
+  assert.equal(node.tabIndex, 0)
+  node.focus()
+  await act(async () =>
+    node.dispatchEvent(
+      new window.KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      }),
+    ),
+  )
+  assert.equal(f.selected(), 1)
+  assert.equal(f.disabled('delete'), false)
 })

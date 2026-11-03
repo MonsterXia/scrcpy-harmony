@@ -13,6 +13,7 @@ import { Layout } from './layout'
 
 function normalizePanel(panel: string) {
   return [
+    'settings',
     'overview',
     'application',
     'process',

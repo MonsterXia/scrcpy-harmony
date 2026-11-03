@@ -7,13 +7,14 @@ const vm = require('node:vm')
 function fixture(saved = {}, translations) {
   const snapshots = []
   let menu, finish, fail
+  const listeners=[]
   const pending = new Promise((resolve, reject) => { finish = resolve; fail = reject })
   const module = { exports: {} }
   vm.runInNewContext(transformSync(fs.readFileSync('src/main/lib/menu.ts', 'utf8'), { loader: 'ts', format: 'cjs' }).code, {
     module, exports: module.exports,
     require(id) {
       if (id === 'electron') return {
-        Menu: { buildFromTemplate: template => template, setApplicationMenu: value => { menu = value } },
+        Menu: { getApplicationMenu: () => ({ getMenuItemById: id => menu.flatMap(section => section.submenu).find(item => item.id === id) }), buildFromTemplate: template => template, setApplicationMenu: value => { menu = value } },
         app: { name: 'Scrcpy Harmony' }, shell: {},
       }
       if (id === 'share/main/lib/window') return {
@@ -23,7 +24,7 @@ function fixture(saved = {}, translations) {
           snapshots.push({ label: item.label, enabled: item.enabled !== false })
         },
       }
-      if (id === './store') return { getSettingsStore: () => ({ get: key => saved[key], set: (key, value) => { saved[key] = value } }) }
+      if (id === './store') return { getSettingsStore: () => ({ get: key => saved[key], on: (_, fn) => listeners.push(fn), set: (key, value) => { saved[key] = value; listeners.forEach(fn=>fn(key,value)) } }) }
       if (id === 'share/main/lib/updater') return { checkUpdate: () => pending }
       if (id === 'licia/isMac') return false
       if (id === 'licia/isWindows') return true
@@ -36,7 +37,7 @@ function fixture(saved = {}, translations) {
   })
   module.exports.init()
   snapshots.length = 0
-  return { snapshots, saved, rebuild: () => module.exports.init(), beta: () => menu[0].submenu.find(item => item.id === 'beta-update'), click: () => menu[0].submenu[1].click(menu[0].submenu[1]), finish, fail }
+  return { snapshots, saved, external: (key,value) => { saved[key]=value;listeners.forEach(fn=>fn(key,value)) }, rebuild: () => module.exports.init(), beta: () => menu[0].submenu.find(item => item.id === 'beta-update'), click: () => menu[0].submenu[1].click(menu[0].submenu[1]), finish, fail }
 }
 
 for (const rejected of [false, true]) {
@@ -94,3 +95,7 @@ for (const [locale, off, on] of [
     }
   })
 }
+
+test('settings-page Beta changes update the same menu without resetting an in-flight update check',async()=>{
+ const f=fixture();const checking=f.click();f.external('betaUpdate',true);assert.equal(f.beta().checked,true);assert.equal(f.beta().label,'betaUpdateOn');assert.deepEqual(f.snapshots.at(-1),{label:'checkingForUpdates',enabled:false});f.finish();await checking
+})

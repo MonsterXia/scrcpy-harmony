@@ -299,3 +299,8 @@ test('startup failure finishes initialization and a device event restores the se
   assert.equal(store.target.key, KEY)
   assert.equal(toolbar().select.disabled, false)
 })
+
+test('application settings panel is restored without requiring a target', async t => {
+  const { store } = await fixture(t, false, 'settings')
+  assert.equal(store.panel, 'settings')
+})

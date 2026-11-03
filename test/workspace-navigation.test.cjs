@@ -84,3 +84,11 @@ for (const result of ['resolve', 'reject']) {
     assert.equal(f.host.childElementCount, 0)
   })
 }
+
+test('settings footer has current navigation and header without device mirroring action', async t => {
+  const f = await fixture(t)
+  await act(async () => runInAction(() => { f.store.panel = 'settings' }))
+  assert.equal(f.host.querySelector('[data-action="settings"]').getAttribute('aria-current'), 'page')
+  assert.ok(f.host.querySelector('header').textContent.includes('settings'))
+  assert.equal(f.host.querySelector('[data-action="screencast"]'), null)
+})
