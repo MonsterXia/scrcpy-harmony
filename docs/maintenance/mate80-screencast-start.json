@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-03",
+  "installation": {
+    "source": "c1e94996ef2de2c776915ba8b3e40ff925c0d7e6",
+    "version": "1.0.5-dev.0",
+    "localPatch": true,
+    "dmgSha256": "5553363f4683deff0356c5be8a90f487ec920e612f80e20bb3f63fb0cd6fe239",
+    "installedAsarSha256": "c640867323a670b25a63ae233297a9e83471273bc9e684328ff7b5016cfae618",
+    "backupVerifiedFiles": 91,
+    "codesignDeepStrict": true,
+    "installedAt": "2026-11-03T11:23:28.831237+00:00",
+    "uiVerified": true,
+    "settingsExistingKeys": 5,
+    "settingsPreserved": true,
+    "visibleFrameChecks": {
+      "firstObservedStart": true,
+      "closeAndReopen": true
+    },
+    "verificationScope": "macOS arm64 installed application; Mate 80 visible frames; codec and input not separately verified"
+  },
+  "deviceBefore": {
+    "model": "VYG-AL30",
+    "uitestVersion": "7.0.0.1",
+    "agentMarker": "UITEST_AGENT_LIBRARY@v0.0.0#1.2.5",
+    "agentSha256": "c721402548a90fd7e77b36ffec6127068e3a5ec887bafd7e91bed34c3bc1d2f6",
+    "agentBytes": 592053,
+    "activeUitestProcesses": 0
+  },
+  "deviceAfter": {
+    "agentMarker": "UITEST_AGENT_LIBRARY@v1.1.0",
+    "agentSha256": "ab6ce651dea56af00cff98907856a6a640ab0f63f0c911ed1c67be957fa91c5b",
+    "matchesBundledAgent": true
+  },
+  "validation": {
+    "targetedPassed": 43,
+    "applicationPassed": 900,
+    "applicationFailed": 0,
+    "liciaEachModePassed": 606,
+    "liciaEachModePending": 4,
+    "lintAndI18n": true,
+    "fullBuild": true,
+    "arm64Package": true
+  },
+  "limitations": [
+    "No Windows or macOS x64 live device verification",
+    "No long-running, physical reconnect, or concurrent external tool test",
+    "Visible frames verified; codec and input not separately verified",
+    "Local patch only; no remote CI, push, PR, or release in this task"
+  ]
+}
