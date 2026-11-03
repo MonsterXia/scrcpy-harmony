@@ -11,8 +11,8 @@ import ImageViewer from 'luna-image-viewer'
 import { useEffect, useRef, useState } from 'react'
 import store from '../../store'
 import { t } from 'common/util'
-import { copyData, notify } from 'share/renderer/lib/util'
-import { toPng } from '../../lib/util'
+import { notify } from 'share/renderer/lib/util'
+import { toPng, writeImageClipboard } from '../../lib/util'
 
 type ScreenshotImage = {
   data: string
@@ -87,24 +87,20 @@ export default observer(function Screenshot() {
     const current = session.current,
       snapshot = image
     if (!current?.active || current.copying || !snapshot) return
+    const valid = () =>
+      current.active && session.current === current && store.target?.key === key
     current.copying = true
     setCopying(true)
     try {
       const png = await toPng(snapshot.url)
-      if (
-        current.active &&
-        session.current === current &&
-        store.target?.key === key
-      ) {
-        await copyData(dataUrl.parse(png)!.data, 'image/png')
-        notify(t('copied'), { icon: 'success' })
-      }
+      if (!valid()) return
+      await writeImageClipboard(dataUrl.parse(png)!.data, 'image/png')
+      if (valid()) notify(t('copied'), { icon: 'success' })
     } catch {
-      if (current.active && session.current === current)
-        notify(t('commonErr'), { icon: 'error' })
+      if (valid()) notify(t('commonErr'), { icon: 'error' })
     } finally {
       current.copying = false
-      if (current.active && session.current === current) setCopying(false)
+      if (valid()) setCopying(false)
     }
   }
   function save() {

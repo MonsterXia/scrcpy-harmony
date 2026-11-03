@@ -1,6 +1,7 @@
 import { DOMParser, MIME_TYPE } from '@xmldom/xmldom'
 import isNumeric from 'licia/isNumeric'
 import trim from 'licia/trim'
+import convertBin from 'licia/convertBin'
 
 export const toPng = async (src: string): Promise<string> => {
   const img = new Image()
@@ -16,6 +17,18 @@ export const toPng = async (src: string): Promise<string> => {
   if (!ctx) throw new Error('No ctx')
   ctx.drawImage(img, 0, 0)
   return canvas.toDataURL('image/png')
+}
+
+// Main-window clipboard writes must expose permission/write failures to callers.
+export async function writeImageClipboard(
+  data: string,
+  mime: string,
+): Promise<void> {
+  await navigator.clipboard.write([
+    new ClipboardItem({
+      [mime]: new Blob([convertBin(data, 'ArrayBuffer')], { type: mime }),
+    }),
+  ])
 }
 
 const domParser = new DOMParser()
