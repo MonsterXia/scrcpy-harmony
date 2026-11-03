@@ -3,7 +3,7 @@
   "base": "895fd10",
   "branch": "codex/v1.0.5-ui-workspace",
   "version": "1.0.5-dev.0",
-  "status": "in_progress",
+  "status": "implementation_local_candidate_and_required_ci_complete; release_gates_remain",
   "checks": [
     {
       "source": "03822ce",
@@ -90,6 +90,24 @@
       ],
       "installed_app_replaced": false,
       "signing": "ad-hoc; no Developer ID/notarization"
+    },
+    {
+      "source": "d717ece",
+      "documentation_head": "ab6b3c1",
+      "status": "final local candidate verified",
+      "platform": "macOS arm64",
+      "command": "npm run pack -- --no-publish --adhoc-sign",
+      "dmg": "release/1.0.5-dev.0/Scrcpy Harmony-1.0.5-dev.0-mac-arm64.dmg",
+      "sha256": "3640ec6f223322960d49ba6f7bca6dfc252ee3c2ac1c5500a79f41ae5f6baf69",
+      "checks": [
+        "DMG integrity verified on read-only mount",
+        "deep/strict codesign verified on unpacked and DMG-copied app",
+        "copied app launched with isolated temporary settings and synthetic empty HDC",
+        "native settings and dark title bar verified; About shows 1.0.5-dev.0",
+        "owned verification process exited 0; DMG detached"
+      ],
+      "installed_app_replaced": false,
+      "signing": "ad-hoc; no Developer ID/notarization"
     }
   ],
   "not_verified": [
@@ -108,5 +126,35 @@
     },
     "single_fix_head": "d717ece",
     "scoped_rereview": "passed; all three P2 addressed; no new delta regression"
+  },
+  "pull_request": "https://github.com/MonsterXia/scrcpy-harmony/pull/81",
+  "ci": {
+    "source": "ab6b3c14b9c6780a8050cdd90735b841fb943515",
+    "url": "https://github.com/MonsterXia/scrcpy-harmony/actions/runs/41611950927",
+    "result": "success",
+    "jobs": {
+      "test": "success",
+      "lint": "success",
+      "windows-package": "success",
+      "macos-package-arm64": "success",
+      "macos-package-x64": "success"
+    },
+    "scope": "unit/lint and three native platform package/install/startup smoke; not manual device or UI matrix"
+  },
+  "historical_update_workflow": {
+    "source": "ab6b3c14b9c6780a8050cdd90735b841fb943515",
+    "url": "https://github.com/MonsterXia/scrcpy-harmony/actions/runs/41611950619",
+    "result": "failure",
+    "jobs": [
+      "update-win-x64",
+      "update-mac-arm64",
+      "update-mac-x64"
+    ],
+    "scope": "fixed 1.0.1 / published 1.0.2 acceptance, not 1.0.5 candidate",
+    "observed_arm64_failures": [
+      "expected v1.0.2 metadata request not present",
+      "timed out waiting for no-update dialog in published 1.0.2"
+    ],
+    "follow_up": "refresh obsolete fixed release assumptions in a separate upgrade acceptance task; no production updater or live release was changed"
   }
 }

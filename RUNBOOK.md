@@ -2,9 +2,9 @@
 
 ## 1.0.5 全量 UI 重构（2026-11-03）
 
-状态：**连续实施中；UI-1～6 源码、阶段审查与本机界面检查完成，UI-7 整体验收进行中**。用户批准“轻量桌面工作台”并明确“不用和我确认，推进直到最终”；投屏和升级界面保留现有设计。入口：[设计](docs/superpowers/specs/2026-11-03-v1.0.5-ui-design.md)、[交互草图](docs/design/1.0.5-ui-preview.html)、[七阶段路线](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md)、[连续执行计划](docs/superpowers/plans/2026-11-03-v1.0.5-ui-completion.md)。
+状态：**UI-1～6实现及UI-7本机候选/五项必需CI交付完成；发行人工矩阵保持待验收**。用户批准“轻量桌面工作台”并明确“不用和我确认，推进直到最终”；投屏和升级界面保留现有设计。入口：[设计](docs/superpowers/specs/2026-11-03-v1.0.5-ui-design.md)、[交互草图](docs/design/1.0.5-ui-preview.html)、[七阶段路线](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md)、[连续执行计划](docs/superpowers/plans/2026-11-03-v1.0.5-ui-completion.md)。
 
-已交付分组导航/概览、应用管理与详情抽屉、应用级设置及常用工具主要实现。验证、提交、截图与未验收矩阵见[连续实施证据](docs/maintenance/v1.0.5-ui-completion.md)；UI-1完整测试的历史证据见[阶段一](docs/maintenance/v1.0.5-ui-phase1.md)。真实设备概览读取及刷新已通过，其余模拟设备交互不代表真机通过。下一步完成UI-7分支整体审查与候选验收，构建候选和草稿PR执行CI，不自动发布或合并。历史功能与长期运行待办保持原状态。
+已交付八个设备页、应用级设置和三个独立工具窗口的统一工作台设计，修复深色预览标题栏、下拉箭头和最终审查三项问题。验证、提交、截图与未验收矩阵见[连续实施证据](docs/maintenance/v1.0.5-ui-completion.md)；UI-1完整测试的历史证据见[阶段一](docs/maintenance/v1.0.5-ui-phase1.md)。真实设备概览读取及刷新已通过，其余模拟设备交互不代表真机通过。最终源码d717ece应用886/886、lint/i18n、完整构建、独立复核及本机DMG签名启动通过；[草稿PR #81](https://github.com/MonsterXia/scrcpy-harmony/pull/81)五项必需CI通过。额外固定1.0.1/1.0.2历史升级验收失败已记录，不能宣称全部工作流绿色。下一步补人工平台/真机/1.0.4升级矩阵并修订历史升级基线，不自动发布或合并。历史功能与长期运行待办保持原状态。
 
 ## 1.0.4 正式发行（2026-10-31）
 

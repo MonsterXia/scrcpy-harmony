@@ -11,7 +11,7 @@ Scrcpy Harmony is a graphical HDC desktop tool for HarmonyOS devices, bringing t
 [Download](https://github.com/MonsterXia/scrcpy-harmony/releases/latest) · [Changelog](CHANGELOG.md) · [Report an issue](https://github.com/MonsterXia/scrcpy-harmony/issues)
 
 
-**1.0.5 UI work in progress:** this branch adopts the approved desktop workspace design. See the [workspace guide](docs/user-guide-1.0.5.md), [phased roadmap](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md), and [validation record](docs/maintenance/v1.0.5-ui-completion.md). Screen mirroring and update windows retain their existing design. This is not a new public release.
+**1.0.5 UI candidate:** this branch implements the approved desktop workspace design. See the [workspace guide](docs/user-guide-1.0.5.md), [phased roadmap](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md), and [validation record](docs/maintenance/v1.0.5-ui-completion.md). Screen mirroring and update windows retain their existing design. This is not a new public release.
 
 ![1.0.5 application workspace — simulated data](docs/design/1.0.5-evidence/applications-en-dark-compact-final.jpg)
 
