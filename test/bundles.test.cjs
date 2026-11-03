@@ -332,6 +332,20 @@ test('an app absent from the store is cached without disabling other apps', asyn
   assert.deepEqual(f.lookups, ['absent', 'good'])
 })
 
+test('a side-loaded app with an empty store reply does not hide later app icons', async () => {
+  const local = info('sideloaded'); local.applicationInfo.label = 'Local app'
+  const f = await loadBundles({ sideloaded: dump('sideloaded', local), good: dump('good') }, async name => ({
+    data: name === 'sideloaded' ? '' : { name: 'Store app', icon: 'https://example.com/icon.png' },
+  }))
+  const infos = await f.getInfos(['sideloaded', 'good'])
+  assert.equal(infos[0].label, 'Local app')
+  assert.equal(infos[0].icon, '')
+  assert.equal(infos[1].icon, 'https://example.com/icon.png')
+  assert.equal(f.logs.filter(x => x.level === 'warn').length, 0)
+  await f.getInfos(['sideloaded', 'good'])
+  assert.deepEqual(f.lookups, ['sideloaded', 'good'])
+})
+
 test('store payload fields cannot replace local strings with objects', async () => {
   const f = await loadBundles({ app: dump('app') }, async () => ({ data: { name: { text: 'name' }, icon: ['image'] } }))
   const [app] = await f.getInfos(['app'])

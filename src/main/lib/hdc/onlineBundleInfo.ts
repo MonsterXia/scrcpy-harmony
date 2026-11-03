@@ -64,6 +64,10 @@ async function request(name: string): Promise<OnlineBundleInfo> {
       httpsAgent,
       maxContentLength: 256 * 1024,
     }), deadline])
+    // AppGallery returns HTTP 200 with an empty body for unlisted bundles.
+    // Cache that miss per app; it must not open the shared network cooldown
+    // and suppress icons for every app queried after a side-loaded bundle.
+    if (data === '') return remember(name, {})
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
       throw Object.assign(new Error('Invalid store response'), { code: 'INVALID_RESPONSE' })
     }
