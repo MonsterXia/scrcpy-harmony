@@ -88,7 +88,7 @@ async function fixture(t, metadata) {
     opened,
     cell: grid.nodes[0].container.querySelector('td'),
     select: () => act(async () => grid.selectSingle(grid.nodes[0])),
-    click: icon => act(async () => container.querySelector(`.icon-${icon}`).closest('button').click()),
+    click: icon => act(async () => container.querySelector(`[data-action="${icon}"]`).click()),
   }
 }
 
@@ -113,8 +113,7 @@ test('favicon quotes remain in one src attribute and cannot create attributes or
 test('title markup stays text when no favicon is supplied', async t => {
   const title = '<img src=x onerror="void 0">Plain &amp; text'
   const f = await fixture(t, { title })
-  // jsdom implements the grid's innerText setter separately from textContent.
-  assert.equal(f.cell.innerText, title)
+  assert.equal(f.cell.textContent, title)
   assert.equal(f.cell.querySelector('img'), null)
 })
 

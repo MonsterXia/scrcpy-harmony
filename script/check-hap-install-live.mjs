@@ -65,14 +65,16 @@ try {
     const zh = language === 'zh-CN'
     const labels = zh ? { filter: '过滤', refresh: '刷新', install: '安装', uninstall: '卸载', ok: '确定', success: '安装成功：' }
       : { filter: 'Filter', refresh: 'Refresh', install: 'Install', uninstall: 'Uninstall', ok: 'OK', success: 'Installed successfully:' }
-    await page.getByPlaceholder(labels.filter, { exact: true }).waitFor()
-    const panel = page.locator('.panel-with-toolbar').filter({ has: page.getByPlaceholder(labels.filter, { exact: true }) })
-    const ready = () => panel.locator(`[title="${labels.refresh}"]`).evaluate(el => !el.closest('.luna-toolbar-disabled'))
+    // Support both the current workspace and an explicitly supplied older installed build.
+    const applicationSearch = page.locator('[data-application] input[type="search"]').or(page.getByPlaceholder(labels.filter, { exact: true }))
+    await applicationSearch.waitFor()
+    const panel = page.locator('[data-application], .panel-with-toolbar').filter({ has: applicationSearch })
+    const ready = () => panel.locator(`[title="${labels.refresh}"]`).evaluate(el => !el.disabled && !el.closest('.luna-toolbar-disabled'))
     await until(ready, 'Initial application list did not finish')
     const beforeNames = await page.evaluate(key => main.getBundles(key, false), key)
     const otherNames = beforeNames.filter(name => name !== bundleName)
     item.otherBundleCount = otherNames.length
-    await page.getByPlaceholder(labels.filter, { exact: true }).fill(bundleName)
+    await applicationSearch.fill(bundleName)
     const row = panel.locator('.luna-data-grid-node').filter({ hasText: bundleName })
     await app.evaluate(({ dialog, Menu }, hap) => {
       dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [hap] })
@@ -100,7 +102,8 @@ try {
         BrowserWindow.getAllWindows().find(win => win.isVisible())?.focus()
         entry.click()
       }, labels.uninstall)
-      await page.locator('.luna-modal:not(.luna-modal-hidden)').getByText(labels.ok, { exact: true }).click()
+      const confirmation = page.locator('.luna-modal:not(.luna-modal-hidden), [role="alertdialog"]')
+      await confirmation.locator('[data-confirm-accept]').or(confirmation.getByText(labels.ok, { exact: true })).click()
       await until(async () => !dump() && await ready() && await row.count() === 0,
         'Uninstall did not remove the app and automatically refresh the list')
     }
@@ -108,7 +111,7 @@ try {
       console.log(`${language}: removing only the explicitly authorized existing test app through UI`)
       await uninstall(); item.initialResetThroughUi = true
     }
-    const countText = () => panel.locator('.luna-toolbar-item-text').innerText()
+    const countText = () => panel.locator('[data-application-count], .luna-toolbar-item-text').innerText()
     item.before = await countText()
     for (let cycle = 0; cycle < 3; cycle++) {
       const previous = dump()
@@ -121,7 +124,7 @@ try {
         .some(el => el.textContent.includes(prefix)), labels.success), 'Previous success notification did not expire', 30_000)
       await page.evaluate(() => { globalThis.__hapNotifications = [] })
       const start = Date.now()
-      await panel.locator(`[title="${labels.install}"]`).click()
+      await panel.locator(`[data-action="add"], [title="${labels.install}"]`).click()
       await until(() => page.evaluate(prefix => globalThis.__hapNotifications.some(text => text.includes(prefix)), labels.success),
         'Missing installation success notification', 30_000)
       await until(async () => await ready() && await row.count() === 1,

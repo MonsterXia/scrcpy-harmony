@@ -1,0 +1,160 @@
+{
+  "date": "2026-11-03",
+  "base": "895fd10",
+  "branch": "codex/v1.0.5-ui-workspace",
+  "version": "1.0.5-dev.0",
+  "status": "implementation_local_candidate_and_required_ci_complete; release_gates_remain",
+  "checks": [
+    {
+      "source": "03822ce",
+      "command": "npm test",
+      "application": {
+        "passed": 878,
+        "failed": 0,
+        "skipped": 0
+      },
+      "licia": {
+        "normal": {
+          "passed": 606,
+          "pending": 4
+        },
+        "fallback": {
+          "passed": 606,
+          "pending": 4
+        }
+      }
+    },
+    {
+      "source": "03822ce",
+      "command": "npm run lint",
+      "result": "passed; includes i18n"
+    },
+    {
+      "source": "03822ce",
+      "command": "npm run build",
+      "result": "passed",
+      "known_warnings": [
+        "Vite CJS API deprecation",
+        "Sass legacy if() deprecation",
+        "Licia randomBytes eval"
+      ]
+    },
+    {
+      "source": "d717ece",
+      "command": "npm test",
+      "application": {
+        "passed": 886,
+        "failed": 0,
+        "skipped": 0
+      },
+      "licia": {
+        "normal": {
+          "passed": 606,
+          "pending": 4
+        },
+        "fallback": {
+          "passed": 606,
+          "pending": 4
+        }
+      }
+    },
+    {
+      "source": "d717ece",
+      "command": "npm run lint",
+      "result": "passed; includes i18n"
+    },
+    {
+      "source": "d717ece",
+      "command": "npm run build",
+      "result": "passed",
+      "known_warnings": [
+        "Vite CJS API deprecation",
+        "Sass legacy if() deprecation",
+        "Licia randomBytes eval"
+      ]
+    }
+  ],
+  "candidate_checks": [
+    {
+      "source": "fa70530",
+      "status": "interim; whole-branch review fixes pending",
+      "platform": "macOS arm64",
+      "command": "npm run pack -- --no-publish --adhoc-sign",
+      "dmg": "Scrcpy Harmony-1.0.5-dev.0-mac-arm64.dmg",
+      "sha256": "74964b2f9a8a3dbfbf33969762c0504a68c40dd0b0168bf064b929e76e3b2ee7",
+      "checks": [
+        "DMG integrity verified on read-only mount",
+        "deep/strict codesign verified on unpacked and DMG-copied app",
+        "copied app launched with isolated temporary settings and synthetic empty HDC",
+        "native settings available and About shows 1.0.5-dev.0"
+      ],
+      "installed_app_replaced": false,
+      "signing": "ad-hoc; no Developer ID/notarization"
+    },
+    {
+      "source": "d717ece",
+      "documentation_head": "ab6b3c1",
+      "status": "final local candidate verified",
+      "platform": "macOS arm64",
+      "command": "npm run pack -- --no-publish --adhoc-sign",
+      "dmg": "release/1.0.5-dev.0/Scrcpy Harmony-1.0.5-dev.0-mac-arm64.dmg",
+      "sha256": "3640ec6f223322960d49ba6f7bca6dfc252ee3c2ac1c5500a79f41ae5f6baf69",
+      "checks": [
+        "DMG integrity verified on read-only mount",
+        "deep/strict codesign verified on unpacked and DMG-copied app",
+        "copied app launched with isolated temporary settings and synthetic empty HDC",
+        "native settings and dark title bar verified; About shows 1.0.5-dev.0",
+        "owned verification process exited 0; DMG detached"
+      ],
+      "installed_app_replaced": false,
+      "signing": "ad-hoc; no Developer ID/notarization"
+    }
+  ],
+  "not_verified": [
+    "manual Windows/x64 visual and DPI matrix",
+    "new three-platform real-device write matrix",
+    "1.0.4 to candidate upgrade path",
+    "public release/update distribution"
+  ],
+  "published": false,
+  "review": {
+    "base": "895fd10",
+    "whole_branch_head": "fa70530",
+    "findings": {
+      "P0_P1": 0,
+      "P2": 3
+    },
+    "single_fix_head": "d717ece",
+    "scoped_rereview": "passed; all three P2 addressed; no new delta regression"
+  },
+  "pull_request": "https://github.com/MonsterXia/scrcpy-harmony/pull/81",
+  "ci": {
+    "source": "ab6b3c14b9c6780a8050cdd90735b841fb943515",
+    "url": "https://github.com/MonsterXia/scrcpy-harmony/actions/runs/41611950927",
+    "result": "success",
+    "jobs": {
+      "test": "success",
+      "lint": "success",
+      "windows-package": "success",
+      "macos-package-arm64": "success",
+      "macos-package-x64": "success"
+    },
+    "scope": "unit/lint and three native platform package/install/startup smoke; not manual device or UI matrix"
+  },
+  "historical_update_workflow": {
+    "source": "ab6b3c14b9c6780a8050cdd90735b841fb943515",
+    "url": "https://github.com/MonsterXia/scrcpy-harmony/actions/runs/41611950619",
+    "result": "failure",
+    "jobs": [
+      "update-win-x64",
+      "update-mac-arm64",
+      "update-mac-x64"
+    ],
+    "scope": "fixed 1.0.1 / published 1.0.2 acceptance, not 1.0.5 candidate",
+    "observed_arm64_failures": [
+      "expected v1.0.2 metadata request not present",
+      "timed out waiting for no-update dialog in published 1.0.2"
+    ],
+    "follow_up": "refresh obsolete fixed release assumptions in a separate upgrade acceptance task; no production updater or live release was changed"
+  }
+}

@@ -1,7 +1,21 @@
-.split-pane {
+.table {
+  position: relative;
+  min-height: 100px;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid var(--workspace-line);
+  border-radius: 10px;
+  background: var(--workspace-surface);
+}
+.error {
+  color: var(--workspace-danger);
+  flex-shrink: 0;
+}
+.empty {
   position: absolute;
-  top: 30px;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 40px 0 auto;
+  text-align: center;
+  padding: 14px;
+  color: var(--workspace-secondary);
+  pointer-events: none;
 }

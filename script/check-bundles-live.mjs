@@ -34,7 +34,7 @@ try {
   child.stdout?.on('data', append); child.stderr?.on('data', append)
   const page = await application.firstWindow()
   page.setDefaultTimeout(30_000)
-  await page.locator('#app .panel-with-toolbar').first().waitFor()
+  await page.locator('[data-workspace]').waitFor()
   report.runtime = await application.evaluate(({ app }) => ({ packaged: app.isPackaged, version: app.getVersion(), electron: process.versions.electron }))
   const targets = await page.evaluate(() => main.getTargets())
   assert.equal(targets.length, 1, 'Connect one authorized Harmony device')
@@ -64,12 +64,12 @@ try {
   report.ipc = { installedCount: names.length, missing, before, mixed, after }
   console.log('Real mixed bm dump query and subsequent recovery passed')
 
-  const panel = page.locator('.panel-with-toolbar').filter({ hasText: /共 \d+ 个应用/ })
+  const panel = page.locator('[data-application]')
   await panel.waitFor()
   const refresh = panel.locator('[title="刷新"]')
-  const ready = () => refresh.evaluate((el) => !el.closest('.luna-toolbar-disabled'))
+  const ready = () => refresh.evaluate((el) => !el.disabled)
   await waitFor(ready)
-  const total = () => panel.locator('.luna-toolbar-item-text').innerText()
+  const total = () => panel.locator('[data-application-count]').innerText()
   report.ui = { before: await total() }
   assert.match(report.ui.before, /共 [1-9]\d* 个应用/)
   await refresh.click()

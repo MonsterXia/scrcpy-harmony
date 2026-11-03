@@ -67,6 +67,7 @@ async function fixture(
   const listeners = new Map()
   const emitInstalled = (key) => listeners.get("bundleInstalled")?.(key)
   let menu, iconProps, gridProps
+  let confirmation = null
   const store = observable({
     target: { key: 'fixture-a' },
     application: {
@@ -106,7 +107,6 @@ async function fixture(
     'share/renderer/lib/contextMenu': (_event, template) => {
       menu = template
     },
-    'luna-modal': { confirm: async () => true },
     'licia/toEl': (html) => html,
     'luna-toolbar/react': {
       __esModule: true,
@@ -146,6 +146,7 @@ async function fixture(
       PannelLoading: () => h('div', { 'data-loading': true }),
     },
     './BundleInfoModal': Empty,
+    './ApplicationActions': { __esModule: true, default: Empty },
     './Application.module.scss': {},
     '../../../assets/default-icon.png': 'default-icon.png',
   }
@@ -159,6 +160,8 @@ async function fixture(
       require(id) {
         if (id in mocks) return mocks[id]
         if (id === '../../../lib/util') return load('src/renderer/lib/util.ts')
+        if (id === '../workspace/ConfirmDialog') return load('src/renderer/main/components/workspace/ConfirmDialog.tsx')
+        if (id.endsWith('.scss')) return {}
         return require(id)
       },
     })
@@ -221,8 +224,20 @@ async function fixture(
         // Do not await an operation whose IPC completion is controlled by test.
         menu.find((item) => item.label === 'uninstall').click()
       })
+      if (confirmation) confirmation.promise.then(accepted => container.querySelector(accepted ? '[data-confirm-accept]' : '[data-confirm-cancel]')?.click())
+      else await act(async () => container.querySelector('[data-confirm-accept]')?.click())
     },
     gridNames: () => gridProps.data.map((row) => row.bundleName),
+    filterMatches: value => iconProps.filter({ data: { info: value } }),
+    setFilter: async value => act(async () => {
+      const input = container.querySelector('input[type="search"]')
+      assert.ok(input, 'semantic application search field exists')
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, value)
+      input.dispatchEvent(new window.Event('input', { bubbles: true }))
+    }),
+    holdConfirmation: () => { confirmation = deferred(); return confirmation },
+    captureMenu: name => { iconProps.onContextMenu({}, { data: { info: info(name) } }); return menu },
+    host: container,
   }
 }
 
@@ -502,4 +517,98 @@ test('installation in another window refreshes only the matching device and unsu
   await f.unmount()
   await f.externalInstall('fixture-a')
   assert.equal(f.calls.lists.length, 2)
+})
+
+test('application search matches package names as well as display names', async t => {
+  const f = await fixture(t)
+  await f.settle(f.calls.lists[0], ['com.example.notes'])
+  await f.setFilter('COM.EXAMPLE')
+  assert.equal(f.filterMatches({ label: 'Notes', bundleName: 'com.example.notes' }), true)
+  assert.equal(f.filterMatches({ label: 'Browser', bundleName: 'org.browser' }), false)
+})
+
+test('a destructive confirmation opened before refresh cannot dispatch afterwards', async t => {
+  const f = await fixture(t)
+  await f.settle(f.calls.lists[0], ['old'])
+  const confirmation = f.holdConfirmation()
+  await f.uninstall('old')
+  await f.click('refresh')
+  await f.settle(confirmation, true)
+  assert.equal(f.calls.uninstalls.length, 0)
+  await f.settle(f.calls.lists[1], ['current'])
+})
+
+test('an old native context-menu action cannot operate on refreshed data', async t => {
+  const f = await fixture(t)
+  await f.settle(f.calls.lists[0], ['old'])
+  const menu = f.captureMenu('old')
+  await f.click('refresh')
+  await act(async () => { menu.find(item => item.label === 'uninstall').click() })
+  assert.equal(f.host.querySelector('[role="alertdialog"]'), null)
+  assert.equal(f.calls.uninstalls.length, 0)
+  await f.settle(f.calls.lists[1], ['current'])
+})
+
+test('rejected application actions show an error and release the operation lock', async t => {
+  const f = await fixture(t)
+  await f.settle(f.calls.lists[0], ['old'])
+  await f.uninstall('old')
+  await f.settle(f.calls.uninstalls[0], new Error('device failure'), true)
+  assert.equal(f.notifications.filter(([text]) => text === 'commonErr').length, 1)
+  await f.uninstall('old')
+  assert.equal(f.calls.uninstalls.length, 2)
+  await f.settle(f.calls.uninstalls[1])
+  await f.settle(f.calls.lists[1], [])
+})
+
+test('a destructive confirmation cannot cross a device switch', async t => {
+  const f = await fixture(t)
+  await f.settle(f.calls.lists[0], ['old'])
+  const confirmation = f.holdConfirmation()
+  await f.uninstall('old')
+  await act(async () => runInAction(() => { f.store.target = { key: 'fixture-b' } }))
+  await f.settle(confirmation, true)
+  assert.equal(f.calls.uninstalls.length, 0)
+  await f.settle(f.calls.lists[1], ['current'])
+})
+
+// getBundleInfos resolves only successful per-bundle reads in production.
+test('shortened metadata success retains good rows across batches and retries the omitted names', async t => {
+  const f = await fixture(t, { delayInfos: true })
+  await f.settle(f.calls.lists[0], ['one', 'two', 'three', 'four', 'five', 'six'])
+  await f.settle(f.calls.infos[0], [info('one')])
+  assert.deepEqual(f.names(), ['one'])
+  await f.settle(f.calls.infos[1], [info('six')])
+  assert.deepEqual(f.names(), ['one', 'six'])
+  assert.match(f.host.querySelector('[role="alert"]')?.textContent || '', /applicationPartialError/)
+  assert.equal(f.loading(), false)
+  assert.equal(f.calls.lists.length, 1, 'an incomplete response must not loop automatically')
+  await act(async () => f.host.querySelector('[role="alert"] button').click())
+  await f.settle(f.calls.lists[1], ['one', 'two'])
+  await f.settle(f.calls.infos[2], [info('one'), info('two')])
+  assert.deepEqual(f.names(), ['one', 'two'])
+  assert.equal(f.host.querySelector('[role="alert"]'), null)
+})
+
+test('empty metadata success for discovered apps shows load error rather than install empty state', async t => {
+  const f = await fixture(t, { delayInfos: true })
+  await f.settle(f.calls.lists[0], ['unreadable'])
+  await f.settle(f.calls.infos[0], [])
+  assert.deepEqual(f.names(), [])
+  assert.match(f.host.querySelector('[role="alert"]')?.textContent || '', /applicationLoadError/)
+  assert.equal(f.host.textContent.includes('applicationInstallHint'), false)
+  assert.equal(f.loading(), false)
+  await act(async () => f.host.querySelector('[role="alert"] button').click())
+  await f.settle(f.calls.lists[1], ['unreadable'])
+  await f.settle(f.calls.infos[1], [info('unreadable')])
+  assert.deepEqual(f.names(), ['unreadable'])
+  assert.equal(f.host.querySelector('[role="alert"]'), null)
+})
+
+test('a genuine empty enumeration keeps the normal install empty state', async t => {
+  const f = await fixture(t, { delayInfos: true })
+  await f.settle(f.calls.lists[0], [])
+  assert.equal(f.calls.infos.length, 0)
+  assert.equal(f.host.querySelector('[role="alert"]'), null)
+  assert.equal(f.host.textContent.includes('applicationInstallHint'), true)
 })

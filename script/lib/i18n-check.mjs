@@ -7,7 +7,6 @@ const fields = new Set(['label', 'title', 'placeholder', 'description', 'message
 // Technical labels are intentionally identical across languages. Keep exceptions
 // tied to a file and value; never exempt whole directories or English sentences.
 const literals = {
-  'src/renderer/main/components/toolbar/SettingsModal.tsx': ['HDC'],
   'src/renderer/main/components/process/Process.tsx': ['% CPU', 'PID'],
   'src/share/renderer/process/components/ProcessMananger.tsx': ['% CPU', 'PID'],
   'src/share/renderer/process/components/Graph.tsx': ['CPU'],

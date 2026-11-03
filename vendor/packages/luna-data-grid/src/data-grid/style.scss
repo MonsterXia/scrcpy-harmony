@@ -47,7 +47,8 @@
   }
 
   td {
-    height: 20px;
+    height: var(--luna-data-grid-row-height, 20px);
+    box-sizing: border-box;
     cursor: default;
     user-select: text;
   }

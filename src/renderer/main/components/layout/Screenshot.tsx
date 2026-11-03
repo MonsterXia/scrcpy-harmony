@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite'
 import Style from './Screenshot.module.scss'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Document, Element } from '@xmldom/xmldom'
 import store from '../../store'
 import each from 'licia/each'
@@ -26,77 +26,85 @@ export interface IImage {
 
 export default observer(function Screenshot(props: IProps) {
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'))
-  const imageRef = useRef(new Image())
+  const imageRef = useRef<HTMLImageElement | null>(null)
   const propsRef = useRef(props)
+  const [ready, setReady] = useState('')
+  const border = store.layout.border
 
   useEffect(() => {
     propsRef.current = props
   }, [props])
-
   useEffect(() => {
     const canvas = canvasRef.current
-
     let isClick = true
-    canvas.addEventListener(pointerEvent('down') as any, () => (isClick = true))
-    canvas.addEventListener(
-      pointerEvent('move') as any,
-      () => (isClick = false)
-    )
-    canvas.addEventListener(pointerEvent('up') as any, (e: MouseEvent) => {
+    const down = () => {
+      isClick = true
+    }
+    const move = () => {
+      isClick = false
+    }
+    const up = (e: MouseEvent) => {
       const props = propsRef.current
-      if (!props.hierarchy || !isClick) {
-        return
-      }
-
-      const ratio = props.image.width / canvasRef.current!.clientWidth
-      const x = Math.round(e.offsetX * ratio)
-      const y = Math.round(e.offsetY * ratio)
-      const el = findEl(props.hierarchy, x, y)
-      if (el) {
-        props.onSelect?.(el)
-      }
-    })
+      if (!props.hierarchy || !isClick || !canvas.clientWidth) return
+      const ratio = props.image.width / canvas.clientWidth
+      const el = findEl(
+        props.hierarchy,
+        Math.round(e.offsetX * ratio),
+        Math.round(e.offsetY * ratio),
+      )
+      if (el) props.onSelect?.(el)
+    }
+    canvas.addEventListener(pointerEvent('down') as any, down)
+    canvas.addEventListener(pointerEvent('move') as any, move)
+    canvas.addEventListener(pointerEvent('up') as any, up)
+    return () => {
+      canvas.removeEventListener(pointerEvent('down') as any, down)
+      canvas.removeEventListener(pointerEvent('move') as any, move)
+      canvas.removeEventListener(pointerEvent('up') as any, up)
+    }
   }, [])
-
   useEffect(() => {
-    canvasRef.current.width = props.image.width
-    canvasRef.current.height = props.image.height
-    imageRef.current.src = props.image.url
-    imageRef.current.onload = () => {
+    const canvas = canvasRef.current
+    canvas.width = props.image.width
+    canvas.height = props.image.height
+    imageRef.current = null
+    setReady('')
+    if (!props.image.url) return
+    let active = true
+    const image = new Image()
+    image.onload = () => {
+      if (!active) return
+      imageRef.current = image
       draw()
+      setReady(props.image.url)
+    }
+    image.src = props.image.url
+    return () => {
+      active = false
+      image.onload = null
+      image.onerror = null
+      imageRef.current = null
     }
   }, [props.image])
-
   useEffect(() => {
     draw()
-  }, [props.hierarchy, props.selected])
+  }, [props.hierarchy, props.selected, border])
 
   function draw() {
-    if (!canvasRef.current || !props.image.url) {
-      return
-    }
-
+    const props = propsRef.current
+    const image = imageRef.current
+    if (!image || !props.image.url) return
     const ctx = canvasRef.current.getContext('2d')
-    if (!ctx) {
-      return
-    }
-
+    if (!ctx) return
     ctx.clearRect(0, 0, props.image.width, props.image.height)
-    ctx.drawImage(imageRef.current, 0, 0)
-
-    if (store.layout.border && props.hierarchy) {
-      drawBorder(ctx, props.hierarchy)
-    }
-
-    if (props.selected) {
-      drawSelected(ctx, props.selected)
-    }
+    ctx.drawImage(image, 0, 0)
+    if (store.layout.border && props.hierarchy) drawBorder(ctx, props.hierarchy)
+    if (props.selected) drawSelected(ctx, props.selected)
   }
-  draw()
 
   return (
     <div className={Style.container}>
-      {props.image.url && (
+      {props.image.url && ready === props.image.url && (
         <LunaImageViewer
           image={canvasRef.current}
           onCreate={props.onImageViewerCreate}

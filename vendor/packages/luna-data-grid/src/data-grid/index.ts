@@ -64,6 +64,8 @@ export interface IOptions extends IComponentOptions {
   maxHeight?: number
   /** Min table height. */
   minHeight?: number
+  /** Row height in CSS pixels (16–80, rounded to an integer). Default 20. */
+  rowHeight?: number
   /** Data filter. */
   filter?: string | RegExp | types.AnyFn
   /** Default selectable for all nodes. */
@@ -83,6 +85,12 @@ export interface IDataGridNodeOptions {
 }
 
 const ROW_HEIGHT = 20
+
+function normalizeRowHeight(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 16 && value <= 80
+    ? Math.round(value)
+    : ROW_HEIGHT
+}
 
 /**
  * Grid for displaying datasets.
@@ -172,6 +180,7 @@ export default class DataGrid extends Component<IOptions> {
       options.minHeight = options.height
     }
     this.initOptions(options, {
+      rowHeight: ROW_HEIGHT,
       minHeight: 41,
       maxHeight: Infinity,
       filter: '',
@@ -179,6 +188,10 @@ export default class DataGrid extends Component<IOptions> {
       multiSelections: false,
       headerContextMenu: false,
     })
+    this.options.rowHeight = normalizeRowHeight(this.options.rowHeight)
+    container.style.setProperty(
+      '--luna-data-grid-row-height', `${this.options.rowHeight}px`
+    )
     const { columns, minHeight, maxHeight } = this.options
     each(columns, (column) => {
       defaults(column, {
@@ -454,7 +467,7 @@ export default class DataGrid extends Component<IOptions> {
     const len = this.displayNodes.length
     let height = 0
     if (len > 0) {
-      height = ROW_HEIGHT * len
+      height = this.options.rowHeight! * len
     }
 
     if (height > minHeight) {
@@ -693,6 +706,14 @@ export default class DataGrid extends Component<IOptions> {
 
     this.on('changeOption', (name, val, oldVal) => {
       switch (name) {
+        case 'rowHeight':
+          this.options.rowHeight = normalizeRowHeight(val)
+          this.container.style.setProperty(
+            '--luna-data-grid-row-height', `${this.options.rowHeight}px`
+          )
+          this.updateHeight()
+          this.renderData()
+          break
         case 'minHeight':
         case 'maxHeight':
           this.updateHeight()
@@ -914,6 +935,13 @@ export default class DataGrid extends Component<IOptions> {
       }
 
       const { dataContainer, displayNodes, tableBody } = this
+      // Moving a focused row through the fragment clears browser focus, even
+      // when the same row is reinserted. Capture only focus owned by this grid.
+      const active = document.activeElement as HTMLElement | null
+      const focused = active && tableBody.contains(active) ? active : null
+      const focusedIndex = focused
+        ? displayNodes.findIndex((node) => node.container.contains(focused))
+        : -1
       const { scrollTop, clientHeight } = dataContainer
       const top = scrollTop - topTolerance
       const bottom = scrollTop + clientHeight + bottomTolerance
@@ -924,7 +952,7 @@ export default class DataGrid extends Component<IOptions> {
       const len = displayNodes.length
 
       const renderNodes = []
-      const height = ROW_HEIGHT
+      const height = this.options.rowHeight!
 
       for (let i = 0; i < len; i++) {
         const node = displayNodes[i]
@@ -955,6 +983,50 @@ export default class DataGrid extends Component<IOptions> {
 
       tableBody.textContent = ''
       tableBody.appendChild(frag)
+      if (focused) {
+        // Let consumers annotate newly inserted rows before choosing a new
+        // keyboard target. Never reclaim focus moved to another control/dialog.
+        queueMicrotask(() => {
+          const current = document.activeElement
+          if (!this.container.isConnected || this.container.closest('[inert]'))
+            return
+          if (
+            current &&
+            current !== document.body &&
+            current !== document.documentElement
+          )
+            return
+          if (focused.isConnected && tableBody.contains(focused)) {
+            focused.focus({ preventScroll: true })
+            return
+          }
+          // The old row left the virtual range. Keep virtualization bounded:
+          // focus the nearest focusable row in the viewport, then the grid root.
+          const first = Math.max(0, Math.floor(scrollTop / height))
+          const last = Math.min(
+            len - 1,
+            Math.ceil((scrollTop + clientHeight) / height) - 1,
+          )
+          const anchor = Math.min(last, Math.max(first, focusedIndex))
+          const visible = displayNodes.slice(first, last + 1)
+            .map((node, offset) => ({ node, index: first + offset }))
+            .sort((a, b) => Math.abs(a.index - anchor) - Math.abs(b.index - anchor))
+          for (const { node } of visible) {
+            if (!tableBody.contains(node.container)) continue
+            const target =
+              node.container.tabIndex >= 0
+                ? node.container
+                : node.container.querySelector<HTMLElement>(
+                    'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])',
+                  )
+            if (target) {
+              target.focus({ preventScroll: true })
+              return
+            }
+          }
+          this.container.focus({ preventScroll: true })
+        })
+      }
     },
     16
   )

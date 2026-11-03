@@ -1,146 +1,216 @@
 import { observer } from 'mobx-react-lite'
 import Style from './Screenshot.module.scss'
-import LunaToolbar, {
-  LunaToolbarButton,
-  LunaToolbarSeparator,
-  LunaToolbarSpace,
-  LunaToolbarText,
-} from 'luna-toolbar/react'
 import dataUrl from 'licia/dataUrl'
-import toBool from 'licia/toBool'
 import fileSize from 'licia/fileSize'
 import base64 from 'licia/base64'
 import convertBin from 'licia/convertBin'
 import download from 'licia/download'
 import loadImg from 'licia/loadImg'
-import className from 'licia/className'
 import LunaImageViewer from 'luna-image-viewer/react'
 import ImageViewer from 'luna-image-viewer'
-import ToolbarIcon from 'share/renderer/components/ToolbarIcon'
 import { useEffect, useRef, useState } from 'react'
 import store from '../../store'
 import { t } from 'common/util'
-import CopyButton from 'share/renderer/components/CopyButton'
-import { copyData } from 'share/renderer/lib/util'
-import { toPng } from '../../lib/util'
+import { notify } from 'share/renderer/lib/util'
+import { toPng, writeImageClipboard } from '../../lib/util'
 
+type ScreenshotImage = {
+  data: string
+  url: string
+  width: number
+  height: number
+  size: number
+}
 export default observer(function Screenshot() {
-  const [image, setImage] = useState<{
-    data: string
-    url: string
-    width: number
-    height: number
-    size: number
-  } | null>(null)
+  const [image, setImage] = useState<ScreenshotImage | null>(null)
+  const [loading, setLoading] = useState(false),
+    [error, setError] = useState(false),
+    [copying, setCopying] = useState(false)
   const imageViewerRef = useRef<ImageViewer>(null)
-
+  const session = useRef<{
+    active: boolean
+    reading: boolean
+    copying: boolean
+  } | null>(null)
+  const key = store.target?.key
   useEffect(() => {
-    recapture()
-  }, [])
-
-  function save() {
-    const blob = convertBin(image!.data, 'Blob')
-    download(blob, 'screenshot.jpeg', 'image/jpeg')
-  }
-
-  async function copy() {
-    const png = await toPng(image!.url)
-    copyData(dataUrl.parse(png)!.data, 'image/png')
-  }
-
+    const current = { active: true, reading: false, copying: false }
+    session.current = current
+    setImage(null)
+    setError(false)
+    setLoading(false)
+    setCopying(false)
+    void recapture()
+    return () => {
+      current.active = false
+    }
+  }, [key])
   async function recapture() {
-    if (store.target) {
-      const data = await main.screencap(store.target.key)
+    const current = session.current
+    if (
+      !key ||
+      !current?.active ||
+      current.reading ||
+      store.target?.key !== key
+    )
+      return
+    const valid = () =>
+      current.active && session.current === current && store.target?.key === key
+    current.reading = true
+    setLoading(true)
+    setError(false)
+    try {
+      const data = await main.screencap(key)
+      if (!valid()) return
       const url = dataUrl.stringify(data, 'image/jpeg')
-      loadImg(url, (err, img) => {
-        setImage({
-          data,
-          url,
-          width: img.width,
-          height: img.height,
-          size: base64.decode(data).length,
-        })
-      })
+      const dimensions = await new Promise<{ width: number; height: number }>(
+        (resolve, reject) =>
+          loadImg(url, (error, img) => {
+            if (error || !img?.width || !img?.height)
+              reject(error || new Error('Invalid image'))
+            else resolve({ width: img.width, height: img.height })
+          }),
+      )
+      if (valid())
+        setImage({ data, url, ...dimensions, size: base64.decode(data).length })
+    } catch {
+      if (valid()) {
+        setImage(null)
+        setError(true)
+      }
+    } finally {
+      current.reading = false
+      if (valid()) setLoading(false)
     }
   }
-
-  const hasImage = toBool(image)
-
+  async function copy() {
+    const current = session.current,
+      snapshot = image
+    if (!current?.active || current.copying || !snapshot) return
+    const valid = () =>
+      current.active && session.current === current && store.target?.key === key
+    current.copying = true
+    setCopying(true)
+    try {
+      const png = await toPng(snapshot.url)
+      if (!valid()) return
+      await writeImageClipboard(dataUrl.parse(png)!.data, 'image/png')
+      if (valid()) notify(t('copied'), { icon: 'success' })
+    } catch {
+      if (valid()) notify(t('commonErr'), { icon: 'error' })
+    } finally {
+      current.copying = false
+      if (valid()) setCopying(false)
+    }
+  }
+  function save() {
+    if (image)
+      download(convertBin(image.data, 'Blob'), 'screenshot.jpeg', 'image/jpeg')
+  }
+  const button = (
+    icon: string,
+    label: string,
+    action: () => void,
+    disabled = !image,
+  ) => (
+    <button
+      key={icon}
+      type="button"
+      title={label}
+      aria-label={label}
+      disabled={disabled}
+      onClick={action}
+    >
+      <span className={`icon-${icon}`} aria-hidden="true" />
+    </button>
+  )
   return (
-    <div className={className('panel-with-toolbar', Style.container)}>
-      <LunaToolbar className="panel-toolbar">
-        <ToolbarIcon
-          icon="refresh"
-          title={t('recapture')}
-          onClick={recapture}
-          disabled={!store.target}
-        />
-        <ToolbarIcon
-          icon="save"
-          title={t('save')}
-          onClick={save}
-          disabled={!hasImage}
-        />
-        <LunaToolbarButton onClick={() => {}} disabled={!hasImage}>
-          <CopyButton className="toolbar-icon" onClick={copy} />
-        </LunaToolbarButton>
-        <LunaToolbarSeparator />
-        <ToolbarIcon
-          icon="rotate-left"
-          title={t('rotateLeft')}
-          onClick={() => imageViewerRef.current?.rotate(-90)}
-          disabled={!hasImage}
-        />
-        <ToolbarIcon
-          icon="rotate-right"
-          title={t('rotateRight')}
-          onClick={() => imageViewerRef.current?.rotate(90)}
-          disabled={!hasImage}
-        />
-        <ToolbarIcon
-          icon="zoom-in"
-          title={t('zoomIn')}
-          onClick={() => imageViewerRef.current?.zoom(0.1)}
-          disabled={!hasImage}
-        />
-        <ToolbarIcon
-          icon="zoom-out"
-          title={t('zoomOut')}
-          onClick={() => imageViewerRef.current?.zoom(-0.1)}
-          disabled={!hasImage}
-        />
-        <ToolbarIcon
-          icon="original"
-          title={t('actualSize')}
-          onClick={() => imageViewerRef.current?.zoomTo(1)}
-          disabled={!hasImage}
-        />
-        <ToolbarIcon
-          icon="reset"
-          title={t('reset')}
-          onClick={() => imageViewerRef.current?.reset()}
-          disabled={!hasImage}
-        />
-        <LunaToolbarSpace />
-        <LunaToolbarText
-          text={
-            hasImage
-              ? `${image!.width}x${image!.height} JPEG ${fileSize(
-                  image!.size
-                )}B`
-              : ''
-          }
-        />
-      </LunaToolbar>
-      {image ? (
-        <LunaImageViewer
-          className="panel-body"
-          image={image.url}
-          onCreate={(imageViewer) => (imageViewerRef.current = imageViewer)}
-        />
-      ) : (
-        <div className="panel-body" />
+    <div className={Style.page} data-screenshot aria-busy={loading}>
+      <header className={Style.heading}>
+        <div>
+          <h1>{t('screenshot')}</h1>
+          <p>{t('workspaceScreenshotHint')}</p>
+        </div>
+        <button
+          className={Style.primary}
+          type="button"
+          data-action="capture"
+          disabled={!key || loading}
+          onClick={() => void recapture()}
+        >
+          <span className="icon-refresh" aria-hidden="true" />
+          {t('recapture')}
+        </button>
+      </header>
+      <div className={Style.toolbar}>
+        <div role="group" aria-label={t('workspaceExport')}>
+          <button type="button" disabled={!image} onClick={save}>
+            <span className="icon-save" aria-hidden="true" />
+            {t('save')}
+          </button>
+          <button
+            type="button"
+            disabled={!image || copying}
+            onClick={() => void copy()}
+          >
+            {t('copy')}
+          </button>
+        </div>
+        <div role="group" aria-label={t('workspaceImageView')}>
+          {button('rotate-left', t('rotateLeft'), () =>
+            imageViewerRef.current?.rotate(-90),
+          )}
+          {button('rotate-right', t('rotateRight'), () =>
+            imageViewerRef.current?.rotate(90),
+          )}
+          {button('zoom-in', t('zoomIn'), () =>
+            imageViewerRef.current?.zoom(0.1),
+          )}
+          {button('zoom-out', t('zoomOut'), () =>
+            imageViewerRef.current?.zoom(-0.1),
+          )}
+          {button('original', t('actualSize'), () =>
+            imageViewerRef.current?.zoomTo(1),
+          )}
+          {button('reset', t('reset'), () => imageViewerRef.current?.reset())}
+        </div>
+        <span className={Style.meta}>
+          {image
+            ? `${image.width}×${image.height} · JPEG · ${fileSize(image.size)}B`
+            : ''}
+        </span>
+      </div>
+      {error && (
+        <div className={Style.error} role="alert">
+          {t('workspaceScreenshotFailed')}
+        </div>
       )}
+      <div className={Style.canvas}>
+        {image ? (
+          <LunaImageViewer
+            image={image.url}
+            onCreate={(viewer) => {
+              imageViewerRef.current = viewer
+            }}
+          />
+        ) : (
+          <div className={Style.empty} role="status">
+            <span className="icon-camera" aria-hidden="true" />
+            <h2>
+              {loading
+                ? t('workspaceLoading')
+                : !key
+                  ? t('targetNotConnected')
+                  : t('workspaceNoScreenshot')}
+            </h2>
+            <p>
+              {!key
+                ? t('workspaceConnectToStart')
+                : t('workspaceScreenshotHint')}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   )
 })

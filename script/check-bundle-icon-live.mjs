@@ -38,9 +38,9 @@ async function verify() {
   await mkdir(output, { recursive: true })
   profile = await mkdtemp(path.join(os.tmpdir(), 'scrcpy-icon-'))
   await mkdir(path.join(profile, 'data'))
-  // An unused panel avoids querying any application before installing the selector.
+  // The settings page avoids device-operation panels before installing the selector.
   await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({
-    panel: 'icon-validation', application: { sysBundle: false, listView: true },
+    panel: 'settings', application: { sysBundle: false, listView: true },
   }))
   Object.assign(report, {
     sourceSha256: hash(await readFile('src/main/lib/hdc/bundle.ts')),
@@ -63,7 +63,7 @@ async function verify() {
   const child = application.process()
   const page = await application.firstWindow()
   page.setDefaultTimeout(30_000)
-  await page.locator('#app .luna-toolbar').first().waitFor()
+  await page.locator('[data-workspace]').waitFor()
   await application.evaluate(({ ipcMain }, bundleName) => {
     ipcMain.removeHandler('getBundles')
     ipcMain.handle('getBundles', () => [bundleName])
@@ -151,9 +151,9 @@ async function verify() {
   report.stage = 'application-panel'
   await page.evaluate(() => main.setMainStore('panel', 'application'))
   await page.reload()
-  const panel = page.locator('.panel-with-toolbar').filter({ hasText: '共 1 个应用' })
+  const panel = page.locator('[data-application]')
   await panel.waitFor()
-  await panel.locator('input[type="text"]').fill(bundleName)
+  await panel.locator('input[type="search"]').fill(bundleName)
   const row = panel.locator('.luna-data-grid-data-container tr').filter({ hasText: bundleName })
   await row.waitFor()
   assert.ok((await row.innerText()).includes('哔哩哔哩'))
@@ -174,9 +174,9 @@ async function verify() {
   report.ui = { list: await inspectImage(row.locator('img')) }
   await panel.screenshot({ path: path.join(output, 'bilibili-list.png') })
   report.stage = 'icon-view'
-  // Icon view searches names; the list view also searches package columns.
-  await panel.locator('input[type="text"]').fill('哔哩哔哩')
-  await panel.locator('.icon-grid').click()
+  // Both views search names and package identifiers; verify the localized label as well.
+  await panel.locator('input[type="search"]').fill('哔哩哔哩')
+  await panel.locator('[data-action="grid-view"]').click()
   const icon = panel.locator('.luna-icon-list-name-wrapper').filter({ hasText: '哔哩哔哩' }).locator('../..')
   report.ui.icons = await inspectImage(icon.locator('img'))
   await panel.screenshot({ path: path.join(output, 'bilibili-icons.png') })

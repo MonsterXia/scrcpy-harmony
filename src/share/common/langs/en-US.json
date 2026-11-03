@@ -65,5 +65,20 @@
   "fileNotSelected": "File not selected",
   "noPreview": "No preview",
   "commonErr": "Something went wrong",
-  "useNativeTitlebar": "Use Native Titlebar"
+  "useNativeTitlebar": "Use Native Titlebar",
+  "cancel": "Cancel",
+  "retry": "Retry",
+  "refresh": "Refresh",
+  "applicationLogs": "Application Logs",
+  "applicationLogsDescription": "Runtime messages from Scrcpy Harmony.",
+  "applicationLogsError": "Unable to read or clear application logs. Try reopening this window.",
+  "aboutDescription": "Desktop tools for HarmonyOS devices",
+  "toolProcessDescription": "Inspect the processes running Scrcpy Harmony.",
+  "toolMetrics": "Resource usage",
+  "toolMetricsError": "Resource metrics are unavailable. Retrying…",
+  "toolProcessLoadError": "Unable to refresh processes. Retrying…",
+  "toolProcessActionError": "Unable to complete this process action. Please try again.",
+  "toolProcessEmpty": "No processes to display.",
+  "toolProcessUnavailable": "Processes are unavailable.",
+  "toolLoading": "Loading…"
 }

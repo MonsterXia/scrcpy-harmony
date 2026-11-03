@@ -1,0 +1,15 @@
+@use '../process/Process.module.scss';
+.toolbar + .toolbar {
+  border-top: 0;
+}
+.toolbar input[type='search'] {
+  width: 170px;
+}
+.body {
+  margin-top: 12px;
+}
+
+.body :global(.luna-logcat) {
+  background: var(--workspace-surface);
+  border-color: var(--workspace-line);
+}

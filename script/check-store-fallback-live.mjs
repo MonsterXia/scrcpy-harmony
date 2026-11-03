@@ -65,7 +65,7 @@ async function verify({ step, acquire, signal }) {
   profile = await acquire(() => mkdtemp(path.join(os.tmpdir(), 'scrcpy-store-fallback-')),
     value => rm(value, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }))
   await acquire(() => mkdir(path.join(profile, 'data')), async () => {})
-  await acquire(() => writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'store-validation', application: { sysBundle: false, listView: true } })), async () => {})
+  await acquire(() => writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'settings', application: { sysBundle: false, listView: true } })), async () => {})
   report.sha256 = {}
   for (const file of ['src/main/lib/hdc/bundle.ts', 'src/main/lib/hdc/onlineBundleInfo.ts', 'dist/main/index.js']) {
     report.sha256[file] = createHash('sha256').update(await step(() => readFile(file))).digest('hex')
@@ -88,7 +88,7 @@ async function verify({ step, acquire, signal }) {
   child.stdout?.on('data', capture); child.stderr?.on('data', capture)
   const page = await step(() => application.firstWindow())
   page.setDefaultTimeout(15000)
-  await step(() => page.locator('#app .luna-toolbar').first().waitFor())
+  await step(() => page.locator('[data-workspace]').waitFor())
   report.runtime = await step(() => application.evaluate(({ app }) => ({ platform: process.platform, arch: process.arch, electron: process.versions.electron, packaged: app.isPackaged })))
   await step(() => application.evaluate(({ ipcMain }, names) => {
     ipcMain.removeHandler('getBundles')
@@ -122,7 +122,7 @@ async function verify({ step, acquire, signal }) {
   report.silentRequestCancelled = true
   await step(() => page.evaluate(() => main.setMainStore('panel', 'application')))
   await step(() => page.reload())
-  const panel = page.locator('.panel-with-toolbar').filter({ has: page.locator('.luna-data-grid') })
+  const panel = page.locator('[data-application]')
   for (const name of names) await step(() => panel.locator('.luna-data-grid-data-container tr').filter({ hasText: name }).waitFor())
   const refresh = panel.locator('[title="刷新"], [title="Refresh"]')
   const completed = await step(() => application.evaluate(() => globalThis.storeQueriesCompleted))

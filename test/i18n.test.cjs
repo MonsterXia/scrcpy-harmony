@@ -86,7 +86,7 @@ test('renderer language setup keeps document and Luna dialogs in sync with appli
 
 test('settings load and save the language preference through the existing persistence bridge', async () => {
   const saved = { language: 'en-US' }, module = { exports: {} }
-  const main = { getSettingsStore: async key => saved[key], setSettingsStore: async (key, value) => { saved[key] = value } }
+  const main = { on: () => () => {}, getSettingsStore: async key => saved[key], setSettingsStore: async (key, value) => { saved[key] = value } }
   vm.runInNewContext(transformSync(fs.readFileSync('src/renderer/main/store/settings.ts', 'utf8'), { loader: 'ts', format: 'cjs' }).code, { module, exports: module.exports, require: id => id === 'share/common/i18n' ? load('src/share/common/i18n.ts') : require(id), main })
   const settings = new module.exports.Settings()
   await settings.init()

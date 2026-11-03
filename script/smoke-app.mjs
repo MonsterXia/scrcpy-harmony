@@ -121,7 +121,7 @@ try {
   await page.waitForURL(expectedPage.href)
   assert.equal(await page.title(), pkg.productName)
   // The overview is mounted only after the renderer store has initialized via IPC.
-  await page.locator('#app .panel-with-toolbar').first().waitFor({ state: 'visible' })
+  await page.locator('#app [data-panel="overview"]').waitFor({ state: 'visible' })
   const bridge = await page.evaluate(async (hdcResource) => ({
     targets: await window.main.getTargets(),
     customTitlebar: await window.main.isCustomTitlebar(),
@@ -138,12 +138,11 @@ try {
   // Observe the actual window without forcing it to show or skipping the check.
   await waitForWindowVisible(browserWindow)
 
-  await page.locator('#app .icon-setting').click()
-  await page.locator('.luna-modal:visible .luna-setting').waitFor({
-    state: 'visible',
-  })
-  await page.locator('.luna-modal:visible')
-    .getByText('HDC', { exact: true }).waitFor({ state: 'visible' })
+  await page.locator('#app [data-action="settings"]').click()
+  const settingsPage = page.locator('#app [data-panel="settings"] [data-settings]')
+  await settingsPage.waitFor({ state: 'visible' })
+  await settingsPage.getByRole('heading', { name: 'HDC', exact: true })
+    .waitFor({ state: 'visible' })
   // Retained errors cover early page failures before the listener was attached.
   failures.push(...(await page.pageErrors()).map((error) => error.message))
   failures.push(...(await page.consoleMessages())

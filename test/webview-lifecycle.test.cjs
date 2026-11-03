@@ -166,6 +166,7 @@ async function fixture(
   )
   return {
     calls,
+    container,
     timers,
     unmount,
     rows: () => Array.from(gridProps.data, (row) => row.id),
@@ -361,4 +362,59 @@ test('hiding during top-bundle lookup prevents the next IPC stage', async (t) =>
   await f.settle(f.calls.top[0], bundle)
   assert.equal(f.calls.pages.length, 0)
   assert.equal(f.timers.size, 0)
+})
+
+test('read failure is visible and manual retry replaces a pending poll without overlap', async (t) => {
+  const f = await fixture(t)
+  await f.settle(f.calls.top[0], new Error('offline'), true)
+  assert.ok(f.container.querySelector('[role="alert"]'))
+  await f.click('refresh')
+  assert.equal(f.calls.top.length, 2)
+  assert.equal(f.timers.size, 0)
+  await f.click('refresh')
+  assert.equal(f.calls.top.length, 2)
+  await complete(f, 1)
+  assert.equal(f.container.querySelector('[role="alert"]'), null)
+})
+
+test('WebView empty and search no-result states remain distinct and title text is literal', async (t) => {
+  const f = await fixture(t)
+  await complete(f, 0, [])
+  assert.match(f.container.textContent, /webviewEmpty/)
+  await f.tick()
+  await complete(f, 1, [{ ...page(), title: '<img src=x onerror=evil()>' }])
+  assert.equal(f.container.querySelector('img[onerror]'), null)
+  const search = f.container.querySelector('input[type="search"]')
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      'value',
+    ).set.call(search, 'missing')
+    search.dispatchEvent(new window.Event('input', { bubbles: true }))
+  })
+  assert.match(f.container.textContent, /webviewNoResults/)
+})
+
+test('real WebView grid rows are keyboard reachable and keep focus on selection renders', async (t) => {
+  const f = await fixture(t)
+  await complete(f, 0)
+  await act(async () => new Promise((resolve) => setTimeout(resolve, 40)))
+  const row = f.container.querySelector('.luna-data-grid-node')
+  assert.equal(row.tabIndex, 0)
+  row.focus()
+  await act(async () =>
+    row.dispatchEvent(
+      new window.KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      }),
+    ),
+  )
+  assert.equal(f.disabled('debug'), false)
+  assert.equal(
+    f.container.querySelector('[data-selected-url]').textContent,
+    page().url,
+  )
+  assert.equal(document.activeElement, row)
 })

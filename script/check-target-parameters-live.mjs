@@ -22,7 +22,7 @@ const temporaryRoot = await realpath(os.tmpdir())
 const profile = await mkdtemp(path.join(temporaryRoot, 'scrcpy-m2-5-'))
 const upstreamPort = Number(process.env.OHOS_HDC_SERVER_PORT || 8710)
 assert.ok(Number.isInteger(upstreamPort) && upstreamPort > 0 && upstreamPort < 65536)
-const report = { fault, platform: process.platform, arch: process.arch,
+const report = { fault, startupPanel: 'settings', platform: process.platform, arch: process.arch,
   sourceSha256: createHash('sha256').update(await readFile(path.join(root, 'src/main/lib/hdc.ts'))).digest('hex'),
   realDevice: null, syntheticFault: false, recovered: false, passed: false }
 const sockets = new Set()
@@ -88,14 +88,14 @@ const server = net.createServer((downstream) => {
 let deadline
 try {
   await mkdir(path.join(profile, 'data'), { recursive: true })
-  // An unused panel keeps all device-operation panels unmounted. The real
-  // toolbar, store, preload, IPC handlers and HDC transport remain untouched.
-  await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'm2-5-validation' }))
+  // The application-level settings page mounts no device-operation panels.
+  // Device selector, enumeration, parameter reads and all IPC remain real.
+  await writeFile(path.join(profile, 'data/main.json'), JSON.stringify({ panel: 'settings' }))
   const forbiddenBin = path.join(profile, 'forbidden-hdc.exe')
   // Existing empty file prevents fallback to bundled HDC and cannot start a server.
   await writeFile(forbiddenBin, '')
   await writeFile(path.join(profile, 'data/settings.json'), JSON.stringify({
-    hdcPath: forbiddenBin, killHdcWhenExit: false, theme: 'light',
+    hdcPath: forbiddenBin, killHdcWhenExit: false, theme: 'light', language: 'zh-CN',
   }))
   server.listen(0, '127.0.0.1')
   await once(server, 'listening')
@@ -124,7 +124,7 @@ try {
   await waitFor(async () => {
     const items = await main.getMemStore('targets')
     return items?.length === 1 && (await main.getMainStore('target'))?.key === items[0].key &&
-      document.querySelector('#app select')?.value === items[0].key
+      document.querySelector('#workspace-device')?.value === items[0].key
   })
   report.realDevice = await page.evaluate(async () => {
     const targets = await main.getTargets()
@@ -133,13 +133,14 @@ try {
     return { count: targets.length, transport: item.key.includes(':') ? 'network' : 'USB',
       softwareVersion: item.ohosVersion, apiVersion: item.sdkVersion,
       selectedMatches: selected?.key === item.key,
-      optionMatches: document.querySelector('#app select')?.value === item.key }
+      optionMatches: document.querySelector('#workspace-device')?.value === item.key }
   })
   assert.equal(report.realDevice.count, 1)
   assert.equal(report.realDevice.selectedMatches, true)
   assert.equal(report.realDevice.optionMatches, true)
   assert.ok(report.realDevice.softwareVersion)
-  const refresh = page.locator('#app .icon-refresh')
+  await page.locator('summary[aria-label="选择设备"]').click()
+  const refresh = page.locator('[data-action="refresh-devices"]')
   await refresh.click()
   await page.getByText('设备已刷新', { exact: true }).waitFor()
   inject = true
@@ -149,7 +150,7 @@ try {
     const failed = await page.evaluate(async () => ({
       count: (await main.getMemStore('targets')).length,
       selectedIsNull: (await main.getMainStore('target')) === null,
-      label: document.querySelector('#app select option')?.textContent,
+      label: document.querySelector('[data-workspace] [role="alert"]')?.textContent,
     }))
     assert.equal(failed.count, 0)
     assert.equal(failed.selectedIsNull, true)
@@ -163,12 +164,12 @@ try {
   await waitFor(async () => {
     const items = await main.getMemStore('targets')
     return items?.length === 1 && (await main.getMainStore('target'))?.key === items[0].key &&
-      document.querySelector('#app select')?.value === items[0].key
+      document.querySelector('#workspace-device')?.value === items[0].key
   })
   report.recovered = await page.evaluate(async () => {
     const items = await main.getTargets()
     return items.length === 1 && (await main.getMainStore('target'))?.key === items[0].key &&
-      document.querySelector('#app select')?.value === items[0].key
+      document.querySelector('#workspace-device')?.value === items[0].key
   })
   assert.equal(report.recovered, true)
   assert.deepEqual(violations, [])

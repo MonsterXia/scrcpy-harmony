@@ -40,7 +40,7 @@ function loadSource(file, imports, globals = {}) {
 
 // Minimal host-side HDC framing, not a device or a daemon implementation.
 // The actual installed hdckit performs handshake, parsing and target commands.
-async function fixture(t, badHello = false) {
+async function fixture(t, badHello = false, savedPanel = null) {
   const state = { keys: [KEY], badHello, parameters: new Map(), requests: [] }
   const sockets = new Set()
   const errors = []
@@ -142,7 +142,7 @@ async function fixture(t, badHello = false) {
   await loadSource('src/main/lib/hdc.ts', imports).init()
   const getTargets = handlers.get('getTargets')
   const events = new Map()
-  const main = { getTargets, getMainStore: async () => null,
+  const main = { getTargets, getMainStore: async name => name === 'panel' ? savedPanel : null,
     on: (name, handler) => events.set(name, handler) }
   const store = loadSource('src/renderer/main/store/index.ts', {
     '../../lib/util': { setMainStore() {} },
@@ -161,21 +161,24 @@ async function fixture(t, badHello = false) {
   }
   function toolbar() {
     const notifications = []
-    const Component = loadSource('src/renderer/main/components/toolbar/Target.tsx', {
-      'luna-toolbar/react': { __esModule: true, default: 'toolbar', LunaToolbarSelect: 'select' },
-      './Target.module.scss': {},
-      'mobx-react-lite': { observer: (component) => component },
-      '../../store': { __esModule: true, default: store },
-      'common/util': { t: (key) => key },
-      'share/renderer/components/ToolbarIcon': 'icon',
-      'share/renderer/lib/util': { notify: (...args) => notifications.push(args) },
-    }, { main }).default
-    const children = Component().props.children.props.children
-    return { notifications, select: children[0].props,
-      refresh: children.find((child) => child.props.icon === 'refresh').props.onClick }
+    return require('./helpers/target-picker.cjs')((file, imports) => loadSource(file, imports, { main }), store, notifications)
   }
   return { state, logs, getTargets, store, toolbar, events, server }
 }
+
+test('unknown persisted panel falls back to overview while valid navigation remains compatible', async t => {
+  const { store } = await fixture(t, false, 'obsolete-panel')
+  assert.equal(store.panel, 'overview')
+  store.selectPanel('shell')
+  assert.equal(store.panel, 'shell')
+  store.selectPanel('invalid-panel')
+  assert.equal(store.panel, 'overview')
+})
+
+test('valid persisted panel is restored', async t => {
+  const { store } = await fixture(t, false, 'webview')
+  assert.equal(store.panel, 'webview')
+})
 
 test('fixture cleanup closes a peer whose accept event arrives after teardown starts', { timeout: 3000 }, async (t) => {
   let cleanup, closing, f, emit, peer, client, timer
@@ -278,10 +281,16 @@ test('startup failure finishes initialization and a device event restores the se
   assert.equal(store.ready, true)
   assert.equal(store.targetsError, true)
   assert.equal(store.target, null)
-  assert.deepEqual(Object.keys(toolbar().select.options), ['targetRefreshFailed'])
+  assert.deepEqual(Object.keys(toolbar().select.options), ['targetNotConnected'])
+  assert.equal(store.targetsError, true, 'the new picker keeps refresh failure in its separate visible alert')
   state.badHello = false
   await events.get('changeTarget')()
   assert.equal(store.targetsError, false)
   assert.equal(store.target.key, KEY)
   assert.equal(toolbar().select.disabled, false)
+})
+
+test('application settings panel is restored without requiring a target', async t => {
+  const { store } = await fixture(t, false, 'settings')
+  assert.equal(store.panel, 'settings')
 })

@@ -30,6 +30,10 @@ Licia 的实现、依赖与类型均修改 `src/<模块>.js`，不要修改包�
 
 TypeScript 编译使用 `noCheck` 生成模块与声明，不是完整类型检查。Luna 保留每个锁定版本自己的共享源码，防止不同发布日期的组件被无意混成同一版本。应用使用的包入口、React 和 CSS 导入保留；未使用的预打包浏览器 UMD 入口不再提供。
 
+## Luna DataGrid 本地适配
+
+`luna-data-grid` 的可选 `rowHeight` 同时驱动单元格 CSS、高度/总空间与虚拟滚动偏移，默认仍为 20px。只接受 16–80 的有限数值并取整；无效输入恢复 20px。React 包装支持创建与后续属性更新。主工作区显式采用应用列表 32px、进程/WebView/端口列表 28px，独立进程工具窗口采用 28px；其他使用者保持原默认，不得仅用 CSS 拉高虚拟行。表头继续使用引擎测量值。回归见 `test/data-grid-height.test.cjs`，包含真实引擎的非默认高度滚动、动态切换与默认兼容性；`npm run build:vendor` 重建生成入口与样式。
+
 ## 来源、许可证与更新
 
 本地 `hdckit/UiDriver.ts` 已修复 TCP 粘包消费及控制请求生命周期：RPC 默认 10 秒、捕获停止回复 3 秒、TCP 连接 3 秒截止，断开/超时结束全部等待并丢弃旧连接；采用递增请求 ID，禁止因未知回复自动重发输入。测试入口为 `test/uitest-stream.test.cjs`、`test/uitest-connection.test.cjs`，动机和真机边界见[首帧恢复记录](../docs/maintenance/screencast-first-frame-recovery.md)。这些是本地适配，不修改原始导入 manifest 哈希。

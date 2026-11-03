@@ -63,6 +63,7 @@ dataGrid.on('select', (nodes) => {
 * filter(string | RegExp | AnyFn): Data filter.
 * headerContextMenu(boolean): Whether to show context menu on header.
 * height(number): Table height.
+* rowHeight(number): Local opt-in row height in CSS pixels; default 20. Finite numbers from 16 through 80 are rounded, invalid values use 20. Updates CSS and virtual positioning together; also supported by the React wrapper.
 * maxHeight(number): Max table height.
 * minHeight(number): Min table height.
 * multiSelections(boolean): Allow multiple selections.
