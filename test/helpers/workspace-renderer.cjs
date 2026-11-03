@@ -15,12 +15,13 @@ function setup() {
 }
 
 // Execute production React modules; replace only IPC and unrelated widget boundaries.
-function load(file, mocks = {}, globals = {}, cache = new Map()) {
+// Strict mode reproduces the browser ESM invariant for read-only DOM properties.
+function load(file, mocks = {}, globals = {}, cache = new Map(), strict = false) {
   const filename = path.resolve(__dirname, '../..', file)
   if (cache.has(filename)) return cache.get(filename).exports
   const module = { exports: {} }
   cache.set(filename, module)
-  vm.runInNewContext(transformSync(fs.readFileSync(filename, 'utf8'), {
+  vm.runInNewContext((strict ? '"use strict";\n' : '') + transformSync(fs.readFileSync(filename, 'utf8'), {
     loader: filename.endsWith('.tsx') ? 'tsx' : 'ts', format: 'cjs', jsx: 'automatic',
   }).code, {
     module, exports: module.exports, window, document, console,
@@ -32,7 +33,7 @@ function load(file, mocks = {}, globals = {}, cache = new Map()) {
         const base = path.resolve(path.dirname(filename), id)
         const resolved = ['.tsx', '.ts', '/index.ts'].map(ext => base + ext).find(fs.existsSync)
         if (!resolved) throw new Error(`Missing module ${id} in ${filename}`)
-        return load(resolved, mocks, globals, cache)
+        return load(resolved, mocks, globals, cache, strict)
       }
       return require(id)
     },

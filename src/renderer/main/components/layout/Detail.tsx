@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite'
 import Style from './Detail.module.scss'
 import { Element } from '@xmldom/xmldom'
 import { t } from 'common/util'
-import { Copyable } from '../common/Copyable'
+import copy from 'licia/copy'
 import toNum from 'licia/toNum'
 import map from 'licia/map'
 import filter from 'licia/filter'
@@ -30,9 +30,16 @@ export default observer(function Detail(props: IProps) {
 
     content = (
       <div className={Style.detail}>
-        <Copyable className={Style.title}>
+        <button
+          type="button"
+          className={Style.title}
+          title={t('copy')}
+          onClick={() =>
+            copy(selected.getAttribute('class') || selected.tagName)
+          }
+        >
           {selected.getAttribute('class') || selected.tagName}
-        </Copyable>
+        </button>
         <div className={Style.boxContainer}>
           <div className={Style.boxTop}>{selected.getAttribute('y')}</div>
           <br />
@@ -55,15 +62,34 @@ export default observer(function Detail(props: IProps) {
           <table>
             <tbody>
               {map(attributes, (attr) => {
-                let value = <Copyable>{attr.value}</Copyable>
+                let value = (
+                  <button
+                    type="button"
+                    title={t('workspaceCopyValue', {
+                      name: attr.name,
+                      value: attr.value,
+                    })}
+                    onClick={() => copy(attr.value)}
+                  >
+                    {attr.value}
+                  </button>
+                )
 
                 if (attr.value === 'true') {
                   value = (
-                    <span className={className('icon-check', Style.true)} />
+                    <span
+                      className={className('icon-check', Style.true)}
+                      role="img"
+                      aria-label={t('yes')}
+                    />
                   )
                 } else if (attr.value === 'false') {
                   value = (
-                    <span className={className('icon-delete', Style.false)} />
+                    <span
+                      className={className('icon-delete', Style.false)}
+                      role="img"
+                      aria-label={t('no')}
+                    />
                   )
                 }
 

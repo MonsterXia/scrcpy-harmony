@@ -229,5 +229,18 @@
   "hilogLevelInfo": "Info",
   "hilogLevelWarning": "Warning",
   "hilogLevelError": "Error",
-  "hilogNoResults": "No logs match the current filters. Saved exports still include these retained records."
+  "hilogNoResults": "No logs match the current filters. Saved exports still include these retained records.",
+  "layoutDescription": "Inspect the device hierarchy and select components in the tree or preview.",
+  "layoutTree": "Component tree",
+  "layoutProperties": "Properties",
+  "layoutLoadError": "Could not read the layout. Check the device and retry.",
+  "layoutEmpty": "Refresh to capture the current layout.",
+  "webviewDescription": "Inspect debuggable pages in the foreground application.",
+  "webviewSearch": "Search by title, URL or type",
+  "webviewEmpty": "No debuggable pages. Open an app with WebView debugging enabled.",
+  "webviewNoResults": "No pages match your search.",
+  "webviewLoadError": "Could not read WebView targets. Check the device and retry.",
+  "webviewReading": "Reading WebView targets…",
+  "webviewRead": "Targets updated. Refreshes every 2 seconds while this page is visible.",
+  "webviewPollingHint": "Targets refresh while this page is visible."
 }

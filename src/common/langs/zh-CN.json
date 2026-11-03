@@ -229,5 +229,18 @@
   "hilogLevelInfo": "信息",
   "hilogLevelWarning": "警告",
   "hilogLevelError": "错误",
-  "hilogNoResults": "没有符合当前筛选条件的日志。保存时仍会包含这些保留记录。"
+  "hilogNoResults": "没有符合当前筛选条件的日志。保存时仍会包含这些保留记录。",
+  "layoutDescription": "检查设备界面层级，在树或预览中选择组件。",
+  "layoutTree": "组件树",
+  "layoutProperties": "属性",
+  "layoutLoadError": "无法读取布局，请检查设备后重试。",
+  "layoutEmpty": "刷新以捕获当前界面布局。",
+  "webviewDescription": "检查前台应用中已启用调试的页面。",
+  "webviewSearch": "搜索标题、URL 或类型",
+  "webviewEmpty": "没有可调试页面，请打开已启用 WebView 调试的应用。",
+  "webviewNoResults": "没有符合搜索条件的页面。",
+  "webviewLoadError": "无法读取 WebView 目标，请检查设备后重试。",
+  "webviewReading": "正在读取 WebView 目标…",
+  "webviewRead": "目标已更新。此页面可见时每 2 秒刷新一次。",
+  "webviewPollingHint": "此页面可见时自动刷新目标。"
 }

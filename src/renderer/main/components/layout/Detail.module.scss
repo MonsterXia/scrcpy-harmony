@@ -97,3 +97,48 @@
     color: rgb(92, 213, 251);
   }
 }
+.container {
+  border-color: var(--workspace-line);
+  color: var(--workspace-text);
+  background: var(--workspace-surface);
+}
+.title {
+  background: transparent;
+  color: var(--workspace-text);
+  border: 0;
+  border-bottom: 1px solid var(--workspace-line);
+  text-align: left;
+  flex-shrink: 0;
+  width: 100%;
+}
+.attributes {
+  border-color: var(--workspace-line);
+  table {
+    table-layout: fixed;
+  }
+  td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+  }
+  button {
+    background: transparent;
+    border: 0;
+    color: var(--workspace-text);
+    text-align: left;
+    padding: 3px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font: inherit;
+  }
+  .name {
+    color: var(--workspace-secondary);
+    width: 42%;
+  }
+  .true {
+    color: var(--workspace-success);
+  }
+  .false {
+    color: var(--workspace-danger);
+  }
+}
