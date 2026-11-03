@@ -175,7 +175,7 @@ async function run() {
   app.process().stdout?.on('data', observe)
   app.process().stderr?.on('data', observe)
   if (!installed) report.mainAssetSha256 = createHash('sha256').update(fs.readFileSync(path.join(root, 'dist/main/index.js'))).digest('hex')
-  await waitFor(() => renderer(() => Boolean(document.querySelector('#app .panel-with-toolbar'))))
+  await waitFor(() => renderer(() => Boolean(document.querySelector('#app [data-panel="overview"], #app .panel-with-toolbar'))))
   await renderer(async () => {
     const targets = await window.main.getTargets()
     if (targets.length !== 1) throw new Error('Exactly one authorized device required')

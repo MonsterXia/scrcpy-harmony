@@ -112,7 +112,7 @@ try {
   child.stderr?.on('data', append)
   page = await application.firstWindow({ timeout: 30_000 })
   page.setDefaultTimeout(20_000)
-  await page.locator('#app .panel-with-toolbar').first().waitFor({ state: 'visible' })
+  await page.locator('#app [data-panel="overview"], #app .panel-with-toolbar').first().waitFor({ state: 'visible' })
   report.runtime = await application.evaluate(({ app, session, shell }) => {
     globalThis.updateCheckEvidence = { offline: false, requests: [], external: [] }
     const evidence = globalThis.updateCheckEvidence

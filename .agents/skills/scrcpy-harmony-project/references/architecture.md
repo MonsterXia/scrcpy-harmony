@@ -127,6 +127,8 @@ HAP 拖入由主窗口和投屏根组件各注册一次 `src/renderer/lib/useHap
 - store 保留八个既有设备 panel ID，并增加 settings；初始化和选择时将未知 ID 归一为 overview。`overview/Overview.tsx` 保留刷新代次隔离，已有详情刷新时仍显示，失败后清空并提供重试；字段复制按钮在未知值时禁用。
 - 主面板容器和投屏组件都使用设备 key 参与重建。投屏 store 监听 `changeMainStore`：target 为 null 时关窗，换设备时销毁旧客户端并创建新客户端。
 - `overview/PortMappingModal.tsx` 只在弹窗可见且有目标时读取映射；关闭/目标变更使旧读取失效，同一会话仅接受最后发起的当前方向结果。读取失败清空列表和选择并提示，恢复依赖手动刷新或重开；写入成功后的读取绑定原可见期，不取消已发送 IPC。
+- `process/Process.tsx` 仅活动页轮询，按设备/请求序号隔离结果；停止确认绑定原设备/进程，刷新保留有效选择。`shell/Shell.tsx` 使用语义标签和命令弹窗，最后一个标签关闭后可新建；`Term.tsx` 用代次清理迟到的 create/reset 会话、释放输入订阅和尺寸观察，隐藏仅暂停显示而保留会话。
+- `hilog/Hilog.tsx` 的打开/重启绑定代次，迟到会话关闭；暂停/恢复在 effect 中执行，隐藏页不接收记录。显示与导出缓冲采用 Luna 同一分批淘汰规则：到 11,000 条移除最早 1,000 条。筛选只影响显示；清除同步重算 Luna 显示缓存；重启沿用后端清空设备日志语义。右键复制取实际触发行的字面消息，避免淘汰后旧行索引错位。
 - 新增主面板通常需要同时修改 `App.tsx`、`components/workspace/Workspace.tsx`、store 中的 panel 白名单、语言字典，状态逻辑按需要放入 `store/`。
 
 ## 投屏与输入链路
