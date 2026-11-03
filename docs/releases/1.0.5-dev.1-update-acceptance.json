@@ -1,0 +1,218 @@
+{
+  "source": "c4bf7cf697585184e5613eaf51c3288526d44f86",
+  "operationsSource": "c5768f1d687fe5d29bdc3d67bc024bb680cdb6b0",
+  "preflight": {
+    "run": "https://github.com/MonsterXia/scrcpy-harmony/actions/runs/41631209410",
+    "platforms": [
+      {
+        "mode": "preflight",
+        "source": "c4bf7cf697585184e5613eaf51c3288526d44f86",
+        "build": 41630447198,
+        "platform": "mac",
+        "arch": "x64",
+        "passed": true,
+        "versions": [
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.4",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.0",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          }
+        ]
+      },
+      {
+        "mode": "preflight",
+        "source": "c4bf7cf697585184e5613eaf51c3288526d44f86",
+        "build": 41630447198,
+        "platform": "win",
+        "arch": "x64",
+        "passed": true,
+        "versions": [
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.4",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.0",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          }
+        ]
+      },
+      {
+        "mode": "preflight",
+        "source": "c4bf7cf697585184e5613eaf51c3288526d44f86",
+        "build": 41630447198,
+        "platform": "mac",
+        "arch": "arm64",
+        "passed": true,
+        "versions": [
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.4",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.0",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          }
+        ]
+      }
+    ]
+  },
+  "postrelease": {
+    "run": "https://github.com/MonsterXia/scrcpy-harmony/actions/runs/41632891489",
+    "platforms": [
+      {
+        "mode": "postrelease",
+        "source": "c4bf7cf697585184e5613eaf51c3288526d44f86",
+        "build": 41630447198,
+        "platform": "mac",
+        "arch": "arm64",
+        "passed": true,
+        "versions": [
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.4",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.0",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          }
+        ]
+      },
+      {
+        "mode": "postrelease",
+        "source": "c4bf7cf697585184e5613eaf51c3288526d44f86",
+        "build": 41630447198,
+        "platform": "mac",
+        "arch": "x64",
+        "passed": true,
+        "versions": [
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.4",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.0",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          }
+        ]
+      },
+      {
+        "mode": "postrelease",
+        "source": "c4bf7cf697585184e5613eaf51c3288526d44f86",
+        "build": 41630447198,
+        "platform": "win",
+        "arch": "x64",
+        "passed": true,
+        "versions": [
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.4",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-stable",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.0",
+            "scenarios": 6,
+            "settingsPreserved": false
+          },
+          {
+            "upgradePath": "from-dev0",
+            "version": "1.0.5-dev.1",
+            "scenarios": 6,
+            "settingsPreserved": true
+          }
+        ]
+      }
+    ]
+  }
+}

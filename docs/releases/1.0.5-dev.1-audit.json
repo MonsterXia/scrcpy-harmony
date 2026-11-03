@@ -1,0 +1,36 @@
+{
+  "assetDigests": {
+    "SHA256SUMS.txt": "9093868d2ae71cd67a1edc25dbf519e353ff975c548ffaef6ae515aade9aa5fd",
+    "Scrcpy-Harmony-1.0.5-dev.1-mac-arm64.dmg": "06931d7602242d9f39988e852c14bb9e54afda40c920b954a700ea6ac114e272",
+    "Scrcpy-Harmony-1.0.5-dev.1-mac-arm64.dmg.blockmap": "d58f5e5cd73fddd58cd614fcdeeb40d350c62e6f03d8ecbfd95276db3859f4c0",
+    "Scrcpy-Harmony-1.0.5-dev.1-mac-x64.dmg": "b6e57e5a685164e6db7f0a07fccd8141c50916fdf5de22ea785496250fa1af5e",
+    "Scrcpy-Harmony-1.0.5-dev.1-mac-x64.dmg.blockmap": "418bf8d336b502f3f3264c4faf26ce1a5f3e094a70505735bc245dca458976eb",
+    "Scrcpy-Harmony-1.0.5-dev.1-win-x64.exe": "94de2a01db41394d0f6b049b583da5e38b03a1e653960df75ec004f13c7fedc9",
+    "Scrcpy-Harmony-1.0.5-dev.1-win-x64.exe.blockmap": "86cfb3de12799f7c5141f23b921afc6a6cde56d126745e6764adc93b0da1e1df",
+    "latest-mac.yml": "ddbed795dfb14f65048f144981e9dceeb448a09200ff93515f445cbf1d309b74",
+    "latest-x64-mac.yml": "842b5d7ca69451990de10a8c55f6714d22c0d37b2e80bb34c01fe945312ebc7f",
+    "latest.yml": "49eb6652d71397e4d4196d950172827332ee8be914e784671c9b382f25d4510f",
+    "release-validation.json": "2a37256eda858a3c6926bbc747060291752575d63dc8264920c28cc246d048e1",
+    "verification-mac-arm64.txt": "960ab7e416c765a6b8b294716ca459a200fc3b96e0569e60ad2500a86c2aeb5c",
+    "verification-mac-x64.txt": "6630cc96d3206734f97b9918b40a5f92f0a630e0e6bdc363a2e838152d1d0507",
+    "verification-win-x64.json": "ba7d11a33e2eb9c8c0b6d79fcd0cbbaac71ff4a08d854065c23e1227b64a1d5e"
+  },
+  "downloadedAssetsVerified": 14,
+  "identity": {
+    "baseline_sha": "be973db38ed1ec78ec6e664a8067c40dcf536663",
+    "build_run": 41630447198,
+    "ci_run": 41630414498,
+    "preparation_pr": 84,
+    "release_name": "Scrcpy Harmony 1.0.5-dev.1",
+    "repo": "MonsterXia/scrcpy-harmony",
+    "source_sha": "c4bf7cf697585184e5613eaf51c3288526d44f86",
+    "stable_tag": "v1.0.4",
+    "tag": "v1.0.5-dev.1",
+    "version": "1.0.5-dev.1"
+  },
+  "latest": "v1.0.4",
+  "published_at": "2026-11-03T12:05:46Z",
+  "release_id": 432636418,
+  "url": "https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.1",
+  "verifiedAt": "2026-11-03T12:05:41.475170+00:00"
+}
