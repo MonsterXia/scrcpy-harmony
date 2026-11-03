@@ -1,20 +1,12 @@
 import { observer } from 'mobx-react-lite'
-import LunaToolbar, { LunaToolbarSpace } from 'luna-toolbar/react'
-import Term from './Term'
-import LunaTab, { LunaTabItem } from 'luna-tab/react'
-import { t } from 'common/util'
-import ToolbarIcon from 'share/renderer/components/ToolbarIcon'
-import store from '../../store'
-import Style from './Shell.module.scss'
-import className from 'licia/className'
 import { useEffect, useRef, useState } from 'react'
-import uuid from 'licia/uuid'
-import map from 'licia/map'
-import filter from 'licia/filter'
-import LunaCommandPalette from 'luna-command-palette/react'
-import find from 'licia/find'
-import idxOf from 'licia/idxOf'
 import { Terminal } from '@xterm/xterm'
+import uuid from 'licia/uuid'
+import { t } from 'common/util'
+import store from '../../store'
+import Term from './Term'
+import WorkspaceDialog from '../workspace/WorkspaceDialog'
+import Style from './Shell.module.scss'
 
 interface IShell {
   id: string
@@ -24,133 +16,235 @@ interface IShell {
 }
 
 export default observer(function Shell() {
-  const [shells, setShells] = useState<Array<IShell>>([])
-  const [commandPaletteVisible, setCommandPaletteVisible] = useState(false)
-  const [selectedShell, setSelectedShell] = useState<IShell>({
-    id: '',
-    name: '',
-    sessionId: '',
-  })
+  const [shells, setShells] = useState<IShell[]>([])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [palette, setPalette] = useState(false)
+  const [query, setQuery] = useState('')
+  const [error, setError] = useState(false)
   const numRef = useRef(1)
-  const { target } = store
+  const focusTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
+  const surface = useRef<HTMLDivElement>(null)
+  const focusAfterClose = useRef(false)
+  const alive = useRef(false)
+  const key = store.target?.key
+  const selected = shells.find((shell) => shell.id === selectedId)
+  const selectedRef = useRef(selected)
+  selectedRef.current = selected
 
-  useEffect(() => add(), [])
+  useEffect(() => {
+    alive.current = true
+    return () => {
+      alive.current = false
+      clearTimeout(focusTimer.current)
+    }
+  }, [])
+  useEffect(() => {
+    setShells([])
+    setSelectedId(null)
+    setPalette(false)
+    setError(false)
+    if (key) add(true)
+  }, [key])
+  useEffect(() => {
+    if (focusAfterClose.current) {
+      const tab = surface.current?.querySelector<HTMLElement>(
+        '[role="tab"][aria-selected="true"]',
+      )
+      ;(
+        tab ||
+        surface.current?.querySelector<HTMLButtonElement>('[data-add-shell]')
+      )?.focus()
+      focusAfterClose.current = false
+    }
+  }, [selectedId, shells])
 
-  function add() {
-    const id = uuid()
+  function add(replace = false) {
+    if (!key) return
     const shell = {
-      id,
+      id: uuid(),
       name: `${t('shell')} ${numRef.current++}`,
       sessionId: '',
     }
-    setShells([...shells, shell])
-    setSelectedShell(shell)
+    setShells((previous) => (replace ? [shell] : [...previous, shell]))
+    setSelectedId(shell.id)
   }
-
   function close(id: string) {
-    const closedShell = find(shells, (shell) => shell.id === id)
-    let closedIdx = idxOf(shells, closedShell)
-    const newShells = filter(shells, (shell) => shell.id !== id)
-    setShells(newShells)
-
-    if (closedShell === selectedShell) {
-      if (closedIdx >= newShells.length) {
-        closedIdx = newShells.length - 1
+    clearTimeout(focusTimer.current)
+    const index = shells.findIndex((shell) => shell.id === id)
+    const remaining = shells.filter((shell) => shell.id !== id)
+    setShells(remaining)
+    if (id === selectedId)
+      setSelectedId(
+        remaining[Math.min(index, remaining.length - 1)]?.id ?? null,
+      )
+    focusAfterClose.current = true
+  }
+  function updateShell(id: string, values: Partial<IShell>) {
+    setShells((previous) =>
+      previous.map((shell) =>
+        shell.id === id ? { ...shell, ...values } : shell,
+      ),
+    )
+  }
+  async function run(command: string) {
+    const shell = selected
+    const origin = key
+    if (!shell?.sessionId || !origin) return
+    setPalette(false)
+    setError(false)
+    try {
+      await main.writeShell(shell.sessionId, command)
+      if (alive.current && store.target?.key === origin) {
+        clearTimeout(focusTimer.current)
+        focusTimer.current = setTimeout(() => {
+          if (
+            alive.current &&
+            store.target?.key === origin &&
+            store.panel === 'shell' &&
+            selectedRef.current?.id === shell.id &&
+            selectedRef.current.sessionId === shell.sessionId
+          )
+            shell.terminal?.focus()
+        }, 0)
       }
-      setSelectedShell(newShells[closedIdx])
+    } catch {
+      if (alive.current && store.target?.key === origin) setError(true)
     }
   }
 
-  const tabItems = map(shells, (shell) => {
-    return (
-      <LunaTabItem
-        key={shell.id}
-        id={shell.id}
-        title={shell.name}
-        closable={true}
-        selected={selectedShell.id === shell.id}
-      />
-    )
-  })
-
-  const terms = map(shells, (shell) => {
-    return (
-      <Term
-        key={shell.id}
-        onSessionIdChange={(id) => {
-          shell.sessionId = id
-        }}
-        onCreate={(terminal) => {
-          shell.terminal = terminal
-        }}
-        visible={selectedShell.id === shell.id && store.panel === 'shell'}
-      />
-    )
-  })
-
-  const commands = map(getCommands(), ([title, command]) => {
-    return {
-      title: `${title} (${command})`,
-      handler: () => {
-        main.writeShell(selectedShell.sessionId, command)
-        setTimeout(() => {
-          if (selectedShell.terminal) {
-            selectedShell.terminal.focus()
-          }
-        }, 500)
-      },
-    }
-  })
-
-  return (
-    <div className="panel-with-toolbar">
-      <div className={className('panel-toolbar', Style.toolbar)}>
-        <LunaTab
-          className={Style.tabs}
-          height={31}
-          onSelect={(id) => {
-            const shell = find(shells, (shell) => shell.id === id)
-            if (shell) {
-              setSelectedShell(shell)
-            }
-          }}
-          onClose={close}
-        >
-          {tabItems}
-        </LunaTab>
-        <LunaToolbar className={Style.control}>
-          <ToolbarIcon
-            icon="add"
-            title={t('add')}
-            onClick={add}
-            disabled={!target}
-          />
-          <LunaToolbarSpace />
-          <ToolbarIcon
-            icon="list"
-            title={t('shortcut')}
-            onClick={() => setCommandPaletteVisible(true)}
-            disabled={!target}
-          />
-        </LunaToolbar>
-      </div>
-      <div className="panel-body">
-        {terms}
-        <LunaCommandPalette
-          placeholder={t('typeCmd')}
-          visible={commandPaletteVisible}
-          onClose={() => setCommandPaletteVisible(false)}
-          commands={commands}
-        />
-      </div>
-    </div>
-  )
-})
-
-function getCommands() {
-  return [
+  const commands = [
     [t('reboot'), 'reboot\n'],
     [t('getUdid'), 'bm get --udid\n'],
     [t('batteryInfo'), 'hidumper -s BatteryService -a -i\n'],
-  ]
-}
+  ].filter(([label, command]) =>
+    `${label} ${command}`.toLowerCase().includes(query.toLowerCase()),
+  )
+
+  return (
+    <div className={Style.page}>
+      <div className={Style.surface} ref={surface}>
+        <header className={Style.heading}>
+          <h1>{t('shell')}</h1>
+          <p>{t('shellDescription')}</p>
+        </header>
+        <div className={Style.toolbar}>
+          <span className={Style.count}>
+            {t('shellSessionCount', { total: shells.length })}
+          </span>
+          <div className={Style.actions}>
+            <button
+              type="button"
+              data-add-shell
+              disabled={!key}
+              onClick={() => add()}
+            >
+              {t('add')}
+            </button>
+            <button
+              type="button"
+              disabled={!key || !selected}
+              onClick={() => {
+                setQuery('')
+                setPalette(true)
+              }}
+            >
+              {t('shortcut')}
+            </button>
+          </div>
+        </div>
+        {error && (
+          <div role="alert" className={Style.error}>
+            {t('shellWriteError')}
+          </div>
+        )}
+        <div
+          className={Style.tabs}
+          role="tablist"
+          aria-label={t('shellSessions')}
+        >
+          {shells.map((shell) => (
+            <div className={Style.tab} key={shell.id}>
+              <button
+                type="button"
+                id={`shell-tab-${shell.id}`}
+                role="tab"
+                aria-selected={selectedId === shell.id}
+                aria-controls={`shell-panel-${shell.id}`}
+                onClick={() => setSelectedId(shell.id)}
+              >
+                {shell.name}
+              </button>
+              <button
+                type="button"
+                aria-label={t('closeShell', { name: shell.name })}
+                title={t('closeShell', { name: shell.name })}
+                onClick={() => close(shell.id)}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className={Style.body}>
+          {shells.map((shell) => (
+            <div
+              key={shell.id}
+              id={`shell-panel-${shell.id}`}
+              role="tabpanel"
+              aria-labelledby={`shell-tab-${shell.id}`}
+              className={Style.terminalPanel}
+              hidden={selectedId !== shell.id}
+            >
+              <Term
+                onSessionIdChange={(id) =>
+                  updateShell(shell.id, { sessionId: id })
+                }
+                onCreate={(terminal) => updateShell(shell.id, { terminal })}
+                visible={selectedId === shell.id && store.panel === 'shell'}
+              />
+            </div>
+          ))}
+          {!shells.length && (
+            <div className={Style.empty}>
+              <p>{t(key ? 'shellEmpty' : 'targetNotConnected')}</p>
+              <p>
+                {t(key ? 'shellNewSessionHint' : 'workspaceConnectToStart')}
+              </p>
+            </div>
+          )}
+        </div>
+        <footer className={Style.footer}>{t('shellSessionHint')}</footer>
+      </div>
+      <WorkspaceDialog
+        visible={palette}
+        title={t('shortcut')}
+        onClose={() => setPalette(false)}
+      >
+        <div className={Style.commands}>
+          <p>{t('shellShortcutHint')}</p>
+          <input
+            type="search"
+            aria-label={t('typeCmd')}
+            placeholder={t('typeCmd')}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+          {commands.map(([label, command]) => (
+            <button
+              type="button"
+              key={command}
+              disabled={!selected?.sessionId}
+              onClick={() => void run(command)}
+            >
+              <span>{label}</span>
+              <code>{command.trim()}</code>
+            </button>
+          ))}
+          {!commands.length && <p>{t('shellNoCommands')}</p>}
+        </div>
+      </WorkspaceDialog>
+    </div>
+  )
+})

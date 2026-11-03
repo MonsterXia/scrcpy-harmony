@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react-lite'
+import { useEffect, useRef, useState } from 'react'
 import store from '../../store'
 import { Terminal, ITheme } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { CanvasAddon } from '@xterm/addon-canvas'
 import { WebglAddon } from '@xterm/addon-webgl'
 import { Unicode11Addon } from '@xterm/addon-unicode11'
-import { useEffect, useRef } from 'react'
 import {
   colorBgContainer,
   colorBgContainerDark,
@@ -15,11 +15,11 @@ import {
   fontFamilyCode,
 } from 'common/theme'
 import copy from 'licia/copy'
-import Style from './Term.module.scss'
-import '@xterm/xterm/css/xterm.css'
+import isHidden from 'licia/isHidden'
 import { t } from 'common/util'
 import contextMenu from 'share/renderer/lib/contextMenu'
-import isHidden from 'licia/isHidden'
+import Style from './Term.module.scss'
+import '@xterm/xterm/css/xterm.css'
 
 interface ITermProps {
   visible: boolean
@@ -30,105 +30,136 @@ interface ITermProps {
 export default observer(function Term(props: ITermProps) {
   const terminalRef = useRef<HTMLDivElement>(null)
   const termRef = useRef<Terminal>(null)
-  const fitAddonRef = useRef<FitAddon>(null)
   const sessionIdRef = useRef('')
-
-  const { target } = store
+  const resetRef = useRef<() => void>(() => {})
+  const fitRef = useRef<() => void>(() => {})
+  const callbacks = useRef(props)
+  callbacks.current = props
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'idle'>(
+    'idle',
+  )
+  const key = store.target?.key
+  const dark = store.theme === 'dark'
 
   useEffect(() => {
+    let disposed = false
+    let generation = 0
+    const current = () => !disposed && store.target?.key === key
     const term = new Terminal({
       allowProposedApi: true,
       fontSize: 14,
       fontFamily: fontFamilyCode,
       theme: getTheme(store.theme === 'dark'),
     })
-
     const fitAddon = new FitAddon()
-    fitAddonRef.current = fitAddon
     term.loadAddon(fitAddon)
-    const fit = () => {
-      if (!isHidden(terminalRef.current!)) {
-        fitAddon.fit()
-      }
-    }
-    window.addEventListener('resize', fit)
-
     term.loadAddon(new Unicode11Addon())
     term.unicode.activeVersion = '11'
-
+    term.open(terminalRef.current!)
     try {
       term.loadAddon(new WebglAddon())
     } catch {
       term.loadAddon(new CanvasAddon())
     }
-
-    term.open(terminalRef.current!)
     termRef.current = term
-    props.onCreate(term)
-
-    function onShellData(id, data) {
-      if (sessionIdRef.current !== id) {
-        return
-      }
-      term.write(data)
+    callbacks.current.onCreate(term)
+    const fit = () => {
+      if (
+        current() &&
+        callbacks.current.visible &&
+        terminalRef.current &&
+        !isHidden(terminalRef.current)
+      )
+        fitAddon.fit()
     }
-    const offShellData = main.on('shellData', onShellData)
-
-    if (target) {
-      main.createShell(target.key).then((id) => {
+    fitRef.current = fit
+    const observer = new ResizeObserver(fit)
+    observer.observe(terminalRef.current!)
+    window.addEventListener('resize', fit)
+    async function kill(id: string) {
+      if (!id) return
+      try {
+        await main.killShell(id)
+      } catch {
+        /* Session is already closed or the device disconnected. */
+      }
+    }
+    function setSessionId(id: string) {
+      sessionIdRef.current = id
+      callbacks.current.onSessionIdChange(id)
+    }
+    async function create() {
+      const request = ++generation
+      const previous = sessionIdRef.current
+      setSessionId('')
+      void kill(previous)
+      if (!key || !current()) return
+      setStatus('loading')
+      term.reset()
+      try {
+        const id = await main.createShell(key)
+        if (!current() || request !== generation) {
+          await kill(id)
+          return
+        }
         setSessionId(id)
-        term.onData((data) => main.writeShell(sessionIdRef.current, data))
+        setStatus('ready')
         fit()
-      })
-    }
-
-    return () => {
-      offShellData()
-      if (sessionIdRef.current) {
-        main.killShell(sessionIdRef.current)
+      } catch {
+        if (current() && request === generation) setStatus('error')
       }
-      term.dispose()
-      window.removeEventListener('resize', fit)
     }
-  }, [])
+    resetRef.current = () => {
+      if (current()) void create()
+    }
+    const input = term.onData(async (data) => {
+      const id = sessionIdRef.current
+      if (!current() || !id) return
+      try {
+        await main.writeShell(id, data)
+      } catch {
+        if (current() && sessionIdRef.current === id) setStatus('error')
+      }
+    })
+    const offShellData = main.on('shellData', (id, data) => {
+      if (current() && id === sessionIdRef.current) term.write(data)
+    })
+    if (key) void create()
+    return () => {
+      disposed = true
+      generation++
+      offShellData()
+      input.dispose()
+      observer.disconnect()
+      window.removeEventListener('resize', fit)
+      void kill(sessionIdRef.current)
+      sessionIdRef.current = ''
+      termRef.current = null
+      fitRef.current = () => {}
+      resetRef.current = () => {}
+      term.dispose()
+    }
+  }, [key])
 
   useEffect(() => {
-    if (fitAddonRef.current && props.visible) {
-      fitAddonRef.current.fit()
-    }
-    if (props.visible) {
-      setTimeout(() => {
-        if (termRef.current) {
-          termRef.current.focus()
-        }
-      }, 500)
-    }
-  }, [props.visible])
+    if (!props.visible) return
+    fitRef.current()
+    const timer = setTimeout(() => termRef.current?.focus(), 500)
+    return () => clearTimeout(timer)
+  }, [props.visible, status, key])
+  useEffect(() => {
+    if (termRef.current) termRef.current.options.theme = getTheme(dark)
+  }, [dark])
 
-  const theme = getTheme(store.theme === 'dark')
-  if (termRef.current) {
-    termRef.current.options.theme = theme
-  }
-
-  function setSessionId(id: string) {
-    sessionIdRef.current = id
-    props.onSessionIdChange(id)
-  }
-
-  const onContextMenu = (e: React.MouseEvent) => {
-    if (!target) {
-      return
-    }
-
-    const term = termRef.current!
-    const template: any[] = [
-      {
-        type: 'separator',
-      },
+  const onContextMenu = (event: React.MouseEvent) => {
+    const term = termRef.current
+    if (!key || !term) return
+    const current = () => termRef.current === term && store.target?.key === key
+    contextMenu(event, [
       {
         label: t('copy'),
-        click() {
-          if (term.hasSelection()) {
+        click: () => {
+          if (current() && term.hasSelection()) {
             copy(term.getSelection())
             term.focus()
           }
@@ -137,57 +168,65 @@ export default observer(function Term(props: ITermProps) {
       {
         label: t('paste'),
         click: async () => {
-          const text = await navigator.clipboard.readText()
-          if (text) {
-            main.writeShell(sessionIdRef.current, text)
+          const id = sessionIdRef.current
+          if (!current() || !id) return
+          try {
+            const text = await navigator.clipboard.readText()
+            if (text && current() && sessionIdRef.current === id)
+              await main.writeShell(id, text)
+          } catch {
+            if (current() && sessionIdRef.current === id) setStatus('error')
           }
         },
       },
       {
         label: t('selectAll'),
-        click() {
-          term.selectAll()
+        click: () => {
+          if (current()) term.selectAll()
         },
       },
-      {
-        type: 'separator',
-      },
+      { type: 'separator' },
       {
         label: t('reset'),
-        click() {
-          if (sessionIdRef.current) {
-            main.killShell(sessionIdRef.current)
-          }
-          term.reset()
-          if (target) {
-            main.createShell(target.key).then((id) => {
-              setSessionId(id)
-            })
-            term.focus()
-          }
+        click: () => {
+          if (current()) resetRef.current()
         },
       },
       {
         label: t('clear'),
-        click() {
-          term.clear()
-          term.focus()
+        click: () => {
+          if (current()) {
+            term.clear()
+            term.focus()
+          }
         },
       },
-    ]
-
-    contextMenu(e, template)
+    ])
   }
-
   return (
-    <>
+    <div
+      className={Style.container}
+      style={{ display: props.visible ? 'block' : 'none' }}
+    >
       <div
         className={Style.term}
-        style={{ display: props.visible ? 'block' : 'none' }}
         ref={terminalRef}
         onContextMenu={onContextMenu}
       />
-    </>
+      {status === 'loading' && (
+        <div className={Style.status} role="status">
+          {t('shellConnecting')}
+        </div>
+      )}
+      {status === 'error' && (
+        <div className={Style.error} role="alert">
+          {t('shellSessionError')}
+          <button type="button" onClick={() => resetRef.current()}>
+            {t('retry')}
+          </button>
+        </div>
+      )}
+    </div>
   )
 })
 
