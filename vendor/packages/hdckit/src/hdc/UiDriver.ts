@@ -227,7 +227,11 @@ export default class UiDriver extends Emitter {
     }
     const deviceSdkVersion = getSdkVersion(result)
     if (!/^\d+(?:\.\d+)+$/.test(deviceSdkVersion)) throw new Error('UITest SDK version unconfirmed')
-    return cmpVersion(deviceSdkVersion, this.sdkVersion) < 0
+    // Agent minor versions select different protocols (1.1 TCP vs 1.2 Unix).
+    // A numerically newer agent is not necessarily compatible with this client.
+    const family = (version: string) => version.split('.').slice(0, 2).join('.')
+    return family(deviceSdkVersion) !== family(this.sdkVersion) ||
+      cmpVersion(deviceSdkVersion, this.sdkVersion) < 0
   }
   private async updateSdk() {
     await this.shell(`rm ${AGENT_PATH}`)
@@ -425,5 +429,9 @@ class Connection {
 }
 
 function getSdkVersion(raw: string) {
-  return trim(raw.slice(raw.indexOf('@v') + 2))
+  // New Hypium agents use a compatibility prefix, e.g. v0.0.0#1.2.5.
+  // Keep malformed/ambiguous inspections closed rather than guessing a version
+  // and authorizing replacement of a device resource.
+  const match = /^UITEST_AGENT_LIBRARY@v(\d+\.\d+\.\d+)(?:#(\d+\.\d+\.\d+))?$/.exec(trim(raw))
+  return match ? match[2] || match[1] : ''
 }

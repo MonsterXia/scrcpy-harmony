@@ -36,7 +36,7 @@ TypeScript 编译使用 `noCheck` 生成模块与声明，不是完整类型检�
 
 ## 来源、许可证与更新
 
-本地 `hdckit/UiDriver.ts` 已修复 TCP 粘包消费及控制请求生命周期：RPC 默认 10 秒、捕获停止回复 3 秒、TCP 连接 3 秒截止，断开/超时结束全部等待并丢弃旧连接；采用递增请求 ID，禁止因未知回复自动重发输入。测试入口为 `test/uitest-stream.test.cjs`、`test/uitest-connection.test.cjs`，动机和真机边界见[首帧恢复记录](../docs/maintenance/screencast-first-frame-recovery.md)。这些是本地适配，不修改原始导入 manifest 哈希。
+本地 `hdckit/UiDriver.ts` 已修复 TCP 粘包消费及控制请求生命周期：RPC 默认 10 秒、捕获停止回复 3 秒、TCP 连接 3 秒截止，断开/超时结束全部等待并丢弃旧连接；采用递增请求 ID，禁止因未知回复自动重发输入。测试入口为 `test/uitest-stream.test.cjs`、`test/uitest-connection.test.cjs`，动机和真机边界见[首帧恢复记录](../docs/maintenance/screencast-first-frame-recovery.md)。SDK检查兼容旧`UITEST_AGENT_LIBRARY@v1.1.0`及新`@v0.0.0#1.2.5`标记，后者使用`#`后的实际版本；按主/次版本匹配协议族，当前1.1 TCP客户端不因1.2 Unix agent数字更大而直接复用。同族较新补丁保留，畸形/重复标记拒绝，升级仍经过现有控制进程保护。这些是本地适配，不修改原始导入 manifest 哈希。
 
 `manifest.json` 记录 18 个包的版本、npm integrity、发布 gitHead、源码归档 SHA-256 与导入文件 SHA-256。Licia 从对应 gitHead 的原始模块、类型片段生成运行包，HDC/Luna 从原始 TS/样式编译。Licia 的上游生成规则参考文件保留在 `upstream/`，本仓以 `script/lib/licia-build.mjs` 适配，仅生成当前使用的包；不执行上游安装、发布或云测试脚本。其 `publishedFiles` 保留原 npm 产物哈希，供历史对照，生成文件本身不跟踪。`upstream-package.json` 是原始发布元数据；本地 `package.json` 只保留所需依赖及入口、移除上游构建脚本，并标记 private。
 

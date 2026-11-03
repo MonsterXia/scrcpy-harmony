@@ -3,6 +3,44 @@ const { test } = require('node:test')
 const net = require('node:net')
 const { loadConnection, loadTransport, packet } = require('./helpers/uitest-stream.cjs')
 
+for (const [marker, required, update] of [
+  ['UITEST_AGENT_LIBRARY@v1.1.0', '1.1.0', false],
+  ['UITEST_AGENT_LIBRARY@v1.1.5', '1.1.0', false],
+  ['UITEST_AGENT_LIBRARY@v0.0.0#1.1.5', '1.1.0', false],
+  ['UITEST_AGENT_LIBRARY@v0.0.0#1.2.5', '1.1.0', true],
+  ['UITEST_AGENT_LIBRARY@v0.0.0#1.2.5', '1.2.2', false],
+  ['UITEST_AGENT_LIBRARY@v0.0.0#1.0.5', '1.1.0', true],
+  ['UITEST_AGENT_LIBRARY@v2.0.0', '1.1.0', true],
+]) {
+  test(`SDK compatibility compares the effective version and protocol family: ${marker} / ${required}`, async () => {
+    const Driver = loadTransport().default
+    const driver = new Driver({}, undefined, required)
+    driver.shell = async () => `${marker}\nUITEST_AGENT_INSPECTED`
+    assert.equal(await driver.shouldUpdateSdk(), update)
+  })
+}
+
+for (const marker of [
+  'UITEST_AGENT_LIBRARY@v0.0.0#',
+  'UITEST_AGENT_LIBRARY@v0.0.0#1.2.5garbage',
+  'UITEST_AGENT_LIBRARY@v0.0.0#1.2.5#1.1.0',
+  'UITEST_AGENT_LIBRARY@v1.1.0\nUITEST_AGENT_LIBRARY@v1.2.5',
+]) {
+  test(`unconfirmed agent marker cannot change device resources: ${JSON.stringify(marker)}`, async () => {
+    const Driver = loadTransport().default
+    const commands = []
+    let uploads = 0
+    const driver = new Driver({ sendFile: async () => { uploads++ } })
+    driver.shell = async command => {
+      commands.push(command)
+      return command === 'pidof uitest' ? '' : `${marker}\nUITEST_AGENT_INSPECTED`
+    }
+    await assert.rejects(driver.start(), /version unconfirmed/)
+    assert.equal(uploads, 0)
+    assert.equal(commands.some(command => /^(kill|rm |param set|uitest start)/.test(command)), false)
+  })
+}
+
 test('SDK inspection command does not confirm a failed file read as an outdated agent', async t => {
   const fs = require('node:fs'), os = require('node:os'), path = require('node:path')
   const { spawnSync } = require('node:child_process')
