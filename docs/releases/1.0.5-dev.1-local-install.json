@@ -1,0 +1,23 @@
+{
+  "source": "c4bf7cf697585184e5613eaf51c3288526d44f86",
+  "version": "1.0.5-dev.1",
+  "publicRelease": "https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.1",
+  "dmgSha256": "06931d7602242d9f39988e852c14bb9e54afda40c920b954a700ea6ac114e272",
+  "installedAsarSha256": "4900066a1c605c5aaa5c99bdbff2809bde56a1f6879dc710e660da2e996f459f",
+  "backupVerifiedFiles": 93,
+  "codesignDeepStrict": true,
+  "architecture": "arm64",
+  "installedAt": "2026-11-03T12:06:44.304694+00:00",
+  "uiVerified": true,
+  "aboutVersion": "1.0.5-dev.1",
+  "settingsExistingKeys": 5,
+  "settingsPreserved": true,
+  "betaMenuMatchesSettings": true,
+  "deviceModel": "nova 15 (PSN-AL00)",
+  "deviceOS": "OpenHarmony 7.0.0.109 (API 26)",
+  "visibleFrameChecks": {
+    "firstStart": true,
+    "closeAndReopen": true
+  },
+  "verificationScope": "Published macOS arm64 application; current nova 15 visible frames. Mate 80 evidence belongs to the earlier local patch. Codec, input and long-running operation not separately verified."
+}
