@@ -37,7 +37,13 @@
 }
 
 .image-transition {
-  transition: all 0.3s;
+  // Keep inherited visibility immediate when a mounted workspace panel is hidden.
+  transition:
+    width 0.3s,
+    height 0.3s,
+    margin-left 0.3s,
+    margin-top 0.3s,
+    transform 0.3s;
 }
 
 @each $theme in ('light', 'dark') {

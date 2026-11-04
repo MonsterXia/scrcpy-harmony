@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import './MainFeedback.module.scss'
+// Global scoped rules must remain a CSS side effect in production builds.
+import './MainFeedback.scss'
 
 // Portals stay under their current fullscreen owner; scope/theme live on this
 // window's document so moving a notification host never loses its palette.

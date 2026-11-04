@@ -1,0 +1,255 @@
+{
+  "boundary": "Built production renderer/CSS and actual refresh UI; simulated devices and isolated settings. Additional long/error/warning/info cards clone the real notification DOM to check styles only.",
+  "cases": [
+    {
+      "language": "en-US",
+      "theme": "light",
+      "notification": {
+        "radius": "12px",
+        "background": "rgb(255, 255, 255)",
+        "fontSize": "13px",
+        "shadow": "rgba(32, 36, 43, 0.07) 0px 4px 16px 0px, rgba(32, 36, 43, 0.03) 0px 1px 3px 0px",
+        "iconBackground": "rgb(232, 245, 238)",
+        "gap": 8,
+        "bounds": [
+          {
+            "x": 393.0859375,
+            "y": 40,
+            "width": 173.8203125,
+            "height": 46,
+            "bottom": 86
+          },
+          {
+            "x": 393.0859375,
+            "y": 94,
+            "width": 173.8203125,
+            "height": 46,
+            "bottom": 140
+          }
+        ]
+      },
+      "variants": [
+        {
+          "kind": "success",
+          "x": 366.1015625,
+          "right": 593.8984375,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "error",
+          "x": 327.640625,
+          "right": 632.359375,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "warning",
+          "x": 310.9921875,
+          "right": 649,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "info",
+          "x": 240,
+          "right": 720,
+          "fits": true,
+          "height": 143
+        }
+      ]
+    },
+    {
+      "language": "en-US",
+      "theme": "dark",
+      "notification": {
+        "radius": "12px",
+        "background": "rgb(32, 35, 41)",
+        "fontSize": "13px",
+        "shadow": "rgba(0, 0, 0, 0.267) 0px 6px 20px 0px, rgba(0, 0, 0, 0.133) 0px 1px 3px 0px",
+        "iconBackground": "rgb(36, 61, 50)",
+        "gap": 8,
+        "bounds": [
+          {
+            "x": 393.0859375,
+            "y": 40,
+            "width": 173.8203125,
+            "height": 46,
+            "bottom": 86
+          },
+          {
+            "x": 393.0859375,
+            "y": 94,
+            "width": 173.8203125,
+            "height": 46,
+            "bottom": 140
+          }
+        ]
+      },
+      "variants": [
+        {
+          "kind": "success",
+          "x": 366.1015625,
+          "right": 593.8984375,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "error",
+          "x": 327.640625,
+          "right": 632.359375,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "warning",
+          "x": 310.9921875,
+          "right": 649,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "info",
+          "x": 240,
+          "right": 720,
+          "fits": true,
+          "height": 143
+        }
+      ]
+    },
+    {
+      "language": "zh-CN",
+      "theme": "light",
+      "notification": {
+        "radius": "12px",
+        "background": "rgb(255, 255, 255)",
+        "fontSize": "13px",
+        "shadow": "rgba(32, 36, 43, 0.07) 0px 4px 16px 0px, rgba(32, 36, 43, 0.03) 0px 1px 3px 0px",
+        "iconBackground": "rgb(232, 245, 238)",
+        "gap": 8,
+        "bounds": [
+          {
+            "x": 414.84375,
+            "y": 40,
+            "width": 130.3046875,
+            "height": 46,
+            "bottom": 86
+          },
+          {
+            "x": 414.84375,
+            "y": 94,
+            "width": 130.3046875,
+            "height": 46,
+            "bottom": 140
+          }
+        ]
+      },
+      "variants": [
+        {
+          "kind": "success",
+          "x": 364.90625,
+          "right": 595.09375,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "error",
+          "x": 325.2421875,
+          "right": 634.75,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "warning",
+          "x": 308.203125,
+          "right": 651.796875,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "info",
+          "x": 240,
+          "right": 720,
+          "fits": true,
+          "height": 143
+        }
+      ]
+    },
+    {
+      "language": "zh-CN",
+      "theme": "dark",
+      "notification": {
+        "radius": "12px",
+        "background": "rgb(32, 35, 41)",
+        "fontSize": "13px",
+        "shadow": "rgba(0, 0, 0, 0.267) 0px 6px 20px 0px, rgba(0, 0, 0, 0.133) 0px 1px 3px 0px",
+        "iconBackground": "rgb(36, 61, 50)",
+        "gap": 8,
+        "bounds": [
+          {
+            "x": 414.84375,
+            "y": 40,
+            "width": 130.3046875,
+            "height": 46,
+            "bottom": 86
+          },
+          {
+            "x": 414.84375,
+            "y": 94,
+            "width": 130.3046875,
+            "height": 46,
+            "bottom": 140
+          }
+        ]
+      },
+      "variants": [
+        {
+          "kind": "success",
+          "x": 364.90625,
+          "right": 595.09375,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "error",
+          "x": 325.2421875,
+          "right": 634.75,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "warning",
+          "x": 308.203125,
+          "right": 651.796875,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "info",
+          "x": 240,
+          "right": 720,
+          "fits": true,
+          "height": 143
+        }
+      ]
+    }
+  ],
+  "passed": true,
+  "date": "2026-11-04",
+  "sourceHashes": {
+    "src/renderer/main/components/workspace/MainFeedback.scss": "141d24bce3a1a041bf00ba491c860882b52a7a2882522b9461bcde0691b571a0",
+    "src/renderer/main/components/workspace/useMainFeedback.ts": "b82c7de3f2db3ca11979c5daf5201fce97112c913b89621bb3f607d60c716434",
+    "script/check-main-feedback.cjs": "f16ac0b80e461bdcc424f9a9f9cfaafef4d8b6a4a10a2a8e6e1f0ccbafd5d92f"
+  },
+  "builtCssHashes": {
+    "dist/renderer/assets/App-Dd9tQDqf.css": "489c21550a1ecd8b025163454a32a80ec05f05d4a2ac194f0c7a7cecafe26be3",
+    "dist/renderer/assets/App-RwLcYys8.css": "c7db32b13de3f93f40ec3f7f8d7d3c61f24f30c9d65ac252579785bf23764880",
+    "dist/renderer/assets/xterm-DYP7pi_n.css": "7c5a01f382f76539fc9b4db6b18e18a7035741845fd14968c5cdc0a7e373d817",
+    "dist/renderer/assets/App-DqSFRPeJ.css": "770077ec8fc970a110b9f0c4f2eee68596effb0b38650c002506ac74e656b708",
+    "dist/renderer/assets/app-TaW0CRZ7.css": "b663f13ff8e8a5fc3136a8fb444c2951f5d8ff240ba60588c3af4abf2da32665",
+    "dist/renderer/assets/App-ddzFiWn1.css": "401f33f317d976016c5cffb39aa12779a9272806e857ef7268136b7070b1038e",
+    "dist/renderer/assets/ToolWindow-B6Y55REL.css": "6a79baf44db971e4fdcb9a8cf6af56ebcbd4e964c70a640f437594f08496c009",
+    "dist/renderer/assets/App-BI75HyoZ.css": "87421ae4ba720ec9d65f27be014b7cb53f369b4bcd81aa287a0a6ed9e60e7a48",
+    "dist/renderer/assets/App-BW-8k8mX.css": "67f1037fec6baf9231501773d169d8b71c977151d5726bfee8c53827abc47558"
+  }
+}
