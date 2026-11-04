@@ -1,0 +1,322 @@
+{
+  "date": "2026-11-04",
+  "boundary": "Real Electron, production renderer, Panel and Luna ImageViewer/CSS. Simulated device image/settings in an isolated profile; no real device or installed-app acceptance.",
+  "before": {
+    "passed": false,
+    "sourceHashes": {
+      "vendor/packages/luna-image-viewer/src/image-viewer/style.scss": "fe06cbd4dbfc964253064fc8d6bea7de4f4fe0cd4a82a1e7cecf631e55b2592e",
+      "src/renderer/main/components/workspace/Panel.tsx": "168569983e1aefbeabf35f62d848694b9b8dc77a9e40ed908facdd53b3c42218"
+    },
+    "cases": [
+      {
+        "language": "en-US",
+        "theme": "light",
+        "width": 1180,
+        "destination": "application",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 38,
+        "lastVisibleMs": 305.1000003814697,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      }
+    ]
+  },
+  "after": {
+    "passed": true,
+    "sourceHashes": {
+      "vendor/packages/luna-image-viewer/src/image-viewer/style.scss": "cbe050203ed49c7b1da10de5b1295c452cf2a2c2befe892962d8ae299dfe32ca",
+      "src/renderer/main/components/workspace/Panel.tsx": "168569983e1aefbeabf35f62d848694b9b8dc77a9e40ed908facdd53b3c42218"
+    },
+    "cases": [
+      {
+        "language": "en-US",
+        "theme": "light",
+        "width": 1180,
+        "destination": "application",
+        "frameCount": 48,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "light",
+        "width": 1180,
+        "destination": "shell",
+        "frameCount": 4,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "light",
+        "width": 1180,
+        "destination": "settings",
+        "frameCount": 43,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "light",
+        "width": 960,
+        "destination": "application",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "light",
+        "width": 960,
+        "destination": "shell",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "light",
+        "width": 960,
+        "destination": "settings",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "dark",
+        "width": 1180,
+        "destination": "application",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "dark",
+        "width": 1180,
+        "destination": "shell",
+        "frameCount": 48,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "dark",
+        "width": 1180,
+        "destination": "settings",
+        "frameCount": 48,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "dark",
+        "width": 960,
+        "destination": "application",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "dark",
+        "width": 960,
+        "destination": "shell",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "en-US",
+        "theme": "dark",
+        "width": 960,
+        "destination": "settings",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "light",
+        "width": 1180,
+        "destination": "application",
+        "frameCount": 46,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "light",
+        "width": 1180,
+        "destination": "shell",
+        "frameCount": 36,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "light",
+        "width": 1180,
+        "destination": "settings",
+        "frameCount": 49,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "light",
+        "width": 960,
+        "destination": "application",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "light",
+        "width": 960,
+        "destination": "shell",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "light",
+        "width": 960,
+        "destination": "settings",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "dark",
+        "width": 1180,
+        "destination": "application",
+        "frameCount": 49,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "dark",
+        "width": 1180,
+        "destination": "shell",
+        "frameCount": 46,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "dark",
+        "width": 1180,
+        "destination": "settings",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "dark",
+        "width": 960,
+        "destination": "application",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "dark",
+        "width": 960,
+        "destination": "shell",
+        "frameCount": 48,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      },
+      {
+        "language": "zh-CN",
+        "theme": "dark",
+        "width": 960,
+        "destination": "settings",
+        "frameCount": 50,
+        "visibleFramesAfterSwitch": 0,
+        "lastVisibleMs": null,
+        "sameImage": true,
+        "geometryPreserved": true,
+        "returnedVisibility": "visible"
+      }
+    ]
+  }
+}

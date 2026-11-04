@@ -16,6 +16,8 @@
 
 直接编辑这些源码并提交到本仓库即可，不要改 `node_modules` 或被忽略的生成文件。
 
+Luna ImageViewer 的图片过渡仅覆盖尺寸、位置和旋转属性，避免 `transition: all` 延迟继承的 `visibility`、在工作台切页后残留。复现脚本与边界见[截图切页验证](../docs/maintenance/screenshot-navigation.md)。
+
 ```text
 npm ci
 npm run build:vendor
