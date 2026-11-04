@@ -1,5 +1,9 @@
 # Scrcpy Harmony 分阶段维护 RUNBOOK
 
+## UI 修复合入与本地替换（2026-11-04，不发布）
+
+用户授权合入截图切页与主窗口通知两项修复，要求独立审查及正常 CI/PR 门禁后替换本机。实现 `4cd74d8` 已独立审查通过，无 P1/P2；版本保持 `1.0.5-dev.1`，不创建 tag/Release。门禁、合入及安装完成状态以 [PR #86](https://github.com/MonsterXia/scrcpy-harmony/pull/86) 的最终交付记录为准；来源、备份与验证要求见[交付记录](docs/maintenance/ui-polish-delivery.md)。下方“未发布/未替换”保留修复阶段语境。
+
 ## 主窗口通知仍为旧样式（2026-11-04）
 
 状态：**源码修复与构建产物 Electron 验证通过，未发布或替换安装版**。原 `MainFeedback.module.scss` 仅作为副作用导入，生产构建未保留规则；改用显式主窗口作用域的普通 SCSS，并统一通知卡片、状态图标、阴影、堆叠与长文案换行。中英文/深浅色真实刷新提示、已有确认框取消与作用域隔离通过；全量应用 907/907、Licia 两模式各 606 passing / 4 pending、lint/i18n 通过。记录和截图见[通知样式专项](docs/maintenance/main-feedback.md)。下一步随修复 PR/CI 交付并补安装包验证。
