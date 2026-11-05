@@ -1,10 +1,10 @@
-# Scrcpy Harmony 构建指南
+# Scrcpy Plus 构建指南
 
 [返回中文 README](../README_ZH.md) · [仓库结构](repository-guide.md) · [用户指南](user-guide.md) · [维护者开发与验证参考](../.agents/skills/scrcpy-harmony-project/references/development.md)
 
 ## 范围与准备
 
-当前源码版本为 1.0.4；公开状态见[发行记录](releases/1.0.4.md)。迁移前恢复版为 [v1.0.3](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.3)，其构建提交为 `417e78ff9a4f99bc0d3a68080b9ceb11810d1d09`。当前源码与迁移前恢复版的依赖布局不同，构建时应记录提交号。
+当前工作源码为 Scrcpy Plus 1.0.5-dev.1，基于 Scrcpy Harmony 改造；新增源码后端依赖及验证边界见[集成说明](scrcpy-plus/integration.md)。下列 Scrcpy Harmony 1.0.4 及迁移验收均为历史证据，公开状态见[发行记录](releases/1.0.4.md)。迁移前恢复版为 [v1.0.3](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.3)，其构建提交为 `417e78ff9a4f99bc0d3a68080b9ceb11810d1d09`。当前源码与迁移前恢复版的依赖布局不同，构建时应记录提交号。
 
 当前布局的干净检出、完整测试、本地 Windows 打包启动和三平台 CI 证据见[依赖源码迁移记录](maintenance/dependency-sources.md)。macOS 由原生 arm64/x64 runner 验证构建、DMG 安装与启动；没有新增 macOS 本机人工走读或真机验收。迁移前的 [M3-3](maintenance/M3-3.md)及[复核记录](maintenance/M3-3-release-guide.md)保留为历史记录，不作为当前目录和命令的操作入口。
 
@@ -123,3 +123,7 @@ React 页面使用 preload 注入的全局 `main`，经 Electron IPC 调用主�
 `npm test` 无需真机：应用回归替换设备等外部边界，Licia 测试运行本地生成模块并使用临时目录夹具。lint 检查源码，Vite 成功只表示构建通过，均不能替代真机投屏、输入和连接验收；项目没有独立 `typecheck` script。
 
 CI 的五项检查为 `test`、`lint`、`windows-package`、`macos-package-arm64`、`macos-package-x64`。打包检查会在临时 runner 中安装并启动应用；不要在开发机绕过 `script/check-windows-install.ps1` 的 CI 限制，它可能替换已有安装。macOS 安装检查也只应在隔离环境运行，会启动设备层并清理 HDC。手动 Build 工作流验收安装包后上传 artifacts，不创建 Release；签名、公证、互联网下载后的信任提示和真机功能分别验收。更多脚本与 CI 说明见[维护者参考](../.agents/skills/scrcpy-harmony-project/references/development.md)。
+
+## 多平台源码后端
+
+完整 build 需要 JDK 17+、Android SDK Platform 35／Build Tools 35.0.0、CMake、Node 头文件与 OpenSSL 静态库；Windows 使用 UCRT64 GCC/MinGW Makefiles 并提供 NODE_LIBRARY。CI 与手动构建共用固定 SHA 的 platform-toolchain 复合动作准备这些依赖，五项原检查保持不变。详见[源码后端 CI](scrcpy-plus/integration.md#源码后端的-ci-工具链)。

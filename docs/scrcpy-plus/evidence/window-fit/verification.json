@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-05",
+  "tests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "lint": "passed",
+  "i18n": "passed",
+  "mainPreloadRendererBuild": "passed",
+  "bilingualUi": "ui/ui.json",
+  "realWindowGeometry": "live.json",
+  "realHarmonyDiscovery": {
+    "name": "HUAWEI Mate 80",
+    "state": "ready",
+    "selectableOnDevicePage": true
+  },
+  "androidHardwareVerification": "pending reconnection",
+  "generatedVideoProbe": {
+    "passed": false,
+    "reason": "VideoDecoder unavailable in isolated automation renderer",
+    "evidence": "generated-video-probe.json"
+  },
+  "appRestarted": true,
+  "normalRuntime": {
+    "videoDecoder": "function",
+    "secureContext": true,
+    "selectedDevice": "HUAWEI Mate 80"
+  }
+}

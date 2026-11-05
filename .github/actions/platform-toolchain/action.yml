@@ -1,0 +1,39 @@
+name: Source backend toolchain
+description: Prepare Java/Android and static AirPlay build dependencies
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+      with:
+        distribution: temurin
+        java-version: '17'
+    - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+      with:
+        packages: 'platforms;android-35 build-tools;35.0.0'
+        log-accepted-android-sdk-licenses: 'false'
+    - name: Install macOS static dependencies
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        brew list openssl@3 >/dev/null 2>&1 || brew install openssl@3
+        echo "OPENSSL_ROOT_DIR=$(brew --prefix openssl@3)" >> "$GITHUB_ENV"
+    - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2
+      if: runner.os == 'Windows'
+      with:
+        msystem: UCRT64
+        update: false
+        install: mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-openssl
+    - name: Export Windows native toolchain
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        prefix=$(cygpath -m "$MINGW_PREFIX")
+        echo "$prefix/bin" >> "$GITHUB_PATH"
+        echo "MINGW_PREFIX=$prefix" >> "$GITHUB_ENV"
+        echo "OPENSSL_ROOT_DIR=$prefix" >> "$GITHUB_ENV"
+        echo "CMAKE=$prefix/bin/cmake.exe" >> "$GITHUB_ENV"
+        echo "CC=$prefix/bin/gcc.exe" >> "$GITHUB_ENV"
+        echo "CXX=$prefix/bin/g++.exe" >> "$GITHUB_ENV"
+    - name: Prepare verified Node headers and import library
+      shell: bash
+      run: node script/setup-node-build-headers.mjs

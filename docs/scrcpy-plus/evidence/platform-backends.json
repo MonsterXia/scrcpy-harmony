@@ -1,0 +1,15 @@
+{
+  "android": {
+    "version": "3.3.3",
+    "sourceCommit": "e5e58b1b307d92cbe3432431a9e22cd648f8d4d1",
+    "size": 90513,
+    "sha256": "16a45cd27a8c58e7f6a7ad280e908158b55a6cceef5620f630becc2b69b80d37"
+  },
+  "airplay": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "napi": 8,
+    "size": 5009088,
+    "sha256": "fed363a4443417831de5fa6458ad94aeca62807addb6cf1ba18da681003f1a06"
+  }
+}

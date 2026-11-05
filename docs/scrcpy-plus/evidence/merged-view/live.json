@@ -1,0 +1,148 @@
+{
+  "date": "2026-11-05",
+  "scope": "Real production Electron merged window with three physical phones; original video canvases copied as lossless PNG; pixel statistics only, no screenshots saved",
+  "buttonOrder": [
+    "启动全部投屏",
+    "并排排列",
+    "合并排列"
+  ],
+  "displayOrder": [
+    "Android",
+    "HarmonyOS",
+    "iOS"
+  ],
+  "layout": {
+    "text": "AndroidHarmonyOSiOS",
+    "headings": [
+      "Android",
+      "HarmonyOS",
+      "iOS"
+    ],
+    "columns": [
+      {
+        "platform": "android",
+        "loaded": true,
+        "hasPicture": true,
+        "width": 896,
+        "height": 1920,
+        "rect": {
+          "x": 12,
+          "y": 10,
+          "width": 384,
+          "height": 796,
+          "top": 10,
+          "right": 396,
+          "bottom": 806,
+          "left": 12
+        }
+      },
+      {
+        "platform": "harmony",
+        "loaded": true,
+        "hasPicture": true,
+        "width": 640,
+        "height": 1416,
+        "rect": {
+          "x": 408,
+          "y": 10,
+          "width": 384,
+          "height": 796,
+          "top": 10,
+          "right": 792,
+          "bottom": 806,
+          "left": 408
+        }
+      },
+      {
+        "platform": "ios",
+        "loaded": true,
+        "hasPicture": true,
+        "width": 498,
+        "height": 1080,
+        "rect": {
+          "x": 804,
+          "y": 10,
+          "width": 384,
+          "height": 796,
+          "top": 10,
+          "right": 1188,
+          "bottom": 806,
+          "left": 804
+        }
+      }
+    ],
+    "controls": 0
+  },
+  "sources": [
+    {
+      "platform": "ios",
+      "width": 498,
+      "height": 1080,
+      "hasPicture": true
+    },
+    {
+      "platform": "android",
+      "width": 896,
+      "height": 1920,
+      "hasPicture": true
+    },
+    {
+      "platform": "harmony",
+      "width": 640,
+      "height": 1416,
+      "hasPicture": true
+    }
+  ],
+  "sessions": [
+    {
+      "platform": "harmony",
+      "state": "running",
+      "name": "HUAWEI Mate 80"
+    },
+    {
+      "platform": "android",
+      "state": "running",
+      "name": "SAMSUNG_Android"
+    },
+    {
+      "platform": "ios",
+      "state": "running",
+      "name": "Scrcpy Plus"
+    }
+  ],
+  "behavior": {
+    "singleWindow": true,
+    "systemNamesOnly": true,
+    "refreshDelayMs": 400,
+    "existingConnectionsPreserved": true,
+    "screenContentOnly": true,
+    "sourceRenderingRestoredOnClose": true
+  },
+  "verification": {
+    "applicationTests": {
+      "passed": 943,
+      "failed": 0,
+      "nativeEnabled": true
+    },
+    "licia": {
+      "production": {
+        "passing": 606,
+        "pending": 4
+      },
+      "fallback": {
+        "passing": 606,
+        "pending": 4
+      }
+    },
+    "targetedAfterOrderChange": {
+      "passed": 4,
+      "failed": 0
+    },
+    "lint": "passed",
+    "i18n": "passed",
+    "mainPreloadRendererBuild": "passed",
+    "bilingualUi": "ui/ui.json"
+  },
+  "leftOpen": true,
+  "passed": true
+}

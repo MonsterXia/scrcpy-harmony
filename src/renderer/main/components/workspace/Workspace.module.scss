@@ -337,3 +337,42 @@
     padding-bottom: 6px;
   }
 }
+
+.multiMirror {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  flex-shrink: 0;
+  padding: 12px 9px;
+  margin-bottom: 22px;
+  border: 1px solid #426ee8;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(125deg, #3158c9, #5145b9 62%, #24678e);
+  box-shadow: 0 4px 12px #3158c92b;
+  text-align: left;
+  transition: box-shadow 150ms, border-color 150ms;
+  &:hover { border-color: #9dc9ff; box-shadow: 0 5px 18px #3158c947; }
+  &[aria-current='page'] { border-color: #b3d8ff; box-shadow: 0 0 0 2px var(--workspace-surface), 0 0 0 4px var(--workspace-accent), 0 5px 16px #3158c933; }
+}
+.multiMirrorIcon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  svg { display: block; width: 100%; height: 100%; }
+}
+.multiMirrorCopy {
+  min-width: 0;
+  strong { display: block; font-size: 13px; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
+  small { display: block; margin-top: 5px; font-size: 9px; color: #e0eaff; line-height: 1.5; }
+}
+.toolsLabel { flex-shrink: 0; padding: 0 10px; margin-bottom: 10px; color: var(--workspace-secondary); font-size: 10px; font-weight: 600; }
+@media (max-width: 1099px) {
+  .multiMirror { justify-content: center; padding: 10px 5px; margin-bottom: 22px; border-radius: 11px; }
+  .multiMirrorCopy, .toolsLabel { display: none; }
+  .multiMirrorIcon { width: 32px; height: 32px; }
+}
+@media (max-height: 650px) {
+  .multiMirror { margin-bottom: 16px; }
+}

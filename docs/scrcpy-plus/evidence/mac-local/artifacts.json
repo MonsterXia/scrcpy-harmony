@@ -1,0 +1,24 @@
+{
+  "artifacts": [
+    {
+      "file": "dist/main/index.js",
+      "size": 1185852,
+      "sha256": "79360758e9af8f714768cea148b378e4c7702d73e25aba54c324e2d1fc648780"
+    },
+    {
+      "file": "dist/preload/index.js",
+      "size": 122378,
+      "sha256": "58de6bc02289f4abea87e7aa65d776df39161c1176c22128008d18ba26f59f79"
+    },
+    {
+      "file": "resources/android/scrcpy-server",
+      "size": 90513,
+      "sha256": "16a45cd27a8c58e7f6a7ad280e908158b55a6cceef5620f630becc2b69b80d37"
+    },
+    {
+      "file": "resources/airplay/plus_airplay.node",
+      "size": 5009088,
+      "sha256": "fed363a4443417831de5fa6458ad94aeca62807addb6cf1ba18da681003f1a06"
+    }
+  ]
+}

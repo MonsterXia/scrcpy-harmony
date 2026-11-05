@@ -141,7 +141,7 @@ async function fixture(t) {
   await loadSource('src/main/lib/hdc.ts', imports).init()
   const getTargets = handlers.get('getTargets')
   const events = new Map()
-  const main = { getTargets, getMainStore: async () => null,
+  const main = { getDevices: async () => ({ targets: await getTargets(), errors: [] }), getMainStore: async () => null,
     on: (name, handler) => events.set(name, handler) }
   const store = loadSource('src/renderer/main/store/index.ts', {
     '../../lib/util': { setMainStore() {} },
@@ -151,7 +151,7 @@ async function fixture(t) {
     './application': { Application: class {} },
     './process': { Process: class {} },
     './layout': { Layout: class {} },
-  }, { main }).default
+  }, { main, setTimeout: () => 0 }).default
   // Await the real constructor, with a bound that also stops the polling loop.
   const deadline = Date.now() + 3000
   while (!store.ready) {
@@ -208,7 +208,7 @@ test('network keys survive real hdckit, getTargets, selection and toolbar option
   assert.equal(store.target.key, OTHER)
   assert.deepEqual(Array.from(store.targets, (target) => target.key), [KEY, OTHER])
   assert.equal(toolbar().select.value, OTHER)
-  assert.equal(toolbar().select.options[`Synthetic network target (${OTHER})`], OTHER)
+  assert.equal(toolbar().select.options[`harmony · Synthetic network target (${OTHER})`], OTHER)
   assert.ok(state.requests.some(({ key, command }) => key === OTHER && command === 'shell param get'))
 })
 

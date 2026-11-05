@@ -1,6 +1,5 @@
 import {
   IpcGetOverview,
-  IpcGetTargets,
   IpcInputKey,
   IpcScreencap,
   ITarget,
@@ -60,7 +59,7 @@ const settingsStore = getSettingsStore()
 
 let client: Client
 
-const getTargets: IpcGetTargets = async function () {
+export const getTargets = async function (includeUnavailable = false): Promise<ITarget[]> {
   let connectKeys: string[]
   try {
     connectKeys = await client.listTargets()
@@ -76,7 +75,7 @@ const getTargets: IpcGetTargets = async function () {
   }
 
   const results = await Promise.all(
-    connectKeys.map(async (connectKey) => {
+    connectKeys.map(async (connectKey): Promise<ITarget | null> => {
       try {
         const parameters = parseTargetParameters(
           await runFiniteShell(connectKey, 'param get', {
@@ -106,7 +105,7 @@ const getTargets: IpcGetTargets = async function () {
         }
       } catch (error) {
         logger.warn('Failed to read HDC target parameters', connectKey, error)
-        return null
+        return includeUnavailable ? { key: connectKey, name: connectKey, ohosVersion: '', sdkVersion: '', state: 'unavailable' as const } : null
       }
     })
   )

@@ -60,6 +60,8 @@ jobs:
       - name: Download device resources
         # Explicitly choose Git Bash instead of a potentially unavailable WSL Bash.
         run: npx --no-install zx --shell "C:/Program Files/Git/bin/bash.exe" script/resources.mjs
+      - name: Prepare source backend toolchain
+        uses: ./.github/actions/platform-toolchain
       - name: Build distribution
         run: npm run build
       - name: Package Windows installer
@@ -119,6 +121,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Download device resources
         run: npm run init
+      - name: Prepare source backend toolchain
+        uses: ./.github/actions/platform-toolchain
       - name: Build distribution
         run: npm run build
       - name: Package macOS disk image

@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-05",
+  "applicationTests": {
+    "passed": 963,
+    "failed": 0,
+    "nativeEnabled": true
+  },
+  "finalMigrationTargetedTests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "liciaEachMode": {
+    "passing": 606,
+    "pending": 4
+  },
+  "lintAndI18n": "passed",
+  "rendererBuild": "passed",
+  "uiReport": "ui.json",
+  "localUi": {
+    "before": [],
+    "after": [],
+    "ui": {
+      "harmonyDevice": "未连接设备",
+      "mirroringDevice": "android · SAMSUNG_Android",
+      "harmonyToolOptions": 1,
+      "toolsEnabled": true,
+      "sessions": []
+    }
+  },
+  "scope": "真实 Electron 中英文界面与模拟设备/会话，验证投屏选择独立、左右目标同时不同、重载恢复及九种启动排列组合。",
+  "limits": [
+    "本机当前只识别三星安卓，未重新验证鸿蒙真机工具操作。"
+  ]
+}

@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite'
 import store from './store'
+import Devices from './components/devices/Devices'
 import Overview from './components/overview/Overview'
 import Screenshot from './components/screenshot/Screenshot'
 import Application from './components/application/Application'
@@ -15,7 +16,7 @@ import { PannelLoading } from './components/common/loading'
 import useHapDrop from '../lib/useHapDrop'
 
 export default observer(function App() {
-  useHapDrop(store.target?.key)
+  useHapDrop(!store.target?.platform || store.target.platform === 'harmony' ? store.target?.key : undefined)
   const openSettings = () => store.selectPanel('settings')
   const panels = [
     {
@@ -36,7 +37,8 @@ export default observer(function App() {
         <Panel id="settings" active={store.panel === 'settings'}>
           <SettingsContent />
         </Panel>
-        {store.ready ? (
+        <Panel id="devices" active={store.panel === 'devices'}><Devices /></Panel>
+        {store.ready && (!store.target?.platform || store.target.platform === 'harmony') ? (
           <div key={store.target?.key || ''}>
             {panels.map((panel) => (
               <Panel
@@ -48,7 +50,7 @@ export default observer(function App() {
               </Panel>
             ))}
           </div>
-        ) : store.panel !== 'settings' ? (
+        ) : !store.ready && store.panel !== 'settings' ? (
           <PannelLoading />
         ) : null}
       </Workspace>

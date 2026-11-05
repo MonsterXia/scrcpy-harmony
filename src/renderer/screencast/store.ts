@@ -33,7 +33,7 @@ class Store extends BaseStore {
     })
 
     this.init()
-    this.bindEvent()
+
   }
   setAlwaysOnTop(val: boolean) {
     this.alwaysOnTop = val
@@ -66,16 +66,9 @@ class Store extends BaseStore {
     }
     const scale = await main.getScreencastStore('scale')
     runInAction(() => (this.scale = normalizeScale(scale)))
-    const target = await main.getMainStore('target')
+    const target = await main.getScreencastTarget()
     this.setTarget(target)
   }
-  private bindEvent() {
-    main.on('changeMainStore', (name: string, val: any) => {
-      if (name === 'target') {
-        this.setTarget(val)
-      }
-    })
-  }
-}
+ }
 
 export default new Store()

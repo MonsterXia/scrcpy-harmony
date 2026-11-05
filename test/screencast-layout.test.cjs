@@ -79,7 +79,7 @@ async function open(area, restored) {
     },
   })
   vm.runInContext((await bundle).outputFiles[0].text, context)
-  context.module.exports.showWin()
+  context.module.exports.showWin({ key: 'synthetic', name: 'Synthetic', ohosVersion: '', sdkVersion: '' })
   return {
     get bounds() { return bounds }, get minimum() { return minimum }, win,
     fit(width, height, inset, event = { sender: win.webContents, senderFrame: win.webContents.mainFrame }) {

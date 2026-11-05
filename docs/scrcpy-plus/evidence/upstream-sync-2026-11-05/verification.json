@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-05",
+  "upstreamCommit": "c53363659f8036336f44dc53eb8ab3a97c2022f8",
+  "applicationTests": {
+    "passed": 965,
+    "failed": 0,
+    "nativeEnabled": true
+  },
+  "liciaEachMode": {
+    "passing": 606,
+    "pending": 4
+  },
+  "lintAndI18n": "passed",
+  "fullBuild": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "androidSource": "passed",
+    "airplaySource": "passed",
+    "main": "passed",
+    "preload": "passed",
+    "renderer": "passed",
+    "distribution": "passed"
+  },
+  "feedbackUi": {
+    "passed": true,
+    "cases": 4
+  },
+  "screenshotNavigationUi": {
+    "passed": true,
+    "cases": 24
+  },
+  "firstUiProbe": "Failed because the preview preload did not implement unified getDevices; fixture updated and both upstream UI probes passed on repeat.",
+  "ci": "pending GitHub PR run",
+  "review": "pending PR review; no bypass"
+}

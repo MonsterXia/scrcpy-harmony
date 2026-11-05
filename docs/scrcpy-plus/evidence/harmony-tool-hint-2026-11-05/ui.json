@@ -1,0 +1,106 @@
+{
+  "scope": "Real Electron UI shell with simulated device/session IPC; no physical phone or backend acceptance",
+  "cases": [
+    {
+      "language": "en-US",
+      "sidebarCases": [
+        {
+          "width": 960,
+          "theme": "light",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 960,
+          "theme": "dark",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 1280,
+          "theme": "light",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 1280,
+          "theme": "dark",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        }
+      ],
+      "dedicatedMultiMirrorEntry": true,
+      "harmonyRestrictionHint": true,
+      "harmonyQuickSwitchPreservesSessions": true,
+      "harmonyDestinations": 8,
+      "devices": 6,
+      "harmonySelectableOnDevicePage": true,
+      "concurrentSessions": 3,
+      "platforms": [
+        "android",
+        "harmony",
+        "ios"
+      ],
+      "stopIsolation": true,
+      "startupLayoutPairs": 9,
+      "otherSessionsPreserved": true,
+      "runtime": "45.0.0",
+      "passed": true
+    },
+    {
+      "language": "zh-CN",
+      "sidebarCases": [
+        {
+          "width": 960,
+          "theme": "light",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 960,
+          "theme": "dark",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 1280,
+          "theme": "light",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 1280,
+          "theme": "dark",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        }
+      ],
+      "dedicatedMultiMirrorEntry": true,
+      "harmonyRestrictionHint": true,
+      "harmonyQuickSwitchPreservesSessions": true,
+      "harmonyDestinations": 8,
+      "devices": 6,
+      "harmonySelectableOnDevicePage": true,
+      "concurrentSessions": 3,
+      "platforms": [
+        "android",
+        "harmony",
+        "ios"
+      ],
+      "stopIsolation": true,
+      "startupLayoutPairs": 9,
+      "otherSessionsPreserved": true,
+      "runtime": "45.0.0",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

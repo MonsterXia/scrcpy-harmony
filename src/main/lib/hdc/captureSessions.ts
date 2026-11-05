@@ -33,7 +33,7 @@ interface Device {
   prepared?: { driver: CaptureUiDriver; ready: boolean }
 }
 
-let registered: Owner | undefined
+const registered = new Map<WebContents, Owner>()
 const sessions = new Map<string, Session>()
 const devices = new Map<string, Device>()
 
@@ -103,7 +103,7 @@ export function cancelCapturePreparation(key: string) {
 }
 
 export async function shutdownCaptures() {
-  if (registered) invalidate(registered)
+  for (const owner of registered.values()) invalidate(owner)
   await Promise.all([...devices].map(([key, device]) => enqueue(key, device, async () => {
     if (device.lease) await stopLease(device, device.lease)
     await discardPrepared(device)
@@ -156,25 +156,26 @@ function invalidate(owner: Owner) {
 // observed. In particular, the departing document cannot acquire a new owner
 // between navigation start and commit.
 export function registerCaptureWindow(contents: WebContents) {
-  if (registered) invalidate(registered)
+  const previous = registered.get(contents)
+  if (previous) invalidate(previous)
   const owner: Owner = { contents, ready: false, sessions: new Set() }
-  registered = owner
+  registered.set(contents, owner)
   contents.on('did-start-navigation', (details) => {
     if (details.isMainFrame && !details.isSameDocument) invalidate(owner)
   })
   contents.on('did-navigate', () => {
-    if (registered === owner && !contents.isDestroyed()) owner.ready = true
+    if (registered.get(contents) === owner && !contents.isDestroyed()) owner.ready = true
   })
   contents.on('render-process-gone', () => invalidate(owner))
   contents.once('destroyed', () => {
     invalidate(owner)
-    if (registered === owner) registered = undefined
+    if (registered.get(contents) === owner) registered.delete(contents)
   })
   return () => invalidate(owner)
 }
 
 function sender(event: IpcMainInvokeEvent) {
-  const owner = registered
+  const owner = registered.get(event.sender)
   if (
     !owner ||
     !owner.ready ||
@@ -191,7 +192,7 @@ function sender(event: IpcMainInvokeEvent) {
 function current(session: Session, generation: number) {
   return (
     !!session.owner?.ready &&
-    session.owner === registered &&
+    registered.get(session.owner.contents) === session.owner &&
     session.generation === generation
   )
 }

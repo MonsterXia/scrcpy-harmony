@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-05",
+  "targetedTests": {
+    "passed": 20,
+    "failed": 0
+  },
+  "lintAndI18n": "passed",
+  "rendererBuild": "passed",
+  "uiReport": "ui.json",
+  "visualReview": [
+    "zh-CN-harmony-hint-960.png",
+    "en-US-harmony-hint-1280.png"
+  ],
+  "localUi": {
+    "before": [],
+    "after": [],
+    "ui": {
+      "hint": "当前选择的是 Android，侧栏的设备与调试工具仅支持鸿蒙。请使用「多端投屏」，或切换到鸿蒙设备。",
+      "switchAvailable": true,
+      "sessions": []
+    }
+  },
+  "physicalMirrorRetest": "not performed; current session list empty; UI-only change"
+}

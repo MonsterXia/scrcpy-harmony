@@ -1,3 +1,68 @@
+# Scrcpy Plus 跨平台改造（2026-11-03）
+
+## 上游更新与标准分支交付（2026-11-05）
+
+用户明确授权：使用个人 GitHub 账号 zjkzjk，将当前多平台功能通过 PR 正常门禁合入 MonsterXia/scrcpy-harmony 的 master，不建立长期 Plus 分支。已保留本地成果并无冲突合入上游 c533636，包含截图隐藏与主窗口反馈样式修复。CI／手动 Build 补齐固定 SHA 的 Java/Android 和原生工具链；安卓编译改为跨平台 Java 参数文件。Mac arm64 完整源码后端与发行目录构建、965 项应用测试、Licia 两模式各 606 passing / 4 pending、lint/i18n 通过。上游 UI 探针首轮因旧预览接口不匹配失败，补齐 getDevices 后通知四场景和截图导航 24 场景通过。PR CI、审查和合入尚待远端结果，不绕过门禁；实时结果将记录在本次 PR。见 [同步证据](docs/scrcpy-plus/evidence/upstream-sync-2026-11-05/verification.json)。
+
+
+## 独立的鸿蒙工具／投屏设备选择（2026-11-05）
+
+实现双状态：target 仅用于鸿蒙工具与原 HDC 入口，mirrorTarget 用于多端投屏；侧栏只显示鸿蒙，投屏页显示全平台。各自持久化、刷新和断开恢复，保留旧共享 Android／iOS 选择到 mirrorTarget，并清除主进程旧 target；选择投屏目标不改变工具面板或其目标。已移除之前按安卓选择禁用侧栏的逻辑与临时能力提示。全量 963 项应用、Licia 两模式各 606 passing / 4 pending、lint/i18n、渲染构建通过；最终迁移清理补改后 11 项刷新／迁移专项再次通过。中英文隔离 Electron 验证安卓和 iOS 投屏目标与鸿蒙工具同时选中、会话保持、旧九种启动排列组合。本机新版已启动，现场暂只识别安卓，确认工具选择不被分配为安卓；双真机工具操作尚未重测。证据见 [独立选择](docs/scrcpy-plus/evidence/independent-device-selection-2026-11-05/ui.json)。
+
+## 非鸿蒙设备的工具提示（2026-11-05）
+
+选中 Android／iOS 时增加常驻说明：侧栏设备与调试工具仅支持鸿蒙，引导使用多端投屏；可用鸿蒙设备提供一键切换，无可用设备则提示连接及允许调试。禁用导航项提供原因 tooltip 和 aria-describedby。沿用设备选择，不停止已有投屏。20 项导航／国际化专项、lint/i18n、渲染构建通过；中英文 960／1280 宽真实 Electron UI 验证提示显示和一键切换，模拟会话保持；已刷新本机主界面，Android 选择下提示和快捷按钮已出现。此轮未重新验证真机投屏。见 [UI 证据](docs/scrcpy-plus/evidence/harmony-tool-hint-2026-11-05/ui.json)。
+
+## 多端投屏独立导航（2026-11-05）
+
+已实现并刷新本机主界面：左侧独立「多端投屏」彩色入口与专属三屏 SVG 图标，选中描边；窄侧栏显示图标与 tooltip。下方保留鸿蒙设备切换和八项工具入口，继续沿用原能力限制；保留 devices 路由兼容旧配置。17 项导航／国际化专项、lint/i18n、渲染构建通过。隔离 Electron 两种语言各验证 960／1280 宽、明暗主题四种组合，图标和按钮无溢出；原九种启动排列组合继续通过。仅刷新本机主界面加载新 UI，现场会话列表为空，未据此宣称新一轮真机投屏验收。见 [UI 证据](docs/scrcpy-plus/evidence/multi-mirror-navigation-2026-11-05/ui.json)。
+
+## 组合窗口隐藏与刷新（2026-11-05）
+
+本地修复并启动验证：组合模式隐藏参与的单端窗口，延迟 ready-to-show 也不能重新弹出；关闭或切换模式恢复窗口与后台节流策略。同步全尺寸 PNG 和跨端等待改为原尺寸异步 JPEG 0.95，每端最多一项导出、独立最新帧缓存，66ms 轮询，临时失败保留上一帧。957 项应用、Licia 两模式各 606 passing / 4 pending、lint/i18n、主进程和渲染构建通过。Mac 安卓＋鸿蒙检查两端均更新，10 秒图像加载分别 27／11 次（不是视频 FPS），取图 IPC p95 约 0.9ms；模式切换保持源窗口 ID，组合模式只显示一个投屏窗口。用户已滑动确认两端流畅。长期稳定性、iOS 新实现及其他平台仍待验证。见 [验证记录](docs/scrcpy-plus/evidence/merged-refresh-2026-11-05/verification.json)。
+
+## 三星 USB 断连恢复（2026-11-05）
+
+状态：macOS 本地修复与实际拔插验证完成。修复断连清理读取失效描述符、释放异常跳过原生 close，以及已有错误会话无法重试的问题；端点读取超时可继续等待并可关闭。首次保留 usb 3.2.1 的拔插复测仍失败，随后固定至 usb 2.19.1/libusb，补充端口标识、端点超时兼容与许可证。最终用户再次实际拔插三星，应用未重启即恢复真实画面，鸿蒙窗口继续运行，安卓＋鸿蒙合并视图两栏正常且无附加控件。955 项应用测试、Licia 两模式各 606 passing / 4 pending、主进程构建、lint/i18n 通过。原生层具体故障原因未定位；Windows、长期反复拔插待补，iOS 新模式按用户要求稍后验证。见 [验证记录](docs/scrcpy-plus/evidence/samsung-usb-reconnect-2026-11-05/verification.json)。
+
+## 启动模式与排列模式（2026-11-05）
+
+新增三种启动范围（单端当前设备／安卓＋鸿蒙／全部三端）和三种排列（独立／并排／合并），选择后「按模式启动」，只调整当前会话时「应用排列」，保留并排与合并快捷按钮。按会话 deviceKey 过滤范围，iOS USB 入口归一至接收器；未选中的连接继续运行。合并视图动态显示 1／2／3 栏，iOS 有选中时保持最右侧，切换范围恢复排除源窗口的后台绘制策略；处理旧合并窗口延迟关闭的竞态。949 项应用、Licia 两模式各 606 passing / 4 pending、9 项专项、lint/i18n、三端构建及中英文各 9 种组合通过。真实安卓／鸿蒙窗口九种范围排列检查保持会话 ID，结束恢复用户双端合并选择；iOS 会话已关闭，当前新模式未补测 iOS 真机，既有三端证据继续保留。见 [verification.json](docs/scrcpy-plus/evidence/start-layout-modes/verification.json)。
+
+## 三图单框合并（2026-11-05）
+
+在「并排排列」右侧新增「合并排列」，打开单一合并窗口；用户指定 iOS 在最右侧，顺序为 Android／HarmonyOS／iOS，顶部仅系统名称，无设备描述或工具控件。按平台读取三个已有窗口的原始视频 Canvas，使用 PNG 保留截图细节，完成一次刷新后延时 400ms；请求合并去重并校验合并窗口 sender/mainFrame，缺失单路不影响其他列，关闭恢复源窗口后台渲染策略。三台真机合并出图已验证：896×1920、640×1416、498×1080，三列真实图片均加载，正文仅 AndroidHarmonyOSiOS。943 项全量、Licia 两模式各 606 passing / 4 pending、最终顺序的 4 项专项、lint/i18n、三端构建、双语入口 UI 均通过。合并窗口保持打开供截图，见 [live.json](docs/scrcpy-plus/evidence/merged-view/live.json)。
+
+## 三端同时投屏与截图排列（2026-11-05）
+
+已复现安卓窗口已销毁、USB 清理停在 stopping 时再次启动 focus 报错。修复为有限读取期限、空闲超时重试、等待读写完成后释放接口，不再等待可能挂起的 clearHalt；销毁／停止中的会话先完成清理再重新创建。新增「启动全部投屏」「并排排列」，保持各设备独立会话。用户同时连接三台后真实验证安卓 896×1920、Mate 80 1280×2832、iOS 498×1080 同时出图且均 running；单独关闭重开安卓后鸿蒙／iOS 窗口 ID 不变，三窗口并排无重叠，保持运行供截图。应用 939/939、Licia 两模式各 606 passing / 4 pending、20 项专项、lint/i18n、main/preload/renderer 构建及双语 UI 通过。仅保存像素统计；证据见 [live.json](docs/scrcpy-plus/evidence/three-platform/live.json)。
+
+## iOS 真机 AirPlay 验收（2026-11-05）
+
+用户此前从音乐卡片选择音频输出，RTSP 完成配对但未建立镜像视频。引导改用控制中心「屏幕镜像」（两个重叠矩形）后用户确认出图，精确匹配 iOS 会话的真实 Canvas 为 498×1080、2124 种抽样颜色、无解码错误，H.264 原生视频链路通过；同时安卓会话运行。接收器保持打开。已补充双语入口提示及不输出请求头／密钥／媒体内容的协议阶段日志，2 项原生 RTSP／重启回归、lint/i18n、renderer 构建及资源哈希验证通过。iOS 反向控制未实现。证据见 [live.json](docs/scrcpy-plus/evidence/ios-airplay-2026-11-05/live.json)。
+
+## 安卓投屏精简与用户验收（2026-11-05）
+
+用户确认鸿蒙操作、安卓投屏及两端触控正常，要求安卓与鸿蒙保持简洁一致。已移除常驻返回／主屏幕／任务按钮和文字输入栏，正常连接时隐藏重复的设备名／状态区，设备名移至窗口标题；保留 Canvas 触控、滚动、键盘与比例适配。只重新打开当前三星窗口，真实视频 896×1920 出图，Canvas 填满标题栏以下区域，footer/input/header 均不存在、按钮数 0。4 项 renderer 输入／帧／适配回归、lint/i18n、renderer 构建通过。证据见 [live.json](docs/scrcpy-plus/evidence/android-clean-window-2026-11-05/live.json)。
+
+## Mate 80 真机投屏复验（2026-11-05）
+
+用户选择先验证鸿蒙。当前运行的 Plus dev.1 通过真实 HDC 识别 Mate 80 ready；首次及关闭重开后均实际绘制 1280×2832 画面、无错误提示，显示区域约 372×823 CSS px，比例一致。首次状态面板确认 H.264；第二次编码未抽样，仅确认真实像素绘制。只记录尺寸／颜色统计，不保存手机画面或注入触控／文字；反向控制尚未实测。安卓按用户要求继续等待。证据见 [live.json](docs/scrcpy-plus/evidence/harmony-mate80-2026-11-05/live.json)。
+
+## 原生投屏窗口与设备选择（2026-11-05）
+
+修复 Android/iOS 固定窗口比例带来的大黑边：解码尺寸驱动窗口适配，计入工具栏／标题栏／留白，布局换行时重新计算，拖动窗口保持视频比例；使用容器可用高度防止底部控件截断，并使用当前主题背景色。新增投屏页直接可见的设备列表，避免已发现的 Mate 80 被当前 AirPlay 选择遮蔽。真实 HDC 与应用 IPC 均识别 Mate 80 ready，投屏页可选择；11 项窗口／输入回归、lint/i18n、三端构建和双语 UI 通过。真实 Electron 横／竖屏几何验证剩余边距均低于 1 CSS px；尺寸为合成数据，不代表安卓真机已复验。自动化测试图解码探针缺少 VideoDecoder，失败单独保留。三星当前未连接，手机画面／重连待用户接回。证据见 [window-fit](docs/scrcpy-plus/evidence/window-fit/live.json)。
+
+## dev.1 上游同步（2026-11-04）
+
+已同步至上游 master `507a8be`（包含 v1.0.5-dev.1 固定源码 `c4bf7cf` 及发行证据），本地分支 `codex/scrcpy-plus-dev.1` 跟踪 origin/master，版本为 `1.0.5-dev.1`。保留全部 Plus 未提交改动，合入商店空响应图标缓存、Mate 80 UITest 复合版本与协议族兼容、外部活动 daemon 保护；未提交或发布 Plus 发行包。应用 934/934、Licia 两模式各 606 passing / 4 pending、lint/i18n、Mac arm64 完整构建及双语 Electron UI（模拟设备 IPC）通过。Android 黑屏实际 Canvas／重连验收仍等待用户接回手机。来源、产物与证据见 [dev1/integration.json](docs/scrcpy-plus/evidence/dev1/integration.json)。下方各阶段历史计数保留原验收范围。
+
+开发版代码已实现，运行环境／真机验收待补：以指定鸿蒙分支为基础，已将 Android ADB/scrcpy 和 iOS AirPlay 改为源码集成，删除外部工具启动与路径配置；新增应用内窗口、直接 USB/usbmux 协议及 AirPlay Node-API worker，鸿蒙会话继续按窗口绑定。源码模式已通过 912 项应用回归；补查修复连续手势抬起、并发首次授权密钥发布及清理失败重试。源码构建条件、未支持项与验证边界见[集成说明](docs/scrcpy-plus/integration.md)。下文为继承的上游历史，不代表 Plus 已发布或通过对应验收。
+
+2026-11-04 本机验证：macOS 27.2 arm64 完整源码构建和 dist 依赖安装通过；Electron 45 官方运行时、六个鸿蒙视频库均完成哈希核验。实际启动修复 plist 浏览器导出导致 iOS 枚举报错；双语 UI（模拟 IPC）及真实设备发现／AirPlay 接收窗口启停通过，当前无连接手机。已提供 `npm start` 本地运行，Windows／其他系统打包及手机视频／控制验收待后续。证据见 [mac-local](docs/scrcpy-plus/evidence/mac-local/live.json)。
+
+2026-11-04 安卓黑屏排查：日志复现 USB 读取取消及接口独占失败，三星设备曾返回真实 H.264 配置和视频帧；已修复 node-usb 默认一秒读取超时、原生接口未释放及并发关闭顺序，主进程重编译、16 项设备／窗口回归和 lint/i18n 通过。最终真实 Canvas 画面与重复连接尚未验收；用户暂用设备处理其他问题，等待接回安卓后继续。
+
 # Scrcpy Harmony 分阶段维护 RUNBOOK
 
 ## UI 修复合入与本地替换（2026-11-04，不发布）

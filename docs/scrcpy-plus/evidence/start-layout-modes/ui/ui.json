@@ -1,0 +1,38 @@
+{
+  "scope": "Real Electron UI shell with simulated device/session IPC; no physical phone or backend acceptance",
+  "cases": [
+    {
+      "language": "en-US",
+      "devices": 6,
+      "harmonySelectableOnDevicePage": true,
+      "concurrentSessions": 3,
+      "platforms": [
+        "android",
+        "harmony",
+        "ios"
+      ],
+      "stopIsolation": true,
+      "startupLayoutPairs": 9,
+      "otherSessionsPreserved": true,
+      "runtime": "45.0.0",
+      "passed": true
+    },
+    {
+      "language": "zh-CN",
+      "devices": 6,
+      "harmonySelectableOnDevicePage": true,
+      "concurrentSessions": 3,
+      "platforms": [
+        "android",
+        "harmony",
+        "ios"
+      ],
+      "stopIsolation": true,
+      "startupLayoutPairs": 9,
+      "otherSessionsPreserved": true,
+      "runtime": "45.0.0",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

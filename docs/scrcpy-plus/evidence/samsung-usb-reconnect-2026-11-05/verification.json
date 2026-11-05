@@ -1,0 +1,193 @@
+{
+  "date": "2026-11-05",
+  "platform": "macOS arm64",
+  "status": "passed",
+  "observations": [
+    "断连后清理读取 configuration 描述符抛错，旧会话未能可靠释放接口和关闭设备。",
+    "修复清理后，usb 3.2.1 的首次真机拔插仍出现 Disconnected；独立进程可读帧，原进程重连失败。此后改用 usb 2.19.1 libusb 后端。具体原生层根因尚未定位。"
+  ],
+  "changes": [
+    "记录成功 claim 的接口，断连清理不读取描述符，释放失败仍执行原生 close。",
+    "读写端点设一秒超时，空闲读取超时继续等待，关闭可终止等待。",
+    "已有 error/disconnected 会话重试启动后端并复用窗口。",
+    "固定 usb 2.19.1，保留直接 USB/Tango 源码集成；补充 libusb 无序列号物理端口标识及许可证。"
+  ],
+  "physicalValidation": {
+    "userConfirmedSamsungUnplugReplug": true,
+    "applicationRestartDuringFinalReplug": false,
+    "harmonyWindowPreserved": true,
+    "runtime": {
+      "pid": 17881,
+      "uptimeSeconds": 346,
+      "usbVersion": "2.19.1"
+    },
+    "before": {
+      "sessions": [
+        {
+          "platform": "harmony",
+          "state": "running",
+          "name": "HUAWEI Mate 80"
+        },
+        {
+          "platform": "android",
+          "state": "running",
+          "name": "SAMSUNG_Android"
+        }
+      ],
+      "frames": [
+        {
+          "platform": "android",
+          "windowId": 3,
+          "bounds": {
+            "x": 925,
+            "y": 40,
+            "width": 404,
+            "height": 894
+          },
+          "width": 896,
+          "height": 1920,
+          "distinctColors": 6089,
+          "hasPicture": true,
+          "alerts": []
+        },
+        {
+          "platform": "harmony",
+          "windowId": 2,
+          "bounds": {
+            "x": 176,
+            "y": 46,
+            "width": 405,
+            "height": 924
+          },
+          "width": 1280,
+          "height": 2832,
+          "distinctColors": 4804,
+          "hasPicture": true,
+          "alerts": []
+        }
+      ],
+      "overlaps": false,
+      "workArea": {
+        "x": 0,
+        "y": 33,
+        "width": 1512,
+        "height": 949
+      }
+    },
+    "after": {
+      "sessions": [
+        {
+          "platform": "harmony",
+          "state": "running",
+          "name": "HUAWEI Mate 80"
+        },
+        {
+          "platform": "android",
+          "state": "running",
+          "name": "SAMSUNG_Android"
+        }
+      ],
+      "frames": [
+        {
+          "platform": "android",
+          "windowId": 3,
+          "bounds": {
+            "x": 925,
+            "y": 40,
+            "width": 403,
+            "height": 892
+          },
+          "width": 896,
+          "height": 1920,
+          "distinctColors": 5223,
+          "hasPicture": true,
+          "alerts": []
+        },
+        {
+          "platform": "harmony",
+          "windowId": 2,
+          "bounds": {
+            "x": 176,
+            "y": 46,
+            "width": 405,
+            "height": 924
+          },
+          "width": 1280,
+          "height": 2832,
+          "distinctColors": 6754,
+          "hasPicture": true,
+          "alerts": []
+        }
+      ],
+      "overlaps": false,
+      "workArea": {
+        "x": 0,
+        "y": 33,
+        "width": 1512,
+        "height": 949
+      }
+    },
+    "merged": {
+      "text": "AndroidHarmonyOS",
+      "headings": [
+        "Android",
+        "HarmonyOS"
+      ],
+      "columns": [
+        {
+          "platform": "android",
+          "loaded": true,
+          "hasPicture": true,
+          "width": 896,
+          "height": 1920,
+          "rect": {
+            "x": 12,
+            "y": 10,
+            "width": 582,
+            "height": 796,
+            "top": 10,
+            "right": 594,
+            "bottom": 806,
+            "left": 12
+          }
+        },
+        {
+          "platform": "harmony",
+          "loaded": true,
+          "hasPicture": true,
+          "width": 1280,
+          "height": 2832,
+          "rect": {
+            "x": 606,
+            "y": 10,
+            "width": 582,
+            "height": 796,
+            "top": 10,
+            "right": 1188,
+            "bottom": 806,
+            "left": 606
+          }
+        }
+      ],
+      "controls": 0
+    }
+  },
+  "checks": {
+    "applicationTests": {
+      "passed": 955,
+      "failed": 0,
+      "nativeEnabled": true
+    },
+    "liciaEachMode": {
+      "passed": 606,
+      "pending": 4
+    },
+    "mainBuild": "passed",
+    "lintAndI18n": "passed",
+    "bundledLibusbNotice": "present"
+  },
+  "next": [
+    "iOS 新启动模式真机补测按用户要求延后。",
+    "Windows 与其他平台运行验证、长时间反复拔插仍待执行。"
+  ]
+}

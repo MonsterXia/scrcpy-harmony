@@ -10,6 +10,7 @@ import isWindows from 'licia/isWindows'
 import { getUserDataPath, handleEvent } from 'share/main/lib/util'
 import * as updater from 'share/main/lib/updater'
 import { isDev } from 'share/common/util'
+import { isCaptureWindow } from '../window/screencast'
 import { editWindow } from './screencastEdit'
 import { getSettingsStore } from './store'
 
@@ -46,6 +47,7 @@ function getTemplate(): MenuItemConstructorOptions[] {
       },
       {
         label: `${t('checkUpdate')}...`,
+        enabled: false,
         async click(item: MenuItem) {
           const label = item.label
           item.enabled = false
@@ -62,6 +64,7 @@ function getTemplate(): MenuItemConstructorOptions[] {
       },
       {
         id: 'beta-update',
+        enabled: false,
         label: t(betaUpdate ? 'betaUpdateOn' : 'betaUpdateOff'),
         type: 'checkbox' as const,
         checked: betaUpdate,
@@ -102,12 +105,12 @@ function getTemplate(): MenuItemConstructorOptions[] {
       },
       {
         label: t('delete'),
-        click: (_item: MenuItem, focused: BaseWindow | undefined) => editWindow('delete', focused, window.getWin('screencast')),
+        click: (_item: MenuItem, focused: BaseWindow | undefined) => editWindow('delete', focused, isCaptureWindow(focused) ? focused as Electron.BrowserWindow : undefined),
       },
       {
         label: t('selectAll'),
         accelerator: 'CommandOrControl+A',
-        click: (_item: MenuItem, focused: BaseWindow | undefined) => editWindow('selectAll', focused, window.getWin('screencast')),
+        click: (_item: MenuItem, focused: BaseWindow | undefined) => editWindow('selectAll', focused, isCaptureWindow(focused) ? focused as Electron.BrowserWindow : undefined),
       },
     ],
   }

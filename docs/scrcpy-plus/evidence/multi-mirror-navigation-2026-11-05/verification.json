@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-05",
+  "targetedTests": {
+    "passed": 17,
+    "failed": 0
+  },
+  "lintAndI18n": "passed",
+  "rendererBuild": "passed",
+  "uiReport": "ui.json",
+  "visualReview": [
+    "zh-CN-sidebar-1280-light.png",
+    "en-US-sidebar-960-dark.png",
+    "en-US-sidebar-1280-light.png"
+  ],
+  "localUi": {
+    "before": [],
+    "after": [],
+    "ui": {
+      "entry": "多端投屏",
+      "hasCustomIcon": true,
+      "harmonyTools": [
+        "overview",
+        "application",
+        "screenshot",
+        "shell",
+        "hilog",
+        "process",
+        "layout",
+        "webview"
+      ],
+      "sessions": []
+    }
+  },
+  "physicalMirrorRetest": "not performed; local session list empty; UI-only change"
+}

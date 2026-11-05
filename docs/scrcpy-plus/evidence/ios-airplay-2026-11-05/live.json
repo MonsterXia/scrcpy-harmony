@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-05",
+  "scope": "Production Electron, native source AirPlay receiver, actual iPhone Screen Mirroring; pixel statistics only, no phone screenshot saved",
+  "reportedIssue": "No picture after selecting Scrcpy Plus",
+  "cause": "User selected audio output from music card instead of Control Center Screen Mirroring",
+  "userConfirmedPictureAfterChangingEntry": true,
+  "frame": {
+    "platform": "ios",
+    "width": 498,
+    "height": 1080,
+    "hasPicture": true,
+    "distinctColors": 2124,
+    "alerts": [],
+    "canvasRect": {
+      "x": 8,
+      "y": 84.5,
+      "width": 389,
+      "height": 843.5,
+      "top": 84.5,
+      "right": 397,
+      "bottom": 928,
+      "left": 8
+    },
+    "viewport": {
+      "width": 405,
+      "height": 936
+    }
+  },
+  "codec": "H.264 (native bridge accepts H264 only)",
+  "parallelSessions": [
+    {
+      "platform": "ios",
+      "state": "running"
+    },
+    {
+      "platform": "android",
+      "state": "running"
+    }
+  ],
+  "changes": [
+    "Protocol-stage diagnostics exclude request headers, pairing keys and media payloads",
+    "English/Chinese hint distinguishes overlapping-rectangles Screen Mirroring from music audio output"
+  ],
+  "nativeRegressionTests": {
+    "passed": 2,
+    "failed": 0
+  },
+  "lint": "passed",
+  "i18n": "passed",
+  "rendererBuild": "passed",
+  "resourceIntegrity": "passed",
+  "reverseControl": "not implemented for iOS",
+  "passed": true
+}

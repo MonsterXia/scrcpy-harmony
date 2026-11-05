@@ -1,0 +1,22 @@
+{
+  "scope": "Real Electron UI shell with simulated device/session IPC; no physical phone or backend acceptance",
+  "cases": [
+    {
+      "language": "en-US",
+      "devices": 5,
+      "concurrentSessions": 2,
+      "stopIsolation": true,
+      "runtime": "45.0.0",
+      "passed": true
+    },
+    {
+      "language": "zh-CN",
+      "devices": 5,
+      "concurrentSessions": 2,
+      "stopIsolation": true,
+      "runtime": "45.0.0",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

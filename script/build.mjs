@@ -2,6 +2,7 @@ import fs from 'fs-extra'
 import { execFileSync } from 'node:child_process'
 import { vendorNotices } from './lib/vendor-notices.mjs'
 import path from 'node:path'
+import { validatePlatformBackends } from './platform-backend-resources.mjs'
 import { validateNativeResources } from './native-video-resources.mjs'
 
 const npmCli = process.env.npm_execpath
@@ -26,11 +27,16 @@ pkg.scripts = {
 }
 pkg.main = 'main/index.js'
 
+runNpm('run', 'build:backends')
+await validatePlatformBackends('resources')
 runNpm('run', 'build:main')
 runNpm('run', 'build:preload')
 runNpm('run', 'build:renderer')
 
-await fs.copy('build', 'dist/build')
+await fs.copy('build', 'dist/build', { filter: file => !['native-airplay', 'android-server'].includes(path.relative('build', file).split(path.sep)[0]) })
+await fs.copy('resources/android', 'dist/resources/android')
+await fs.copy('resources/airplay', 'dist/resources/airplay')
+await fs.copyFile('resources/platform-backends.json', 'dist/resources/platform-backends.json')
 await fs.copy('resources/hdc', 'dist/resources/hdc')
 await fs.copy('resources/uitestkit_sdk', 'dist/resources/uitestkit_sdk')
 const nativeManifest = await fs.readJson('vendor/native-video/manifest.json')

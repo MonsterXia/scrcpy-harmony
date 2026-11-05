@@ -10,3 +10,9 @@ vendor/packages/luna-*/luna-*.css
 vendor/.build-stamp
 vendor/packages/licia/*.js
 vendor/packages/licia/*.d.ts
+
+build/native-airplay/
+vendor/tango/*/esm/**/*.js
+vendor/tango/*/esm/**/*.js.map
+
+build/android-server/

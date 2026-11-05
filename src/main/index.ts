@@ -3,6 +3,7 @@ import * as menu from './lib/menu'
 import * as main from './window/main'
 import * as terminal from 'share/main/window/terminal'
 import * as hdc from './lib/hdc'
+import * as devices from './lib/devices'
 import * as updater from './lib/updater'
 import * as screencastPreparation from './lib/screencastPreparation'
 import log from 'share/common/log'
@@ -17,6 +18,7 @@ app.on('ready', () => {
   updater.init()
   terminal.init()
   hdc.init()
+  devices.init()
   screencastPreparation.init()
   main.showWin()
   menu.init()

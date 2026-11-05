@@ -51,6 +51,14 @@ function renderApp() {
       App = lazy(() => import('share/renderer/process/App.js') as Promise<any>)
       title = t('processManager')
       break
+    case 'native-mirror':
+      App = lazy(() => import('./native-mirror/App.js') as Promise<any>)
+      title = t('screencast')
+      break
+    case 'merged-mirror':
+      App = lazy(() => import('./merged-mirror/App.js') as Promise<any>)
+      title = ''
+      break
     case 'screencast':
       App = lazy(() => import('./screencast/App.js') as Promise<any>)
       title = t('screencast')

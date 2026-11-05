@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-04",
+  "repository": "https://github.com/MonsterXia/scrcpy-harmony",
+  "originalBase": "00b4890b4a0927a50765b32e4cb94bf3463337f7",
+  "upstream": "507a8be7899d285b388285f19ad9c3b0b057540f",
+  "releaseTag": "v1.0.5-dev.1",
+  "releaseSource": "c4bf7cf697585184e5613eaf51c3288526d44f86",
+  "localBranch": "codex/scrcpy-plus-dev.1",
+  "method": "Three-way merge in an isolated copy of the local working tree; preserved local changes then advanced baseline to upstream without creating or publishing a Plus commit",
+  "applicationTests": {
+    "passed": 934,
+    "failed": 0,
+    "skipped": 0,
+    "nativeEnabled": true
+  },
+  "licia": {
+    "production": {
+      "passing": 606,
+      "pending": 4
+    },
+    "fallback": {
+      "passing": 606,
+      "pending": 4
+    }
+  },
+  "lint": "passed",
+  "i18n": "passed",
+  "macArm64Build": "passed",
+  "physicalPhoneAcceptance": "not performed; Android black-screen canvas/reconnect verification still pending user reconnection",
+  "packagedInstallers": false,
+  "artifacts": [
+    {
+      "file": "dist/main/index.js",
+      "size": 1187175,
+      "sha256": "0e9d08b2aa1874f588011e1911eadf61277601eceda4de905f8f428c9769dcc1"
+    },
+    {
+      "file": "dist/preload/index.js",
+      "size": 122378,
+      "sha256": "58de6bc02289f4abea87e7aa65d776df39161c1176c22128008d18ba26f59f79"
+    },
+    {
+      "file": "dist/package.json",
+      "size": 813,
+      "sha256": "d6cf4a08e7730953da4c41cb46ceb3bb03cb2a6d69ded91477a59f17f0b542dd"
+    },
+    {
+      "file": "resources/platform-backends.json",
+      "size": 395,
+      "sha256": "a1107cb088a392c069ab6da93d438be32ff8730be1867b2313910b016d589c90"
+    }
+  ],
+  "bilingualElectronUi": {
+    "passed": true,
+    "scope": "simulated device/session IPC; no physical phone acceptance",
+    "evidence": "ui/ui.json"
+  }
+}

@@ -7,12 +7,12 @@ import { Settings } from './settings'
 import { Application } from './application'
 import { ITarget } from 'common/types'
 import { setMemStore } from 'share/renderer/lib/util'
-import isEmpty from 'licia/isEmpty'
 import { Process } from './process'
 import { Layout } from './layout'
 
 function normalizePanel(panel: string) {
   return [
+    'devices',
     'settings',
     'overview',
     'application',
@@ -24,14 +24,16 @@ function normalizePanel(panel: string) {
     'webview',
   ].includes(panel)
     ? panel
-    : 'overview'
+    : 'devices'
 }
 
 class Store extends BaseStore {
   targets: ITarget[] = []
   target: ITarget | null = null
+  mirrorTarget: ITarget | null = null
   targetsError = false
-  panel = 'overview'
+  discoveryErrors: string[] = []
+  panel = 'devices'
   settings = new Settings()
   application = new Application()
   process = new Process()
@@ -44,7 +46,9 @@ class Store extends BaseStore {
     makeObservable(this, {
       targets: observable,
       target: observable,
+      mirrorTarget: observable,
       targetsError: observable,
+      discoveryErrors: observable,
       panel: observable,
       ready: observable,
     })
@@ -53,16 +57,16 @@ class Store extends BaseStore {
     this.init()
   }
   selectTarget = (target: string | ITarget | null) => {
-    if (isStr(target)) {
-      const d = find(this.targets, ({ key }) => key === target)
-      if (d) {
-        this.target = d
-      }
-    } else {
-      this.target = target
-    }
-
+    const selected = isStr(target) ? find(this.targets, ({ key }) => key === target) : target
+    if (selected === undefined || (selected?.platform && selected.platform !== 'harmony')) return
+    this.target = selected
     setMainStore('target', this.target)
+  }
+  selectMirrorTarget = (target: string | ITarget | null) => {
+    const selected = isStr(target) ? find(this.targets, ({ key }) => key === target) : target
+    if (selected === undefined) return
+    this.mirrorTarget = selected
+    setMainStore('mirrorTarget', this.mirrorTarget)
   }
   selectPanel(panel: string) {
     this.panel = normalizePanel(panel)
@@ -72,8 +76,11 @@ class Store extends BaseStore {
     const refreshId = ++this.targetsRefreshId
     let targets: ITarget[] = []
     let success = true
+    let discoveryErrors: string[] = []
     try {
-      targets = await main.getTargets()
+      const result = await main.getDevices()
+      targets = result.targets
+      discoveryErrors = result.errors
     } catch {
       success = false
     }
@@ -83,24 +90,18 @@ class Store extends BaseStore {
       return undefined
     }
     runInAction(() => {
+      this.discoveryErrors = discoveryErrors
       this.targets = targets
       this.targetsError = !success
       setMemStore('targets', targets)
     })
-    if (!isEmpty(targets)) {
-      if (!this.target) {
-        this.selectTarget(targets[0])
-      } else {
-        const target = find(targets, ({ key }) => key === this.target!.key)
-        if (!target) {
-          this.selectTarget(targets[0])
-        }
-      }
-    } else {
-      if (this.target) {
-        this.selectTarget(null)
-      }
-    }
+    const harmonyTargets = targets.filter(target => !target.platform || target.platform === 'harmony')
+    const harmony = harmonyTargets.find(target => target.key === this.target?.key)
+    const mirror = targets.find(target => target.key === this.mirrorTarget?.key)
+    if (harmony) runInAction(() => { this.target = harmony })
+    else if (this.target || harmonyTargets.length) this.selectTarget(harmonyTargets[0] || null)
+    if (mirror) runInAction(() => { this.mirrorTarget = mirror })
+    else if (this.mirrorTarget || targets.length) this.selectMirrorTarget(targets[0] || null)
     return success
   }
   private async init() {
@@ -110,15 +111,26 @@ class Store extends BaseStore {
     }
 
     const target = await main.getMainStore('target')
-    if (target) {
-      runInAction(() => (this.target = target))
-    }
+    const mirrorTarget = await main.getMainStore('mirrorTarget')
+    runInAction(() => {
+      // Migrate an older shared Android/iOS selection to the mirroring scope.
+      this.target = target && (!target.platform || target.platform === 'harmony') ? target : null
+      this.mirrorTarget = mirrorTarget || target || null
+    })
+    if (!mirrorTarget && target) this.selectMirrorTarget(target)
+    if (target?.platform && target.platform !== 'harmony') setMainStore('target', null)
     await this.refreshTargets()
 
     this.ready = true
   }
   private bindEvent() {
     main.on('changeTarget', this.refreshTargets)
+    // Poll all backends, including USB iOS; refreshes are coalesced in main.
+    const poll = async () => {
+      await this.refreshTargets()
+      setTimeout(() => void poll(), 5000)
+    }
+    setTimeout(() => void poll(), 5000)
   }
 }
 

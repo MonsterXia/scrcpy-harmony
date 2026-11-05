@@ -83,6 +83,7 @@ test('main window forwards settings changes once and retains existing invoke han
       loadPage() {},
       sendAll: (...args) => sent.push(args),
     },
+    '../lib/devices': { startSelected() {}, mirrorSessions: { list: () => [] } },
     './screencast': { showWin() {}, closeWin() {} },
     'share/common/log': () => ({ info() {} }),
   })

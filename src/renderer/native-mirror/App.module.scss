@@ -1,0 +1,8 @@
+.page { height: 100%; min-height: 0; display: flex; flex-direction: column; padding: 8px; gap: 8px; background: var(--color-bg-container); color: var(--color-text); overflow: hidden;
+  header { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; span { font-size: 12px; line-height: 1.5; opacity: .75; } }
+  button { font: inherit; color: inherit; background: transparent; border: 1px solid #8888; border-radius: 6px; padding: 6px 10px; }
+  button { cursor: pointer; } button:disabled { opacity: .45; cursor: default; }
+}
+.canvas { min-height: 0; width: 100%; flex: 1; object-fit: contain; background: #080808; touch-action: none; outline-offset: -2px; }
+.error { color: #f99; font-size: 12px; }
+.android { padding: 0; gap: 0; }

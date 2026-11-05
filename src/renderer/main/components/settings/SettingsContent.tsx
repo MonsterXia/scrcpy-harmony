@@ -148,6 +148,7 @@ export default observer(function SettingsContent() {
       </section>
       <section className={Style.card}>
         <h2>{t('workspaceUpdates')}</h2>
+        <p>{t('plusUpdatesUnavailable')}</p>
         <label className={Style.row}>
           <span>
             <strong>{t('betaUpdate')}</strong>
@@ -156,7 +157,7 @@ export default observer(function SettingsContent() {
           <input
             type="checkbox"
             checked={settings.betaUpdate}
-            disabled={pending.includes('betaUpdate')}
+            disabled
             onChange={(e) => void save('betaUpdate', e.target.checked)}
           />
         </label>

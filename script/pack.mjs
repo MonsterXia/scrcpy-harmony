@@ -15,6 +15,7 @@ const config = {
   directories: {
     output: `../release/${pkg.version}`,
   },
+  asarUnpack: ['node_modules/**/*.node'],
   files: ['main', 'preload', 'renderer', 'LICENSE', 'THIRD_PARTY_NOTICES.txt'],
   extraResources: {
     from: 'resources',
@@ -54,5 +55,6 @@ const config = {
 
 await builder.build({
   config,
-  publish: process.argv.includes('--no-publish') ? 'never' : undefined,
+  // Plus has no independent release repository configured yet.
+  publish: 'never',
 })

@@ -3,7 +3,55 @@ export interface ITarget {
   name: string
   ohosVersion: string
   sdkVersion: string
+  platform?: 'android' | 'harmony' | 'ios'
+  connectionId?: string
+  transport?: 'usb' | 'network' | 'receiver'
+  state?: 'ready' | 'unauthorized' | 'offline' | 'waiting' | 'unavailable'
 }
+
+export interface DeviceDiscovery {
+  targets: ITarget[]
+  errors: string[]
+}
+export interface MirrorSession {
+  id: string
+  deviceKey: string
+  name: string
+  platform: string
+  state: 'starting' | 'authorizing' | 'waiting' | 'running' | 'disconnected' | 'error' | 'stopping'
+}
+export type NativeMirrorInput =
+  | { type: 'touch'; action: 'down' | 'move' | 'up'; x: number; y: number }
+  | { type: 'scroll'; x: number; y: number; dx: number; dy: number }
+  | { type: 'key'; keyCode: number }
+  | { type: 'text'; text: string }
+export interface NativeMirrorInfo { id: string; target: ITarget; state: MirrorSession['state'] }
+export interface NativeMirrorFrame {
+  sessionId: string
+  sequence: number
+  data: Uint8Array
+  timestamp: number
+  config?: boolean
+  keyFrame?: boolean
+  configuration?: Uint8Array
+  reset?: boolean
+}
+export type IpcNativeMirrorInfo = () => Promise<NativeMirrorInfo>
+export type IpcNativeMirrorOpen = () => Promise<void>
+export type IpcNativeMirrorInput = (input: NativeMirrorInput) => Promise<void>
+export type IpcNativeMirrorAck = (sequence: number) => Promise<void>
+export type IpcNativeMirrorFit = (width: number, height: number, verticalInset: number, horizontalInset: number) => Promise<void>
+export type IpcGetDevices = () => Promise<DeviceDiscovery>
+export type IpcGetMirrorSessions = () => Promise<MirrorSession[]>
+export type IpcArrangeMirrors = () => Promise<void>
+export type MirrorPlatform = 'android' | 'ios' | 'harmony'
+export type MirrorLayout = 'independent' | 'side-by-side' | 'merged'
+export interface MirrorLayoutRequest { layout: MirrorLayout; deviceKeys?: string[] }
+export type IpcApplyMirrorLayout = (request: MirrorLayoutRequest) => Promise<void>
+export interface MergedMirrorFrame { platform: MirrorPlatform; image: string; width: number; height: number }
+export type IpcShowMergedMirrors = () => Promise<void>
+export type IpcGetMergedMirrorFrames = () => Promise<MergedMirrorFrame[]>
+export type IpcStopMirrorSession = (id: string) => Promise<void>
 
 export interface IBundleInfo {
   bundleName: string

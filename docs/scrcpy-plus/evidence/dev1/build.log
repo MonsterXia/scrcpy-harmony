@@ -1,0 +1,203 @@
+
+> scrcpy-plus@1.0.5-dev.1 build
+> node script/build.mjs
+
+
+> scrcpy-plus@1.0.5-dev.1 build:backends
+> node script/build-platform-backends.mjs
+
+Platform: android-35
+Build-tools: 35.0.0
+Build dir: /Users/qiankun/Documents/workspace/scrcpy-plus/build/android-server
+Generating java from aidl...
+Compiling java sources...
+警告: [options] 源值 8 已过时，将在未来发行版中删除
+警告: [options] 目标值 8 已过时，将在未来发行版中删除
+警告: [options] 要隐藏有关已过时选项的警告, 请使用 -Xlint:-options。
+3 个警告
+Dexing...
+Server generated in /Users/qiankun/Documents/workspace/scrcpy-plus/build/android-server/scrcpy-server
+-- Configuring done (0.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/qiankun/Documents/workspace/scrcpy-plus/build/native-airplay
+[ 36%] Built target plist
+[ 96%] Built target airplay
+[100%] Built target plus_airplay
+Source-built platform backends ready
+
+> scrcpy-plus@1.0.5-dev.1 prebuild:main
+> npm run build:vendor
+
+
+> scrcpy-plus@1.0.5-dev.1 build:vendor
+> node script/build-vendor.mjs && node script/build-tango.mjs
+
+Built 18 local packages from repository sources
+Rebuilt vendored Tango protocol modules from TypeScript source
+
+> scrcpy-plus@1.0.5-dev.1 build:main
+> vite build --config vite.main.ts
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v5.4.21 building for production...
+transforming...
+✓ 1585 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/main/index.js  1,166.24 kB │ gzip: 363.56 kB
+✓ built in 2.09s
+
+> scrcpy-plus@1.0.5-dev.1 prebuild:preload
+> npm run build:vendor
+
+
+> scrcpy-plus@1.0.5-dev.1 build:vendor
+> node script/build-vendor.mjs && node script/build-tango.mjs
+
+Built 18 local packages from repository sources
+Rebuilt vendored Tango protocol modules from TypeScript source
+
+> scrcpy-plus@1.0.5-dev.1 build:preload
+> vite build --config vite.preload.ts
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v5.4.21 building for production...
+transforming...
+✓ 222 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/preload/index.js  122.38 kB │ gzip: 34.42 kB
+✓ built in 341ms
+
+> scrcpy-plus@1.0.5-dev.1 prebuild:renderer
+> npm run build:vendor
+
+
+> scrcpy-plus@1.0.5-dev.1 build:vendor
+> node script/build-vendor.mjs && node script/build-tango.mjs
+
+Built 18 local packages from repository sources
+Rebuilt vendored Tango protocol modules from TypeScript source
+
+> scrcpy-plus@1.0.5-dev.1 build:renderer
+> vite build
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v5.4.21 building for production...
+transforming...
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($class == ":root"): #ddd; else: #393939)
+
+More info: https://sass-lang.com/d/if-function
+
+  ╷
+6 │         background-color: if($class == ':root', #ddd, #393939);
+  │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ╵
+    src/renderer/luna.scss 6:27  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($class == ":root"): #f2f7fd; else: #0b2544)
+
+More info: https://sass-lang.com/d/if-function
+
+  ╷
+9 │         background-color: if($class == ':root', #f2f7fd, #0b2544);
+  │                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ╵
+    src/renderer/luna.scss 9:27  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($class == ":root"): (color-primary-bg: color.adjust($color-primary, $lightness: 25%), color-bg-container-darker: color.adjust($color-bg-container, $lightness: -5%), color-bg-container-lighter: color.adjust($color-bg-container, $lightness: 5%)); else: (color-primary-bg: color.adjust($color-primary, $lightness: -25%), color-bg-container-darker: color.adjust($color-bg-container-dark, $lightness: -5%), color-bg-container-lighter: color.adjust($color-bg-container-dark, $lightness: 5%)))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+36 │ ┌         if(
+37 │ │           $class == ':root',
+38 │ │           (
+39 │ │             color-primary-bg: color.adjust($color-primary, $lightness: 25%),
+40 │ │             color-bg-container-darker:
+41 │ │               color.adjust($color-bg-container, $lightness: -5%),
+42 │ │             color-bg-container-lighter:
+43 │ │               color.adjust($color-bg-container, $lightness: 5%),
+44 │ │           ),
+45 │ │           (
+46 │ │             color-primary-bg: color.adjust($color-primary, $lightness: -25%),
+47 │ │             color-bg-container-darker:
+48 │ │               color.adjust($color-bg-container-dark, $lightness: -5%),
+49 │ │             color-bg-container-lighter:
+50 │ │               color.adjust($color-bg-container-dark, $lightness: 5%),
+51 │ │           )
+52 │ └         )
+   ╵
+    src/share/renderer/main.scss 36:9  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($class == ":root"): "light"; else: "dark")
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+54 │       if($class == ':root', 'light', 'dark')
+   │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    src/share/renderer/main.scss 54:7  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($theme == "dark"): "-dark"; else: "")
+
+More info: https://sass-lang.com/d/if-function
+
+  ╷
+7 │   $suffix: if($theme == 'dark', '-dark', '');
+  │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ╵
+    src/share/renderer/mixin.scss 7:12  @use
+    src/share/renderer/main.scss 2:1    root stylesheet
+
+✓ 768 modules transformed.
+vendor/packages/licia/randomBytes.js (20:11): Use of eval in "vendor/packages/licia/randomBytes.js" is strongly discouraged as it poses security risks and may cause issues with minification.
+rendering chunks...
+computing gzip size...
+dist/renderer/index.html                              0.38 kB │ gzip:   0.27 kB
+dist/renderer/assets/default-icon-BEowIRRb.png       20.09 kB
+dist/renderer/assets/icon-RRtXdow_.png               21.79 kB
+dist/renderer/assets/MiSans-Regular-BjbB2O6q.ttf  8,073.15 kB
+dist/renderer/assets/App-DqSFRPeJ.css                 0.23 kB │ gzip:   0.18 kB
+dist/renderer/assets/App-ddzFiWn1.css                 0.41 kB │ gzip:   0.23 kB
+dist/renderer/assets/App-DUIqs9OO.css                 0.96 kB │ gzip:   0.47 kB
+dist/renderer/assets/App-RwLcYys8.css                 3.02 kB │ gzip:   0.95 kB
+dist/renderer/assets/App-Dd9tQDqf.css                 3.24 kB │ gzip:   1.20 kB
+dist/renderer/assets/ToolWindow-B6Y55REL.css          3.41 kB │ gzip:   0.89 kB
+dist/renderer/assets/xterm-DYP7pi_n.css               4.15 kB │ gzip:   1.68 kB
+dist/renderer/assets/App-BI75HyoZ.css                 6.71 kB │ gzip:   1.62 kB
+dist/renderer/assets/App-Ve_VVmRo.css                48.87 kB │ gzip:   8.06 kB
+dist/renderer/assets/app-DQNr5-_Q.css               110.22 kB │ gzip:  24.46 kB
+dist/renderer/assets/store-BMxT9sZm.js                0.07 kB │ gzip:   0.09 kB
+dist/renderer/assets/icon-Dhj8_pX-.js                 0.08 kB │ gzip:   0.10 kB
+dist/renderer/assets/ToolWindow-DnYanAgl.js           0.52 kB │ gzip:   0.31 kB
+dist/renderer/assets/App-Di7_JGZV.js                  0.53 kB │ gzip:   0.34 kB
+dist/renderer/assets/toBool-Bj6ZVmA6.js               0.77 kB │ gzip:   0.42 kB
+dist/renderer/assets/contextMenu-CoaQj3st.js          0.88 kB │ gzip:   0.51 kB
+dist/renderer/assets/H264Decoder-C9PdBBW6.js          2.10 kB │ gzip:   1.00 kB
+dist/renderer/assets/App-Cf1s1gUK.js                  2.69 kB │ gzip:   1.17 kB
+dist/renderer/assets/App-CA2vkhsD.js                  2.86 kB │ gzip:   1.32 kB
+dist/renderer/assets/App-dMGfIkcY.js                  4.69 kB │ gzip:   1.92 kB
+dist/renderer/assets/randomBytes-CWBtse5J.js          6.59 kB │ gzip:   2.61 kB
+dist/renderer/assets/useHapDrop-D1Hr-8C0.js          12.32 kB │ gzip:   4.74 kB
+dist/renderer/assets/App-iL_KjznH.js                 19.42 kB │ gzip:   7.59 kB
+dist/renderer/assets/hooks-CcVWUvWe.js               26.01 kB │ gzip:   9.06 kB
+dist/renderer/assets/App-6DTEWqHN.js                 27.19 kB │ gzip:   8.92 kB
+dist/renderer/assets/BaseStore-BbTBjKi3.js           65.38 kB │ gzip:  18.78 kB
+dist/renderer/assets/App-B1MYZ8L1.js                232.20 kB │ gzip:  75.36 kB
+dist/renderer/assets/app-inn6SfGp.js                303.53 kB │ gzip: 102.91 kB
+dist/renderer/assets/xterm-BNVxAX93.js              499.17 kB │ gzip: 125.81 kB
+✓ built in 2.39s
+
+up to date in 806ms

@@ -1,0 +1,212 @@
+{
+  "date": "2026-11-05",
+  "platform": "macOS arm64",
+  "status": "passed",
+  "changes": [
+    "组合模式隐藏单端窗口并处理延迟显示。",
+    "关闭或切换模式恢复窗口与原后台节流策略。",
+    "每端独立异步 JPEG 0.95，最多一个未完成导出，66ms 读取最新帧。",
+    "临时失败保留上一帧，旧状态晚到帧丢弃。"
+  ],
+  "live": {
+    "initial": [
+      {
+        "id": 4,
+        "page": "merged-mirror",
+        "visible": true,
+        "throttled": true
+      },
+      {
+        "id": 3,
+        "page": "native-mirror",
+        "visible": false,
+        "throttled": false
+      },
+      {
+        "id": 2,
+        "page": "screencast",
+        "visible": false,
+        "throttled": false
+      },
+      {
+        "id": 1,
+        "page": "main",
+        "visible": true,
+        "throttled": true
+      }
+    ],
+    "metrics": {
+      "durationMs": 10000,
+      "loads": {
+        "android": 27,
+        "harmony": 11
+      },
+      "polls": 98,
+      "p95IpcMs": 0.900000000372529,
+      "maxImageDataUrlLength": 570539
+    },
+    "separate": [
+      {
+        "id": 3,
+        "page": "native-mirror",
+        "visible": true,
+        "throttled": true
+      },
+      {
+        "id": 2,
+        "page": "screencast",
+        "visible": true,
+        "throttled": true
+      },
+      {
+        "id": 1,
+        "page": "main",
+        "visible": true,
+        "throttled": true
+      }
+    ],
+    "final": [
+      {
+        "id": 5,
+        "page": "merged-mirror",
+        "visible": true,
+        "throttled": true
+      },
+      {
+        "id": 3,
+        "page": "native-mirror",
+        "visible": false,
+        "throttled": false
+      },
+      {
+        "id": 2,
+        "page": "screencast",
+        "visible": false,
+        "throttled": false
+      },
+      {
+        "id": 1,
+        "page": "main",
+        "visible": true,
+        "throttled": true
+      }
+    ]
+  },
+  "frames": {
+    "sessions": [
+      {
+        "platform": "harmony",
+        "state": "running",
+        "name": "HUAWEI Mate 80"
+      },
+      {
+        "platform": "android",
+        "state": "running",
+        "name": "SAMSUNG_Android"
+      }
+    ],
+    "frames": [
+      {
+        "platform": "android",
+        "windowId": 3,
+        "bounds": {
+          "x": 925,
+          "y": 40,
+          "width": 402,
+          "height": 890
+        },
+        "width": 896,
+        "height": 1920,
+        "distinctColors": 4829,
+        "hasPicture": true,
+        "alerts": []
+      },
+      {
+        "platform": "harmony",
+        "windowId": 2,
+        "bounds": {
+          "x": 176,
+          "y": 46,
+          "width": 405,
+          "height": 924
+        },
+        "width": 1280,
+        "height": 2832,
+        "distinctColors": 7300,
+        "hasPicture": true,
+        "alerts": []
+      }
+    ],
+    "overlaps": false,
+    "workArea": {
+      "x": 0,
+      "y": 33,
+      "width": 1512,
+      "height": 949
+    }
+  },
+  "merged": {
+    "text": "AndroidHarmonyOS",
+    "headings": [
+      "Android",
+      "HarmonyOS"
+    ],
+    "columns": [
+      {
+        "platform": "android",
+        "loaded": true,
+        "hasPicture": true,
+        "width": 896,
+        "height": 1920,
+        "rect": {
+          "x": 12,
+          "y": 10,
+          "width": 582,
+          "height": 796,
+          "top": 10,
+          "right": 594,
+          "bottom": 806,
+          "left": 12
+        }
+      },
+      {
+        "platform": "harmony",
+        "loaded": true,
+        "hasPicture": true,
+        "width": 1280,
+        "height": 2832,
+        "rect": {
+          "x": 606,
+          "y": 10,
+          "width": 582,
+          "height": 796,
+          "top": 10,
+          "right": 1188,
+          "bottom": 806,
+          "left": 606
+        }
+      }
+    ],
+    "controls": 0
+  },
+  "userAcceptance": "用户已在两台手机滑动，确认两端流畅。",
+  "checks": {
+    "applicationTests": {
+      "passed": 957,
+      "failed": 0,
+      "nativeEnabled": true
+    },
+    "liciaEachMode": {
+      "passing": 606,
+      "pending": 4
+    },
+    "lintAndI18n": "passed",
+    "mainBuild": "passed",
+    "rendererBuild": "passed"
+  },
+  "limits": [
+    "本次为短时真机检查，长期稳定性待观察。",
+    "iOS 新实现真机、Windows 与长时动态性能待验证。",
+    "组合预览为 JPEG 0.95，非无损 PNG。"
+  ]
+}

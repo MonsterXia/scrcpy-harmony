@@ -1,0 +1,121 @@
+{
+  "date": "2026-11-05",
+  "startupModes": [
+    "single selected device",
+    "Android + HarmonyOS",
+    "all three platforms"
+  ],
+  "layoutModes": [
+    "independent",
+    "side-by-side",
+    "merged"
+  ],
+  "scope": "Start selected devices and arrange only their session keys; preserve other open sessions. Applying a layout does not start an absent session.",
+  "verification": {
+    "applicationTests": {
+      "passed": 949,
+      "failed": 0,
+      "nativeEnabled": true
+    },
+    "licia": {
+      "production": {
+        "passing": 606,
+        "pending": 4
+      },
+      "fallback": {
+        "passing": 606,
+        "pending": 4
+      }
+    },
+    "targetedTests": {
+      "passed": 9,
+      "failed": 0
+    },
+    "lint": "passed",
+    "i18n": "passed",
+    "mainPreloadRendererBuild": "passed",
+    "bilingualUi": {
+      "evidence": "ui/ui.json",
+      "combinationsPerLanguage": 9,
+      "allThreePlatformsSimulated": true
+    }
+  },
+  "physicalWindowChecks": {
+    "cases": [
+      {
+        "mode": "single",
+        "layout": "independent"
+      },
+      {
+        "mode": "single",
+        "layout": "side-by-side"
+      },
+      {
+        "mode": "single",
+        "layout": "merged",
+        "headings": [
+          "Android"
+        ],
+        "activeSources": 1
+      },
+      {
+        "mode": "android-harmony",
+        "layout": "independent"
+      },
+      {
+        "mode": "android-harmony",
+        "layout": "side-by-side"
+      },
+      {
+        "mode": "android-harmony",
+        "layout": "merged",
+        "headings": [
+          "Android",
+          "HarmonyOS"
+        ],
+        "activeSources": 2
+      },
+      {
+        "mode": "all",
+        "layout": "independent"
+      },
+      {
+        "mode": "all",
+        "layout": "side-by-side"
+      },
+      {
+        "mode": "all",
+        "layout": "merged",
+        "headings": [
+          "Android",
+          "HarmonyOS"
+        ],
+        "activeSources": 2
+      }
+    ],
+    "restored": {
+      "mode": "android-harmony",
+      "layout": "merged"
+    },
+    "sessions": [
+      {
+        "platform": "harmony",
+        "state": "running",
+        "name": "HUAWEI Mate 80"
+      },
+      {
+        "platform": "android",
+        "state": "running",
+        "name": "SAMSUNG_Android"
+      }
+    ],
+    "otherSessionIdentitiesPreserved": true
+  },
+  "physicalIos": "Current iOS session was closed. Layout checks use only active Android/Harmony sources; earlier three-phone video acceptance remains in three-platform/live.json. No new iOS video acceptance claimed.",
+  "testProbeNote": "An initial layout-only probe assumed an active iOS window and expected 3 columns; corrected to count active sources after confirming iOS was closed.",
+  "restoredUserSelection": {
+    "startup": "android-harmony",
+    "layout": "merged"
+  },
+  "passed": true
+}

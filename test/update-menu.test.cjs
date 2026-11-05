@@ -24,6 +24,7 @@ function fixture(saved = {}, translations) {
           snapshots.push({ label: item.label, enabled: item.enabled !== false })
         },
       }
+      if (id === '../window/screencast') return { isCaptureWindow: () => false }
       if (id === './store') return { getSettingsStore: () => ({ get: key => saved[key], on: (_, fn) => listeners.push(fn), set: (key, value) => { saved[key] = value; listeners.forEach(fn=>fn(key,value)) } }) }
       if (id === 'share/main/lib/updater') return { checkUpdate: () => pending }
       if (id === 'licia/isMac') return false

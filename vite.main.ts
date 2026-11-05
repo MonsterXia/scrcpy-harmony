@@ -17,10 +17,13 @@ export default defineConfig({
       formats: ['cjs'],
     },
     rollupOptions: {
-      external: builtins,
+      external: [...builtins, 'usb'],
     },
   },
   resolve: {
+    // The main process runs in Node. Browser export conditions select plist's
+    // DOMParser implementation, which cannot enumerate Apple USB devices here.
+    conditions: ['node', 'module', 'development|production'],
     mainFields: ['main', 'module'],
     alias,
   },

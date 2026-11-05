@@ -142,7 +142,7 @@ async function fixture(t, badHello = false, savedPanel = null) {
   await loadSource('src/main/lib/hdc.ts', imports).init()
   const getTargets = handlers.get('getTargets')
   const events = new Map()
-  const main = { getTargets, getMainStore: async name => name === 'panel' ? savedPanel : null,
+  const main = { getDevices: async () => ({ targets: await getTargets(), errors: [] }), getMainStore: async name => name === 'panel' ? savedPanel : null,
     on: (name, handler) => events.set(name, handler) }
   const store = loadSource('src/renderer/main/store/index.ts', {
     '../../lib/util': { setMainStore() {} },
@@ -152,7 +152,7 @@ async function fixture(t, badHello = false, savedPanel = null) {
     './application': { Application: class {} },
     './process': { Process: class {} },
     './layout': { Layout: class {} },
-  }, { main }).default
+  }, { main, setTimeout: () => 0 }).default
   // Await the real constructor, with a bound that also stops the polling loop.
   const deadline = Date.now() + 3000
   while (!store.ready) {
@@ -166,13 +166,13 @@ async function fixture(t, badHello = false, savedPanel = null) {
   return { state, logs, getTargets, store, toolbar, events, server }
 }
 
-test('unknown persisted panel falls back to overview while valid navigation remains compatible', async t => {
+test('unknown persisted panel falls back to devices while valid navigation remains compatible', async t => {
   const { store } = await fixture(t, false, 'obsolete-panel')
-  assert.equal(store.panel, 'overview')
+  assert.equal(store.panel, 'devices')
   store.selectPanel('shell')
   assert.equal(store.panel, 'shell')
   store.selectPanel('invalid-panel')
-  assert.equal(store.panel, 'overview')
+  assert.equal(store.panel, 'devices')
 })
 
 test('valid persisted panel is restored', async t => {
@@ -226,7 +226,7 @@ test('network keys survive real hdckit, getTargets, selection and toolbar option
   assert.equal(store.target.key, OTHER)
   assert.deepEqual(Array.from(store.targets, (target) => target.key), [KEY, OTHER])
   assert.equal(toolbar().select.value, OTHER)
-  assert.equal(toolbar().select.options[`Synthetic network target (${OTHER})`], OTHER)
+  assert.equal(toolbar().select.options[`harmony · Synthetic network target (${OTHER})`], OTHER)
   assert.ok(state.requests.some(({ key, command }) => key === OTHER && command === 'shell param get'))
 })
 

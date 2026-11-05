@@ -1,0 +1,19 @@
+{
+  "scope": "Real macOS Electron app and native AirPlay worker, no simulated IPC; no physical phone acceptance",
+  "date": "2026-11-04T01:56:00.465Z",
+  "devices": {
+    "total": 1,
+    "platforms": [
+      {
+        "platform": "ios",
+        "state": "waiting",
+        "transport": "receiver"
+      }
+    ],
+    "errors": []
+  },
+  "airplayWaiting": true,
+  "airplayStopped": true,
+  "electron": "45.0.0",
+  "passed": true
+}

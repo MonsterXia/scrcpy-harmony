@@ -27,10 +27,10 @@ async function fixture(t) {
   return { store, host, selected, pending, notices, opened, unmount: () => root.unmount() }
 }
 
-test('workspace keeps eight panel IDs, allows settings without a device and disables mirroring', async t => {
+test('workspace keeps nine panel IDs, allows settings without a device and disables mirroring', async t => {
   const f = await fixture(t)
   const buttons = [...f.host.querySelectorAll('button[data-navigation]')]
-  assert.equal(buttons.length, 8)
+  assert.equal(buttons.length, 9)
   assert.equal(f.host.querySelector('[data-action="screencast"]').disabled, true)
   await act(async () => f.host.querySelector('[data-action="settings"]').click())
   assert.deepEqual(f.opened, ['settings'])
@@ -102,4 +102,35 @@ test('main feedback scope follows the workspace theme and is released on unmount
   await act(async () => f.unmount())
   assert.equal(document.documentElement.hasAttribute('data-workspace-window'), false)
   assert.equal(document.documentElement.hasAttribute('data-theme'), false)
+})
+
+test('multi-device mirroring has a dedicated icon entry and preserves all Harmony tool destinations', async t => {
+  const f = await fixture(t)
+  const entry = f.host.querySelector('[data-navigation="devices"]')
+  assert.ok(entry.querySelector('svg'))
+  assert.ok(entry.textContent.includes('plusPlatforms'))
+  assert.equal(entry.closest('nav'), null)
+  const ids = [...f.host.querySelectorAll('nav [data-navigation]')].map(button => button.dataset.navigation)
+  assert.deepEqual(ids, ['overview','application','screenshot','shell','hilog','process','layout','webview'])
+  await act(async () => { runInAction(() => { f.store.target = { key:'android:a', platform:'android' } }); entry.click() })
+  assert.equal(entry.disabled, false)
+  assert.equal(entry.getAttribute('aria-current'), 'page')
+  assert.equal(f.store.panel, 'devices')
+  assert.equal(f.host.querySelector('[data-action="screencast"]'), null)
+  assert.ok(f.host.querySelector('header').textContent.includes('plusDevices'))
+  await act(async () => runInAction(() => { f.store.target = { key:'harmony:a', platform:'harmony' } }))
+  assert.ok([...f.host.querySelectorAll('nav [data-navigation]')].every(button => !button.disabled))
+  for (const id of ids) await act(async () => f.host.querySelector(`[data-navigation="${id}"]`).click())
+  assert.deepEqual(f.selected.slice(-8), ids)
+})
+
+test('Harmony selector excludes Android and iOS while their mirroring selection remains independent', async t => {
+  const f = await fixture(t)
+  await act(async () => runInAction(() => {
+    f.store.targets = [{key:'h',platform:'harmony',name:'Harmony'}, {key:'a',platform:'android',name:'Android'}, {key:'i',platform:'ios',name:'iPhone'}]
+    f.store.target = f.store.targets[0]
+  }))
+  assert.deepEqual([...f.host.querySelector('#workspace-device').options].map(option => option.value), ['h'])
+  assert.ok([...f.host.querySelectorAll('nav [data-navigation]')].every(button => !button.disabled))
+  assert.equal(f.host.querySelector('[data-harmony-tools-hint]'), null)
 })
