@@ -63,20 +63,19 @@ function refresh(state: SourceState) {
       reader.readAsDataURL(blob);
     }, 'image/jpeg', 0.95);
   })`).then(frame => {
-    if (frame && states.get(contents) === state) state.frame = { platform: state.source.platform, ...frame }
+    if (frame && states.get(contents) === state) state.frame = { sourceId: state.source.window.id, platform: state.source.platform, ...frame }
   }).catch(() => {}).finally(() => { state.pending = undefined })
 }
 
 function capture(): MergedMirrorFrame[] {
   const active = syncSources()
-  return platforms.filter(platform => active.some(source => source.platform === platform)).map(platform => {
-    const source = active.find(source => source.platform === platform)!
+  return platforms.flatMap(platform => active.filter(source => source.platform === platform).map(source => {
     const state = states.get(source.window.webContents)!
     refresh(state)
-    // Return the latest completed frame immediately. Each device progresses
-    // independently, even while another renderer is slow or unresponsive.
-    return state.frame || { platform, image: '', width: 0, height: 0 }
-  })
+    // Return each source separately, including multiple devices of one OS.
+    // Every window hidden by syncSources must have a column in the merged view.
+    return state.frame || { sourceId: source.window.id, platform, image: '', width: 0, height: 0 }
+  }))
 }
 
 export function closeMergedMirrors() {

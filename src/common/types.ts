@@ -48,7 +48,7 @@ export type MirrorPlatform = 'android' | 'ios' | 'harmony'
 export type MirrorLayout = 'independent' | 'side-by-side' | 'merged'
 export interface MirrorLayoutRequest { layout: MirrorLayout; deviceKeys?: string[] }
 export type IpcApplyMirrorLayout = (request: MirrorLayoutRequest) => Promise<void>
-export interface MergedMirrorFrame { platform: MirrorPlatform; image: string; width: number; height: number }
+export interface MergedMirrorFrame { sourceId: number; platform: MirrorPlatform; image: string; width: number; height: number }
 export type IpcShowMergedMirrors = () => Promise<void>
 export type IpcGetMergedMirrorFrames = () => Promise<MergedMirrorFrame[]>
 export type IpcStopMirrorSession = (id: string) => Promise<void>

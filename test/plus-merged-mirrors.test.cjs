@@ -1,8 +1,8 @@
 const{test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm')
 const{EventEmitter}=require('node:events'),{transformSync}=require('esbuild')
-function fixture(){const handlers=new Map(),created=[];const module={exports:{}};
+function fixture(){let nextSource=0;const handlers=new Map(),created=[];const module={exports:{}};
  vm.runInNewContext(transformSync(fs.readFileSync('src/main/window/mergedMirrors.ts','utf8'),{loader:'ts',format:'cjs'}).code,{module,exports:module.exports,require(id){if(id==='electron')return{ipcMain:{handle:(key,fn)=>handlers.set(key,fn)}};if(id==='share/main/lib/window')return{create(){const w=new EventEmitter();w.webContents={mainFrame:{}};w.isDestroyed=()=>false;w.show=w.focus=()=>{};w.close=()=>{};created.push(w);return w},loadPage(){}};return require(id)}})
- const source=platform=>{const contents={throttled:true,isDestroyed:()=>false,getBackgroundThrottling(){return this.throttled},setBackgroundThrottling(v){this.throttled=v},async executeJavaScript(code){assert.match(code,/querySelector\('canvas'\)/);assert.match(code,/toBlob/);assert.doesNotMatch(code,/toDataURL/);return{image:'data:image/jpeg;base64,fixture',width:100,height:200}}};const window=new EventEmitter();Object.assign(window,{visible:true,isDestroyed:()=>false,isMinimized:()=>false,webContents:contents,hide(){this.visible=false},show(){this.visible=true;this.emit('show')}});return{platform,window}}
+ const source=platform=>{const contents={throttled:true,isDestroyed:()=>false,getBackgroundThrottling(){return this.throttled},setBackgroundThrottling(v){this.throttled=v},async executeJavaScript(code){assert.match(code,/querySelector\('canvas'\)/);assert.match(code,/toBlob/);assert.doesNotMatch(code,/toDataURL/);return{image:'data:image/jpeg;base64,fixture',width:100,height:200}}};const window=new EventEmitter();Object.assign(window,{id:++nextSource,visible:true,isDestroyed:()=>false,isMinimized:()=>false,webContents:contents,hide(){this.visible=false},show(){this.visible=true;this.emit('show')}});return{platform,window}}
  return{...module.exports,handlers,created,source,invoke(event){return handlers.get('getMergedMirrorFrames')(event||{sender:created.at(-1).webContents,senderFrame:created.at(-1).webContents.mainFrame})}}
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve))
@@ -46,4 +46,13 @@ test('late sources are hidden and pre-existing background policy is preserved',a
  const f=fixture(),android=f.source('android'),harmony=f.source('harmony');harmony.window.webContents.throttled=false
  const sources=[android];f.showMergedMirrors(()=>sources);sources.push(harmony);f.invoke();await settle();assert.equal(harmony.window.visible,false)
  f.closeMergedMirrors();assert.equal(harmony.window.visible,true);assert.equal(harmony.window.webContents.throttled,false)
+})
+
+test('every hidden source has its own exported frame even when two sources have the same platform',async()=>{
+ const f=fixture(),sources=['android','android','harmony','harmony','ios'].map(f.source)
+ f.showMergedMirrors(()=>sources);f.invoke();await settle();const frames=f.invoke()
+ assert.equal(frames.length,5);assert.equal(new Set(frames.map(frame=>frame.sourceId)).size,5)
+ assert.deepEqual(Array.from(frames,frame=>frame.platform),['android','android','harmony','harmony','ios'])
+ assert.ok(frames.every(frame=>frame.image));assert.ok(sources.every(s=>!s.window.visible))
+ f.closeMergedMirrors();assert.ok(sources.every(s=>s.window.visible))
 })

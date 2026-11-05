@@ -155,8 +155,18 @@ try {
   assert.equal(nativeBackends.manifest.airplay.arch, process.arch)
   assert.equal(nativeBackends.receiverAvailable, true, 'Installed AirPlay addon failed to load')
   for (const name of ['android', 'airplay']) {
-    assert.equal(nativeBackends.hashes[name].size, nativeBackends.manifest[name].size)
-    assert.equal(nativeBackends.hashes[name].sha256, nativeBackends.manifest[name].sha256)
+    let expected = nativeBackends.manifest[name]
+    if (name === 'airplay' && process.platform === 'darwin') {
+      // Signing changes Mach-O bytes. Compare the installed payload with the
+      // signed staging app; the manifest describes the unsigned source build.
+      // check-macos-install also verifies the installed app's deep/strict seal.
+      const signedModule = path.resolve('release', pkg.version, `mac-${process.arch}`,
+        `${pkg.productName}.app`, 'Contents/Resources/airplay/plus_airplay.node')
+      const bytes = await readFile(signedModule)
+      expected = { size:bytes.length, sha256:createHash('sha256').update(bytes).digest('hex') }
+    }
+    assert.equal(nativeBackends.hashes[name].size, expected.size)
+    assert.equal(nativeBackends.hashes[name].sha256, expected.sha256)
   }
   const browserWindow = await application.browserWindow(page)
   // DOM readiness can precede ready-to-show (or the application's fallback).

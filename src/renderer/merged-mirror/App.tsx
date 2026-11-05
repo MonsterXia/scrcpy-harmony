@@ -21,11 +21,10 @@ export default function App() {
     void refresh()
     return () => { active = false; clearTimeout(timer) }
   }, [])
-  const included = systems.filter(system => frames.some(frame => frame.platform === system.platform))
+  const included = systems.flatMap(system => frames.filter(frame => frame.platform === system.platform).map(frame => ({ ...system, frame })))
   return <main className={Style.page} style={{ gridTemplateColumns: `repeat(${Math.max(1, included.length)}, minmax(0, 1fr))` }}>
-    {included.map(({ platform, name }) => {
-      const frame = frames.find(frame => frame.platform === platform)
-      return <section key={platform} className={Style.column} data-platform={platform}>
+    {included.map(({ platform, name, frame }) => {
+      return <section key={frame.sourceId ?? platform} className={Style.column} data-platform={platform} data-source={frame.sourceId}>
         <h1>{name}</h1>
         <div className={Style.picture}>{frame?.image && <img src={frame.image} alt={name} draggable={false} />}</div>
       </section>

@@ -38,5 +38,21 @@
     "lint": "passed",
     "windows": "Node header extraction failed because GNU tar interpreted drive colon as remote; changed to relative archive path.",
     "macArm64": "Built and signature-verified, then legacy overview startup assertion timed out; smoke now checks unified entry, IPC and packaged source-backend integrity/loading."
+  },
+  "reviewFix": {
+    "finding": "P2: same-platform devices were hidden but only the first was exported.",
+    "fix": "Export every source with a window sourceId; render separate keyed columns per device.",
+    "targetedTests": {
+      "passed": 12,
+      "failed": 0
+    },
+    "mainAndRendererBuild": "passed",
+    "lintAndI18n": "passed",
+    "thread": "https://github.com/MonsterXia/scrcpy-harmony/pull/87#discussion_r4478027348"
+  },
+  "ciSecondRun": {
+    "id": 41992491902,
+    "windows": "Exclude libcnary/cnary.c demo main from the library; GCC rejects its incompatible pointer declarations.",
+    "macOS": "Native module load passed; raw unsigned manifest hash differs after code signing. Installed signed Mach-O is now compared with the signed staging app, alongside the installed app deep/strict seal check."
   }
 }

@@ -61,11 +61,11 @@ npm start
 
 启动模式支持「单端（当前设备）」「安卓＋鸿蒙」「全部（三端）」；排列模式支持「独立窗口」「并排排列」「合并排列」，共九种组合。选择后点击「按模式启动」，会打开该范围的可用设备并应用所选排列。只调整已有会话时点击「应用排列」；这不会启动尚未打开的设备。其他已连接会话保持运行，模式切换不自动停止它们。单端可在设备选择器选择任意平台，双端／全部模式自动按平台筛选并归一 iOS 接收器，缺失平台会明确提示。
 
-排列请求经 `applyMirrorLayout` 验证模式和设备 key 列表后，过滤真实活动窗口。合并视图随所选范围显示一栏、两栏或三栏，只有实际活动的来源才显示；iOS 存在时仍在最右侧。实现入口为 `src/renderer/main/components/devices/modes.ts`、`src/main/window/mirrorLayout.ts`；九种组合与会话保持验证见 [verification.json](evidence/start-layout-modes/verification.json)。
+排列请求经 `applyMirrorLayout` 验证模式和设备 key 列表后，过滤真实活动窗口。合并视图随所选设备数量显示对应列，只有实际活动的来源才显示；iOS 存在时仍在最右侧。实现入口为 `src/renderer/main/components/devices/modes.ts`、`src/main/window/mirrorLayout.ts`；九种组合与会话保持验证见 [verification.json](evidence/start-layout-modes/verification.json)。
 
 三端可以同时投屏：安卓与鸿蒙保持各自的 USB／HDC 连接，iPhone 通过同一局域网的屏幕镜像连接。投屏页先选启动模式与排列模式，再点击「按模式启动」；也可用「并排排列」快捷按钮，然后使用系统截图工具截取窗口。切换当前选择或单独关闭一个窗口不关闭其他会话。2026-11-05 已用三台真机验证同时出图与安卓独立重开，见 [并发证据](evidence/three-platform/live.json)。
 
-「并排排列」右侧的「合并排列」将选中的画面放入一个窗口，按 Android／HarmonyOS／iOS 排列，顶部仅保留系统名称。参与组合的单端窗口隐藏并保持后台解码，切换为独立／并排、关闭组合窗口或排除某端时恢复原显示与后台节流策略，不重建设备连接。组合模式用于查看和截图；需触控时切回单端／并排。每端独立异步导出原尺寸 JPEG（质量 0.95），每端最多一个未完成任务；组合窗口约每 66ms 读取最新完成帧，不等待其他端，不累积队列。临时失败保留上一帧，源退出后移除对应列。IPC 只接受组合窗口主文档。实现入口为 `src/main/window/mergedMirrors.ts` 和 `src/renderer/merged-mirror/`。三台真机旧实现证据见 [live.json](evidence/merged-view/live.json)；本次安卓＋鸿蒙窗口隐藏、模式切换和持续刷新检查见 [验证记录](evidence/merged-refresh-2026-11-05/verification.json)。
+「并排排列」右侧的「合并排列」将每台选中设备的画面放入一个窗口，按 Android／HarmonyOS／iOS 排列，同系统多设备各占一栏，顶部仅保留系统名称。参与组合的单端窗口隐藏并保持后台解码，切换为独立／并排、关闭组合窗口或排除某端时恢复原显示与后台节流策略，不重建设备连接。组合模式用于查看和截图；需触控时切回单端／并排。每端独立异步导出原尺寸 JPEG（质量 0.95），每端最多一个未完成任务；组合窗口约每 66ms 读取最新完成帧，不等待其他端，不累积队列。临时失败保留上一帧，源退出后移除对应列。IPC 只接受组合窗口主文档。实现入口为 `src/main/window/mergedMirrors.ts` 和 `src/renderer/merged-mirror/`。三台真机旧实现证据见 [live.json](evidence/merged-view/live.json)；本次安卓＋鸿蒙窗口隐藏、模式切换和持续刷新检查见 [验证记录](evidence/merged-refresh-2026-11-05/verification.json)。
 
 安卓设备开启 USB 调试，插入后自动列出；选择设备并打开投屏窗口，在手机上确认首次 RSA 授权。主机私钥以受限权限持久化于应用配置目录，写完临时文件后原子发布，避免两台手机首次同时授权时读取到半写入密钥。USB 接口不能与其他调试客户端同时占用；若连接失败，应关闭占用该接口的其他调试程序。应用不会自动结束全局 adb 服务。
 
