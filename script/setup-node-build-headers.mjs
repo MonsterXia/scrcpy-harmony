@@ -22,7 +22,8 @@ async function verified(name, output) {
 }
 const archive = path.join(directory, 'headers.tar.gz')
 await verified(`node-${version}-headers.tar.gz`, archive)
-execFileSync('tar', ['-xzf', archive, '-C', directory], { stdio: 'inherit' })
+// Relative paths also work with MSYS GNU tar, which treats a drive colon as remote.
+execFileSync('tar', ['-xzf', 'headers.tar.gz'], { cwd: directory, stdio: 'inherit' })
 const headers = path.join(directory, `node-${version}`, 'include/node')
 await fs.access(path.join(headers, 'node_api.h'))
 await fs.appendFile(environment, `NODE_INCLUDE_DIR=${headers}\n`)

@@ -31,5 +31,12 @@
   },
   "firstUiProbe": "Failed because the preview preload did not implement unified getDevices; fixture updated and both upstream UI probes passed on repeat.",
   "ci": "pending GitHub PR run",
-  "review": "pending PR review; no bypass"
+  "review": "pending PR review; no bypass",
+  "ciFirstRun": {
+    "id": 41991651571,
+    "test": "passed",
+    "lint": "passed",
+    "windows": "Node header extraction failed because GNU tar interpreted drive colon as remote; changed to relative archive path.",
+    "macArm64": "Built and signature-verified, then legacy overview startup assertion timed out; smoke now checks unified entry, IPC and packaged source-backend integrity/loading."
+  }
 }

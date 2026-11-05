@@ -120,10 +120,12 @@ try {
   )
   await page.waitForURL(expectedPage.href)
   assert.equal(await page.title(), pkg.productName)
-  // The overview is mounted only after the renderer store has initialized via IPC.
-  await page.locator('#app [data-panel="overview"]').waitFor({ state: 'visible' })
+  // The unified mirroring page is the default entry for a clean profile.
+  await page.locator('#app [data-panel="devices"] [data-device-picker]').waitFor({ state: 'visible' })
   const bridge = await page.evaluate(async (hdcResource) => ({
     targets: await window.main.getTargets(),
+    devices: await window.main.getDevices(),
+    sessions: await window.main.getMirrorSessions(),
     customTitlebar: await window.main.isCustomTitlebar(),
     hdcPath: await window.main.resolveResources(hdcResource),
   }), hdcResource)
@@ -131,8 +133,31 @@ try {
     Array.isArray(bridge.targets),
     'Device enumeration IPC did not return an array'
   )
+  assert.ok(Array.isArray(bridge.devices.targets), 'Unified device discovery IPC failed')
+  assert.ok(Array.isArray(bridge.sessions), 'Mirror session IPC failed')
   assert.equal(bridge.customTitlebar, true)
   await assertSamePath(bridge.hdcPath, path.join(resourcesDir, hdcResource))
+  const nativeBackends = await application.evaluate(() => {
+    const path = process.getBuiltinModule('path'), fs = process.getBuiltinModule('fs')
+    const crypto = process.getBuiltinModule('crypto')
+    const root = process.resourcesPath
+    const manifest = JSON.parse(fs.readFileSync(path.join(root, 'platform-backends.json'), 'utf8'))
+    const hashes = {}
+    for (const [name, file] of [['android','android/scrcpy-server'],['airplay','airplay/plus_airplay.node']]) {
+      const bytes = fs.readFileSync(path.join(root, file))
+      hashes[name] = { size:bytes.length, sha256:crypto.createHash('sha256').update(bytes).digest('hex') }
+    }
+    const require = process.getBuiltinModule('module').createRequire(path.join(root, 'app.asar/package.json'))
+    const native = require(path.join(root, 'airplay/plus_airplay.node'))
+    return { manifest, hashes, receiverAvailable:typeof native.Receiver === 'function' }
+  })
+  assert.equal(nativeBackends.manifest.airplay.platform, process.platform)
+  assert.equal(nativeBackends.manifest.airplay.arch, process.arch)
+  assert.equal(nativeBackends.receiverAvailable, true, 'Installed AirPlay addon failed to load')
+  for (const name of ['android', 'airplay']) {
+    assert.equal(nativeBackends.hashes[name].size, nativeBackends.manifest[name].size)
+    assert.equal(nativeBackends.hashes[name].sha256, nativeBackends.manifest[name].sha256)
+  }
   const browserWindow = await application.browserWindow(page)
   // DOM readiness can precede ready-to-show (or the application's fallback).
   // Observe the actual window without forcing it to show or skipping the check.
