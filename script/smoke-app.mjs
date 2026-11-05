@@ -160,7 +160,8 @@ try {
       // Signing changes Mach-O bytes. Compare the installed payload with the
       // signed staging app; the manifest describes the unsigned source build.
       // check-macos-install also verifies the installed app's deep/strict seal.
-      const signedModule = path.resolve('release', pkg.version, `mac-${process.arch}`,
+      const stageDirectory = process.arch === 'x64' ? 'mac' : `mac-${process.arch}`
+      const signedModule = path.resolve('release', pkg.version, stageDirectory,
         `${pkg.productName}.app`, 'Contents/Resources/airplay/plus_airplay.node')
       const bytes = await readFile(signedModule)
       expected = { size:bytes.length, sha256:createHash('sha256').update(bytes).digest('hex') }

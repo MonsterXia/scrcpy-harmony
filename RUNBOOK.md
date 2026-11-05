@@ -2,7 +2,7 @@
 
 ## 上游更新与标准分支交付（2026-11-05）
 
-用户明确授权：使用个人 GitHub 账号 zjkzjk，将当前多平台功能通过 PR 正常门禁合入 MonsterXia/scrcpy-harmony 的 master，不建立长期 Plus 分支。已保留本地成果并无冲突合入上游 c533636，包含截图隐藏与主窗口反馈样式修复。CI／手动 Build 补齐固定 SHA 的 Java/Android 和原生工具链；安卓编译改为跨平台 Java 参数文件。Mac arm64 完整源码后端与发行目录构建、965 项应用测试、Licia 两模式各 606 passing / 4 pending、lint/i18n 通过。上游 UI 探针首轮因旧预览接口不匹配失败，补齐 getDevices 后通知四场景和截图导航 24 场景通过。PR CI、审查和合入尚待远端结果，不绕过门禁；实时结果将记录在本次 PR。见 [同步证据](docs/scrcpy-plus/evidence/upstream-sync-2026-11-05/verification.json)。
+用户明确授权：使用个人 GitHub 账号 zjkzjk，将当前多平台功能通过 PR 正常门禁合入 MonsterXia/scrcpy-harmony 的 master，不建立长期 Plus 分支。已保留本地成果并无冲突合入上游 c533636，包含截图隐藏与主窗口反馈样式修复。CI／手动 Build 补齐固定 SHA 的 Java/Android 和原生工具链；安卓编译改为跨平台 Java 参数文件。Mac arm64 完整源码后端与发行目录构建、965 项应用测试、Licia 两模式各 606 passing / 4 pending、lint/i18n 通过。上游 UI 探针首轮因旧预览接口不匹配失败，补齐 getDevices 后通知四场景和截图导航 24 场景通过。PR CI、审查和合入尚待远端结果，不绕过门禁；实时结果记录在 [PR #87 交付状态](https://github.com/MonsterXia/scrcpy-harmony/pull/87#issuecomment-6653565015)，包括最终 head、五项 CI、复审及合入 SHA。见 [同步证据](docs/scrcpy-plus/evidence/upstream-sync-2026-11-05/verification.json)。
 
 
 ## 独立的鸿蒙工具／投屏设备选择（2026-11-05）
