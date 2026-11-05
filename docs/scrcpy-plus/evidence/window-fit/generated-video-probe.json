@@ -1,0 +1,36 @@
+{
+  "scope": "Real Electron/WebCodecs with generated H264 color patterns, automatic window fit; real HDC discovery; no phone screen capture or input",
+  "cases": [],
+  "devices": [
+    {
+      "name": "HUAWEI Mate 80",
+      "platform": "harmony",
+      "state": "ready"
+    },
+    {
+      "name": "AirPlay",
+      "platform": "ios",
+      "state": "waiting"
+    }
+  ],
+  "harmonySelectable": true,
+  "passed": false,
+  "error": "page.waitForFunction: Timeout 10000ms exceeded.\n    at /private/tmp/plus-fit-live.mjs:9:15",
+  "debug": {
+    "text": "投屏\nAirPlay\n请让 iPhone 与电脑处于同一局域网。启动接收器后，在 iPhone 控制中心的「屏幕镜像」选择「Scrcpy Plus」。连接的画面不会自动关联到所选 USB 手机。\n\n画面解码失败，正在等待新的关键帧。",
+    "dimensions": [
+      480,
+      800
+    ],
+    "rect": {
+      "x": 8,
+      "y": 151,
+      "width": 464,
+      "height": 641,
+      "top": 151,
+      "right": 472,
+      "bottom": 792,
+      "left": 8
+    }
+  }
+}

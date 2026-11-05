@@ -1,0 +1,32 @@
+{
+  "name": "@yume-chan/async",
+  "version": "4.1.3",
+  "description": "Utils for async programming.",
+  "keywords": [
+    "async",
+    "util"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Simon Chan",
+    "email": "cnsimonchan@live.com",
+    "url": "https://chensi.moe/blog"
+  },
+  "homepage": "https://github.com/yume-chan/async#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yume-chan/async.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yume-chan/async/issues"
+  },
+  "type": "module",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "dts/index.d.ts",
+  "exports": {
+    "import": "./esm/index.js",
+    "require": "./cjs/index.js",
+    "types": "./dts/index.d.ts"
+  }
+}

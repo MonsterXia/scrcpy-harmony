@@ -1,0 +1,191 @@
+{
+  "date": "2026-11-05",
+  "scope": "Three real phones in production Electron; USB Android and HDC Harmony plus LAN iPhone Screen Mirroring; only sizes/color counts saved, no phone screenshot content",
+  "rootCause": "A destroyed Android window remained registered while USB halt cancellation hung; reopening attempted to focus the destroyed object",
+  "fixes": [
+    "Finite USB read deadlines retry idle timeouts and let close drain native operations",
+    "Reopening a destroyed/stopping window waits for cleanup and rechecks session ownership",
+    "Start all available platforms without replacing other sessions",
+    "Arrange all mirror windows side by side"
+  ],
+  "first": {
+    "sessions": [
+      {
+        "platform": "harmony",
+        "state": "running",
+        "name": "HUAWEI Mate 80"
+      },
+      {
+        "platform": "android",
+        "state": "running",
+        "name": "SAMSUNG_Android"
+      },
+      {
+        "platform": "ios",
+        "state": "waiting",
+        "name": "Scrcpy Plus"
+      }
+    ],
+    "frames": [
+      {
+        "platform": "ios",
+        "windowId": 5,
+        "bounds": {
+          "x": 1072,
+          "y": 45,
+          "width": 376,
+          "height": 925
+        },
+        "width": 498,
+        "height": 1080,
+        "distinctColors": 2349,
+        "hasPicture": true,
+        "alerts": []
+      },
+      {
+        "platform": "android",
+        "windowId": 3,
+        "bounds": {
+          "x": 548,
+          "y": 46,
+          "width": 417,
+          "height": 924
+        },
+        "width": 896,
+        "height": 1920,
+        "distinctColors": 5502,
+        "hasPicture": true,
+        "alerts": []
+      },
+      {
+        "platform": "harmony",
+        "windowId": 2,
+        "bounds": {
+          "x": 50,
+          "y": 45,
+          "width": 404,
+          "height": 925
+        },
+        "width": 1280,
+        "height": 2832,
+        "distinctColors": 2369,
+        "hasPicture": true,
+        "alerts": []
+      }
+    ],
+    "overlaps": false,
+    "workArea": {
+      "x": 0,
+      "y": 33,
+      "width": 1512,
+      "height": 949
+    }
+  },
+  "final": {
+    "sessions": [
+      {
+        "platform": "harmony",
+        "state": "running",
+        "name": "HUAWEI Mate 80"
+      },
+      {
+        "platform": "ios",
+        "state": "running",
+        "name": "Scrcpy Plus"
+      },
+      {
+        "platform": "android",
+        "state": "running",
+        "name": "SAMSUNG_Android"
+      }
+    ],
+    "frames": [
+      {
+        "platform": "ios",
+        "windowId": 5,
+        "bounds": {
+          "x": 557,
+          "y": 46,
+          "width": 399,
+          "height": 924
+        },
+        "width": 498,
+        "height": 1080,
+        "distinctColors": 2040,
+        "hasPicture": true,
+        "alerts": []
+      },
+      {
+        "platform": "harmony",
+        "windowId": 2,
+        "bounds": {
+          "x": 50,
+          "y": 45,
+          "width": 404,
+          "height": 925
+        },
+        "width": 1280,
+        "height": 2832,
+        "distinctColors": 2134,
+        "hasPicture": true,
+        "alerts": []
+      },
+      {
+        "platform": "android",
+        "windowId": 6,
+        "bounds": {
+          "x": 1051,
+          "y": 45,
+          "width": 418,
+          "height": 925
+        },
+        "width": 896,
+        "height": 1920,
+        "distinctColors": 4124,
+        "hasPicture": true,
+        "alerts": []
+      }
+    ],
+    "overlaps": false,
+    "workArea": {
+      "x": 0,
+      "y": 33,
+      "width": 1512,
+      "height": 949
+    }
+  },
+  "androidReopenIsolation": {
+    "passed": true,
+    "harmonyWindowUnchanged": true,
+    "iosWindowUnchanged": true,
+    "androidWindowReplaced": true
+  },
+  "verification": {
+    "applicationTests": {
+      "passed": 939,
+      "failed": 0,
+      "skipped": 0,
+      "nativeEnabled": true
+    },
+    "licia": {
+      "production": {
+        "passing": 606,
+        "pending": 4
+      },
+      "fallback": {
+        "passing": 606,
+        "pending": 4
+      }
+    },
+    "targetedTests": {
+      "passed": 20,
+      "failed": 0
+    },
+    "lint": "passed",
+    "i18n": "passed",
+    "mainPreloadRendererBuild": "passed",
+    "bilingualUi": "ui/ui.json"
+  },
+  "leftRunning": true,
+  "passed": true
+}

@@ -1,6 +1,6 @@
 # 项目上下文入口
 
-本仓库目录名为 `scrcpy-harmony`，实际应用为 **Scrcpy Harmony**：Electron + React + TypeScript 的鸿蒙 HDC 桌面工具。
+本仓库为 **Scrcpy Plus**，基于 Scrcpy Harmony 改造的 Electron + React + TypeScript 多平台投屏工具。跨平台入口与当前限制见 [集成说明](docs/scrcpy-plus/integration.md)。下方项目 skill 仍描述继承的鸿蒙模块；新设备发现和会话入口以集成说明及当前源码为准。
 
 处理本仓库的分析、开发、排错或构建任务时，先读项目 skill：
 

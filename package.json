@@ -1,9 +1,9 @@
 {
-  "name": "scrcpy-harmony",
-  "productName": "Scrcpy Harmony",
-  "appId": "io.github.monsterxia.scrcpyharmony",
+  "name": "scrcpy-plus",
+  "productName": "Scrcpy Plus",
+  "appId": "io.scrcpyplus.desktop",
   "version": "1.0.5-dev.1",
-  "description": "Harmony hdc desktop app",
+  "description": "Android, HarmonyOS and iOS device mirroring",
   "main": "dist/main/index.js",
   "engines": {
     "node": ">=22.12.0"
@@ -27,7 +27,7 @@
     "format": "lsla prettier \"src/**/*.{ts,tsx,scss,css,json}\" \"*.{js,ts,json}\" \"script/*.mjs\" --write",
     "gen:icon": "lsla genIcon --input src/renderer/ --output src/renderer/icon.css --name scrcpy-harmony-icon --source src/renderer/icon/",
     "gen:theme": "lsla genTheme --input src/common/theme.json --output src/renderer/theme.scss && lsla genTheme --input src/common/theme.json --output src/common/theme.ts",
-    "build:vendor": "node script/build-vendor.mjs",
+    "build:vendor": "node script/build-vendor.mjs && node script/build-tango.mjs",
     "postinstall": "npm run build:vendor",
     "pretest": "npm run build:vendor",
     "predev": "npm run build:vendor",
@@ -35,7 +35,11 @@
     "prebuild:preload": "npm run build:vendor",
     "prebuild:renderer": "npm run build:vendor",
     "test:licia": "node script/test-licia.mjs",
-    "pretest:licia": "npm run build:vendor"
+    "pretest:licia": "npm run build:vendor",
+    "runtime": "install-electron",
+    "check:plus-ui": "node script/check-plus-ui.mjs",
+    "build:backends": "node script/build-platform-backends.mjs",
+    "build:tango": "node script/build-tango.mjs"
   },
   "repository": {
     "type": "git",
@@ -72,8 +76,18 @@
     "@xterm/addon-unicode11": "^0.8.0",
     "@xterm/addon-webgl": "^0.18.0",
     "@xterm/xterm": "^5.5.0",
+    "@yume-chan/adb": "file:vendor/tango/adb",
+    "@yume-chan/adb-daemon-webusb": "file:vendor/tango/adb-daemon-webusb",
+    "@yume-chan/adb-scrcpy": "file:vendor/tango/adb-scrcpy",
+    "@yume-chan/async": "file:vendor/tango/async",
+    "@yume-chan/event": "file:vendor/tango/event",
+    "@yume-chan/no-data-view": "file:vendor/tango/no-data-view",
+    "@yume-chan/scrcpy": "file:vendor/tango/scrcpy",
+    "@yume-chan/stream-extra": "file:vendor/tango/stream-extra",
+    "@yume-chan/struct": "file:vendor/tango/struct",
     "autoprefixer": "10.6.1",
     "axios": "^1.8.4",
+    "bplist-parser": "^0.5.0",
     "builder-util-runtime": "9.7.0",
     "chai": "4.5.0",
     "concurrently": "^9.1.2",
@@ -108,8 +122,10 @@
     "mobx": "^6.13.6",
     "mobx-react-lite": "^4.1.0",
     "mocha": "11.8.0",
+    "node-addon-api": "^8.9.2",
     "parse5": "7.3.0",
     "playwright-core": "1.64.1",
+    "plist": "^5.0.0",
     "postcss": "8.5.31",
     "postcss-selector-parser": "7.1.7",
     "react": "^19.1.0",
@@ -120,5 +136,8 @@
     "typescript-eslint": "^8.26.0",
     "vite": "^5.4.14",
     "zx": "^8.4.1"
+  },
+  "dependencies": {
+    "usb": "2.19.1"
   }
 }

@@ -1,0 +1,35 @@
+{
+  "name": "@yume-chan/adb-daemon-webusb",
+  "version": "2.3.2",
+  "description": "Adb daemon transport connection for `@yume-chan/adb` using WebUSB API.",
+  "keywords": [
+    "webusb",
+    "adb"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Simon Chan",
+    "email": "cnsimonchan@live.com",
+    "url": "https://chensi.moe/blog"
+  },
+  "homepage": "https://github.com/yume-chan/ya-webadb/tree/main/libraries/adb-daemon-webusb#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yume-chan/ya-webadb.git",
+    "directory": "libraries/adb-daemon-webusb"
+  },
+  "bugs": {
+    "url": "https://github.com/yume-chan/ya-webadb/issues"
+  },
+  "type": "module",
+  "main": "esm/index.js",
+  "types": "esm/index.d.ts",
+  "sideEffects": false,
+  "dependencies": {
+    "@types/w3c-web-usb": "^1.0.12",
+    "@yume-chan/adb": "^2.3.1",
+    "@yume-chan/event": "^2.0.0",
+    "@yume-chan/stream-extra": "^2.1.0",
+    "@yume-chan/struct": "^2.3.2"
+  }
+}

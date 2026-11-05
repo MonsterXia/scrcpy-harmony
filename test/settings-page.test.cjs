@@ -109,23 +109,15 @@ test('HDC path picker handles cancellation and failure; valid selection persists
   assert.equal(f.host.querySelector('input').value, '/new/hdc')
   assert.equal(f.host.querySelector('[role="alert"]'), null)
 })
-test('Beta and HDC exit controls use the same persisted store and follow external updates', async (t) => {
-  const f = await fixture(t),
-    checks = f.host.querySelectorAll('[type="checkbox"]')
+test('Plus disables upstream updates while preserving HDC exit preferences', async (t) => {
+  const f = await fixture(t), checks = f.host.querySelectorAll('[type="checkbox"]')
+  assert.equal(checks[1].disabled, true)
   await act(async () => checks[1].click())
-  assert.equal(f.writes[0].name, 'betaUpdate')
-  assert.equal(f.writes[0].value, true)
-  await act(async () => {
-    runInAction(() => (f.settings.betaUpdate = true))
-    f.writes[0].resolve()
-  })
-  assert.equal(checks[1].checked, true)
-  await act(async () => runInAction(() => (f.settings.betaUpdate = false)))
-  assert.equal(checks[1].checked, false)
+  assert.equal(f.writes.length, 0)
   await act(async () => checks[0].click())
-  assert.equal(f.writes[1].name, 'killHdcWhenExit')
-  assert.equal(f.writes[1].value, true)
-  await act(async () => f.writes[1].resolve())
+  assert.equal(f.writes[0].name, 'killHdcWhenExit')
+  assert.equal(f.writes[0].value, true)
+  await act(async () => f.writes[0].resolve())
 })
 test('App keeps application settings mounted across device changes and no-device startup', async (t) => {
   const store = observable({
@@ -145,6 +137,7 @@ test('App keeps application settings mounted across device changes and no-device
   }
   const mocks = {
     './store': store,
+    './components/devices/Devices': () => null,
     '../lib/useHapDrop': () => {},
     './components/workspace/Workspace': ({ children }) =>
       React.createElement('div', null, children),

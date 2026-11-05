@@ -1,3 +1,9 @@
+# Scrcpy Plus
+
+Android, HarmonyOS and iOS mirroring workbench, based on Scrcpy Harmony. See [integration status and setup](docs/scrcpy-plus/integration.md). Android USB/ADB and iOS AirPlay are integrated as source libraries and built-in app windows; developer build requirements and unverified device coverage are documented there. The upstream documentation below describes the original Harmony project.
+
+---
+
 # Scrcpy Harmony
 
 [![Version](https://img.shields.io/github/v/release/MonsterXia/scrcpy-harmony?color=blue&label=version)](https://github.com/MonsterXia/scrcpy-harmony/releases)

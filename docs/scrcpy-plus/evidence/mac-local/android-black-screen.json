@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-04",
+  "reported": "Android Samsung session failed and black screen",
+  "observed": [
+    "Initial startup Cancelled",
+    "Later claimInterface exclusive access failures",
+    "Source probe received H264 configuration and four video packets",
+    "Concurrent native close produced mutable borrow error"
+  ],
+  "changes": [
+    "Long-lived bulk read rather than one-second default",
+    "Explicit endpoint cancellation before awaiting native I/O",
+    "Release claimed interfaces before native close",
+    "Idempotent and ordered server/ADB/USB shutdown"
+  ],
+  "regression": {
+    "passed": 16,
+    "failed": 0
+  },
+  "lint": "passed",
+  "mainBuild": "passed",
+  "physicalCanvasAcceptance": "pending; user disconnected Android for other work and will notify when reconnected",
+  "inputInjected": false
+}

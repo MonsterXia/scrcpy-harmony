@@ -1,0 +1,8 @@
+{
+  "scope": "Real macOS Electron UI and process lifecycle with simulated phone/tool I/O; not device acceptance",
+  "cases": [],
+  "passed": false,
+  "error": "Electron 45 download terminated; isolated Electron 43 runtime copy launch timed out before renderer inspection. No UI acceptance claimed.",
+  "historicalAttempt": "Previous external-tool prototype; not a source-backend UI acceptance run",
+  "sourceModeUi": "not accepted; React renderer/input tests passed separately, full Electron UI still pending"
+}

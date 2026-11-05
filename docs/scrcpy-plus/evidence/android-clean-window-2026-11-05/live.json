@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-05",
+  "scope": "Production Electron with real Samsung USB video; pixel statistics only, no phone screenshot or injected input",
+  "live": {
+    "width": 896,
+    "height": 1920,
+    "hasPicture": true,
+    "footer": false,
+    "input": false,
+    "header": false,
+    "buttons": 0,
+    "canvasRect": {
+      "x": 0,
+      "y": 28,
+      "width": 402,
+      "height": 861,
+      "top": 28,
+      "right": 402,
+      "bottom": 889,
+      "left": 0
+    },
+    "viewport": {
+      "width": 402,
+      "height": 889
+    }
+  },
+  "passed": true,
+  "userFeedback": {
+    "harmonyOperation": "confirmed working by user",
+    "androidVideo": "confirmed working by user",
+    "touchOnBothPlatforms": "confirmed working by user"
+  },
+  "rendererRegressionTests": {
+    "passed": 4,
+    "failed": 0
+  },
+  "lint": "passed",
+  "i18n": "passed",
+  "rendererBuild": "passed"
+}

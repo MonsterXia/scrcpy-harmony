@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-05",
+  "upstreamCommit": "c53363659f8036336f44dc53eb8ab3a97c2022f8",
+  "applicationTests": {
+    "passed": 965,
+    "failed": 0,
+    "nativeEnabled": true
+  },
+  "liciaEachMode": {
+    "passing": 606,
+    "pending": 4
+  },
+  "lintAndI18n": "passed",
+  "fullBuild": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "androidSource": "passed",
+    "airplaySource": "passed",
+    "main": "passed",
+    "preload": "passed",
+    "renderer": "passed",
+    "distribution": "passed"
+  },
+  "feedbackUi": {
+    "passed": true,
+    "cases": 4
+  },
+  "screenshotNavigationUi": {
+    "passed": true,
+    "cases": 24
+  },
+  "firstUiProbe": "Failed because the preview preload did not implement unified getDevices; fixture updated and both upstream UI probes passed on repeat.",
+  "ci": "pending GitHub PR run",
+  "review": {
+    "head": "ebd6c6b3aa7c4e18e296d47d6d9c6c7b39137b46",
+    "status": "completed",
+    "hasFindings": false,
+    "resolvedThreads": 1,
+    "finalHeadReview": "pending; see delivery comment"
+  },
+  "ciFirstRun": {
+    "id": 41991651571,
+    "test": "passed",
+    "lint": "passed",
+    "windows": "Node header extraction failed because GNU tar interpreted drive colon as remote; changed to relative archive path.",
+    "macArm64": "Built and signature-verified, then legacy overview startup assertion timed out; smoke now checks unified entry, IPC and packaged source-backend integrity/loading."
+  },
+  "reviewFix": {
+    "finding": "P2: same-platform devices were hidden but only the first was exported.",
+    "fix": "Export every source with a window sourceId; render separate keyed columns per device.",
+    "targetedTests": {
+      "passed": 12,
+      "failed": 0
+    },
+    "mainAndRendererBuild": "passed",
+    "lintAndI18n": "passed",
+    "thread": "https://github.com/MonsterXia/scrcpy-harmony/pull/87#discussion_r4478027348"
+  },
+  "ciSecondRun": {
+    "id": 41992491902,
+    "windows": "Exclude libcnary/cnary.c demo main from the library; GCC rejects its incompatible pointer declarations.",
+    "macOS": "Native module load passed; raw unsigned manifest hash differs after code signing. Installed signed Mach-O is now compared with the signed staging app, alongside the installed app deep/strict seal check."
+  },
+  "delivery": "https://github.com/MonsterXia/scrcpy-harmony/pull/87#issuecomment-6653565015",
+  "ciThirdRun": {
+    "id": 41994659889,
+    "test": "passed",
+    "lint": "passed",
+    "macArm64": "passed, including DMG installation and native backend load",
+    "windows": "Fix LIBPLIST_STATIC propagation to consumers of the static library.",
+    "macX64": "Use electron-builder x64 staging directory mac instead of mac-x64."
+  }
+}

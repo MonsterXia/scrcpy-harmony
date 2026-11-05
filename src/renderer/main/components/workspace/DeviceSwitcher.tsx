@@ -6,6 +6,7 @@ import store from '../../store'
 import Style from './Workspace.module.scss'
 
 export default observer(function DeviceSwitcher() {
+  const targets = store.targets.filter(target => !target.platform || target.platform === 'harmony')
   const [refreshing, setRefreshing] = useState(false)
   const refreshingRef = useRef(false)
   const active = useRef(true)
@@ -54,8 +55,8 @@ export default observer(function DeviceSwitcher() {
     >
       <summary
         ref={summary}
-        aria-label={t('workspaceSelectDevice')}
-        title={store.target?.name || t('workspaceSelectDevice')}
+        aria-label={t('plusSelectHarmonyDevice')}
+        title={store.target?.name || t('plusSelectHarmonyDevice')}
       >
         <span className="icon-phone" aria-hidden="true" />
         <span className={Style.deviceSummary}>
@@ -89,25 +90,25 @@ export default observer(function DeviceSwitcher() {
         </svg>
       </summary>
       <div className={Style.devicePopover}>
-        <label htmlFor="workspace-device">{t('workspaceSelectDevice')}</label>
+        <label htmlFor="workspace-device">{t('plusSelectHarmonyDevice')}</label>
         <select
           id="workspace-device"
           value={store.target?.key || ''}
-          disabled={!store.ready || !store.targets.length}
+          disabled={!store.ready || !targets.length}
           onChange={(event) => {
             store.selectTarget(event.target.value)
             if (details.current) details.current.open = false
             summary.current?.focus()
           }}
         >
-          {!store.targets.length && (
+          {!targets.length && (
             <option value="">{t('targetNotConnected')}</option>
           )}
-          {store.targets.map((target) => (
+          {targets.map((target) => (
             <option
               key={target.key}
               value={target.key}
-            >{`${target.name} (${target.key})`}</option>
+            >{`${target.platform || 'harmony'} · ${target.name} (${target.key})`}</option>
           ))}
         </select>
         {store.target && <p className={Style.deviceKey}>{store.target.key}</p>}

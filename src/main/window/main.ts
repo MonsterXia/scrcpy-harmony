@@ -1,10 +1,15 @@
-import { app, BrowserWindow, session } from 'electron'
+import { app, BrowserWindow, session, screen } from 'electron'
 import { getMainStore, getSettingsStore } from '../lib/store'
 import { handleEvent } from 'share/main/lib/util'
 import * as window from 'share/main/lib/window'
 import * as screencast from './screencast'
+import { startSelected, mirrorSessions } from '../lib/devices'
 import log from 'share/common/log'
 import once from 'licia/once'
+import { arrangeMirrors } from './arrangeMirrors'
+import { showMergedMirrors } from './mergedMirrors'
+import { applyMirrorLayout } from './mirrorLayout'
+import type { MirrorLayoutRequest } from 'common/types'
 
 const logger = log('mainWin')
 
@@ -35,8 +40,7 @@ export function showWin() {
   })
 
   win.on('close', (e) => {
-    const screencastWin = window.getWin('screencast')
-    if (!quitting && screencastWin && screencastWin.isVisible()) {
+    if (!quitting && (screencast.hasWindows() || mirrorSessions.list().length)) {
       e.preventDefault()
       win?.hide()
     } else if (!quitting) {
@@ -73,6 +77,18 @@ const initIpc = once(() => {
   settingsStore.on('change', (name, value) => {
     window.sendAll('changeSettingsStore', name, value)
   })
-  handleEvent('showScreencast', () => screencast.showWin())
-  handleEvent('closeScreencast', () => screencast.closeWin())
+  handleEvent('showScreencast', (key?: string) => startSelected(key || store.get('target')?.key))
+  handleEvent('arrangeMirrors', () => {
+    if (!win || win.isDestroyed()) return
+    arrangeMirrors([...screencast.getWindows(), ...mirrorSessions.getWindows()], screen.getDisplayMatching(win.getBounds()).workArea)
+  })
+  handleEvent('showMergedMirrors', () => showMergedMirrors(() => [
+    ...screencast.getSources(),
+    ...mirrorSessions.getSources(),
+  ]))
+  handleEvent('applyMirrorLayout', (request: MirrorLayoutRequest) => {
+    if (!win || win.isDestroyed()) return
+    applyMirrorLayout(request, () => [...screencast.getSources(), ...mirrorSessions.getSources()],
+      screen.getDisplayMatching(win.getBounds()).workArea)
+  })
 })

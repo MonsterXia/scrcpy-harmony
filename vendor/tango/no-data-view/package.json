@@ -1,0 +1,25 @@
+{
+  "name": "@yume-chan/no-data-view",
+  "version": "2.0.0",
+  "description": "Plain methods to avoid creating `DataView`s",
+  "keywords": [],
+  "license": "MIT",
+  "author": {
+    "name": "Simon Chan",
+    "email": "cnsimonchan@live.com",
+    "url": "https://chensi.moe/blog"
+  },
+  "homepage": "https://github.com/yume-chan/ya-webadb/tree/main/packages/no-data-view#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yume-chan/ya-webadb.git",
+    "directory": "packages/no-data-view"
+  },
+  "bugs": {
+    "url": "https://github.com/yume-chan/ya-webadb/issues"
+  },
+  "type": "module",
+  "main": "esm/index.js",
+  "types": "esm/index.d.ts",
+  "sideEffects": false
+}

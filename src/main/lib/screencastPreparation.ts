@@ -14,7 +14,8 @@ export function init() {
     onError: () => console.error('Screencast preparation failed; foreground capture may retry'),
   })
   const select = () => {
-    const key = store.get('target')?.key
+    const target = store.get('target')
+    const key = !target?.platform || target.platform === 'harmony' ? target?.key : undefined
     warmup.select(typeof key === 'string' && key.length <= 1024 ? key : undefined, screencast.get('scale'))
   }
   store.on('change', (name) => { if (name === 'target') select() })

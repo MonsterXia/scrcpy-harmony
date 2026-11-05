@@ -86,3 +86,11 @@ HDC、Licia 和 Luna 保留原作者与 MIT 许可证，应用保留 AGPL-3.0 �
 `manifest.json` 的 `importedFiles` 对应原始快照，本地适配由 Git 提交记录，不把修改后的哈希冒充上游原件。Licia 的 `publishedFiles` 是原 npm 生成产物的历史哈希；源码、测试和规则参考保留在包内。更新规则见 [vendor README](../vendor/README.md)和 [Licia 维护说明](../vendor/packages/licia/MAINTENANCE.md)。
 
 安装启动、来源对照、测试排除和设备验收边界见[迁移验证记录](maintenance/dependency-sources.md)。长期状态见 [RUNBOOK](../RUNBOOK.md)，历史资料见[来源索引](maintenance/SOURCES.md)。历史验证只对应记录的提交，不能替代新修改自己的检查。
+
+## Scrcpy Plus 扩展
+
+跨平台源码库、设备注册、进程内 worker、窗口绑定与新增 IPC 见 [集成说明](scrcpy-plus/integration.md)。原鸿蒙后端保留于 hdc 模块；其他平台不复用鸿蒙 shell/uitest 指令。
+
+多端投屏的独立侧栏入口位于 `src/renderer/main/components/workspace/Workspace.tsx`，专属三屏图标为同目录 `MultiMirrorIcon.tsx`；保留 `devices` 面板标识与原鸿蒙工具面板，详见 [集成说明](scrcpy-plus/integration.md)。
+
+设备选择状态由 `src/renderer/main/store/index.ts` 分别维护：`target` 只服务鸿蒙工具，`mirrorTarget` 服务多端投屏；投屏页不得调用 `selectTarget`，侧栏只展示鸿蒙设备。

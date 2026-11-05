@@ -11,7 +11,7 @@ function load(file, imports, main) {
     loader: file.endsWith('.tsx') ? 'tsx' : 'ts', format: 'cjs', jsx: 'automatic',
   })
   vm.runInNewContext(code, {
-    module, exports: module.exports, main,
+    module, exports: module.exports, main, setTimeout: () => 0,
     require(id) {
       if (Object.hasOwn(imports, id)) return imports[id]
       if (id.startsWith('licia/') || ['mobx', 'react/jsx-runtime'].includes(id)) return require(id)
@@ -27,11 +27,11 @@ const tick = () => new Promise(setImmediate)
 
 // Real Store, MobX and toolbar click handler. Only IPC, persistence and UI
 // widget boundaries are replaced; each request settles in an explicit order.
-async function fixture({ initialize = true } = {}) {
+async function fixture({ initialize = true, saved = {} } = {}) {
   const requests = [], writes = [], notifications = [], events = new Map()
   const main = {
-    getTargets: () => new Promise((resolve, reject) => requests.push({ resolve, reject })),
-    getMainStore: async () => null,
+    getDevices: () => new Promise((resolve, reject) => requests.push({ resolve: targets => resolve({ targets, errors: [] }), reject })),
+    getMainStore: async key => saved[key] || null,
     on: (name, handler) => events.set(name, handler),
   }
   const store = load('src/renderer/main/store/index.ts', {
@@ -128,4 +128,40 @@ test('late initialization result cannot replace a completed tracker refresh', as
   assert.equal(f.store.ready, true)
   assert.deepEqual(copy(f.store.targets), [target('current')])
   assert.equal(f.store.target.key, 'current')
+})
+
+
+test('Harmony tools and mirroring keep independent selections and persist to separate keys', async () => {
+  const f = await fixture({initialize:false})
+  const devices=[{key:'a',platform:'android'}, {key:'h',platform:'harmony'}, {key:'h2',platform:'harmony'}, {key:'i',platform:'ios'}]
+  f.requests[0].resolve(devices); await tick()
+  assert.equal(f.store.target.key,'h'); assert.equal(f.store.mirrorTarget.key,'a')
+  f.store.selectPanel('shell'); f.store.selectMirrorTarget('i')
+  assert.equal(f.store.target.key,'h'); assert.equal(f.store.panel,'shell')
+  f.store.selectTarget('h2'); assert.equal(f.store.mirrorTarget.key,'i')
+  assert.ok(f.writes.some(([scope,key,value])=>scope==='main'&&key==='mirrorTarget'&&value?.key==='i'))
+  assert.ok(f.writes.some(([scope,key,value])=>scope==='main'&&key==='target'&&value?.key==='h2'))
+  const refresh=f.event(); f.requests[1].resolve(devices.map(d=>({...d,name:'updated'}))); await refresh
+  assert.equal(f.store.target.key,'h2'); assert.equal(f.store.mirrorTarget.key,'i')
+  const before=copy(f.writes); f.store.selectTarget('a'); assert.equal(f.store.target.key,'h2'); assert.deepEqual(f.writes,before)
+})
+test('disconnecting the Harmony device never assigns an Android device to its tools', async () => {
+  const f = await fixture({initialize:false})
+  f.requests[0].resolve([{key:'a',platform:'android'},{key:'h',platform:'harmony'}]); await tick()
+  const refresh=f.event();f.requests[1].resolve([{key:'a',platform:'android'}]);await refresh
+  assert.equal(f.store.target,null);assert.equal(f.store.mirrorTarget.key,'a')
+  const next=f.event();f.requests[2].resolve([{key:'h',platform:'harmony'}]);await next
+  assert.equal(f.store.target.key,'h');assert.equal(f.store.mirrorTarget.key,'h')
+})
+test('old shared Android selection migrates to mirroring and Harmony tools select an available Harmony device', async () => {
+  const f = await fixture({initialize:false,saved:{target:{key:'a',platform:'android'}}})
+  f.requests[0].resolve([{key:'h',platform:'harmony'},{key:'a',platform:'android'}]);await tick()
+  assert.equal(f.store.target.key,'h');assert.equal(f.store.mirrorTarget.key,'a')
+  assert.ok(f.writes.some(([scope,key,value])=>scope==='main'&&key==='mirrorTarget'&&value?.key==='a'))
+  assert.ok(f.writes.some(([scope,key,value])=>scope==='main'&&key==='target'&&value===null))
+})
+test('saved independent choices are restored even when device discovery order changes', async () => {
+  const f = await fixture({initialize:false,saved:{target:{key:'h2',platform:'harmony'},mirrorTarget:{key:'i',platform:'ios'}}})
+  f.requests[0].resolve([{key:'h',platform:'harmony'},{key:'i',platform:'ios'},{key:'h2',platform:'harmony'}]);await tick()
+  assert.equal(f.store.target.key,'h2');assert.equal(f.store.mirrorTarget.key,'i')
 })

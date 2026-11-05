@@ -4,6 +4,7 @@ import { t } from 'common/util'
 import { notify } from 'share/renderer/lib/util'
 import store from '../../store'
 import DeviceSwitcher from './DeviceSwitcher'
+import MultiMirrorIcon from './MultiMirrorIcon'
 import useMainFeedback from './useMainFeedback'
 import Style from './Workspace.module.scss'
 
@@ -47,6 +48,23 @@ export default observer(function Workspace({
           </span>
           <span className={Style.brandName}>{t('workspaceProduct')}</span>
         </div>
+        <button
+          type="button"
+          className={Style.multiMirror}
+          data-navigation="devices"
+          aria-current={store.panel === 'devices' ? 'page' : undefined}
+          aria-controls="panel-devices"
+          aria-label={t('plusDevices')}
+          title={t('plusDevices')}
+          onClick={() => store.selectPanel('devices')}
+        >
+          <span className={Style.multiMirrorIcon}><MultiMirrorIcon /></span>
+          <span className={Style.multiMirrorCopy}>
+            <strong>{t('plusDevices')}</strong>
+            <small>{t('plusPlatforms')}</small>
+          </span>
+        </button>
+        <div className={Style.toolsLabel}>{t('plusHarmonyTools')}</div>
         <DeviceSwitcher />
         <nav className={Style.navigation} aria-label={t('workspaceNavigation')}>
           {groups.map((group) => (
@@ -91,7 +109,7 @@ export default observer(function Workspace({
         <header className={Style.topbar}>
           <div className={Style.breadcrumb}>
             <span className={Style.breadcrumbGroup}>
-              {store.panel === 'settings'
+              {store.panel === 'settings' || store.panel === 'devices'
                 ? t('workspaceProduct')
                 : currentGroup?.title}
             </span>
@@ -99,10 +117,10 @@ export default observer(function Workspace({
               /
             </span>
             <span className={Style.currentPage}>
-              {store.panel === 'settings' ? t('settings') : current?.label}
+              {store.panel === 'settings' ? t('settings') : store.panel === 'devices' ? t('plusDevices') : current?.label}
             </span>
           </div>
-          {store.panel !== 'overview' && store.panel !== 'settings' && (
+          {store.panel !== 'overview' && store.panel !== 'settings' && store.panel !== 'devices' && (
             <button
               className={Style.secondaryButton}
               type="button"

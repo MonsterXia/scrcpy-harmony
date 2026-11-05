@@ -7,6 +7,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url'
 import { _electron as electron } from 'playwright-core'
 import { vendorNotices } from './lib/vendor-notices.mjs'
 import { createHash } from 'node:crypto'
+import { existsSync } from 'node:fs'
 import { waitForWindowVisible } from './lib/smoke-window.mjs'
 
 assert.ok(['win32', 'darwin'].includes(process.platform), 'Unsupported smoke check platform')
@@ -59,7 +60,18 @@ const deadline = setTimeout(() => {
 }, 90_000)
 
 try {
+  const runtimeEnvironment = { ...process.env }
+  if (isWindows) {
+    const key = Object.keys(runtimeEnvironment).find(key => key.toLowerCase() === 'path') || 'PATH'
+    const mingw = (process.env.MINGW_PREFIX || '').replaceAll('\\', '/').toLowerCase()
+    // The installed app must load without the CI machine's Node/MinGW DLLs.
+    runtimeEnvironment[key] = (runtimeEnvironment[key] || '').split(path.delimiter).filter(directory => {
+      const normalized = directory.replaceAll('\\', '/').toLowerCase()
+      return !(mingw && (normalized === mingw || normalized.startsWith(mingw + '/'))) && !existsSync(path.join(directory, 'node.exe'))
+    }).join(path.delimiter)
+  }
   application = await electron.launch({
+    env: runtimeEnvironment,
     executablePath,
     cwd: installDir,
     args: [`--user-data-dir=${profile}`, '--enable-logging'],
@@ -120,10 +132,12 @@ try {
   )
   await page.waitForURL(expectedPage.href)
   assert.equal(await page.title(), pkg.productName)
-  // The overview is mounted only after the renderer store has initialized via IPC.
-  await page.locator('#app [data-panel="overview"]').waitFor({ state: 'visible' })
+  // The unified mirroring page is the default entry for a clean profile.
+  await page.locator('#app [data-panel="devices"] [data-device-picker]').waitFor({ state: 'visible' })
   const bridge = await page.evaluate(async (hdcResource) => ({
     targets: await window.main.getTargets(),
+    devices: await window.main.getDevices(),
+    sessions: await window.main.getMirrorSessions(),
     customTitlebar: await window.main.isCustomTitlebar(),
     hdcPath: await window.main.resolveResources(hdcResource),
   }), hdcResource)
@@ -131,8 +145,42 @@ try {
     Array.isArray(bridge.targets),
     'Device enumeration IPC did not return an array'
   )
+  assert.ok(Array.isArray(bridge.devices.targets), 'Unified device discovery IPC failed')
+  assert.ok(Array.isArray(bridge.sessions), 'Mirror session IPC failed')
   assert.equal(bridge.customTitlebar, true)
   await assertSamePath(bridge.hdcPath, path.join(resourcesDir, hdcResource))
+  const nativeBackends = await application.evaluate(() => {
+    const path = process.getBuiltinModule('path'), fs = process.getBuiltinModule('fs')
+    const crypto = process.getBuiltinModule('crypto')
+    const root = process.resourcesPath
+    const manifest = JSON.parse(fs.readFileSync(path.join(root, 'platform-backends.json'), 'utf8'))
+    const hashes = {}
+    for (const [name, file] of [['android','android/scrcpy-server'],['airplay','airplay/plus_airplay.node']]) {
+      const bytes = fs.readFileSync(path.join(root, file))
+      hashes[name] = { size:bytes.length, sha256:crypto.createHash('sha256').update(bytes).digest('hex') }
+    }
+    const require = process.getBuiltinModule('module').createRequire(path.join(root, 'app.asar/package.json'))
+    const native = require(path.join(root, 'airplay/plus_airplay.node'))
+    return { manifest, hashes, receiverAvailable:typeof native.Receiver === 'function' }
+  })
+  assert.equal(nativeBackends.manifest.airplay.platform, process.platform)
+  assert.equal(nativeBackends.manifest.airplay.arch, process.arch)
+  assert.equal(nativeBackends.receiverAvailable, true, 'Installed AirPlay addon failed to load')
+  for (const name of ['android', 'airplay']) {
+    let expected = nativeBackends.manifest[name]
+    if (name === 'airplay' && process.platform === 'darwin') {
+      // Signing changes Mach-O bytes. Compare the installed payload with the
+      // signed staging app; the manifest describes the unsigned source build.
+      // check-macos-install also verifies the installed app's deep/strict seal.
+      const stageDirectory = process.arch === 'x64' ? 'mac' : `mac-${process.arch}`
+      const signedModule = path.resolve('release', pkg.version, stageDirectory,
+        `${pkg.productName}.app`, 'Contents/Resources/airplay/plus_airplay.node')
+      const bytes = await readFile(signedModule)
+      expected = { size:bytes.length, sha256:createHash('sha256').update(bytes).digest('hex') }
+    }
+    assert.equal(nativeBackends.hashes[name].size, expected.size)
+    assert.equal(nativeBackends.hashes[name].sha256, expected.sha256)
+  }
   const browserWindow = await application.browserWindow(page)
   // DOM readiness can precede ready-to-show (or the application's fallback).
   // Observe the actual window without forcing it to show or skipping the check.

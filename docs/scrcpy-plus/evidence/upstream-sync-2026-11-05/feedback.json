@@ -1,0 +1,238 @@
+{
+  "boundary": "Built production renderer/CSS and actual refresh UI; simulated devices and isolated settings. Additional long/error/warning/info cards clone the real notification DOM to check styles only.",
+  "cases": [
+    {
+      "language": "en-US",
+      "theme": "light",
+      "notification": {
+        "radius": "12px",
+        "background": "rgb(255, 255, 255)",
+        "fontSize": "13px",
+        "shadow": "rgba(32, 36, 43, 0.07) 0px 4px 16px 0px, rgba(32, 36, 43, 0.03) 0px 1px 3px 0px",
+        "iconBackground": "rgb(232, 245, 238)",
+        "gap": 8,
+        "bounds": [
+          {
+            "x": 393.0859375,
+            "y": 40,
+            "width": 173.8203125,
+            "height": 46,
+            "bottom": 86
+          },
+          {
+            "x": 393.0859375,
+            "y": 94,
+            "width": 173.8203125,
+            "height": 46,
+            "bottom": 140
+          }
+        ]
+      },
+      "variants": [
+        {
+          "kind": "success",
+          "x": 365.2890625,
+          "right": 594.703125,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "error",
+          "x": 326.0234375,
+          "right": 633.96875,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "warning",
+          "x": 309.109375,
+          "right": 650.8828125,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "info",
+          "x": 240,
+          "right": 720,
+          "fits": true,
+          "height": 143
+        }
+      ]
+    },
+    {
+      "language": "en-US",
+      "theme": "dark",
+      "notification": {
+        "radius": "12px",
+        "background": "rgb(32, 35, 41)",
+        "fontSize": "13px",
+        "shadow": "rgba(0, 0, 0, 0.267) 0px 6px 20px 0px, rgba(0, 0, 0, 0.133) 0px 1px 3px 0px",
+        "iconBackground": "rgb(36, 61, 50)",
+        "gap": 8,
+        "bounds": [
+          {
+            "x": 393.0859375,
+            "y": 40,
+            "width": 173.8203125,
+            "height": 46,
+            "bottom": 86
+          },
+          {
+            "x": 393.0859375,
+            "y": 94,
+            "width": 173.8203125,
+            "height": 46,
+            "bottom": 140
+          }
+        ]
+      },
+      "variants": [
+        {
+          "kind": "success",
+          "x": 365.2890625,
+          "right": 594.703125,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "error",
+          "x": 326.0234375,
+          "right": 633.96875,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "warning",
+          "x": 309.109375,
+          "right": 650.8828125,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "info",
+          "x": 240,
+          "right": 720,
+          "fits": true,
+          "height": 143
+        }
+      ]
+    },
+    {
+      "language": "zh-CN",
+      "theme": "light",
+      "notification": {
+        "radius": "12px",
+        "background": "rgb(255, 255, 255)",
+        "fontSize": "13px",
+        "shadow": "rgba(32, 36, 43, 0.07) 0px 4px 16px 0px, rgba(32, 36, 43, 0.03) 0px 1px 3px 0px",
+        "iconBackground": "rgb(232, 245, 238)",
+        "gap": 8,
+        "bounds": [
+          {
+            "x": 415.5,
+            "y": 40,
+            "width": 129,
+            "height": 46,
+            "bottom": 86
+          },
+          {
+            "x": 415.5,
+            "y": 94,
+            "width": 129,
+            "height": 46,
+            "bottom": 140
+          }
+        ]
+      },
+      "variants": [
+        {
+          "kind": "success",
+          "x": 365.2890625,
+          "right": 594.703125,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "error",
+          "x": 326.0234375,
+          "right": 633.96875,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "warning",
+          "x": 309.109375,
+          "right": 650.8828125,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "info",
+          "x": 240,
+          "right": 720,
+          "fits": true,
+          "height": 143
+        }
+      ]
+    },
+    {
+      "language": "zh-CN",
+      "theme": "dark",
+      "notification": {
+        "radius": "12px",
+        "background": "rgb(32, 35, 41)",
+        "fontSize": "13px",
+        "shadow": "rgba(0, 0, 0, 0.267) 0px 6px 20px 0px, rgba(0, 0, 0, 0.133) 0px 1px 3px 0px",
+        "iconBackground": "rgb(36, 61, 50)",
+        "gap": 8,
+        "bounds": [
+          {
+            "x": 415.5,
+            "y": 40,
+            "width": 129,
+            "height": 46,
+            "bottom": 86
+          },
+          {
+            "x": 415.5,
+            "y": 94,
+            "width": 129,
+            "height": 46,
+            "bottom": 140
+          }
+        ]
+      },
+      "variants": [
+        {
+          "kind": "success",
+          "x": 365.2890625,
+          "right": 594.703125,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "error",
+          "x": 326.0234375,
+          "right": 633.96875,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "warning",
+          "x": 309.109375,
+          "right": 650.8828125,
+          "fits": true,
+          "height": 46
+        },
+        {
+          "kind": "info",
+          "x": 240,
+          "right": 720,
+          "fits": true,
+          "height": 143
+        }
+      ]
+    }
+  ],
+  "passed": true
+}

@@ -1,0 +1,124 @@
+{
+  "mode": "source-integrated",
+  "applicationTests": {
+    "passed": 963,
+    "failed": 0,
+    "nativeEnabled": true
+  },
+  "licia": {
+    "production": {
+      "passing": 606,
+      "pending": 4
+    },
+    "fallback": {
+      "passing": 606,
+      "pending": 4
+    }
+  },
+  "lint": "passed",
+  "i18n": "passed",
+  "codeBuild": {
+    "main": "passed",
+    "preload": "passed",
+    "renderer": "passed"
+  },
+  "sourceBackendBuild": {
+    "androidServerVersion": "3.3.3",
+    "android": "passed",
+    "airplayNative": "passed",
+    "airplayWorker": "passed",
+    "platform": "darwin",
+    "arch": "arm64",
+    "nativeDynamicDependencies": [
+      "/usr/lib/libc++.1.dylib",
+      "/usr/lib/libSystem.B.dylib"
+    ]
+  },
+  "sourceUsbDiscovery": {
+    "completed": true,
+    "androidDevices": 0,
+    "authenticatedOrModifiedPhones": false
+  },
+  "strictTypecheck": {
+    "passed": false,
+    "baselineDiagnostics": 51,
+    "currentDiagnostics": 51,
+    "diagnosticsMatchIgnoringLocations": true
+  },
+  "distributionBuild": {
+    "passed": true,
+    "platform": "darwin",
+    "arch": "arm64",
+    "date": "2026-11-04",
+    "packagedInstaller": false,
+    "version": "1.0.5-dev.1"
+  },
+  "fullElectronUi": "dev.1 bilingual UI passed on Electron 45 with simulated device/session IPC; see dev1/ui/ui.json. Earlier real AirPlay backend acceptance remains in mac-local/live.json.",
+  "physicalPhoneVideoAndInput": "2026-11-05: user confirmed Harmony operation, Android mirroring and touch on both; agent verified real frames and Harmony close/reopen. Keyboard/IME not independently accepted.",
+  "windowsAndOlderMacOS": "not tested; local static OpenSSL library was built for macOS 27.0",
+  "concurrencyReview": {
+    "reproducedBeforeFix": 3,
+    "targetedTestsAfterFix": 15,
+    "targetedFailuresAfterFix": 0,
+    "fixed": [
+      "queued gestures each retain their own release",
+      "host keys are published only after complete writes",
+      "failed stop and startup cleanup retain ownership and permit retry"
+    ]
+  },
+  "macLocal": {
+    "date": "2026-11-04",
+    "platform": "darwin",
+    "arch": "arm64",
+    "macOS": "27.2",
+    "electron": "45.0.0",
+    "electronZipSha256": "896c3a50b148e89a158dca08a6996a022ddf39b23aac871e107f5b4087f8caa9",
+    "harmonyResources": "six libraries and notices verified against vendor/native-video/manifest.json; extracted from official v1.0.5-dev.0 arm64 DMG",
+    "mainProcessFix": "Use Node export conditions so plist does not require browser DOMParser",
+    "ui": "mac-local/ui/ui.json",
+    "liveBackend": "mac-local/live.json",
+    "physicalPhones": 0,
+    "buildRegressionTests": 4,
+    "usbmuxRegressionTests": 3,
+    "fullBuild": "passed"
+  },
+  "upstreamIntegration": {
+    "version": "1.0.5-dev.1",
+    "commit": "507a8be7899d285b388285f19ad9c3b0b057540f",
+    "evidence": "dev1/integration.json"
+  },
+  "currentAndroidWindow": "android-clean-window-2026-11-05/live.json",
+  "physicalIosVideo": {
+    "passed": true,
+    "date": "2026-11-05",
+    "evidence": "ios-airplay-2026-11-05/live.json",
+    "userConfirmed": true
+  },
+  "threePlatformConcurrency": {
+    "passed": true,
+    "date": "2026-11-05",
+    "evidence": "three-platform/live.json",
+    "androidReopenIsolation": true
+  },
+  "mergedView": {
+    "passed": true,
+    "date": "2026-11-05",
+    "evidence": "merged-view/live.json",
+    "order": [
+      "Android",
+      "HarmonyOS",
+      "iOS"
+    ]
+  },
+  "startupAndLayoutModes": {
+    "passed": true,
+    "date": "2026-11-05",
+    "evidence": "start-layout-modes/verification.json",
+    "bilingualCombinations": 9
+  },
+  "samsungUsbReconnectEvidence": "samsung-usb-reconnect-2026-11-05/verification.json",
+  "mergedRefreshEvidence": "merged-refresh-2026-11-05/verification.json",
+  "multiMirrorNavigationEvidence": "multi-mirror-navigation-2026-11-05/verification.json",
+  "harmonyToolHintEvidence": "harmony-tool-hint-2026-11-05/verification.json",
+  "independentDeviceSelectionEvidence": "independent-device-selection-2026-11-05/verification.json"
+}

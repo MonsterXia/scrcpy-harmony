@@ -1,0 +1,49 @@
+{
+  "scope": "Real Electron window-fit IPC with synthetic video dimensions and settling layout; real HDC discovery; no decode, phone capture or input acceptance",
+  "cases": [
+    {
+      "width": 1080,
+      "height": 2340,
+      "viewport": {
+        "width": 395,
+        "height": 949
+      },
+      "canvas": {
+        "width": 379,
+        "height": 820.5,
+        "bottom": 941
+      },
+      "horizontalBar": 0.1538461538461604,
+      "verticalBar": 5.684341886080802e-14
+    },
+    {
+      "width": 2340,
+      "height": 1080,
+      "viewport": {
+        "width": 875,
+        "height": 489
+      },
+      "canvas": {
+        "width": 859,
+        "height": 396.5,
+        "bottom": 481
+      },
+      "horizontalBar": 5.684341886080802e-14,
+      "verticalBar": 0.019230769230773603
+    }
+  ],
+  "devices": [
+    {
+      "name": "HUAWEI Mate 80",
+      "platform": "harmony",
+      "state": "ready"
+    },
+    {
+      "name": "AirPlay",
+      "platform": "ios",
+      "state": "waiting"
+    }
+  ],
+  "harmonySelectable": true,
+  "passed": true
+}

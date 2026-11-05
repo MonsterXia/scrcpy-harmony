@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron')
 const listeners = new Map()
 const emit = (event, ...args) => (listeners.get(event) || []).forEach(fn => fn(...args))
-const target = { key: 'DEMO-DEVICE-001', name: 'Harmony development device', ohosVersion: '6.0', sdkVersion: '20' }
+const target = { platform: 'harmony', state: 'ready', key: 'DEMO-DEVICE-001', name: 'Harmony development device', ohosVersion: '6.0', sdkVersion: '20' }
 const settings = { theme: process.env.UI_THEME || 'light', language: process.env.UI_LANGUAGE || 'en-US', hdcPath: '', killHdcWhenExit: false, betaUpdate: false }
 const values = { panel: process.env.UI_PAGE || 'overview', target: process.env.UI_EMPTY ? null : target, application: {listView: true,sysBundle:false,itemSize:48}, layout:{weights:[35,35,30],attribute:false,border:true} }
 let infos = [ ['Notes','com.example.notes','1.2.0',false], ['Browser','com.example.browser','5.0.1',false], ['Photos','com.example.photos','2.4.0',false], ['Development application with a long display name','com.example.long.application.name','1.0.0',false], ['Settings','com.example.settings','6.0.0',true] ].map(([label,bundleName,versionName,system]) => ({label,bundleName,versionName,system,icon:'',apiTargetVersion:20,vendor:'Example vendor',installTime:1793600000000,releaseType:'release',mainAbility:'EntryAbility'}))
@@ -13,6 +13,8 @@ const guarded = async value => { if(process.env.UI_ERROR) throw new Error('Simul
 let next = 1
 const main = {
   getLanguage: async () => settings.language, getTheme: async () => ipcRenderer.invoke('fixture-theme'),
+  getDevices: async () => ({ targets: process.env.UI_EMPTY ? [] : [target], errors: [] }),
+  getMirrorSessions: async () => [],
   getTargets: async () => process.env.UI_EMPTY ? [] : [target], getMainStore: async key => values[key],
   setMainStore: async (key, value) => { values[key] = value; emit('changeMainStore', key,value) },
   getSettingsStore: async key => settings[key],

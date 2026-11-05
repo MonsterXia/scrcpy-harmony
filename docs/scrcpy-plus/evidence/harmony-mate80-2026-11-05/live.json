@@ -1,0 +1,65 @@
+{
+  "date": "2026-11-05",
+  "device": "HUAWEI Mate 80",
+  "platform": "darwin-arm64",
+  "version": "1.0.5-dev.1",
+  "scope": "Real connected phone, production Electron app, real HDC/capture/rendering; statistics only, no screenshot content recorded",
+  "discovery": "ready",
+  "first": {
+    "canvas": true,
+    "captureStatus": "H.2640.0 FPS",
+    "width": 1280,
+    "height": 2832,
+    "coloredSamples": 36250,
+    "distinctColors": 559,
+    "viewport": {
+      "width": 372,
+      "height": 851
+    },
+    "rect": {
+      "x": 0.0078125,
+      "y": 28,
+      "width": 371.9765625,
+      "height": 823,
+      "top": 28,
+      "right": 371.984375,
+      "bottom": 851,
+      "left": 0.0078125
+    },
+    "alerts": []
+  },
+  "closeAndReopen": {
+    "closed": true,
+    "reopened": true,
+    "name": "HUAWEI Mate 80"
+  },
+  "second": {
+    "canvas": true,
+    "captureStatus": "等待画面— FPS",
+    "width": 1280,
+    "height": 2832,
+    "coloredSamples": 36207,
+    "distinctColors": 1594,
+    "viewport": {
+      "width": 372,
+      "height": 851
+    },
+    "rect": {
+      "x": 0.0078125,
+      "y": 28,
+      "width": 371.9765625,
+      "height": 823,
+      "top": 28,
+      "right": 371.984375,
+      "bottom": 851,
+      "left": 0.0078125
+    },
+    "alerts": []
+  },
+  "firstCodec": "H.264",
+  "secondCodec": "not sampled; pixel rendering verified",
+  "inputInjected": false,
+  "inputControlAcceptance": "not tested",
+  "android": "deferred at user request",
+  "passed": true
+}

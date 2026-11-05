@@ -28,7 +28,7 @@ async function load(saved) {
     main: {
       on() {},
       getScreencastStore: async key => key === 'scale' ? saved : false,
-      getMainStore: async () => ({ key: 'synthetic' }),
+      getScreencastTarget: async () => ({ key: 'synthetic' }),
       setScreencastStore: (...args) => writes.push(args),
     },
   })

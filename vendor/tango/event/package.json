@@ -1,0 +1,32 @@
+{
+  "name": "@yume-chan/event",
+  "version": "2.0.0",
+  "description": "Event/EventEmitter",
+  "keywords": [
+    "event",
+    "eventemitter",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Simon Chan",
+    "email": "cnsimonchan@live.com",
+    "url": "https://chensi.moe/blog"
+  },
+  "homepage": "https://github.com/yume-chan/ya-webadb/tree/main/libraries/event#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yume-chan/ya-webadb.git",
+    "directory": "libraries/event"
+  },
+  "bugs": {
+    "url": "https://github.com/yume-chan/ya-webadb/issues"
+  },
+  "type": "module",
+  "main": "esm/index.js",
+  "types": "esm/index.d.ts",
+  "sideEffects": false,
+  "dependencies": {
+    "@yume-chan/async": "^4.0.2"
+  }
+}

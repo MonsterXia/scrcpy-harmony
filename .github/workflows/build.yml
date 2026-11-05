@@ -42,6 +42,8 @@ jobs:
     - name: Download macOS device resources
       if: runner.os == 'macOS'
       run: npm run init
+    - name: Prepare source backend toolchain
+      uses: ./.github/actions/platform-toolchain
     - name: Build distribution
       run: npm run build
     - name: Package installer

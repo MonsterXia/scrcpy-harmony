@@ -85,6 +85,7 @@ exports.screencastMain = function (
       win.on('closed', () => {
         if (current === win) current = undefined
       })
+      win.id = windows.length + 1
       windows.push(win)
       current = win
       return win
@@ -228,7 +229,8 @@ exports.screencastMain = function (
     hasHandler: name => handlers.has(name),
     create,
     addDriver,
-    show: windowModule.showWin,
+    show: (target = { key: 'synthetic-target', name: 'Synthetic', ohosVersion: '', sdkVersion: '' }) => windowModule.showWin(target),
+    listSessions: windowModule.listSessions,
     close: windowModule.closeWin,
     mainShows: () => mainShows,
     current: () => current,

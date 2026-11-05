@@ -4,28 +4,50 @@ import { getScreencastStore } from '../lib/store'
 import once from 'licia/once'
 import { handleEvent } from 'share/main/lib/util'
 import { IpcGetStore, IpcSetStore } from 'share/common/types'
-import { IpcSetScreencastAlwaysOnTop } from 'common/types'
+import type { ITarget, MirrorSession } from 'common/types'
 import { registerCaptureWindow } from '../lib/hdc/captureSessions'
 
 const store = getScreencastStore()
 
-let win: BrowserWindow | null = null
+const windows = new Map<string, { win: BrowserWindow; target: ITarget }>()
+export function isCaptureWindow(win: unknown) { return [...windows.values()].some(entry => entry.win === win) }
+export function hasWindows() { return windows.size > 0 }
+export function getWindows() { return [...windows.values()].map(entry => entry.win).filter(win => !win.isDestroyed()) }
+export function getSources() { return [...windows.values()].filter(entry => !entry.win.isDestroyed())
+  .map(entry => ({ window: entry.win, platform: 'harmony' as const, deviceKey: entry.target.key })) }
+export function listSessions(): MirrorSession[] {
+  return [...windows.values()].map(({ win, target }) => ({ id: `harmony:${win.id}`,
+    deviceKey: target.key, name: target.name, platform: 'harmony', state: 'running' }))
+}
+export function closeSession(id: string) {
+  for (const { win } of windows.values()) {
+    if (id === `harmony:${win.id}`) { win.close(); return true }
+  }
+  return false
+}
+function senderWindow(event: Electron.IpcMainInvokeEvent) {
+  const entry = [...windows.values()].find(({ win }) => win.webContents === event.sender)
+  if (!entry || event.senderFrame !== entry.win.webContents.mainFrame) throw new Error('Invalid capture document')
+  return entry
+}
 
-export function showWin() {
-  if (win) {
-    win.focus()
+export function showWin(target: ITarget) {
+  const existing = windows.get(target.key)
+  if (existing) {
+    existing.win.focus()
     return
   }
 
   initIpc()
 
-  win = window.create({
-    name: 'screencast',
+  const win = window.create({
+    name: `screencast-${encodeURIComponent(target.key)}`,
     minWidth: 320,
     minHeight: 320,
     width: 500,
     height: 640,
   })
+  windows.set(target.key, { win, target: { ...target } })
   const releaseCapture = registerCaptureWindow(win.webContents)
   // BrowserWindow closed may precede webContents destroyed. Detach locally
   // before destroy on close, with closed as the direct-destroy fallback.
@@ -52,7 +74,7 @@ export function showWin() {
 
   // destroy() can bypass close; release the singleton on actual destruction.
   win.on('closed', () => {
-    win = null
+    windows.delete(target.key)
     const mainWin = window.getWin('main')
     if (mainWin) {
       mainWin.show()
@@ -63,16 +85,14 @@ export function showWin() {
 }
 
 export function closeWin() {
-  if (win) {
-    win.close()
-  }
+  for (const { win } of windows.values()) win.close()
 }
 
 const initIpc = once(() => {
+  ipcMain.handle('getScreencastTarget', event => senderWindow(event).target)
+  ipcMain.handle('closeScreencast', event => senderWindow(event).win.close())
   ipcMain.handle('fitScreencast', (event, frameWidth: number, frameHeight: number, verticalInset: number) => {
-    if (!win || event.sender !== win.webContents || event.senderFrame !== win.webContents.mainFrame) {
-      throw new Error('Window fitting requires the active screencast document')
-    }
+    const { win } = senderWindow(event)
     if (![frameWidth, frameHeight].every(value => Number.isInteger(value) && value > 0 && value <= 16384) ||
       !Number.isFinite(verticalInset) || verticalInset < 0 || verticalInset > 512) {
       throw new Error('Invalid screencast dimensions')
@@ -106,11 +126,8 @@ const initIpc = once(() => {
     ((name, val) => store.set(name, val))
   ))
   handleEvent('getScreencastStore', <IpcGetStore>((name) => store.get(name)))
-  handleEvent('setScreencastAlwaysOnTop', <IpcSetScreencastAlwaysOnTop>((
-    alwaysOnTop,
-  ) => {
-    if (win) {
-      win.setAlwaysOnTop(alwaysOnTop)
-    }
-  }))
+  ipcMain.handle('setScreencastAlwaysOnTop', (event, alwaysOnTop: boolean) => {
+    if (typeof alwaysOnTop !== 'boolean') throw new Error('Invalid always-on-top value')
+    senderWindow(event).win.setAlwaysOnTop(alwaysOnTop)
+  })
 })

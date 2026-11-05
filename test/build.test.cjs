@@ -13,6 +13,16 @@ function fixture(t) {
     fs.mkdirSync(path.join(root, dir), { recursive: true })
     fs.writeFileSync(path.join(root, dir, 'fixture.txt'), dir)
   }
+  const platformManifest = {
+    android: { version: '3.3.3' }, airplay: { platform: process.platform, arch: process.arch, napi: 8 },
+  }
+  for (const [name, file] of [['android', 'scrcpy-server'], ['airplay', 'plus_airplay.node']]) {
+    const bytes = Buffer.from(`${name} source-built fixture`)
+    fs.mkdirSync(path.join(root, 'resources', name), { recursive: true })
+    fs.writeFileSync(path.join(root, 'resources', name, file), bytes)
+    Object.assign(platformManifest[name], { size: bytes.length, sha256: require('node:crypto').createHash('sha256').update(bytes).digest('hex') })
+  }
+  fs.writeFileSync(path.join(root, 'resources/platform-backends.json'), JSON.stringify(platformManifest))
   fs.writeFileSync(path.join(root, 'LICENSE'), 'application license fixture')
   fs.mkdirSync(path.join(root, 'vendor/packages/example'), { recursive: true })
   fs.writeFileSync(path.join(root, 'vendor/packages/example/LICENSE'), 'upstream license fixture')
@@ -81,6 +91,8 @@ test('build prepares a runnable distribution without requiring a shell', (t) => 
   for (const dir of ['main', 'preload', 'renderer']) {
     assert.equal(fs.readFileSync(path.join(f.root, 'dist', dir, 'index.js'), 'utf8'), 'built')
   }
+  assert.equal(fs.readFileSync(path.join(f.root, 'dist/resources/android/scrcpy-server'), 'utf8'), 'android source-built fixture')
+  assert.equal(fs.readFileSync(path.join(f.root, 'dist/resources/airplay/plus_airplay.node'), 'utf8'), 'airplay source-built fixture')
   assert.equal(fs.readFileSync(path.join(f.root, 'dist/resources/hdc/fixture.txt'), 'utf8'), 'resources/hdc')
   assert.equal(fs.readFileSync(path.join(f.root, 'dist/resources/uitestkit_sdk/fixture.txt'), 'utf8'), 'resources/uitestkit_sdk')
   assert.equal(fs.readFileSync(path.join(f.root, 'dist/resources/native-video/fixture.so'), 'utf8'), 'native fixture')
@@ -106,7 +118,14 @@ test('a failed build stops before packaging incomplete output', (t) => {
   const result = f.run('build:preload')
   assert.notEqual(result.status, 0)
   assert.deepEqual(f.commands().map(({ args }) => args), [
-    ['run', 'build:main'], ['run', 'build:preload'],
+    ['run', 'build:backends'], ['run', 'build:main'], ['run', 'build:preload'],
   ])
+  assert.equal(fs.existsSync(path.join(f.root, 'dist/package.json')), false)
+})
+
+test('distribution rejects corrupted or wrong-architecture platform backends', t => {
+  const f = fixture(t)
+  fs.writeFileSync(path.join(f.root, 'resources/android/scrcpy-server'), 'corrupted')
+  assert.notEqual(f.run().status, 0)
   assert.equal(fs.existsSync(path.join(f.root, 'dist/package.json')), false)
 })

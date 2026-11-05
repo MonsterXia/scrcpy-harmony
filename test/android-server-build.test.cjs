@@ -1,0 +1,31 @@
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const os = require('node:os')
+const path = require('node:path')
+for (const host of ['darwin', 'win32']) test(`Android source compiler preserves paths and uses Java argument files on ${host}`, async t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'plus source build '))
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }))
+  const source = path.join(root, 'vendor/scrcpy-server/server/src/main/java/com/example')
+  fs.mkdirSync(source, { recursive: true }); fs.writeFileSync(path.join(source, 'Main.java'), 'fixture')
+  const calls = [], sdk = path.join(root, 'Android SDK')
+  const { buildAndroidServer } = await import('../script/lib/android-server-build.mjs')
+  await buildAndroidServer({ root, sdk, host, javaHome:path.join(root, 'Java Home'), run(file,args) {
+    calls.push({file,args})
+    if (file.includes('javac')) {
+      const content = fs.readFileSync(args[0].slice(1),'utf8')
+      assert.match(content, /-encoding/);assert.match(content, /Main.java/)
+      assert.ok(content.includes(host==='win32' ? '.jar;' : '.jar:'))
+      fs.writeFileSync(path.join(root,'build/android-server/classes','Main$Inner.class'),'fixture')
+    } else if (file.endsWith('java') || file.endsWith('java.exe')) {
+      const content = fs.readFileSync(args[0].slice(1),'utf8')
+      assert.match(content,/com.android.tools.r8.D8/);assert.match(content,/Main\$Inner.class/)
+      fs.writeFileSync(path.join(root,'build/android-server/classes.zip'),'dex fixture')
+    }
+  } })
+  assert.equal(calls.length,4)
+  assert.ok(calls[0].file.endsWith(host==='win32'?'aidl.exe':'aidl'))
+  assert.ok(calls[1].args.includes('-p'))
+  assert.equal(fs.readFileSync(path.join(root,'build/android-server/scrcpy-server'),'utf8'),'dex fixture')
+  assert.equal(fs.existsSync(path.join(root,'build/android-server/classes')),false)
+})

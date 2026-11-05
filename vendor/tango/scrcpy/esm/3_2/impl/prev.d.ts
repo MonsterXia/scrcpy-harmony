@@ -1,0 +1,2 @@
+export * as PrevImpl from "../../3_1/impl/index.js";
+//# sourceMappingURL=prev.d.ts.map

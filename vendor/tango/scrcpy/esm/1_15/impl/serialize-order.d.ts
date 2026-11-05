@@ -1,0 +1,2 @@
+export declare const SerializeOrder: readonly ["logLevel", "maxSize", "bitRate", "maxFps", "lockVideoOrientation", "tunnelForward", "crop", "sendFrameMeta", "control", "displayId", "showTouches", "stayAwake", "codecOptions"];
+//# sourceMappingURL=serialize-order.d.ts.map
