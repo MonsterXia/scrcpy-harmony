@@ -1,0 +1,28 @@
+# Generate a delayed Node-API import library for MinGW. Directly importing
+# node.exe loads the build machine's Node runtime rather than Electron's host.
+find_program(NODE_NM NAMES ${CMAKE_NM} nm REQUIRED)
+find_program(NODE_DLLTOOL NAMES ${CMAKE_DLLTOOL} dlltool REQUIRED)
+execute_process(COMMAND "${NODE_NM}" -g --defined-only "${NODE_LIBRARY}"
+  OUTPUT_VARIABLE NODE_IMPORT_SYMBOLS COMMAND_ERROR_IS_FATAL ANY)
+string(REGEX MATCHALL "[ \t](napi_[A-Za-z0-9_]+|node_api_[A-Za-z0-9_]+)[\r\n]" NODE_API_ENTRIES "${NODE_IMPORT_SYMBOLS}")
+set(NODE_API_NAMES)
+foreach(ENTRY IN LISTS NODE_API_ENTRIES)
+  string(STRIP "${ENTRY}" ENTRY)
+  list(APPEND NODE_API_NAMES "${ENTRY}")
+endforeach()
+list(REMOVE_DUPLICATES NODE_API_NAMES)
+list(LENGTH NODE_API_NAMES NODE_API_COUNT)
+if(NODE_API_COUNT LESS 20)
+  message(FATAL_ERROR "Node import library did not expose enough Node-API symbols")
+endif()
+set(NODE_API_DEF "${CMAKE_CURRENT_BINARY_DIR}/node_api.def")
+set(NODE_DELAY_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/libnode_api_delay.a")
+file(WRITE "${NODE_API_DEF}" "LIBRARY node.exe\nEXPORTS\n")
+foreach(NAME IN LISTS NODE_API_NAMES)
+  file(APPEND "${NODE_API_DEF}" "${NAME}\n")
+endforeach()
+execute_process(COMMAND "${NODE_DLLTOOL}" --dllname node.exe --input-def "${NODE_API_DEF}"
+  --output-delaylib "${NODE_DELAY_LIBRARY}" COMMAND_ERROR_IS_FATAL ANY)
+target_sources(plus_airplay PRIVATE windows_delay_load.cc)
+target_link_options(plus_airplay PRIVATE -static -static-libgcc -static-libstdc++)
+target_link_libraries(plus_airplay PRIVATE "${NODE_DELAY_LIBRARY}" delayimp)

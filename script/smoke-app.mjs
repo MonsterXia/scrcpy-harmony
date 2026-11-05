@@ -7,6 +7,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url'
 import { _electron as electron } from 'playwright-core'
 import { vendorNotices } from './lib/vendor-notices.mjs'
 import { createHash } from 'node:crypto'
+import { existsSync } from 'node:fs'
 import { waitForWindowVisible } from './lib/smoke-window.mjs'
 
 assert.ok(['win32', 'darwin'].includes(process.platform), 'Unsupported smoke check platform')
@@ -59,7 +60,18 @@ const deadline = setTimeout(() => {
 }, 90_000)
 
 try {
+  const runtimeEnvironment = { ...process.env }
+  if (isWindows) {
+    const key = Object.keys(runtimeEnvironment).find(key => key.toLowerCase() === 'path') || 'PATH'
+    const mingw = (process.env.MINGW_PREFIX || '').replaceAll('\\', '/').toLowerCase()
+    // The installed app must load without the CI machine's Node/MinGW DLLs.
+    runtimeEnvironment[key] = (runtimeEnvironment[key] || '').split(path.delimiter).filter(directory => {
+      const normalized = directory.replaceAll('\\', '/').toLowerCase()
+      return !(mingw && (normalized === mingw || normalized.startsWith(mingw + '/'))) && !existsSync(path.join(directory, 'node.exe'))
+    }).join(path.delimiter)
+  }
   application = await electron.launch({
+    env: runtimeEnvironment,
     executablePath,
     cwd: installDir,
     args: [`--user-data-dir=${profile}`, '--enable-logging'],

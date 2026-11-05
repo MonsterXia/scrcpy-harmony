@@ -119,3 +119,5 @@ npm start
 ## 源码后端的 CI 工具链
 
 CI 和手动 Build 共用 `.github/actions/platform-toolchain`，固定动作 SHA，准备 JDK 17、Android 35／Build Tools 35.0.0、macOS 静态 OpenSSL 和 Windows UCRT64 GCC/CMake/OpenSSL。`script/setup-node-build-headers.mjs` 按当前 Node 版本下载头文件及 Windows 导入库并校验官方 SHA-256。安卓编译使用 `script/lib/android-server-build.mjs` 直接调用 AIDL、javac 与 D8，Java 参数文件处理 Windows 类路径及长度限制，不依赖电脑端 adb/scrcpy 程序。Mac 本地完整构建及两项上游 UI 回归见 [同步记录](evidence/upstream-sync-2026-11-05/verification.json)；其他平台的最终构建与安装以本次 PR CI 为准。
+
+Windows AirPlay 模块采用 MinGW 延迟导入库与宿主解析钩子，将 Node-API 指向当前 Electron 可执行文件，支持产品可执行文件重命名。GCC／C++／pthread 和 OpenSSL 使用静态链接；安装冒烟检查移除 CI 的 Node／MinGW PATH 后实际加载模块，防止开发环境掩盖外部运行时依赖。实现参考 Electron 的 win_delay_load_hook 约定和 GNU dlltool 的 output-delaylib。
