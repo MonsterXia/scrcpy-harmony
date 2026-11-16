@@ -18,6 +18,7 @@ export function focusMirror(deviceKey: string, provider: () => MirrorSource[]) {
   if (typeof deviceKey !== 'string' || !deviceKey || deviceKey.length > 256) throw new Error('Invalid device key')
   const source = provider().find(source => source.deviceKey === deviceKey && !source.window.isDestroyed())
   if (!source) throw new Error('No active mirror')
+  source.claimGui?.()
   const window = getMergedMirrorWindow(deviceKey) || source.window
   if (window.isMinimized()) window.restore()
   window.show(); window.focus()

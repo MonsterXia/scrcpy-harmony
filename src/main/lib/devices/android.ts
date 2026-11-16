@@ -142,6 +142,8 @@ async function deadline<T>(promise: Promise<T>, cancel: () => void, milliseconds
   } finally { clearTimeout(timer) }
 }
 const activeMirrors = new Map<string, AndroidMirror>()
+// A failed temporary teardown must remain owned until a later caller drains it.
+const temporaryConnections = new Map<string, AndroidMirror>()
 const overviewReads = new Map<string, Promise<Awaited<ReturnType<typeof readAndroidOverview>>>>()
 export function getAndroidOverview(target: ITarget) {
   const pending = overviewReads.get(target.key)
@@ -151,7 +153,9 @@ export function getAndroidOverview(target: ITarget) {
     // Closing still owns USB. Do not open a temporary connection until every
     // native handle has drained; retrying close also handles cleanup failures.
     if (active?.isClosed()) { await active.close(); active = undefined }
+    if (!active) await temporaryConnections.get(target.key)?.close()
     const connection = active || new AndroidMirror(target)
+    if (!active) temporaryConnections.set(target.key, connection)
     try { return await connection.overview() }
     finally { if (!active) await connection.close() }
   })().finally(() => {
@@ -181,6 +185,9 @@ export class AndroidMirror {
     this.check()
     if (this.adb) return Promise.resolve(this.adb)
     if (!this.connecting) this.connecting = (async () => {
+      const temporary = temporaryConnections.get(this.target.key)
+      if (temporary && temporary !== this) await temporary.close()
+      this.check()
       this.device = (await usbDevices()).find(device => usbIdentity(device) === this.target.connectionId)
       if (!this.device) throw new Error('Android device disconnected')
       configureAndroidUsb(this.device.raw)
@@ -291,6 +298,7 @@ export class AndroidMirror {
       try { await this.adb?.close() }
       finally { await this.device?.raw.close() }
       if (activeMirrors.get(this.target.key) === this) activeMirrors.delete(this.target.key)
+      if (temporaryConnections.get(this.target.key) === this) temporaryConnections.delete(this.target.key)
     })().catch(error => { this.closing = undefined; throw error })
     return this.closing
   }

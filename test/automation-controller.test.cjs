@@ -49,3 +49,20 @@ test('window destruction uses captured webContents without reading the destroyed
  await f.controller.sessions.release(a.sessionId,a.leaseId,ctx())
  assert.equal(f.controller.sessions.get(a.sessionId).state,'stopped')
 })
+
+test('opening an automation mirror claims GUI ownership without revealing a merged source', async () => {
+ const f=fixture(), lease=await f.controller.start(target.key,ctx()), win=f.windows[0]
+ win.hidden=true;win.isMinimized=()=>false
+ let mergedFocus=0
+ const merged={isMinimized:()=>false,show:()=>{},focus:()=>{mergedFocus++}}
+ const {focusMirror}=load('src/main/window/mirrorLayout.ts',{
+  './mergedMirrors':{getMergedMirrorWindow:()=>merged},'./arrangeMirrors':{arrangeMirrors:()=>{}}
+ })
+ focusMirror(target.key,()=>[{deviceKey:target.key,window:win,claimGui:()=>win.hook.guiOpened(false)}])
+ assert.equal(mergedFocus,1);assert.equal(win.hidden,true,'ownership claim must not reveal merged source')
+ await f.controller.sessions.release(lease.sessionId,lease.leaseId,ctx())
+ assert.equal(win.destroyed,undefined,'GUI retains the backend after the last automation lease')
+ assert.equal(win.hook.closeRequested(),false)
+ await f.controller.sessions.terminate(lease.sessionId)
+ assert.equal(win.destroyed,true)
+})

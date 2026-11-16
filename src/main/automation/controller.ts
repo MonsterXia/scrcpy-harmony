@@ -57,7 +57,7 @@ export class AutomationController {
     contents.on('did-start-navigation', navigation)
     return {
       state,
-      guiOpened: () => { gui = true; restoreMain = true; this.sessions.claimGui(id) },
+      guiOpened: (show = true) => { this.sessions.claimGui(id, show); gui = true; restoreMain = true },
       closeRequested: () => {
         const retained = this.sessions.releaseGui(id)
         restoreMain = gui && !retained; gui = false

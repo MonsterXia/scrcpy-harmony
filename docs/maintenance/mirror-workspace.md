@@ -22,3 +22,16 @@
 ## 范围与下一步
 
 Electron 使用真实应用/preload/React，设备/投屏/概览 IPC 为模拟夹具；未据此宣称真实 Android/Harmony 元数据、视频连续性、iOS、Windows 或 Intel Mac 验收。用户随后授权更新本机，已完成完整构建、arm64 打包、deep/strict 签名及安装后 smoke，并备份替换 `/Applications/Scrcpy Plus.app`。38 个打包代码文件与 dist 一致，67 个配置文件已备份核对，设置保留。已打开应用，实际观察到鸿蒙和 Android 概览字段，用户正在试用；未把字段显示扩大为视频连续性验收。安装证据见 `local-install.json`。下一步收集用户反馈，特别是首次授权、投屏中读取概览和长期轮询。
+
+## PR 交付
+
+用户授权按项目规范创建 PR、完成审查并在 CI 通过后合入。交付为 [PR #89](https://github.com/MonsterXia/scrcpy-harmony/pull/89)，包括本轮多端投屏、统一概览及同一会话的即时语言切换。基线为 master `35a2fd6`；[持续更新的最终门禁与合入记录](https://github.com/MonsterXia/scrcpy-harmony/pull/89#issuecomment-6912315624)记录最终 head、远端五项检查及实际合入 SHA，不将待运行项记为通过。
+
+最终新上下文审查发现并修复另外两项：
+
+- 打开自动化创建的现有投屏窗口时补 GUI 所有权声明，避免最后一个自动化 lease 释放关闭用户正在使用的窗口；合并视图的隐藏来源窗口不被显示，不重启连接。
+- 临时 Android 概览连接关闭失败时保留清理所有权。后续概览或投屏先重试旧连接清理，再打开 USB，避免丢失旧句柄后反复占用冲突。
+
+两项均先用回归复现失败，修复后相关 55 项测试通过；完整回归与最终复审状态见上述交付记录。首次本地完整复跑为应用 1116 pass / 2 skip，Licia 两模式各 606 passing / 4 pending，lint/i18n 通过；审查修复后的结果另记于最终门禁，不覆盖之前安装包的源码证据。本次 PR 不发布版本；用户此前试用的本机安装包不包含这两项后续审查修复。
+
+审查修复后完整复跑：应用 1118 pass / 2 skip / 0 fail，Licia 两模式各 606 passing / 4 pending，lint/i18n 与 main 构建通过。新上下文复审无剩余 P1/P2，独立复跑新增两项回归通过；远端最终提交五项 CI 仍由持续状态评论记录。

@@ -285,3 +285,21 @@ test('overview waits for a stopping mirror to release its USB interface', async 
   finally { release(); await stopped; await overview }
   assert.equal(f.devices[0].connects, 2)
 })
+
+test('temporary overview cleanup failure is retried before another read or mirror claims USB', async t => {
+  for (const next of ['overview', 'mirror']) {
+    const f = androidFixture(directory(t)), [target] = await f.discoverAndroid()
+    let held = false, failed = false, opens = 0, closes = 0
+    f.devices[0].raw.open = async () => { assert.equal(held, false, 'previous native owner must drain'); held = true; opens++ }
+    f.devices[0].raw.close = async () => { closes++; if (!failed) { failed = true; throw Error('cleanup failed') }; held = false }
+    await assert.rejects(f.getAndroidOverview(target), /cleanup failed/)
+    assert.equal(held, true)
+    if (next === 'overview') await f.getAndroidOverview(target)
+    else {
+      const mirror = new f.AndroidMirror(target)
+      await mirror.start(() => {}, () => {})
+      await mirror.close()
+    }
+    assert.equal(opens, 2); assert.equal(closes, 3); assert.equal(held, false)
+  }
+})

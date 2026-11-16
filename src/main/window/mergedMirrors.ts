@@ -3,7 +3,7 @@ import type { BrowserWindow, WebContents } from 'electron'
 import type { MergedMirrorFrame, MirrorPlatform } from 'common/types'
 import * as windows from 'share/main/lib/window'
 
-export interface MirrorSource { window: BrowserWindow; platform: MirrorPlatform; deviceKey: string }
+export interface MirrorSource { window: BrowserWindow; platform: MirrorPlatform; deviceKey: string; claimGui?(): void }
 interface SourceState {
   source: MirrorSource
   throttled: boolean

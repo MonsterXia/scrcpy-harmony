@@ -243,3 +243,5 @@
 同轮HAP补查沿[历史签名包哈希](hap-install.md)在桌面找到1.0.0/1.0.1；手机已有1.0.1，补产品CLI同版本覆盖/启动/停止，保留既存数据；证据并入本轮Codex专项，首次/升级/破坏性矩阵未冒充通过。
 
 - 2026-11-16：多端投屏统一深浅样式、概览整合 Android/Harmony 选择与五秒闪烁修复，见 [维护记录](mirror-workspace.md)。
+
+2026-11-16 用户追加授权按项目规范提 PR，并在审查、CI 通过后合入；本轮即时语言切换、多端投屏和概览统一由 [PR #89](https://github.com/MonsterXia/scrcpy-harmony/pull/89) 交付，审查修复及最终门禁见 [维护记录](mirror-workspace.md#pr-交付)与 [PR 持续状态](https://github.com/MonsterXia/scrcpy-harmony/pull/89#issuecomment-6912315624)。未公开发行。

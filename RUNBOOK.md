@@ -6,6 +6,8 @@
 
 应用测试 1116 pass / 2 skip、lint/i18n、三项构建通过；tsc 55 项既有诊断（前次 57 项，本次无新增）。真实 Electron 45 + 模拟 IPC 验证双语/双主题/960 与 1280 宽度、主题几何一致、批量/排列/停止隔离、双平台概览与连续两次五秒轮询不重读；独立审查两项生命周期问题已修复并复核。详见[维护记录](docs/maintenance/mirror-workspace.md)和[验证证据](docs/scrcpy-plus/evidence/mirror-workspace-2026-11-16/verification.json)。用户随后授权更新本机：完整 build/arm64 打包、deep/strict 签名、38 个打包代码文件对照及安装后 smoke 均通过；已备份旧应用和 67 个配置文件并替换 `/Applications/Scrcpy Plus.app`，保留设置。已打开供用户试用，实际观察到 Android/Harmony 概览信息及移入页面的选择器。下一步收集用户试用反馈、验证视频连续性与跨平台，不将字段显示或模拟 IPC 当全面真机验收。
 
+本轮已提交 [PR #89](https://github.com/MonsterXia/scrcpy-harmony/pull/89)，用户授权审查和 CI 通过后合入。新增修复聚焦自动化会话时的 GUI 所有权、临时 Android 连接清理失败后的重试；最终检查与合入状态见 [PR 交付记录](https://github.com/MonsterXia/scrcpy-harmony/pull/89#issuecomment-6912315624)。本机试用包先于这两项修复，后续按需更新。
+
 ## 即时语言切换（2026-11-16）
 
 本地实现和 Electron 双语切换已验证：语言保存后同步主窗口、已打开工具窗口、菜单和表头；不刷新窗口，保留未保存输入和模拟会话。设置落盘成功后才广播，失败保留旧配置。lint/i18n、三项构建通过，tsc 与 HEAD 均 57 项既有诊断，无新增。完整测试应用 1110 pass / 2 skip，Licia 两模式各 606 passing / 4 pending；证据见[维护记录](docs/maintenance/instant-language.md)。用户随后授权更新本机：完整 build/arm64 打包、签名及已安装 smoke 通过，已备份并替换 `/Applications/Scrcpy Plus.app`，保持原配置并启动到设置页供用户试用。下一步补用户试用反馈、真机视频连续性及 Windows/Intel Mac；未公开发布。
