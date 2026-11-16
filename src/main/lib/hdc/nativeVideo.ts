@@ -1,4 +1,5 @@
 import http2 from 'node:http2'
+import { captureTrace } from './captureTrace'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { createHash, randomBytes } from 'node:crypto'
@@ -31,7 +32,10 @@ export async function connectNativeVideo(
   port: number,
   receive: (frame: NativeVideoFrame) => void,
   failed: (error: Error) => void,
+  signal?: AbortSignal,
 ) {
+  signal?.throwIfAborted()
+  captureTrace('native.first-frame-wait')
   const session = http2.connect(`http://127.0.0.1:${port}`)
   let stopping = false
   let ready = false
@@ -45,6 +49,14 @@ export async function connectNativeVideo(
     if (ready) { failed(error); session.destroy() }
     else rejectStart(error)
   }
+  const cancel = () => {
+    // Once the first frame wins, teardown belongs to the returned stream.
+    // An abort microtask must not destroy it before explicit onEnd cleanup.
+    if (ready) return
+    const error = new Error('Native video start cancelled')
+    error.name = 'AbortError'
+    fail(error)
+  }
   const request = (method: string) => session.request({
     ':method': 'POST', ':path': `/ScrcpyService/${method}`,
     'content-type': 'application/grpc', te: 'trailers',
@@ -54,6 +66,7 @@ export async function connectNativeVideo(
   const stop = async () => {
     if (stopping) return
     stopping = true
+    captureTrace('native.onEnd-begin')
     clearTimeout(firstFrameTimer)
     try {
       if (session.destroyed || session.closed) throw new Error('Native video connection lost before stop')
@@ -81,11 +94,14 @@ export async function connectNativeVideo(
     } finally {
       stream?.close()
       session.destroy()
+      captureTrace('native.onEnd-ended')
     }
   }
   try {
     await new Promise<void>((resolve, reject) => {
       rejectStart = reject
+      signal?.addEventListener('abort', cancel, { once: true })
+      if (signal?.aborted) { cancel(); return }
       firstFrameTimer = setTimeout(() => fail(new NativeVideoFirstFrameTimeout()), 5000)
       stream = request('onStart')
       const parser = new GrpcMessages((bytes) => {
@@ -109,10 +125,13 @@ export async function connectNativeVideo(
       stream.end(Buffer.alloc(5))
     })
   } catch (error) {
+    captureTrace('native.start-failed')
     // onStart may have created a virtual screen without sending any video.
     // Give that encoder its normal teardown before the owned process is killed.
     try { await stop() } catch { /* NativeVideo.stop still confirms process exit */ }
     throw error
+  } finally {
+    signal?.removeEventListener('abort', cancel)
   }
   return { stop }
 }
@@ -218,8 +237,8 @@ export class NativeVideo {
     this.preferred = await this.preference.load() || this.preferred
     return loadNativeLibraries(this.options.resourcesDir, this.preferred)
   }
-  private openStream(receive: (frame: NativeVideoFrame) => void, failed: (error: Error) => void) {
-    return connectNativeVideo(this.port!, receive, failed)
+  private openStream(receive: (frame: NativeVideoFrame) => void, failed: (error: Error) => void, signal?: AbortSignal) {
+    return connectNativeVideo(this.port!, receive, failed, signal)
   }
   async available() {
     return !(await this.shell('cat /proc/net/unix')).includes('@scrcpy_grpc_socket')
@@ -230,13 +249,16 @@ export class NativeVideo {
     if (await this.ownership?.hasForeignRecords()) return false
     return this.launch(scale, () => {}, () => {}, true, valid)
   }
-  async start(scale: number, receive: (frame: NativeVideoFrame) => void, failed: (error: Error) => void) {
+  async start(scale: number, receive: (frame: NativeVideoFrame) => void, failed: (error: Error) => void, signal?: AbortSignal) {
+    const valid = () => !signal?.aborted
+    if (!valid()) return false
     if (this.prepared?.divisor === this.divisor(scale)) {
       try {
-        await this.activate(receive, failed)
+        await this.activate(receive, failed, signal)
         return true
       }
       catch (error) {
+        if (!valid()) { await this.stop(); return false }
         console.warn('Prepared native video activation failed:', error)
         if (isFirstFrameTimeout(error)) { await this.stop(); return false }
         this.preferred = undefined
@@ -244,15 +266,15 @@ export class NativeVideo {
         await this.stop()
       }
     }
-    return this.launch(scale, receive, failed)
+    return this.launch(scale, receive, failed, false, valid, signal)
   }
   private divisor(scale: number) { return Math.max(1, Math.min(5, Math.round(1 / scale))) }
-  private async activate(receive: (frame: NativeVideoFrame) => void, failed: (error: Error) => void) {
+  private async activate(receive: (frame: NativeVideoFrame) => void, failed: (error: Error) => void, signal?: AbortSignal) {
     // Both a cold launch and a standby may lose their process while HDC sets
     // up the forward. Do not send onStart to a replacement socket owner.
     if (!(await this.ownedPids()).length) throw new Error('Native process exited before activation')
     const candidate = this.prepared?.candidate
-    this.stream = await this.openStream(receive, failed)
+    this.stream = await this.openStream(receive, failed, signal)
     if (candidate) {
       this.preferred = candidate.file
       await this.preference?.save(candidate.file)
@@ -260,7 +282,7 @@ export class NativeVideo {
     this.prepared = undefined
   }
   private async launch(scale: number, receive: (frame: NativeVideoFrame) => void,
-    failed: (error: Error) => void, prepareOnly = false, valid = () => true) {
+    failed: (error: Error) => void, prepareOnly = false, valid = () => true, signal?: AbortSignal) {
     if (this.prepared) await this.stop()
     if (!valid()) return false
     let candidates: Awaited<ReturnType<NativeVideo['candidates']>>
@@ -284,6 +306,7 @@ export class NativeVideo {
           console.warn('Native video socket occupied by another session')
           return false
         }
+        check()
         this.name = `scrcpy_harmony_${randomBytes(8).toString('hex')}.so`
         const remote = `/data/local/tmp/${this.name}`
         if (candidate) {
@@ -339,10 +362,11 @@ export class NativeVideo {
           // A listening library is a useful in-memory hint after expiry, but
           // persist it only once an actual onStart stream has succeeded.
           if (candidate) this.preferred = candidate.file
-        } else await this.activate(receive, failed)
+        } else await this.activate(receive, failed, signal)
         return true
       } catch (error) {
         if (valid()) console.warn('Native video candidate failed:', candidate?.file || 'device library', error)
+        if (!valid()) { await this.stop(); return false }
         // No screen update is not evidence of an incompatible library. Keep a
         // proven preference and use the already-running JPEG preview instead
         // of waiting through the same timeout with every remaining candidate.
@@ -383,6 +407,7 @@ export class NativeVideo {
     return pids
   }
   async stop() {
+    captureTrace('native.cleanup-begin')
     if (this.stream) {
       // A lost gRPC stop reply is compensated by confirming the owned process
       // has exited below. Never kill other uitest instances.
@@ -436,5 +461,6 @@ kill -9 ${owner.devicePid} && echo stopped`)
     this.recorded = undefined
     this.port = undefined
     this.prepared = undefined
+    captureTrace('native.cleanup-confirmed')
   }
 }

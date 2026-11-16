@@ -815,3 +815,22 @@ test('toolbar system keys cannot bypass the automation input gate',async()=>{
  await assert.rejects(h.systemKey('synthetic-target',1),/busy/)
  assert.deepEqual(received,{key:'synthetic-target',phase:undefined})
 })
+
+test('closing during native startup cancels its scope before joining the device cleanup queue', async () => {
+ const h=screencastMain(), entered=deferred(), ended=deferred();let signal
+ h.driver.nativeVideo={async recoverOrphans(){},async stop(){},async start(_scale,_receive,_failed,abort){signal=abort;abort?.addEventListener('abort',()=>ended.resolve(false),{once:true});entered.resolve();return ended.promise}}
+ h.show();const starting=h.start();await entered.promise
+ const closing=h.closeCapture(h.windows[0])
+ try { assert.equal(signal?.aborted,true,'close must cancel the in-flight start immediately') }
+ finally { ended.resolve(false);await Promise.all([starting,closing]) }
+})
+
+test('closing during video promotion cancels its first-frame wait and joins cleanup', async () => {
+ const h=screencastMain(), entered=deferred(), ended=deferred();let starts=0,signal,stops=0
+ h.driver.nativeVideo={async recoverOrphans(){},async stop(){stops++},async start(_scale,_receive,_failed,abort){if(++starts===1)return false;signal=abort;abort.addEventListener('abort',()=>ended.resolve(false),{once:true});entered.resolve();return ended.promise}}
+ h.show();await h.start()
+ const upgrading=h.invoke('retryCaptureVideo',[h.session(),1,1]);await entered.promise
+ const closing=h.closeCapture(h.windows[0])
+ try {assert.equal(signal.aborted,true);await Promise.all([upgrading,closing]);assert.ok(stops>0);assert.equal(h.driver.capture,undefined)}
+ finally {ended.resolve(false);await Promise.allSettled([upgrading,closing])}
+})

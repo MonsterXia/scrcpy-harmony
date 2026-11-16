@@ -108,8 +108,9 @@ exports.screencastMain = function (
       module,
       exports: module.exports,
       AbortController,
+      process,
       Buffer,
-      console: { error: (...args) => errors.push(args), warn() {} },
+      console: { error: (...args) => errors.push(args), warn() {}, info() {} },
       require(id) {
         if (id === 'electron')
           return {

@@ -154,3 +154,46 @@ test('native stop cannot confirm removal when forwarding inventory is unavailabl
   await assert.rejects(native.stop(), /disconnected/)
   assert.equal(native.forwarded, true)
 })
+
+test('cancelling a silent native startup requests onEnd without waiting for first-frame timeout', async (t) => {
+  const { connectNativeVideo } = await load()
+  const controller = new AbortController(), requests = []
+  let started
+  const onStart = new Promise(resolve => { started = resolve })
+  const port = await server(t, (s, h) => {
+    requests.push(h[':path'])
+    if (h[':path'].endsWith('onStart')) started()
+    else {
+      s.respond({ ':status': 200, 'content-type': 'application/grpc' }, { waitForTrailers: true })
+      s.on('wantTrailers', () => s.sendTrailers({ 'grpc-status': '0' }))
+      s.end(Buffer.alloc(5))
+    }
+  })
+  const pending = connectNativeVideo(port, () => assert.fail('no frame expected'), () => {}, controller.signal)
+  await onStart
+  const at = Date.now(); controller.abort()
+  await assert.rejects(pending, error => error.name === 'AbortError')
+  assert.ok(Date.now() - at < 1500, 'must cancel the five-second first-frame wait')
+  assert.deepEqual(requests, ['/ScrcpyService/onStart', '/ScrcpyService/onEnd'])
+})
+
+test('an already-cancelled native connection sends neither start nor stop RPC', async (t) => {
+ const {connectNativeVideo}=await load(), requests=[], controller=new AbortController()
+ const port=await server(t,(s,h)=>{requests.push(h[':path']);s.respond({':status':200,'grpc-status':'0'},{endStream:true})})
+ controller.abort()
+ await assert.rejects(connectNativeVideo(port,()=>{},()=>{},controller.signal),error=>error.name==='AbortError')
+ assert.deepEqual(requests,[])
+})
+
+test('abort queued by the first frame cannot destroy a successfully started stream before onEnd', async (t) => {
+ const {connectNativeVideo}=await load(),controller=new AbortController(),requests=[],errors=[]
+ const port=await server(t,(s,h)=>{
+  requests.push(h[':path']);s.respond({':status':200,'content-type':'application/grpc'},{waitForTrailers:true});s.on('wantTrailers',()=>s.sendTrailers({'grpc-status':'0'}))
+  if(h[':path'].endsWith('onStart')){const data=Buffer.from([26,14,10,4,100,97,116,97,18,6,42,4,0,0,1,101]),head=Buffer.alloc(5);head.writeUInt32BE(data.length,1);s.write(Buffer.concat([head,data]))}
+  else s.end(Buffer.alloc(5))
+ })
+ const stream=await connectNativeVideo(port,()=>queueMicrotask(()=>controller.abort()),e=>errors.push(e),controller.signal)
+ assert.equal(controller.signal.aborted,true)
+ await stream.stop()
+ assert.deepEqual(errors,[]);assert.deepEqual(requests,['/ScrcpyService/onStart','/ScrcpyService/onEnd'])
+})

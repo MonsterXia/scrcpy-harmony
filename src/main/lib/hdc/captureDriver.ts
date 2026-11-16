@@ -19,6 +19,8 @@ const registration = new AsyncLocalStorage<{
 }>()
 
 export class CaptureScope {
+  private readonly abort = new AbortController()
+  readonly signal = this.abort.signal
   active = true
   private listeners: Array<{ driver: CaptureUiDriver; listener: types.AnyFn }> =
     []
@@ -29,6 +31,7 @@ export class CaptureScope {
   }
   dispose() {
     this.active = false
+    this.abort.abort()
     // The dependency may retain its private callback until stop succeeds.
     // Release its route to the renderer immediately, including pending starts.
     this.receive = undefined
@@ -144,6 +147,7 @@ export class CaptureUiDriver extends UiDriver {
           console.error('Native video stream interrupted:', error)
           scope.deliver(Buffer.alloc(0), { codec: 'error' })
         },
+        scope.signal,
       )
       if (started) {
         await super.stopCaptureScreen()
@@ -172,7 +176,7 @@ export class CaptureUiDriver extends UiDriver {
       if (promotion.active && scope.active) scope.deliver(data, { codec: 'h264', ...metadata, promotion: id })
     }, () => {
       if (promotion.active && scope.active) scope.deliver(Buffer.alloc(0), { codec: 'error', promotion: id })
-    })
+    }, scope.signal)
     // Keep live JPEG until the renderer acknowledges an actually painted frame.
     // Never hold the device input queue while waiting for the encoder.
     promotion.settled = promotion.task.then(async started => {

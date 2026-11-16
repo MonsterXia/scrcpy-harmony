@@ -5,6 +5,7 @@ import {
   WebFrameMain,
 } from 'electron'
 import { randomUUID } from 'node:crypto'
+import { captureTrace } from './captureTrace'
 import { CaptureScope, CaptureUiDriver, isControlRecoveryError } from './captureDriver'
 
 interface Owner {
@@ -156,6 +157,7 @@ function invalidate(owner: Owner) {
 }
 
 export async function closeCaptureWindow(contents: WebContents) {
+  captureTrace('close.request')
   const owner = registered.get(contents)
   if (!owner) return
   const leases = new Map(owner.retiring)
@@ -169,9 +171,11 @@ export async function closeCaptureWindow(contents: WebContents) {
   for (const session of [...owner.sessions]) endSession(session)
   for (const [lease, device] of leases) owner.retiring.set(lease, device)
   await Promise.all([...leases].map(([lease, device]) => enqueue(lease.session.connectKey, device, async () => {
+    captureTrace('close.queue-enter')
     await stopLease(device, lease)
     owner.retiring.delete(lease)
   })))
+  captureTrace('close.confirmed')
 }
 
 // Register before loadPage, so even navigation before the first capture IPC is
