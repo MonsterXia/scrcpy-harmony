@@ -231,3 +231,5 @@
 2026-11-03 连续实施结果：UI-1～6源码、串行阶段审查、整分支审查及三项P2单轮修复复核完成。最终运行源码d717ece应用886/886、Licia两模式各606/4、lint/i18n及完整build通过；本地1.0.5-dev.0 arm64 DMG复制签名启动通过。交付入口为[草稿PR #81](https://github.com/MonsterXia/scrcpy-harmony/pull/81)及[验证记录](v1.0.5-ui-validation.json)；远端和人工验收以各自证据为准，未合入或发布。
 
 2026-11-16 Agent 自动化：用户授权连续实施共享服务/CLI/MCP，最终本地候选源码4c37ba6，见[维护记录](agent-automation.md)、[需求与验收交接](../scrcpy-plus/automation/acceptance.md)。真实Harmony只读工具和截图证据与模拟Electron/MCP证据分开；完整真机/Windows不标记验收完成。
+
+2026-11-16 Agent 自动化真机续验：源码 `0eed41c`，来源为用户已连接并静置的Android/Harmony、产品CLI和隔离Electron。清理超时实测根因、同lease恢复、17轮修复后清理（最终构建4轮）、双端输入/双owner/端口规则生命周期，以及独立审查竞态修复见[专项报告](agent-automation-device-acceptance-2026-11-16.md)和[脱敏证据](../scrcpy-plus/evidence/agent-automation/device/2026-11-16/verification.json)。iOS按用户要求暂缓，旧阶段失败记录不覆盖。

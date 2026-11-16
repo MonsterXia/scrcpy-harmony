@@ -220,6 +220,8 @@ Canvas pointer 事件
 
 `installSource.ts` 返回设备结果 value 与独立 cleanupConfirmed，清理异常不覆盖设备结果；harmonyTools 将确认安装和清理状态分别交付。`sessions.ts` 按 leaseId 保留释放记录至少五分钟，并在后台关闭未结束时拒绝新 owner/操作授权。GUI 遥控器键仍经过统一输入门禁，保留既有方向、确定及应用切换键码。
 
+`CaptureScope.signal` 在 dispose 时取消原生视频启动/升档，传入 `NativeVideo.start` 与 `connectNativeVideo`；取消首帧等待仍走 onEnd 和 owned 资源清理。首帧已成功时取消监听不得抢先销毁返回的 stream。`SCRCPY_PLUS_CAPTURE_TRACE=1` 可启用 close/队列、首帧、onEnd、资源回收的时间点日志，默认关闭，不包含设备标识、命令、画面或原始错误；单设备隔离复现便于对应阶段。`onEnd-ended` 仅表示等待结束，必须看到 cleanup/close confirmed 才能确认释放。
+
 自动化 Harmony 工具：`automation/adapters/harmonyTools.ts` 固定设备并注入 `DeviceOperationContext`；共享 hdc/{base,bundle,port,uitest,hilog} 业务接收显式 context。`hostCommand.ts` 管理单次 HDC 子进程，`layoutXml.ts` 有界 XML，`oneShotShell.ts` 退出标记与输出截断；日志/布局通过 blob 二进制响应交由客户端写文件。
 
 `src/mcp/index.ts` 是独立 Node stdio 适配器，共用 automation/protocol 注册表、CLI client/profile，经同profile服务调用。`script/build-cli.mjs` 同时打包CLI和MCP，包含SDK依赖及许可；不在Electron主进程启动MCP。

@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-**M1—M5 本地候选实现完成；M6 全量回归、构建和独立审查修复完成，完整真机/Windows矩阵仍未验收。** 共享服务、CLI、35个MCP工具及Agent skill已交付。最新审查修复源码 `2e70424`，工作分支 `codex/agent-automation`；[验收与交接](../scrcpy-plus/automation/acceptance.md)包含全部需求映射、取舍及遗留事项。真实Harmony只读工具和截图通过；锁屏下Home后无新帧，不能据此声明完整交互闭环通过。
+**M1—M5 本地候选实现完成；M6 全量回归、构建和独立审查修复完成，完整真机/Windows矩阵仍未验收。** 共享服务、CLI、35个MCP工具及Agent skill已交付。最新修复源码 `0eed41c`，工作分支 `codex/agent-automation`；[验收与交接](../scrcpy-plus/automation/acceptance.md)包含全部需求映射、取舍及遗留事项。Android/Harmony 核心截图→点击/滑动/文字→新帧闭环已通过；Harmony 同类清理超时已复现修复，17轮修复后清理通过（最终构建4轮）。详见[真机验收与修复](agent-automation-device-acceptance-2026-11-16.md)，iOS按用户要求暂缓。
 
 - [Spec：SP-AUTO-001](../superpowers/specs/2026-11-16-agent-automation-design.md)
 - [连续实施计划](../superpowers/plans/2026-11-16-agent-automation.md)
@@ -19,15 +19,15 @@
 | M0 | spec、计划、定位入口、独立文档审查 | 完成 | 独立审查 4 项边界已纳入；链接/需求追踪检查通过；用户已确认 |
 | M1 | 契约、能力、鉴权本地服务 | 本机完成 | 协议/传输/生命周期专项、真实 Electron 服务验证；Windows 待验收 |
 | M2 | CLI、启动诊断、可分发客户端 | 本机完成 | 子进程/并发启动、tarball 安装、发现链路；Windows 待验收 |
-| M3 | 会话、截图、输入闭环 | 本机候选，真机部分验证 | Electron模拟闭环通过；Harmony截图及Home返回通过但动作后新帧超时；Android USB access失败；完整交互/旋转pending |
-| M4 | 现有设备工具覆盖 | 四批本机候选完成；真机部分验证 | Harmony概览/应用列表/进程/端口列表/shell/logs/layout通过；应用和端口写入真机pending |
+| M3 | 会话、截图、输入闭环 | 本机候选，真机部分验证 | Electron模拟及Android/Harmony核心输入真机闭环通过；双owner/跨设备隔离通过；iOS暂缓、物理旋转/完整断连pending |
+| M4 | 现有设备工具覆盖 | 四批本机候选完成；真机部分验证 | Harmony只读工具通过；forward/reverse规则增删真机通过；专用HAP应用写入pending |
 | M5 | Agent skill、MCP | 本机候选完成 | 官方 SDK 2.4.0、真实 stdio 客户端、安装包通过；Codex 宿主 pending |
-| M6 | 全量回归、跨平台验收与交付 | 本地候选交付；全矩阵待验收 | 1084pass/2skip，Licia各606/4，lint/fullbuild、安装包、Electron通过；新独立审查及补充检查共六项修复，详见专项记录 |
+| M6 | 全量回归、跨平台验收与交付 | 本地候选交付；全矩阵待验收 | 1089pass/2skip，Licia各606/4，lint/fullbuild、安装包、Electron通过；清理超时与独立审查首帧竞态已修复 |
 
 ## 恢复与下一步
 
 1. 阅读本页和 spec，再核对 `git status --short` 与当前 commit；保留用户改动。
-2. 方向已确认，不重复询问；不重复实现M1—M5，从交接页未测矩阵继续：已解锁专用设备、Android USB access、Windows、实际Codex宿主。上轮Minor已修复，最新结果见[独立审查修复记录](agent-automation-review-2026-11-16.md)。
+2. 方向已确认，不重复询问；不重复实现M1—M5，从交接页未测矩阵继续：专用HAP、物理旋转/完整断连、Windows、实际Codex宿主；iOS依用户决定暂缓。上轮Minor已修复，最新结果见[独立审查修复记录](agent-automation-review-2026-11-16.md)。
 3. 每阶段同步本页、计划 checkbox、证据和 RUNBOOK；已有 M1/M2 测试不要重新实现。
 4. 真机或系统缺席时先推进契约、测试、文档和其他可做阶段，保留 pending；不把环境缺席视作已验收。
 5. 若出现方向变更，先更新 spec 的决策及需求映射，再调整计划；普通修复不改变需求编号。
@@ -83,7 +83,7 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 
 2026-11-16 用户明确回复：“按此方向推进，持续完成后续实现、测试和修复，不用再确认细节，记得同步更新 spec、进度和验证记录。”随后回复 continue。方向与连续实施均已授权。
 
-## M3 集成检查点（尚未验收）
+## M3 集成检查点（历史阶段，当时尚未验收）
 
 - 新入口：`controller.ts` 统一会话/截图/输入，`runtime.ts` 连接真实窗口与平台适配器；`frameBridge.ts` 验证 sender/mainFrame/requestId，renderer `AutomationFrameSource.ts` 仅导出已绘制的 video canvas。
 - `wire.ts` 使用 4 字节大端 JSON 长度 + JSON envelope + PNG 的有界响应；图像上限 32 MiB，JSON 上限 1 MiB。CLI 原子写入，默认不覆盖；`input text --text-file/--text-stdin` 避免内容出现在参数中。
@@ -153,3 +153,13 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 - AUTO-BUG-010（已修复）：清理等待超时但后台 close 在途时仍可获取新 owner；现在拒绝新 lease、GUI 认领及操作授权，允许原 lease 加入原关闭过程。
 
 上述四项及 AUTO-FOLLOWUP-001/002 共六项的最小复现、代码/测试定位和 RED→GREEN 见[专项记录](agent-automation-review-2026-11-16.md)，机器证据见[verification.json](../scrcpy-plus/evidence/agent-automation/review/2026-11-16/verification.json)。最终应用1084pass/2skip、Licia各606pass/4pending、lint、完整build、Electron模拟9项、临时安装CLI/MCP35工具全部通过；tsc退出2，诊断与M6原记录逐行相同。未重验真机/Windows；AUTO-OBS-001仍开放，不能用在途清理门禁修复解释设备超时根因。下一步按验收交接补实际环境矩阵；未发布或替换安装。
+
+## 继续真机验收与清理修复（最新）
+
+源码 `0eed41c`，本轮[报告](agent-automation-device-acceptance-2026-11-16.md)和[结构化证据](../scrcpy-plus/evidence/agent-automation/device/2026-11-16/verification.json)更新此前待复现状态；上文各阶段失败和计数作为历史保留。
+
+- AUTO-BUG-011（已修复，AUTO-03/07）：复现 AUTO-OBS-001 同类超时，关闭后仍启动原生首帧等待，真实 close 耗时7708ms；scope取消贯穿startup/promotion，预算保持5秒，同lease恢复实际通过。
+- AUTO-BUG-012（已修复，AUTO-03/07）：独立审查发现首帧ready后的abort微任务竞态；真实HTTP2失败回归及ready守卫修复通过。
+- 修复后17轮计划清理均一次成功，其中最终源码4轮；两端真实输入、新帧观察、owner隔离与临时端口规则清理通过。输入会覆盖手机剪贴板，原内容未读取/恢复。
+- 最终应用1089pass/2skip；Licia各606pass/4pending；lint/fullbuild、Electron模拟9项、CLI安装/MCP35工具通过。tsc退出2，忽略行列偏移后基线诊断不变。
+- 测试lease为0、正常退出、discovery删除；目标ADB恢复，原安装应用已重开。iOS用户暂缓，Windows/专用HAP/物理旋转与完整断连/Codex宿主保留pending。

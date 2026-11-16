@@ -2,7 +2,7 @@
 
 ## Agent 自动化长任务（2026-11-16）
 
-状态：**Agent自动化本地候选已实现并验证；完整真机/Windows矩阵待验收。** 最新修复源码 `2e70424`、分支 `codex/agent-automation`；共享服务、CLI核心闭环、Harmony工具、MCP35项与Agent skill已交付。应用1084pass/2skip、Licia各606/4、lint/fullbuild、安装包、真实Electron模拟闭环通过；用户要求的新独立审查及补充检查共六项问题已修复（含旧Minor），见[审查记录](docs/maintenance/agent-automation-review-2026-11-16.md)。真实Harmony只读工具和截图通过；锁屏后无新帧、一次释放清理未确认、Android USB access及Windows/180°/完整输入仍需继续验收。入口：[spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[计划](docs/superpowers/plans/2026-11-16-agent-automation.md)、[状态/故障定位](docs/maintenance/agent-automation.md)、[验收交接](docs/scrcpy-plus/automation/acceptance.md)。用户已授权自主推进细节，不重复方向确认；没有发布、远端合入或替换日常安装。
+状态：**本地候选与 Android/Harmony 核心真机闭环通过，完整平台矩阵待验收。** 最新源码 `0eed41c`、分支 `codex/agent-automation`。Harmony 清理超时已复现并修复：关闭会话取消原生启动/首帧等待，5 秒预算不变；独立审查另发现并修复首帧取消竞态。修复后 17 轮清理一次成功（含最终构建 4 轮，0.55–0.93 秒），双端点击/滑动/文字、双 owner 隔离、Harmony 端口规则增删通过。全量应用 1089pass/2skip、Licia各606/4、lint/fullbuild、安装包、真实Electron模拟闭环通过；tsc既有诊断不变。见[本轮真机与修复记录](docs/maintenance/agent-automation-device-acceptance-2026-11-16.md)。iOS按用户要求暂缓；Windows、专用HAP写入、物理旋转/完整断连矩阵及Codex宿主待验收。入口：[spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[计划](docs/superpowers/plans/2026-11-16-agent-automation.md)、[状态/故障定位](docs/maintenance/agent-automation.md)、[验收交接](docs/scrcpy-plus/automation/acceptance.md)。用户已授权自主推进细节；测试lease释放、ADB恢复、原日常应用重新打开，未发布、远端合入或替换安装。
 
 ## 上游更新与标准分支交付（2026-11-05）
 

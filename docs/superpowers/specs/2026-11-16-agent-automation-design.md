@@ -100,6 +100,7 @@ M4 的必需盘点：设备概览；应用列表/详情/前台应用/启动/停�
 - 客户端身份持久化在当前用户的客户端配置中，CLI 与 MCP 使用不同默认 clientId，可通过命名 client profile 分离多个 Agent；clientId 不是认证凭据，token 验证仍是本机用户信任边界。`sessions leases` 仅列出当前 client 的 lease，`sessions release --lease <id>` 可恢复清理；start 响应丢失时先查询再继续，不盲目重复启动。按 clientId + deviceKey 复用同一 lease；同一 client 的多个命令共享该归属，需独立生命周期时使用不同 client profile。已释放 lease 的凭据不出现在其他 client 的列表中。
 - `sessions stop --session ... --lease ...` 释放自身 lease，重复释放成功；仅最后一个 lease 且无 GUI owner 时关闭后端。不能凭 session ID 停掉其他调用者的会话。显式应用退出仍终止全部本实例资源。
 - 已释放 lease 按 leaseId 保留至少 5 分钟；同客户端重新获取同一会话后，旧 lease 在保留期内仍可重复释放，不能释放新 lease。清理等待超时但后端关闭尚在途时，拒绝新的 lease、GUI 认领及操作授权；原 lease 可重试并加入原关闭过程。
+- Harmony 捕获 scope 失效须立即取消本 scope 的原生视频启动/升档首帧等待；不能继续等待无意义的五秒首帧期限后才关闭。取消仍须发送正常 onEnd、确认本会话进程/转发/副本回收，不等于资源已释放。首帧已成功时由返回的 stream 正常停止，取消不得抢先销毁连接。自动化清理等待预算仍为五秒，未确认时继续返回 OUTCOME_UNKNOWN。
 - GUI 关闭投屏窗口时，若仍有自动化 lease，则释放 GUI owner 并隐藏窗口，保留解码 renderer 和捕获 owner；再次从 GUI 打开则认领 GUI owner 并显示同一会话。最后一个 owner 释放才真正 destroy。隐藏/最后一次释放不得意外弹出主窗口；自动化 lease 存在时关闭主窗口可隐藏，菜单“退出”仍是终止全实例。renderer 崩溃不能视作普通关窗：会话转 error，通知客户端并执行有限清理，旧帧/代际失效。首期不引入独立无头解码器。
 - GUI 与自动化共用每设备输入队列；一个完整手势执行期间不交错其他输入。断连/关窗/取消时尽力释放按键/触点；未确认释放则阻止后续输入并报告恢复需要，不无限排队。
 - 自动化状态至少区分 starting、authorizing、waiting、running、disconnected、error、stopping、stopped；running 需要实际首帧，输入就绪另由 capability.available 表达。记录停止 tombstone 至少 5 分钟以支持重复 stop/get；状态变化需带递增 revision。
@@ -179,3 +180,9 @@ M6 实施补充：截图几何校验需延伸到实际派发点，不能只比�
 - 共用输入门禁须兼容 GUI 遥控器既有键码，包括方向、确定和应用切换；不扩大自动化命名系统键 schema。
 - 有限只读等待须在调用 SDK 前接入取消/拒绝处理；同步抛错与同步取消同时发生时，不产生未处理 rejection。
 - 问题、回归和验证范围见[独立审查修复记录](../../maintenance/agent-automation-review-2026-11-16.md)；这些修复不改变尚未验收的真机/Windows范围。
+
+## 真机验收补充（2026-11-16）
+
+用户提供三台已连接手机并授权优先排查 Harmony 清理超时。本轮复现同类超时并定位为未取消的原生启动/升档首帧等待，修复与证据见[真机记录](../../maintenance/agent-automation-device-acceptance-2026-11-16.md)。Android/Harmony 的真实输入、新帧、双设备/双客户端归属和 Harmony 临时端口写入按该记录逐项验收，不代替物理旋转、断连、长期运行或其他固件。
+
+用户随后明确“跳过ios部分测试，后续路线可能变化”：iOS 本轮验收暂缓，接收会话已释放；不标记实际 AirPlay 已通过，也不据此删除原有 view-only 限制。临时 HAP 应用写入、Windows、物理180°与实际 Codex 宿主仍保留待验收。

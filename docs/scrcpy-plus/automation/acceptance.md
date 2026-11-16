@@ -1,6 +1,6 @@
 # 本地候选验收与维护交接
 
-日期：2026-11-16；源码基线 `fb476c6`，最新独立审查修复 `2e70424`，分支 `codex/agent-automation`。这是本地候选交付，整个平台矩阵尚未验收完成。发布、远端合入、日常安装替换均未执行。
+日期：2026-11-16；源码基线 `fb476c6`，最新清理修复 `0eed41c`，分支 `codex/agent-automation`。这是本地候选交付，整个平台矩阵尚未验收完成。发布、远端合入、日常安装替换均未执行。
 
 ## 可运行产物
 
@@ -16,16 +16,16 @@
 | --- | --- | --- | --- |
 | AUTO-01 | common/automation/protocol、CLI index、MCP index | protocol/cli/mcp；35个注册操作 | 新平台工具未扩展 |
 | AUTO-02 | main/automation/server/auth/discovery/lifecycle/profile | server/profile/lifecycle；真实 Electron 服务/退出 | Windows ACL 实机 pending |
-| AUTO-03 | sessions/controller/window hooks | sessions/native-window；双调用者/GUI owner 模拟闭环 | 在途清理拒绝新 owner；真机清理超时仍待复现 |
-| AUTO-04 | FrameSource/frameBridge/frames/wire | frames/binary/renderer；真实 Canvas、Harmony截图 | 物理180°、锁屏下动作后新帧 pending |
-| AUTO-05 | input/runtime、Android/Harmony adapters | input/adapters/plus-devices；旋转与派发错误 RED→GREEN | Android USB access；Harmony完整交互/iOS不支持 |
-| AUTO-06 | harmonyTools、共享 hdc 模块 | tools/ports/shell/layout/host-command；Harmony只读工具实际通过 | 安装卸载/清数据/端口写操作真机 pending |
+| AUTO-03 | sessions/controller/window hooks | sessions/native-window；双调用者/GUI owner 模拟闭环 | 在途清理拒绝新 owner；真机同类超时已修复，17轮清理通过（最终构建4轮） |
+| AUTO-04 | FrameSource/frameBridge/frames/wire | frames/binary/renderer；真实 Canvas、Android/Harmony截图及动作后观察 | 物理180°、锁屏下动作后新帧 pending |
+| AUTO-05 | input/runtime、Android/Harmony adapters | input/adapters/plus-devices；旋转与派发错误 RED→GREEN | Android/Harmony点击/滑动/文字真机通过；专用scroll/完整旋转待补，iOS不支持控制 |
+| AUTO-06 | harmonyTools、共享 hdc 模块 | tools/ports/shell/layout/host-command；Harmony只读工具实际通过 | 端口规则增删真机通过；安装卸载/清数据真机 pending |
 | AUTO-07 | context/client/server/input/hostCommand | 超时、取消、不重发、释放与大小边界回归 | 强杀后无close确认保持unknown |
 | AUTO-08 | cli help/schema、automation docs、Agent skill | tarball安装、命令帮助、五场景Agent复测 | 需要Node22.12+ |
 | AUTO-09 | src/mcp/index.ts、SDK2.4.0 | 真实SDK stdio新旧协议、错误/取消/图片/文件 | Codex宿主实际工具调用 pending |
-| AUTO-10 | 上述整体、script/build | 全量1084pass/2skip；Licia各606pass/4pending；lint/fullbuild | 仓库既有tsc诊断、Windows/完整真机矩阵 |
+| AUTO-10 | 上述整体、script/build | 全量1089pass/2skip；Licia各606pass/4pending；lint/fullbuild | 仓库既有tsc诊断、Windows/完整真机矩阵 |
 
-[最新审查修复证据](../evidence/agent-automation/review/2026-11-16/verification.json)与[M6原始证据](../evidence/agent-automation/M6/2026-11-16/verification.json)；此前阶段证据仍保留，不以本次局部真机结果覆盖旧失败记录。真实屏幕、原始设备日志、序列号与 token 不进入公开证据；本地私有探针记录保留在被忽略的 `.superpowers/sdd/2026-11-16-agent-automation/`，无需从对话恢复工作进度。
+[最新真机修复证据](../evidence/agent-automation/device/2026-11-16/verification.json)、[此前审查修复证据](../evidence/agent-automation/review/2026-11-16/verification.json)与[M6原始证据](../evidence/agent-automation/M6/2026-11-16/verification.json)；此前阶段证据仍保留，不以本次局部真机结果覆盖旧失败记录。真实屏幕、原始设备日志、序列号与 token 不进入公开证据；本地私有探针记录保留在被忽略的 `.superpowers/sdd/2026-11-16-agent-automation/`，无需从对话恢复工作进度。
 
 ## 执行决策及代价
 
@@ -50,8 +50,8 @@
 
 - AUTO-FOLLOWUP-001 已修复：已释放 lease 按 ID 保留至少五分钟，同客户端重获后旧 release 仍幂等，新 lease 保持有效。
 - AUTO-FOLLOWUP-002 已修复：已确认安装返回 completed:true 和独立 cleanupConfirmed；清理异常不覆盖设备结果，不触发重装。
-- AUTO-OBS-001：真实Harmony静止探针有一次清理未确认；独立重跑首次释放成功，尚不能宣称复现根因或真实同lease恢复已通过。
-- 真机：使用已解锁的专用测试页面完成Harmony点击/滑动/文字→新帧验证，补临时HAP及端口写入清理；Android需可用USB接口；iOS需真实发送端。物理90°/180°与断连/恢复继续独立记录。
+- AUTO-OBS-001 后续：同类超时已复现为 AUTO-BUG-011，并确认同lease恢复。关闭取消native startup/promotion，保留5秒预算；另修复独立审查的ready/abort竞态 AUTO-BUG-012。详见[本轮报告](../../maintenance/agent-automation-device-acceptance-2026-11-16.md)；不能断言所有历史超时均同根因。
+- 真机：Android/Harmony系统设置页点击/滑动/UTF-8文字→新帧及双owner隔离通过；临时forward/reverse规则增删通过。专用HAP应用写入、专用scroll、物理90°/180°与完整断连/恢复待补。iOS按用户要求暂缓。文字注入覆盖手机剪贴板，测试输入已从搜索框清除，原剪贴板未读取或恢复。
 - Windows：实际ACL、空格/Unicode路径、退出和子进程取消；Codex：用户选择的配置中实际启动与调用MCP。
 
 定位修复从 [维护记录](../../maintenance/agent-automation.md) 的 AUTO-BUG 编号及 tests 开始。回退以基线 `fb476c6` 或任务前版本在单独 checkout 构建为依据；当前分支及本地记录保留，不执行破坏性 reset。发布前必须重新确认未测矩阵与产品版本，不把开发版能力描述为全平台正式验收。

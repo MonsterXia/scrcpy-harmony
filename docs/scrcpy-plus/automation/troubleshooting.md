@@ -25,6 +25,10 @@
 - GUI 关窗后窗口未销毁：仍有 CLI lease 时属于预期，release 最后 owner 后才关闭。
 - OUTCOME_UNKNOWN 或释放失败：保留原 lease 重试清理；不会自动重复输入。
 
+Harmony 静止/息屏时的一类清理超时已定位：原生启动/升档等待首帧未随关闭取消。当前会及时取消该等待并继续确认回收；其他传输或设备故障仍可能返回 unknown。隔离复现可用 `SCRCPY_PLUS_CAPTURE_TRACE=1` 启动测试应用，比较 close.request、close.queue-enter、native.first-frame-wait、native.onEnd-ended 与 cleanup/close.confirmed；不把 onEnd 等待结束当成设备已停。详见[真机验收记录](../../maintenance/agent-automation-device-acceptance-2026-11-16.md)。
+
+Android LIBUSB_ERROR_ACCESS 也可能是其他 ADB server 已持有 USB 接口。本轮通过已有 SDK 的 `adb -s <明确序列号> detach` 仅释放测试手机，Plus 成功投屏；清理 Plus 会话后用同一设备的 attach 恢复原状态。应先核对实际工具 help/transport 和归属，不批量结束 ADB 服务，不把本机处理方法当成所有系统的通用修复。
+
 真实 Electron 模拟验收脚本为 `script/check-automation-electron.mjs`；它不连接真实设备，产物明确标注 SIMULATED。
 
 输入返回 outcome=unknown 时先观察，不重放文字或手势。旋转后的新后端尺寸与旧截图不匹配时输入会失败，重新截图后再选择坐标；Android 在实际设备输入队列检查，Harmony 检查显示方向/比例并在非释放触摸前重新读取尺寸。Harmony 的尺寸读取与触摸 API 不提供设备侧原子快照，同尺寸物理180°仍待验收。

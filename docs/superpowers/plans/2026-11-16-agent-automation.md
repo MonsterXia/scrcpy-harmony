@@ -110,7 +110,7 @@
 - [x] 更新 CLI/协议/集成说明/架构参考和证据，提交 `feat: complete device observation and input workflow`。
 
 
-M3 真机验收保留未勾选：模拟 Electron 部分已通过；Android USB claim 失败，Harmony/iOS 实接收及 Windows 尚未验证。不会据此标记总任务完成。
+M3 组合验收保留未勾选：模拟 Electron 与 Android/Harmony 核心真机输入闭环现已通过；iOS 用户暂缓，物理旋转与完整断连矩阵尚未验证。不会据此标记总任务完成。
 
 ## M4：现有设备工具覆盖（AUTO-06/07/08）
 
@@ -160,3 +160,12 @@ M6 本地候选交付见[验收与交接](../../scrcpy-plus/automation/acceptanc
 - [x] 关闭旧 lease 幂等和安装清理结果两项 Minor；补修同步取消 rejection、在途清理认领竞态，均保留失败回归。
 - [x] 全量1084pass/2skip、Licia各606/4、lint/fullbuild、真实Electron模拟9项、安装包CLI/MCP35工具通过；tsc基线诊断逐行未变。
 - [x] 更新 spec、接口文档、RUNBOOK、[问题记录](../../maintenance/agent-automation-review-2026-11-16.md)与[结构化证据](../../scrcpy-plus/evidence/agent-automation/review/2026-11-16/verification.json)。源码 `2e70424`，仅本地提交；M6待验收两项维持未勾选。
+
+## 继续真机验收（2026-11-16，源码 0eed41c）
+
+- [x] 复现Harmony同类清理超时，保留unknown和同lease恢复证据；用阶段追踪定位关闭后首帧等待。
+- [x] scope取消贯穿首次启动/后台升档，保持5秒清理预算；真实HTTP2和capture session回归RED→GREEN。
+- [x] 独立审查首帧ready/abort竞态，复现并加守卫；最终全量1089pass/2skip、lint/build、包检查、Electron模拟通过，tsc既有诊断不变。
+- [x] 13轮初版取消修复+4轮最终构建真机清理均一次成功；两端设置页点击/滑动/文字→观察、双owner/跨设备隔离与Harmony端口规则增删通过。
+- [x] 释放任务lease、恢复目标ADB、正常退出测试应用并重开原安装应用；更新spec/进度/[报告](../../maintenance/agent-automation-device-acceptance-2026-11-16.md)/脱敏证据。
+- [ ] 专用HAP应用写入、物理旋转/完整断连矩阵、Windows、实际Codex宿主；iOS按用户要求暂缓，不列为本轮继续操作事项。
