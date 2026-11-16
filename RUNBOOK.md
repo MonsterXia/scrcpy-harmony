@@ -1,5 +1,9 @@
 # Scrcpy Plus 跨平台改造（2026-11-03）
 
+## Agent 自动化长任务（2026-11-16）
+
+状态：**spec、连续计划和独立文档审查完成，方向待确认，尚未实现 CLI/MCP。** 用户要求只确认大方向，后续自主推进并保留可定位/可恢复的文档。推荐共享控制服务 → CLI 设备观察/操作闭环 → 现有设备工具 → MCP。入口为 [spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[实施计划](docs/superpowers/plans/2026-11-16-agent-automation.md)和[状态/证据/故障定位](docs/maintenance/agent-automation.md)。本轮完成源码核对及文档检查，未执行运行或真机验证；下一步确认一次方向，随后连续执行 M1—M6，不重复确认实现细节。
+
 ## 上游更新与标准分支交付（2026-11-05）
 
 用户明确授权：使用个人 GitHub 账号 zjkzjk，将当前多平台功能通过 PR 正常门禁合入 MonsterXia/scrcpy-harmony 的 master，不建立长期 Plus 分支。已保留本地成果并无冲突合入上游 c533636，包含截图隐藏与主窗口反馈样式修复。CI／手动 Build 补齐固定 SHA 的 Java/Android 和原生工具链；安卓编译改为跨平台 Java 参数文件。Mac arm64 完整源码后端与发行目录构建、965 项应用测试、Licia 两模式各 606 passing / 4 pending、lint/i18n 通过。上游 UI 探针首轮因旧预览接口不匹配失败，补齐 getDevices 后通知四场景和截图导航 24 场景通过。PR CI、审查和合入尚待远端结果，不绕过门禁；实时结果记录在 [PR #87 交付状态](https://github.com/MonsterXia/scrcpy-harmony/pull/87#issuecomment-6653565015)，包括最终 head、五项 CI、复审及合入 SHA。见 [同步证据](docs/scrcpy-plus/evidence/upstream-sync-2026-11-05/verification.json)。
