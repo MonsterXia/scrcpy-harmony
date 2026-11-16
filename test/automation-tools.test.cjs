@@ -31,3 +31,9 @@ test('application writes do not retry and distinguish validation from unconfirme
  await assert.rejects(handlers['apps.start']({device:'h',bundle:'good',ability:'Bad;cmd'},ctx()),{code:'INVALID_ARGUMENT',outcome:'not-started'})
  await assert.rejects(handlers['apps.uninstall']({device:'h',bundle:'good'},ctx()),{code:'OUTCOME_UNKNOWN',outcome:'unknown'});assert.equal(writes,1)
 })
+test('port node validation rejects wildcard/whitespace and accepts only explicit addresses',()=>{
+ const {validatePortNode}=load('src/main/automation/adapters/harmonyTools.ts')
+ for(const value of ['tcp:0','tcp:65536','*','tcp:1 tcp:2','localabstract:a;cmd','jdwp:3'])assert.throws(()=>validatePortNode(value,false),{code:'INVALID_ARGUMENT'})
+ for(const value of ['tcp:1234','localabstract:debug.socket','localfilesystem:/tmp/test.sock'])validatePortNode(value,false)
+ validatePortNode('jdwp:123',true)
+})

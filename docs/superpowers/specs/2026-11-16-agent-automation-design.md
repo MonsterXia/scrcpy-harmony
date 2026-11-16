@@ -164,3 +164,5 @@ MCP 作为本地 stdio 适配器复用客户端和 schema。至少暴露设备�
 - `rotation` 当前表示导出位图需要额外旋转的角度；解码画布已正向呈现，当前为 0。物理方向只能在平台提供可验证信息时声明；尺寸或解码代际变化会使 frame 引用失效。同尺寸 180° 物理旋转的检测仍待验证，不计为 AUTO-05 已验收。
 - Harmony 没有 wheel primitive，`input scroll` 显式转换为 250 ms、端点限制在画布内的滑动；正 dx/dy 表示手指右/下移动，幅度为对应画布尺寸的 delta/2。Android 使用原生滚轮控制。
 - 以上为 M3 实现中记录，未替代真实 Electron/设备/平台验收门禁。
+
+AUTO-DEC-008（M4 实施）：日志/布局用有界 blob envelope（最多1MiB，日志允许为空），调用端负责文件输出；日志默认抓取5秒、最大60秒，请求默认70秒以容纳reader退出，清理仍最多额外5秒。布局SDK没有安全的独立取消API，截止/取消只结束等待并阻止后续阶段，在途共享SDK可能迟到完成，不停止GUI工具。一次性shell输出默认/最大128KiB，保留真实exitCode与truncated，不自动重发。详见[操作登记](../../scrcpy-plus/automation/harmony-tools.md)。

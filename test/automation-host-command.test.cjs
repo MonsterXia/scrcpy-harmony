@@ -17,3 +17,13 @@ test('nonzero status and oversized stdout are failures rather than partial succe
  const fail=await fixture(t,'process.stdout.write("partial");process.exitCode=2');await assert.rejects(runHostCommand({bin:fail,host:'127.0.0.1',port:8710},'h',['install','x'],context()),{code:'OUTCOME_UNKNOWN'})
  const big=await fixture(t,'process.stdout.write("x".repeat(1024*1024+1))');await assert.rejects(runHostCommand({bin:big,host:'127.0.0.1',port:8710},'h',['install','x'],context()),{code:'OUTCOME_UNKNOWN'})
 })
+test('finite log capture stops its own reader and marks bounded output truncation',async t=>{
+ const {captureHostOutput}=host();const file=await fixture(t,'process.stdout.write("x".repeat(100));setInterval(()=>{},1000)')
+ const result=await captureHostOutput({bin:file,host:'127.0.0.1',port:8710},'h',['shell','hilog'],context(),500,16)
+ assert.equal(result.bytes.length,16);assert.equal(result.truncated,true)
+})
+test('finite log duration ends a quiet reader without reporting a command failure',async t=>{
+ const {captureHostOutput}=host();const file=await fixture(t,'setInterval(()=>{},1000)')
+ const result=await captureHostOutput({bin:file,host:'127.0.0.1',port:8710},'h',['shell','hilog'],context(),50,1024)
+ assert.equal(result.bytes.length,0);assert.equal(result.truncated,false)
+})

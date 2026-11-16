@@ -28,6 +28,7 @@ const identity: ParameterSchema = { type: 'string', minLength: 1, maxLength: 256
 const position: ParameterSchema = { type: 'number', minimum: 0, maximum: 16384 }
 const session = { session: identity }
 const pointer = { ...session, frame: identity, x: position, y: position }
+const portDirection: ParameterSchema = { type: 'string', enum: ['forward','reverse'] }
 export const operations: Record<string, OperationSchema> = {
   'service.status': { description: descriptions['service.status'], readOnly: true, parameters: {}, required: [] },
   'doctor': { description: descriptions['doctor'], readOnly: true, parameters: {}, required: [] },
@@ -58,6 +59,12 @@ export const operations: Record<string, OperationSchema> = {
   'apps.clear-data': { description: descriptions['apps.clear-data'], readOnly: false, parameters: { device: identity, bundle: { type: 'string', minLength: 1, maxLength: 255 } }, required: ['device','bundle'] },
   'apps.clear-cache': { description: descriptions['apps.clear-cache'], readOnly: false, parameters: { device: identity, bundle: { type: 'string', minLength: 1, maxLength: 255 } }, required: ['device','bundle'] },
   'apps.install': { description: descriptions['apps.install'], readOnly: false, timeoutMs: 120000, parameters: { device: identity, path: { type: 'string', minLength: 1, maxLength: 4096 } }, required: ['device','path'] },
+  'logs.capture': { description: descriptions['logs.capture'], readOnly: true, timeoutMs: 70000, parameters: { device: identity, durationMs: { type: 'integer', minimum: 1, maximum: 60000 }, maxBytes: { type: 'integer', minimum: 1, maximum: 1048576 } }, required: ['device'] },
+  'layout.dump': { description: descriptions['layout.dump'], readOnly: true, parameters: { device: identity }, required: ['device'] },
+  'shell.run': { description: descriptions['shell.run'], readOnly: false, parameters: { device: identity, command: { type: 'string', minLength: 1, maxLength: 65536 }, maxBytes: { type: 'integer', minimum: 1, maximum: 131072 } }, required: ['device','command'] },
+  'ports.list': { description: descriptions['ports.list'], readOnly: true, parameters: { device: identity, direction: portDirection }, required: ['device','direction'] },
+  'ports.add': { description: descriptions['ports.add'], readOnly: false, parameters: { device: identity, direction: portDirection, local: identity, remote: identity }, required: ['device','direction','local','remote'] },
+  'ports.remove': { description: descriptions['ports.remove'], readOnly: false, parameters: { device: identity, direction: portDirection, local: identity, remote: identity }, required: ['device','direction','local','remote'] },
 }
 export interface AutomationRequest {
   apiVersion: 1; requestId: string; clientId: string; operation: string

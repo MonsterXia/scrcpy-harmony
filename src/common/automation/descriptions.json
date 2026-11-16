@@ -27,5 +27,11 @@
   "apps.install": "Install or replace a Harmony application from an absolute local HAP file (maximum 512 MiB).",
   "apps.uninstall": "Uninstall an explicit Harmony bundle, removing its data. Never retried automatically.",
   "apps.clear-data": "Delete the selected Harmony application data. Never retried automatically.",
-  "apps.clear-cache": "Delete the selected Harmony application cache. Never retried automatically."
+  "apps.clear-cache": "Delete the selected Harmony application cache. Never retried automatically.",
+  "shell.run": "Execute one explicit Harmony shell script with deadline, bounded output and exit status. May change device state; never retried automatically.",
+  "ports.list": "List only the selected Harmony device mappings in the chosen direction.",
+  "ports.add": "Create one explicit Harmony port mapping.",
+  "ports.remove": "Remove only the explicitly named Harmony mapping; never remove all mappings.",
+  "logs.capture": "Capture a finite Harmony log artifact without clearing device logs",
+  "layout.dump": "Export the Harmony UI hierarchy as bounded XML"
 }

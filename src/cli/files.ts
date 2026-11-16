@@ -1,20 +1,27 @@
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { AutomationFault, isRecord, MAX_IMAGE_BYTES } from '../common/automation/protocol'
+import { AutomationFault, isRecord, MAX_IMAGE_BYTES, MAX_REQUEST_BYTES } from '../common/automation/protocol'
 export async function writeScreenshot(value: unknown, output: string, overwrite: boolean) {
   if (!isRecord(value) || !isRecord(value.frame) || !(value.bytes instanceof Uint8Array) || !value.bytes.byteLength || value.bytes.byteLength > MAX_IMAGE_BYTES) throw new AutomationFault('INTERNAL', 'Invalid screenshot result')
+  return writeOutput(value.bytes,value.frame,output,overwrite)
+}
+export async function writeArtifact(value: unknown, output: string, overwrite: boolean) {
+  if (!isRecord(value) || !isRecord(value.artifact) || !(value.bytes instanceof Uint8Array) || value.bytes.byteLength > MAX_REQUEST_BYTES || value.artifact.byteLength !== value.bytes.byteLength) throw new AutomationFault('INTERNAL','Invalid artifact result')
+  return writeOutput(value.bytes,value.artifact,output,overwrite)
+}
+async function writeOutput(bytes: Uint8Array, metadata: Record<string,unknown>, output: string, overwrite: boolean) {
   const destination = path.resolve(output), temporary = path.join(path.dirname(destination), `.scrcpy-${randomUUID()}.tmp`)
   try {
     const handle = await fs.open(temporary, 'wx', 0o600)
-    try { await handle.writeFile(value.bytes); await handle.sync() } finally { await handle.close() }
+    try { await handle.writeFile(bytes); await handle.sync() } finally { await handle.close() }
     if (overwrite) await fs.rename(temporary, destination)
     else await fs.link(temporary, destination)
-    return { ...value.frame, path: destination }
+    return { ...metadata, path: destination }
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'EEXIST') throw new AutomationFault('INVALID_ARGUMENT', 'Output already exists; choose another path or use --overwrite')
     if (error instanceof AutomationFault) throw error
-    throw new AutomationFault('UNAVAILABLE', 'Could not write screenshot output')
+    throw new AutomationFault('UNAVAILABLE', 'Could not write output artifact')
   } finally { await fs.unlink(temporary).catch(() => {}) }
 }
 export async function readText(source: AsyncIterable<Uint8Array | string>, context: { deadline: number; signal: AbortSignal }) {

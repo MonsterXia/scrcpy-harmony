@@ -94,3 +94,16 @@ scrcpy-plus sessions stop --session "$SID" --lease "$LEASE" --client agent-a --j
 安装文件须为 4 字节至 512MiB 的普通 .hap/.HAP 文件并具有 ZIP 文件头；这不替代设备安装器对包完整性/签名的校验。服务从已打开的文件描述符暂存为私有 package.hap，参数数组调用同一个配置的 HDC 服务器，不将主机路径拼入 shell。完成或失败后清理暂存文件。
 
 超时/取消会终止本次创建的 HDC 客户端进程，不停止其他程序或共享 HDC 服务器。设备端可能已经执行，outcome=unknown 时先查询实际状态，不能据此推断回滚。成功结果 `{completed:true}` 表示命令返回已确认的完成标记，不代表安装后的业务流程成功。
+
+## Harmony 日志、布局、端口与 shell
+
+完整参数与边界见 [Harmony 工具登记](harmony-tools.md)。示例：
+
+```sh
+scrcpy-plus logs capture --device DEVICE --duration-ms 5000 --output device.log --json
+scrcpy-plus layout dump --device DEVICE --output layout.xml --json
+scrcpy-plus ports list --device DEVICE --direction forward --json
+scrcpy-plus ports add --device DEVICE --direction forward --local tcp:8701 --remote tcp:8702 --json
+scrcpy-plus ports remove --device DEVICE --direction forward --local tcp:8701 --remote tcp:8702 --json
+scrcpy-plus shell run --device DEVICE --command-file ./read-only-script.sh --json
+```

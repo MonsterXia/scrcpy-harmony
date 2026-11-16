@@ -10,7 +10,7 @@
 
 **Spec:** [SP-AUTO-001](../specs/2026-11-16-agent-automation-design.md)
 
-**Status:** M0 已完成，用户已确认方向；M1/M2 本机验证完成，M3 实现/模拟闭环通过但真机/Windows pending，M4—M6 待执行。连续执行 M4；具体阶段状态以[维护记录](../../maintenance/agent-automation.md)为准。
+**Status:** M0 已完成，用户已确认方向；M1/M2 本机验证完成，M3 实现/模拟闭环通过但真机/Windows pending，M4 本机候选完成，M5/M6 待执行。连续执行 M5；具体阶段状态以[维护记录](../../maintenance/agent-automation.md)为准。
 
 ## Global Constraints
 
@@ -120,11 +120,11 @@ M3 真机验收保留未勾选：模拟 Electron 部分已通过；Android USB c
 
 **Interfaces:** 通过 M1 注册表为具体操作提供 schema 和 handler；业务函数显式接收 deviceKey/context，GUI IPC 复用同一函数。命令名称、输入和结果 schema 逐项写入 protocol/cli 文档后再实现。
 
-- [ ] 完成 spec 5.1 的逐操作盘点矩阵；每行包含需求号、源码入口、平台、命令、支持/延期原因和验收证据，不以百分比替代覆盖清单。
-- [ ] 以“概览/查询”“应用读写”“日志/布局”“端口/shell”四个可独立验证的小批次实施；每批先写失败回归，运行 `node --test test/automation-tools.test.cjs`，再提取业务和添加命令。
-- [ ] 回归明确覆盖：无设备/未授权/不支持；目标切换不重定向操作；shell 超时中止及有界输出；日志取消；安装失败与结果不确定；卸载/清数据不自动重试；文件路径不进入 shell 拼接；端口只删除显式条目。
-- [ ] 每批专项通过后更新能力矩阵/help/schema；真实修改验证仅用本任务临时测试应用/文件/端口，记录清理；不卸载或清理用户真实应用数据。
-- [ ] 四批完成后执行受影响 HDC 回归、lint 和主进程构建，更新证据和定位表，按批提交 `feat: expose Harmony device tools to automation`。
+- [x] 完成 spec 5.1 的逐操作盘点矩阵；每行包含需求号、源码入口、平台、命令、支持/延期原因和验收证据，不以百分比替代覆盖清单。
+- [x] 以“概览/查询”“应用读写”“日志/布局”“端口/shell”四个可独立验证的小批次实施；每批先写失败回归，运行 `node --test test/automation-tools.test.cjs`，再提取业务和添加命令。
+- [x] 回归明确覆盖：无设备/未授权/不支持；目标切换不重定向操作；shell 超时中止及有界输出；日志取消；安装失败与结果不确定；卸载/清数据不自动重试；文件路径不进入 shell 拼接；端口只删除显式条目。
+- [x] 每批专项通过后更新能力矩阵/help/schema；真实修改验证仅用本任务临时测试应用/文件/端口，记录清理；不卸载或清理用户真实应用数据。
+- [x] 四批完成后执行受影响 HDC 回归、lint 和主进程构建，更新证据和定位表，按批提交 `feat: expose Harmony device tools to automation`。
 
 ## M5：Agent 文档与 MCP（AUTO-08/09）
 

@@ -6,7 +6,7 @@ const platformOperations: Record<string, readonly string[]> = {
   'input.tap': ['android', 'harmony'], 'input.swipe': ['android', 'harmony'],
   'input.scroll': ['android', 'harmony'], 'input.text': ['android', 'harmony'], 'input.key': ['android', 'harmony'],
   'apps.start': ['harmony'], 'apps.stop': ['harmony'], 'apps.install': ['harmony'], 'apps.uninstall': ['harmony'], 'apps.clear-data': ['harmony'], 'apps.clear-cache': ['harmony'],
-  'overview.get': ['harmony'], 'apps.list': ['harmony'], 'apps.info': ['harmony'], 'apps.top': ['harmony'], 'processes.list': ['harmony'], 'layout.dump': ['harmony'], 'shell.run': ['harmony'],
+  'overview.get': ['harmony'], 'apps.list': ['harmony'], 'apps.info': ['harmony'], 'apps.top': ['harmony'], 'processes.list': ['harmony'], 'logs.capture': ['harmony'], 'layout.dump': ['harmony'], 'shell.run': ['harmony'], 'ports.list': ['harmony'], 'ports.add': ['harmony'], 'ports.remove': ['harmony'],
 }
 export function deviceCapabilities(target: Pick<ITarget, 'key' | 'platform' | 'state'>, enabled: ReadonlySet<string>, running = false): Record<string, Capability> {
   return Object.fromEntries(Object.entries(platformOperations).map(([operation, platforms]) => {

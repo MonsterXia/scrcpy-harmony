@@ -101,3 +101,19 @@ test('service start passes argument boundaries including option arguments and re
   const existing = await run(['service','start','--app','/not/a/real/app','--profile',profilePath,'--json'])
   assert.equal(existing.code, 0); assert.equal(JSON.parse(existing.stdout).data.pid, startedPid)
 })
+test('shell command file keeps script contents out of argv and conflicting sources fail before dispatch',async t=>{
+ let received,calls=0;const f=await service(t,async r=>{calls++;received=r.params.command;return {apiVersion:1,requestId:r.requestId,ok:true,data:{exitCode:0,output:'ok',truncated:false}}})
+ const file=path.join(f.profilePath,'script 文件.txt'),script="printf '%s' 'quoted;中文'\nexit 0";await fs.writeFile(file,script)
+ const result=await run(['shell','run','--device','h','--command-file',file,'--profile',f.profilePath,'--json']);assert.equal(result.code,0);assert.equal(received,script)
+ const bad=await run(['shell','run','--device','h','--command','read','--command-file',file,'--profile',f.profilePath,'--json']);assert.equal(bad.code,2);assert.equal(calls,1)
+})
+test('CLI exports finite artifacts through real binary transport and requires an output path',async t=>{
+ let calls=0;const f=await service(t,async r=>{calls++;const bytes=Buffer.from(r.operation==='layout.dump'?'<Hierarchy/>':'');return {apiVersion:1,requestId:r.requestId,ok:true,data:{artifact:{artifactId:'fixture',mimeType:'text/plain',byteLength:bytes.length},bytes}}})
+ for(const words of [['logs','capture'],['layout','dump']]){
+  const output=path.join(f.profilePath,words[0]+'.txt')
+  const invalid=await run([...words,'--device','h','--profile',f.profilePath,'--json']);assert.equal(invalid.code,2)
+  const result=await run([...words,'--device','h','--output',output,'--profile',f.profilePath,'--json']);assert.equal(result.code,0,result.stdout);assert.equal(JSON.parse(result.stdout).data.path,output)
+  assert.equal(await fs.readFile(output,'utf8'),words[0]==='logs'?'':'<Hierarchy/>')
+ }
+ assert.equal(calls,2)
+})

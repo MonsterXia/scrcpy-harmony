@@ -1,4 +1,4 @@
-import { decodeResult, FRAME_CONTENT_TYPE, MAX_WIRE_BYTES } from '../common/automation/wire'
+import { decodeResult, BLOB_CONTENT_TYPE, FRAME_CONTENT_TYPE, MAX_WIRE_BYTES } from '../common/automation/wire'
 import { request as httpRequest } from 'node:http'
 import { randomUUID } from 'node:crypto'
 import * as fs from 'node:fs/promises'
@@ -60,7 +60,7 @@ export async function callAutomation(value: AutomationRequest, options: ClientOp
     } }, response => {
       if (response.statusCode === 403) { response.resume(); finish(new AutomationFault('UNAUTHORIZED', 'Local service authorization failed')); return }
       const contentType = response.headers['content-type'] || ''
-      const maximum = contentType === FRAME_CONTENT_TYPE ? MAX_WIRE_BYTES : MAX_REQUEST_BYTES
+      const maximum = (contentType === FRAME_CONTENT_TYPE || contentType === BLOB_CONTENT_TYPE) ? MAX_WIRE_BYTES : MAX_REQUEST_BYTES
       const chunks: Buffer[] = []; let size = 0
       response.on('data', (chunk: Buffer) => {
         size += chunk.length

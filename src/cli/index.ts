@@ -1,5 +1,5 @@
 import { createReadStream } from 'node:fs'
-import { readText, writeScreenshot } from './files'
+import { readText, writeScreenshot, writeArtifact } from './files'
 import { randomUUID } from 'node:crypto'
 import { homedir } from 'node:os'
 import * as path from 'node:path'
@@ -21,7 +21,7 @@ function help() {
 }
 function parseArgs(argv: string[]) {
   const flags: Record<string, string | boolean> = {}, appArgs: string[] = [], words: string[] = []
-  const booleans = new Set(['json','help','overwrite','text-stdin', ...Object.values(operations).flatMap(op => Object.entries(op.parameters).filter(([,rule]) => rule.type === 'boolean').map(([key]) => key.replace(/[A-Z]/g, c => '-' + c.toLowerCase())))])
+  const booleans = new Set(['json','help','overwrite','text-stdin','command-stdin', ...Object.values(operations).flatMap(op => Object.entries(op.parameters).filter(([,rule]) => rule.type === 'boolean').map(([key]) => key.replace(/[A-Z]/g, c => '-' + c.toLowerCase())))])
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]
     if (!arg.startsWith('--')) { words.push(arg); continue }
@@ -43,8 +43,9 @@ function parseArgs(argv: string[]) {
   const schema = operations[operation]
   const allowed = new Set(['json','help','profile','client','timeout-ms', ...Object.keys(schema?.parameters || {}).map(key => key.replace(/[A-Z]/g, c => '-' + c.toLowerCase()))])
   if (operation === 'service.start') { allowed.add('app'); allowed.add('app-arg') }
-  if (operation === 'screen.capture') { allowed.add('output'); allowed.add('overwrite') }
+  if (['screen.capture','logs.capture','layout.dump'].includes(operation)) { allowed.add('output'); allowed.add('overwrite') }
   if (operation === 'input.text') { allowed.add('text-file'); allowed.add('text-stdin') }
+  if (operation === 'shell.run') { allowed.add('command-file'); allowed.add('command-stdin') }
   if (appArgs.length && operation !== 'service.start') throw new AutomationFault('INVALID_ARGUMENT', '--app-arg requires service start')
   for (const key of Object.keys(flags)) if (!allowed.has(key)) throw new AutomationFault('INVALID_ARGUMENT', `Unknown option: --${key}`)
   const params: Record<string, unknown> = {}
@@ -52,13 +53,14 @@ function parseArgs(argv: string[]) {
     const value = flags[key.replace(/[A-Z]/g, c => '-' + c.toLowerCase())]
     if (value !== undefined) params[key] = rule.type === 'integer' || rule.type === 'number' ? Number(value) : rule.type === 'boolean' ? value === true : value
   }
-  if (!flags.help && operation === 'screen.capture' && (typeof flags.output !== 'string' || !flags.output)) throw new AutomationFault('INVALID_ARGUMENT', 'screen capture requires --output <path>')
+  if (!flags.help && ['screen.capture','logs.capture','layout.dump'].includes(operation) && (typeof flags.output !== 'string' || !flags.output)) throw new AutomationFault('INVALID_ARGUMENT', 'This command requires --output <path>')
   if (!flags.help && operation === 'input.text' && ['text','text-file','text-stdin'].filter(key => flags[key] !== undefined).length !== 1) throw new AutomationFault('INVALID_ARGUMENT', 'Choose exactly one of --text, --text-file or --text-stdin')
+  if (!flags.help && operation === 'shell.run' && ['command','command-file','command-stdin'].filter(key => flags[key] !== undefined).length !== 1) throw new AutomationFault('INVALID_ARGUMENT', 'Choose exactly one of --command, --command-file or --command-stdin')
   const timeoutMs = flags['timeout-ms'] === undefined ? operation === 'service.start' ? 60000 : schema?.timeoutMs ?? 30000 : Number(flags['timeout-ms'])
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 600000) throw new AutomationFault('INVALID_ARGUMENT', 'Invalid timeout-ms')
   const profilePath = flags.profile === undefined ? defaultProfile() : String(flags.profile)
   if (!path.isAbsolute(profilePath)) throw new AutomationFault('INVALID_ARGUMENT', 'Profile path must be absolute')
-  return { help: Boolean(flags.help), operation, params, timeoutMs, profilePath, client: String(flags.client ?? 'default'), app: typeof flags.app === 'string' ? flags.app : undefined, appArgs, output: flags.output as string | undefined, overwrite: flags.overwrite === true, textFile: flags['text-file'] as string | undefined, textStdin: flags['text-stdin'] === true }
+  return { help: Boolean(flags.help), operation, params, timeoutMs, profilePath, client: String(flags.client ?? 'default'), app: typeof flags.app === 'string' ? flags.app : undefined, appArgs, output: flags.output as string | undefined, overwrite: flags.overwrite === true, textFile: flags[operation === 'shell.run' ? 'command-file' : 'text-file'] as string | undefined, textStdin: flags[operation === 'shell.run' ? 'command-stdin' : 'text-stdin'] === true }
 }
 export async function runCli(argv: string[], io: CliIo): Promise<number> {
   const json = argv.includes('--json'), requestId = randomUUID()
@@ -67,10 +69,10 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
     const args = parseArgs(argv)
     if (args.help) { io.stdout(help()); return 0 }
     const deadline = Date.now() + args.timeoutMs!
-    if (args.operation === 'input.text' && (args.textFile !== undefined || args.textStdin)) {
+    if (['input.text','shell.run'].includes(args.operation!) && (args.textFile !== undefined || args.textStdin)) {
       const stream = args.textFile === undefined ? io.stdin : createReadStream(args.textFile)
       if (!stream) throw new AutomationFault('INVALID_ARGUMENT', 'stdin is unavailable')
-      try { args.params!.text = await readText(stream, { deadline, signal: io.signal }) }
+      try { args.params![args.operation === 'shell.run' ? 'command' : 'text'] = await readText(stream, { deadline, signal: io.signal }) }
       finally { if ('destroy' in stream && typeof stream.destroy === 'function') stream.destroy() }
     }
     const request = args.operation === 'service.start' ? undefined : parseRequest({ apiVersion: 1, requestId, clientId: 'offline', operation: args.operation, params: args.params, timeoutMs: args.timeoutMs })
@@ -80,6 +82,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
       const options = { profilePath: args.profilePath!, deadline, signal: io.signal }
       result = args.operation === 'service.start' ? await startService(args.app, args.appArgs!, clientId, options) : await callAutomation({ ...request!, clientId }, options)
     }
+    if (['logs.capture','layout.dump'].includes(args.operation!) && result.ok) result = success(requestId, await writeArtifact(result.data, args.output!, args.overwrite!))
     if (args.operation === 'screen.capture' && result.ok) result = success(requestId, await writeScreenshot(result.data, args.output!, args.overwrite!))
   } catch (error) { result = failure(requestId, error) }
   const text = formatResult(result, json)

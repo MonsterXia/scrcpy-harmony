@@ -1,4 +1,7 @@
-import { runHostCommand } from '../lib/hdc/hostCommand'
+import * as ports from '../lib/hdc/port'
+import { captureHilog } from '../lib/hdc/hilog'
+import { dumpWindowHierarchy } from '../lib/hdc/uitest'
+import { runHostCommand, captureHostOutput } from '../lib/hdc/hostCommand'
 import { withInstallationSource } from './adapters/installSource'
 import { createHarmonyToolHandlers } from './adapters/harmonyTools'
 import { automationHostEndpoint, automationShell, getOverview } from '../lib/hdc'
@@ -54,7 +57,11 @@ export function createAutomationRuntime(instanceId: string, version: string) {
   const service = createAutomationService({ instanceId,version,discover:getDevices,
     running: key => controller.sessions.list().some(session => session.deviceKey === key && session.state === 'running') })
   registerSessionOperations(service, controller)
-  const tools = createHarmonyToolHandlers({ discover: getDevices, shell: automationShell, host: (key,args,context) => runHostCommand(automationHostEndpoint(),key,args,context), writeApp: async(action,key,p,context) => {
+  const tools = createHarmonyToolHandlers({ layout: dumpWindowHierarchy, logs: captureHilog, captureHost: (key,args,c,d,m) => captureHostOutput(automationHostEndpoint(),key,args,c,d,m), ports: {
+    list: (key,reverse,c) => reverse ? ports.listReverses(key,c) : ports.listForwards(key,c),
+    add: (key,local,remote,reverse,c) => reverse ? ports.reverse(key,remote,local,c) : ports.forward(key,local,remote,c),
+    remove: (key,local,remote,reverse,c) => reverse ? ports.removeReverse(key,remote,local,c) : ports.removeForward(key,local,remote,c),
+  }, discover: getDevices, shell: automationShell, host: (key,args,context) => runHostCommand(automationHostEndpoint(),key,args,context), writeApp: async(action,key,p,context) => {
     switch(action) {
       case 'start': return startBundle(key,p.bundle as string,p.ability as string,context)
       case 'stop': return stopBundle(key,p.bundle as string,context)

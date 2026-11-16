@@ -1,3 +1,4 @@
+import type { DeviceOperationContext } from '../../../common/automation/deviceContext'
 import Emitter from 'licia/Emitter'
 import types from 'licia/types'
 import { Client } from 'hdckit'
@@ -99,6 +100,14 @@ const closeHilog = async function (hilogId: string) {
   const hilog = hilogs[hilogId]
   delete hilogs[hilogId]
   hilog?.close()
+}
+
+// Finite capture has its own reader and never clears or pauses GUI logs.
+export async function captureHilog(key: string,durationMs: number,maxBytes: number,context: DeviceOperationContext) {
+  if (context.deviceKey !== key || !context.captureHost) throw new Error('Device context mismatch')
+  const result=await context.captureHost(['shell','hilog','-v','wrap','-v','epoch'],durationMs,maxBytes)
+  if (/^\s*(?:\[Fail\]|\[E\d{6}\]|error:)/im.test(Buffer.from(result.bytes).toString('utf8'))) throw new Error('Device log capture failed')
+  return result
 }
 
 export function init(c: Client) {

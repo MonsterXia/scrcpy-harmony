@@ -1,8 +1,8 @@
+import type { DeviceOperationContext } from '../../../common/automation/deviceContext'
+import { toHierarchyXml } from './layoutXml'
 import { Client } from 'hdckit'
 import { ipcMain } from 'electron'
-import each from 'licia/each'
 import {
-  IpcDumpWindowHierarchy,
   IpcGetDisplaySize,
 } from 'common/types'
 import { getTargetStore, setTargetStore } from './base'
@@ -69,31 +69,11 @@ async function getUiDriver(connectKey: string, background = false): Promise<Capt
   }
 }
 
-const dumpWindowHierarchy: IpcDumpWindowHierarchy = async function (
-  connectKey,
-) {
-  const uiDriver = await getUiDriver(connectKey)
-  const layout = await uiDriver.captureLayout()
+export async function dumpWindowHierarchy(connectKey: string, context?: DeviceOperationContext) {
+  if (context && (context.deviceKey !== connectKey || !context.wait)) throw new Error('Device context mismatch')
+  const uiDriver = context ? await context.wait!(() => getUiDriver(connectKey)) : await getUiDriver(connectKey)
+  const layout = context ? await context.wait!(() => uiDriver.captureLayout()) : await uiDriver.captureLayout()
   return toHierarchyXml(layout)
-}
-
-function toHierarchyXml(json: any) {
-  const { attributes, children } = json
-  let xml = ''
-
-  const tagName = attributes.type
-  delete attributes.type
-  xml += `<${tagName || 'Layout'}`
-  each(attributes, (val, key) => {
-    xml += ` ${key}="${val}"`
-  })
-  xml += '>'
-
-  each(children, (child) => {
-    xml += toHierarchyXml(child)
-  })
-
-  return xml + `</${tagName || 'Layout'}>`
 }
 
 const getDisplaySize: IpcGetDisplaySize = async function (connectKey) {
