@@ -1,6 +1,6 @@
 # Scrcpy Plus 自动化接口
 
-当前为开发分支能力，协议 v1。已实现应用内本地服务、CLI 服务启动/状态/诊断、设备发现、会话 lease、画布截图和 Android/Harmony 输入。M3 已通过真实 Electron 模拟闭环，真机/Windows 验收仍 pending；鸿蒙设备工具及 MCP 按[实施计划](../../superpowers/plans/2026-11-16-agent-automation.md)继续开发，不能把 spec 中的目标命令当作当前可用命令。
+当前为开发分支能力，协议 v1。已实现应用内本地服务、CLI 服务启动/状态/诊断、设备发现、会话 lease、画布截图和 Android/Harmony 输入。M3 已通过真实 Electron 模拟闭环，真机/Windows 验收仍 pending；现有鸿蒙设备工具及 [MCP](mcp.md) 已完成本机候选实现，最终回归和真机/平台验收状态见[实施计划](../../superpowers/plans/2026-11-16-agent-automation.md)。
 
 ## 开发运行
 
@@ -53,3 +53,5 @@ node dist/cli/index.cjs service start \
 `--client agent-a` 创建持久命名客户端身份，供后续 lease 归属使用；不同 Agent 使用不同名称。客户端身份不是认证凭据；本机用户是信任边界。正常应用退出关闭本地服务；没有开放远程控制或通用 IPC 执行入口。
 
 继续阅读：[命令参考](cli.md)、[协议](protocol.md)、[能力矩阵](capabilities.md)、[问题定位](troubleshooting.md)、[实际验证进度](../../maintenance/agent-automation.md)。
+
+Agent 使用入口：[独立 skill](../../../../.agents/skills/scrcpy-plus-automation/SKILL.md)、[MCP 安装与配置](mcp.md)。`npm run build:cli` 构建两个独立 bin；`npm run check:automation-package` 在临时目录安装 tarball 并验证 CLI/MCP。

@@ -117,3 +117,7 @@ test('CLI exports finite artifacts through real binary transport and requires an
  }
  assert.equal(calls,2)
 })
+test('command help exposes schema flags and file input/output options offline',async()=>{
+ const capture=await run(['screen','capture','--help']);assert.match(capture.stdout,/--after-action/);assert.match(capture.stdout,/--output/);assert.match(capture.stdout,/--session/)
+ const shell=await run(['shell','run','--help']);assert.match(shell.stdout,/--command-file/);assert.match(shell.stdout,/--max-bytes/)
+})

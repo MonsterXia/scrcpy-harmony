@@ -219,3 +219,5 @@ Canvas pointer 事件
 自动化 Harmony 工具通过 `DeviceOperationContext` 把目标和有限 shell/host 调用传给原 hdc/bundle/base 业务函数。查询不另写解析器，apps.info 仅读设备元数据；应用写操作核对退出/成功标记，不自动重试。`hdc/hostCommand.ts` 使用参数数组、显式 endpoint/target 和有界子进程清理；`automation/adapters/installSource.ts` 从验证过的文件描述符创建私有 HAP 暂存。GUI 未传 context 时保留原业务路径。
 
 自动化 Harmony 工具：`automation/adapters/harmonyTools.ts` 固定设备并注入 `DeviceOperationContext`；共享 hdc/{base,bundle,port,uitest,hilog} 业务接收显式 context。`hostCommand.ts` 管理单次 HDC 子进程，`layoutXml.ts` 有界 XML，`oneShotShell.ts` 退出标记与输出截断；日志/布局通过 blob 二进制响应交由客户端写文件。
+
+`src/mcp/index.ts` 是独立 Node stdio 适配器，共用 automation/protocol 注册表、CLI client/profile，经同profile服务调用。`script/build-cli.mjs` 同时打包CLI和MCP，包含SDK依赖及许可；不在Electron主进程启动MCP。

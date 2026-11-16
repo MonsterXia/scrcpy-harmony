@@ -10,7 +10,7 @@
 
 **Spec:** [SP-AUTO-001](../specs/2026-11-16-agent-automation-design.md)
 
-**Status:** M0 已完成，用户已确认方向；M1/M2 本机验证完成，M3 实现/模拟闭环通过但真机/Windows pending，M4 本机候选完成，M5/M6 待执行。连续执行 M5；具体阶段状态以[维护记录](../../maintenance/agent-automation.md)为准。
+**Status:** M0 已完成，用户已确认方向；M1/M2 本机验证完成，M3 实现/模拟闭环通过但真机/Windows pending，M4 本机候选完成，M5 本机候选完成，M6 继续执行。连续执行 M6；具体阶段状态以[维护记录](../../maintenance/agent-automation.md)为准。
 
 ## Global Constraints
 
@@ -134,11 +134,11 @@ M3 真机验收保留未勾选：模拟 Electron 部分已通过；Android USB c
 
 **Interfaces:** MCP adapter 使用 `callAutomation` 和同一操作 schema；tools/list、tools/call 及图像/文件结果由正式 SDK 提供，stdout 只承载 stdio 协议。
 
-- [ ] 读取当前官方 MCP/目标 Agent 接入规范，记录选用 SDK 的版本/来源；新增依赖同时更新锁文件。
-- [ ] 写真实 stdio 协议测试：初始化、工具发现、schema 参数验证、调用服务、图片返回、错误映射、取消和 stdout 无日志污染；不支持平台不得静默成功。
-- [ ] 运行 `node --test test/automation-mcp.test.cjs` 确认失败，实现薄适配和本地启动入口；工具副作用标注与 M4 矩阵一致。
-- [ ] 撰写独立使用 skill、CLI/MCP 安装配置、闭环示例、退出/恢复步骤；不把源码维护 skill 当最终用户说明。
-- [ ] 通过真实 MCP 客户端完成协议闭环；有可用 Codex 配置时另记实际接入证据，无配置不冒充宿主已验收。重跑专项并提交 `feat: add MCP adapter and agent workflow documentation`。
+- [x] 读取当前官方 MCP/目标 Agent 接入规范，记录选用 SDK 的版本/来源；新增依赖同时更新锁文件。
+- [x] 写真实 stdio 协议测试：初始化、工具发现、schema 参数验证、调用服务、图片返回、错误映射、取消和 stdout 无日志污染；不支持平台不得静默成功。
+- [x] 运行 `node --test test/automation-mcp.test.cjs` 确认失败，实现薄适配和本地启动入口；工具副作用标注与 M4 矩阵一致。
+- [x] 撰写独立使用 skill、CLI/MCP 安装配置、闭环示例、退出/恢复步骤；不把源码维护 skill 当最终用户说明。
+- [x] 通过真实 MCP 客户端完成协议闭环；有可用 Codex 配置时另记实际接入证据，无配置不冒充宿主已验收。重跑专项并提交 `feat: add MCP adapter and agent workflow documentation`。
 
 ## M6：完整回归与交付（AUTO-10，复核全部需求）
 

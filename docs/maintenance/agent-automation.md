@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-**M1/M2 本机验证完成，M3 实现及本机模拟验证完成，真机/平台验收 pending；M4 本机候选完成，继续 M5。** 已实现会话 lease、真实画布截图、二进制传输、CLI 文件输出及 Android/Harmony 输入适配；已完成真实 Electron 模拟闭环，真机未验收，MCP 尚未实现。源码检查基线 `fb476c6`，工作区开始时干净。
+**M1/M2 本机验证完成，M3 实现及本机模拟验证完成，真机/平台验收 pending；M4/M5 本机候选完成，继续 M6。** 已实现会话 lease、真实画布截图、二进制传输、CLI 文件输出及 Android/Harmony 输入适配；已完成真实 Electron 模拟闭环，真机未验收，MCP SDK stdio 新旧协议与安装包验证通过。源码检查基线 `fb476c6`，工作区开始时干净。
 
 - [Spec：SP-AUTO-001](../superpowers/specs/2026-11-16-agent-automation-design.md)
 - [连续实施计划](../superpowers/plans/2026-11-16-agent-automation.md)
@@ -21,8 +21,8 @@
 | M2 | CLI、启动诊断、可分发客户端 | 本机完成 | 子进程/并发启动、tarball 安装、发现链路；Windows 待验收 |
 | M3 | 会话、截图、输入闭环 | 本机候选，真机 pending | 应用 1044 passed / 2 skipped；lint、三部分构建通过；真实 Electron 模拟闭环通过；Android USB claim 失败，未获得真机截图/输入证据 |
 | M4 | 现有设备工具覆盖 | 四批本机候选完成；真机 pending | 已登记逐操作矩阵；概览/应用查询/进程通过 167 项相关回归及 55 项最终查询/协议专项、lint、主进程/CLI 构建；真机 pending |
-| M5 | Agent skill、MCP | 未开始 | 无宿主接入证据 |
-| M6 | 全量回归、跨平台验收与交付 | 未开始 | 不沿用历史投屏证据冒充自动化验收 |
+| M5 | Agent skill、MCP | 本机候选完成 | 官方 SDK 2.4.0、真实 stdio 客户端、安装包通过；Codex 宿主 pending |
+| M6 | 全量回归、跨平台验收与交付 | 进行中 | 不沿用历史投屏证据冒充自动化验收 |
 
 ## 恢复与下一步
 
@@ -34,7 +34,7 @@
 
 ## 问题定位索引
 
-M1—M4 的下列入口已创建；M5 入口仍为规划路径。
+M1—M5 的下列入口已创建。
 
 | 症状 | 需求 | 规划入口 | 现有入口 |
 | --- | --- | --- | --- |
@@ -44,7 +44,7 @@ M1—M4 的下列入口已创建；M5 入口仍为规划路径。
 | 黑图/旧图/方向错误/截图失败 | AUTO-04 | `src/main/automation/frames.ts` | `src/renderer/native-mirror/App.tsx`、`ScreencastClient.ts` |
 | 点击偏移/重复输入/触点未释放 | AUTO-05/07 | `src/main/automation/input.ts` | `src/main/lib/devices/android.ts`、`hdc/screencastInput.ts` |
 | 应用/日志/布局/端口操作失败 | AUTO-06 | `src/main/automation/adapters/harmonyTools.ts` | `src/main/lib/hdc/` 对应模块 |
-| CLI 可用但 Agent 失败 | AUTO-08/09 | `src/mcp/index.ts`、使用 skill | 目前无 MCP 入口 |
+| CLI 可用但 Agent 失败 | AUTO-08/09 | `src/mcp/index.ts`、使用 skill | src/mcp/index.ts |
 | 开发可用但安装包失败 | AUTO-10 | `script/build-cli.mjs`、CLI package | `script/build.mjs`、`script/pack.mjs` |
 
 ## 验证证据
@@ -116,3 +116,7 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 ## M4-C/D 有限工具批次
 
 日志/布局/端口/shell 已实现，参数、输出及取消边界见[工具登记](../scrcpy-plus/automation/harmony-tools.md)，结果见[证据](../scrcpy-plus/evidence/agent-automation/M4/2026-11-16-artifacts/verification.json)。156 项相关回归、13 项最终 CLI/布局专项、lint、主进程/CLI 构建通过。布局共享SDK仅取消等待；真实设备、Windows进程终止仍待验收。继续 M5 官方 SDK stdio 适配及 Agent 文档。
+
+## M5 MCP 与 Agent 说明
+
+官方 SDK server/client 2.4.0 已锁定；低层 handler 共用产品 schema/client，无第二套设备连接。真实 stdio 客户端在 2026-07-28 与 legacy 模式通过工具发现、图片/嵌入文件、参数/错误、取消传播；15 项 MCP/CLI 专项通过，临时 tarball 安装后两个 bin 可运行，含35个工具。独立 Agent 使用 skill 已做五场景 baseline→读取skill复测；由此发现的子命令帮助缺口已补回归并修复。标准 Python validator 缺 PyYAML，另用本机 YAML 解析器检查结构，不能称标准脚本通过。详见[结构化证据](../scrcpy-plus/evidence/agent-automation/M5/2026-11-16/verification.json)。接下来 M6 完整回归、构建、Electron 与整段独立审查。

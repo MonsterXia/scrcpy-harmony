@@ -1,7 +1,7 @@
 import { createReadStream } from 'node:fs'
 import { readText, writeScreenshot, writeArtifact } from './files'
 import { randomUUID } from 'node:crypto'
-import { homedir } from 'node:os'
+import { defaultProfile } from './profile'
 import * as path from 'node:path'
 import { AutomationFault, exitCode, failure, operations, parseRequest, publicSchema, success } from '../common/automation/protocol'
 import type { AutomationResult } from '../common/automation/protocol'
@@ -10,13 +10,18 @@ import { formatResult } from './output'
 import { startService } from './start'
 
 export interface CliIo { stdin?: AsyncIterable<Uint8Array | string>; stdout(text: string): void; stderr(text: string): void; signal: AbortSignal }
-function defaultProfile() {
-  if (process.env.SCRCPY_PLUS_PROFILE) return process.env.SCRCPY_PLUS_PROFILE
-  if (process.platform === 'darwin') return path.join(homedir(), 'Library', 'Application Support', 'Scrcpy Plus')
-  if (process.platform === 'win32') return path.join(process.env.APPDATA || path.join(homedir(), 'AppData', 'Roaming'), 'Scrcpy Plus')
-  return path.join(process.env.XDG_CONFIG_HOME || path.join(homedir(), '.config'), 'Scrcpy Plus')
-}
-function help() {
+function help(operation?: string) {
+  if (operation && operations[operation]) {
+    const definition=operations[operation]
+    const lines=Object.entries(definition.parameters).map(([name,rule])=>{
+      const flag='--'+name.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())
+      return `  ${flag}${rule.type==='boolean'?'':` <${rule.type}>`} ${definition.required.includes(name)?'(required)':''}${rule.enum?` [${rule.enum.join('|')}]`:''}${rule.minimum!==undefined?` min=${rule.minimum}`:''}${rule.maximum!==undefined?` max=${rule.maximum}`:''}`
+    })
+    if (['screen.capture','logs.capture','layout.dump'].includes(operation)) lines.push('  --output <path> (required); --overwrite to replace an existing file')
+    if (operation==='input.text') lines.push('  --text-file <path> or --text-stdin replaces --text')
+    if (operation==='shell.run') lines.push('  --command-file <path> or --command-stdin replaces --command')
+    return `${operation.replace('.',' ')}: ${definition.description}\n${lines.join('\n')}\nOptions: --json --profile <absolute-path> --client <name> --timeout-ms <1..600000>\n`
+  }
   return `Scrcpy Plus automation (protocol v1)\n\nCommands:\n  service start --app <absolute-executable> [--app-arg <argument>]\n  ${Object.keys(operations).map(name => name.replace('.', ' ')).join('\n  ')}\n\nOptions: --json --profile <absolute-path> --client <name> --timeout-ms <1..600000>\nDevice capabilities requires --device <key>. service start defaults to 60000 ms.\nOther commands require a running app; --help and schema work offline.\n`
 }
 function parseArgs(argv: string[]) {
@@ -67,7 +72,7 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
   let result: AutomationResult
   try {
     const args = parseArgs(argv)
-    if (args.help) { io.stdout(help()); return 0 }
+    if (args.help) { io.stdout(help(args.operation)); return 0 }
     const deadline = Date.now() + args.timeoutMs!
     if (['input.text','shell.run'].includes(args.operation!) && (args.textFile !== undefined || args.textStdin)) {
       const stream = args.textFile === undefined ? io.stdin : createReadStream(args.textFile)

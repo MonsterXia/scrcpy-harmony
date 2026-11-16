@@ -166,3 +166,5 @@ MCP 作为本地 stdio 适配器复用客户端和 schema。至少暴露设备�
 - 以上为 M3 实现中记录，未替代真实 Electron/设备/平台验收门禁。
 
 AUTO-DEC-008（M4 实施）：日志/布局用有界 blob envelope（最多1MiB，日志允许为空），调用端负责文件输出；日志默认抓取5秒、最大60秒，请求默认70秒以容纳reader退出，清理仍最多额外5秒。布局SDK没有安全的独立取消API，截止/取消只结束等待并阻止后续阶段，在途共享SDK可能迟到完成，不停止GUI工具。一次性shell输出默认/最大128KiB，保留真实exitCode与truncated，不自动重发。详见[操作登记](../../scrcpy-plus/automation/harmony-tools.md)。
+
+AUTO-DEC-009（M5 实施）：使用官方 @modelcontextprotocol/server/client 2.4.0，serveStdio 兼容 2025/2026-07-28 客户端。操作 schema 唯一来源仍为 protocol.ts；工具名点/连字符转下划线，参数保持camelCase，timeoutMs单独传递。图片为image结果，文件为有界嵌入blob资源，不落盘、不提供可重取URL。MCP退出保留持久lease供同名客户端恢复；独立调用者用不同client。
