@@ -17,7 +17,7 @@ export function isCaptureWindow(win: unknown) { return [...windows.values()].som
 export function hasWindows() { return windows.size > 0 }
 export function getWindows() { return [...windows.values()].map(entry => entry.win).filter(win => !win.isDestroyed()) }
 export function getSources() { return [...windows.values()].filter(entry => !entry.win.isDestroyed())
-  .map(entry => ({ window: entry.win, platform: 'harmony' as const, deviceKey: entry.target.key })) }
+  .map(entry => ({ window: entry.win, platform: 'harmony' as const, deviceKey: entry.target.key, claimGui: () => entry.automation?.guiOpened(false) })) }
 export function listSessions(): MirrorSession[] {
   return [...windows.values()].map(({ win, target }) => ({ id: `harmony:${win.id}`,
     deviceKey: target.key, name: target.name, platform: 'harmony', state: 'running' }))

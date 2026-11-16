@@ -1,13 +1,5 @@
 const{test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{transformSync}=require('esbuild')
 function load(path,mocks={}){const module={exports:{}};vm.runInNewContext(transformSync(fs.readFileSync(path,'utf8'),{loader:'ts',format:'cjs'}).code,{module,exports:module.exports,require:id=>Object.hasOwn(mocks,id)?mocks[id]:require(id)});return module.exports}
-const devices=[{key:'a',platform:'android',state:'ready'},{key:'h',platform:'harmony',state:'ready'},{key:'off',platform:'android',state:'offline'},{key:'locked',platform:'android',state:'unauthorized'},{key:'usb-ios',platform:'ios',state:'ready'},{key:'ios:airplay-receiver',platform:'ios',transport:'receiver',state:'waiting'}]
-test('startup modes select one device, Android/Harmony, or all platforms without duplicate iOS receivers',()=>{
- const{targetsForMode,mirrorDeviceKey}=load('src/renderer/main/components/devices/modes.ts');const ids=(mode,key)=>Array.from(targetsForMode(devices,mode,key),d=>d.key)
- assert.deepEqual(ids('single','a'),['a']);assert.deepEqual(ids('single','h'),['h']);assert.deepEqual(ids('single','usb-ios'),['usb-ios'])
- assert.deepEqual(ids('single','off'),[]);assert.deepEqual(ids('single','locked'),[]);assert.deepEqual(ids('single','gone'),[])
- assert.deepEqual(ids('android-harmony'),['a','h']);assert.deepEqual(ids('all'),['a','h','ios:airplay-receiver'])
- assert.equal(mirrorDeviceKey(devices[4]),'ios:airplay-receiver')
-})
 test('layout filtering affects only selected sessions and preserves other device windows',()=>{
  const calls=[];let merged
  const{applyMirrorLayout}=load('src/main/window/mirrorLayout.ts',{'./mergedMirrors':{showMergedMirrors:provider=>{merged=provider},closeMergedMirrors:()=>calls.push('close-merged')},'./arrangeMirrors':{arrangeMirrors:windows=>calls.push(windows.map(w=>w.name))}})
@@ -21,4 +13,24 @@ test('layout filtering affects only selected sessions and preserves other device
  assert.throws(()=>applyMirrorLayout({layout:'other'},provider,{}),/Invalid/)
  assert.throws(()=>applyMirrorLayout({layout:'merged',deviceKeys:[]},provider,{}),/No active/)
  assert.throws(()=>applyMirrorLayout({layout:'merged',deviceKeys:'all'},provider,{}),/Invalid/)
+})
+test('focus restores existing windows and merged views without starting a session; layout readback tracks actual windows',()=>{
+ let mergedWindow;const calls=[]
+ const {applyMirrorLayout,getMirrorLayout,focusMirror}=load('src/main/window/mirrorLayout.ts',{'./mergedMirrors':{
+  getMergedMirrorWindow:key=>!key||key==='a'?mergedWindow:undefined,
+  showMergedMirrors:()=>{mergedWindow={isMinimized:()=>true,restore:()=>calls.push('restore-merged'),show:()=>{},focus:()=>calls.push('focus-merged')}},
+  closeMergedMirrors:()=>{mergedWindow=undefined}},'./arrangeMirrors':{arrangeMirrors:()=>{}}})
+ let bounds={x:0,y:0,width:300,height:600}
+ const win={id:1,isDestroyed:()=>false,isMinimized:()=>true,restore:()=>calls.push('restore'),show:()=>calls.push('show'),focus:()=>calls.push('focus'),getBounds:()=>bounds}
+ const provider=()=>[{deviceKey:'a',window:win}]
+ assert.equal(typeof focusMirror,'function')
+ focusMirror('a',provider);assert.deepEqual(calls,['restore','show','focus'])
+ assert.throws(()=>focusMirror('gone',provider),/No active/)
+ applyMirrorLayout({layout:'side-by-side'},provider,{})
+ assert.equal(getMirrorLayout(provider),'side-by-side')
+ bounds={...bounds,x:10};assert.equal(getMirrorLayout(provider),'independent')
+ applyMirrorLayout({layout:'merged'},provider,{})
+ assert.equal(getMirrorLayout(provider),'merged');focusMirror('a',provider)
+ assert.equal(calls.at(-1),'focus-merged')
+ mergedWindow=undefined;assert.equal(getMirrorLayout(provider),'independent')
 })

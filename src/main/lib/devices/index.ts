@@ -1,8 +1,8 @@
 import { app } from 'electron'
 import type { DeviceDiscovery, ITarget } from 'common/types'
 import { handleEvent } from 'share/main/lib/util'
-import { getTargets } from '../hdc'
-import { discoverAndroid } from './android'
+import { getTargets, getOverview } from '../hdc'
+import { discoverAndroid, getAndroidOverview } from './android'
 import { discoverIos } from './ios-usbmux'
 import { nativeMirrors } from '../../window/nativeMirror'
 import * as screencast from '../../window/screencast'
@@ -64,6 +64,14 @@ export async function startSelected(key: string) {
 }
 export function init() {
   handleEvent('getDevices', getDevices)
+  handleEvent('getDeviceOverview', async (key: string) => {
+    if (typeof key !== 'string') throw new Error('Invalid device key')
+    const target = current.get(key)
+    if (!target || (target.state && target.state !== 'ready')) throw new Error('Device unavailable')
+    if (target.platform === 'android') return getAndroidOverview(target)
+    if (!target.platform || target.platform === 'harmony') return getOverview(target.key)
+    throw new Error('Unsupported overview platform')
+  })
   handleEvent('getMirrorSessions', () => [...screencast.listSessions(), ...mirrorSessions.list()])
   handleEvent('stopMirrorSession', async (id: string) => {
     if (typeof id !== 'string') throw new Error('Invalid session')

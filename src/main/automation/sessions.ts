@@ -50,10 +50,10 @@ export class AutomationSessions {
     for (const lease of entry.leases.values()) this.retire(entry, lease)
     if (this.devices.get(entry.info.deviceKey) === id) this.devices.delete(entry.info.deviceKey)
   }
-  claimGui(id: string) {
+  claimGui(id: string, show = true) {
     const entry = this.entry(id)
     if (['stopping','stopped'].includes(entry.info.state) || entry.stopping || entry.cleanup) throw new AutomationFault('UNAVAILABLE', 'Session is stopping or stopped')
-    entry.gui = true; entry.controls.show()
+    entry.gui = true; if (show) entry.controls.show()
   }
   releaseGui(id: string) {
     const entry = this.entry(id); entry.gui = false

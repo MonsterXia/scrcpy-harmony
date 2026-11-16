@@ -39,7 +39,7 @@ class NativeMirrors {
   list() { return [...this.sessions.values()].map(session => ({ ...session.info })) }
   getWindows() { return [...this.sessions.values()].filter(session => !session.stopping && !session.window.isDestroyed()).map(session => session.window) }
   getSources() { return [...this.sessions.values()].filter(session => !session.stopping && !session.window.isDestroyed())
-    .map(session => ({ window: session.window, platform: session.target.platform!, deviceKey: session.info.deviceKey })) }
+    .map(session => ({ window: session.window, platform: session.target.platform!, deviceKey: session.info.deviceKey, claimGui: () => session.automation?.guiOpened(false) })) }
   async start(target: ITarget, gui = true) {
     if (this.disposed) throw new Error('Mirrors closed')
     const key = target.platform === 'ios' ? 'ios:airplay-receiver' : target.key

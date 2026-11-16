@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite'
 import { PropsWithChildren, useState } from 'react'
 import className from 'licia/className'
 import Style from './setting.module.scss'
@@ -187,7 +188,7 @@ interface ICheckboxProps {
   onChange: (val: boolean) => void
 }
 
-export function Checkbox(props: ICheckboxProps) {
+export const Checkbox = observer(function Checkbox(props: ICheckboxProps) {
   const [id] = useState(uuid())
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -215,4 +216,4 @@ export function Checkbox(props: ICheckboxProps) {
       </div>
     </div>
   )
-}
+})

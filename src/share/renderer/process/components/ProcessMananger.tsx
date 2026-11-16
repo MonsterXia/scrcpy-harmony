@@ -1,3 +1,4 @@
+import { computed } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import LunaDataGrid from 'luna-data-grid/react'
 import DataGrid from 'luna-data-grid'
@@ -81,7 +82,7 @@ export default observer(function ProcessManager() {
         onSelect={(node) => store.select(node.data as any)}
         onDeselect={() => store.select(null)}
         filter={store.filter}
-        columns={columns}
+        columns={columns.get()}
         theme={store.theme}
         selectable={true}
         data={processes}
@@ -95,7 +96,7 @@ export default observer(function ProcessManager() {
   )
 })
 
-const columns = [
+const columns = computed(() => [
   {
     id: 'name',
     title: t('processName'),
@@ -127,4 +128,4 @@ const columns = [
     weight: 15,
     sortable: true,
   },
-]
+])

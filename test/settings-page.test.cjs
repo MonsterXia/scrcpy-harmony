@@ -71,7 +71,7 @@ test('settings saves explicit language values with pending and failure recovery'
   assert.equal(f.host.querySelector('[role="alert"]'), null)
   assert.equal(
     f.host.querySelector('[role="status"]').textContent,
-    'requireReload',
+    'workspaceSettingsSaved',
   )
   assert.deepEqual(f.restarts, [])
   await act(async () =>

@@ -46,10 +46,11 @@ test('codec changes and native queue loss require another keyframe', () => {
 function androidFixture(directory, filesystem = fs.promises) {
   const devices = ['a', 'b'].map(serial => ({ serial, name: 'Same model',
     closes: 0, connects: 0, raw: { claimInterface: async () => {}, releaseInterface: async () => {}, open: async () => {}, transferIn: async () => ({}), transferOut: async () => ({}), close: async () => { devices.find(d => d.serial === serial).closes++ } },
-    async connect() { this.connects++; return { serial } },
+    async connect() { this.connects++; await this.raw.open(); return { serial } },
   }))
   const clients = [], authentications = []
   const api = load('src/main/lib/devices/android.ts', {
+    './androidOverview': { readAndroidOverview: async adb => ({ name: adb.serial }) },
     'node:fs/promises': filesystem,
     '@yume-chan/adb': {
       AdbDaemonTransport: { authenticate: async options => { authentications.push(options.serial); return { serial: options.serial } } },
@@ -255,4 +256,50 @@ test('automation geometry is rechecked inside Android input queue while release 
  await mirror.input({...input,action:'up'},expected)
  assert.deepEqual(f.clients[0].calls.map(c=>c.action),[0,1]);assert.equal(f.clients[0].calls[1].videoWidth,2000)
  await mirror.close()
+})
+test('Android overview reuses active mirror transport and temporary reads release USB', async t => {
+  const f = androidFixture(directory(t))
+  const [target] = await f.discoverAndroid()
+  const mirror = new f.AndroidMirror(target)
+  await mirror.start(() => {}, () => {})
+  assert.equal((await f.getAndroidOverview(target)).name, target.connectionId)
+  assert.equal(f.devices[0].connects, 1)
+  assert.equal(f.devices[0].closes, 0, 'overview must not close video transport')
+  await mirror.close()
+  assert.equal((await f.getAndroidOverview(target)).name, target.connectionId)
+  assert.equal(f.devices[0].connects, 2)
+  assert.equal(f.devices[0].closes, 2, 'standalone read must release its connection')
+})
+test('overview waits for a stopping mirror to release its USB interface', async t => {
+  const f = androidFixture(directory(t)), [target] = await f.discoverAndroid()
+  let release, closing = false
+  const gate = new Promise(resolve => { release = resolve })
+  f.devices[0].raw.close = async () => { closing = true; f.devices[0].closes++; await gate }
+  const mirror = new f.AndroidMirror(target)
+  await mirror.start(() => {}, () => {})
+  const stopped = mirror.close()
+  while (!closing) await new Promise(setImmediate)
+  const overview = f.getAndroidOverview(target)
+  await new Promise(setImmediate)
+  try { assert.equal(f.devices[0].connects, 1, 'must retain USB ownership through teardown') }
+  finally { release(); await stopped; await overview }
+  assert.equal(f.devices[0].connects, 2)
+})
+
+test('temporary overview cleanup failure is retried before another read or mirror claims USB', async t => {
+  for (const next of ['overview', 'mirror']) {
+    const f = androidFixture(directory(t)), [target] = await f.discoverAndroid()
+    let held = false, failed = false, opens = 0, closes = 0
+    f.devices[0].raw.open = async () => { assert.equal(held, false, 'previous native owner must drain'); held = true; opens++ }
+    f.devices[0].raw.close = async () => { closes++; if (!failed) { failed = true; throw Error('cleanup failed') }; held = false }
+    await assert.rejects(f.getAndroidOverview(target), /cleanup failed/)
+    assert.equal(held, true)
+    if (next === 'overview') await f.getAndroidOverview(target)
+    else {
+      const mirror = new f.AndroidMirror(target)
+      await mirror.start(() => {}, () => {})
+      await mirror.close()
+    }
+    assert.equal(opens, 2); assert.equal(closes, 3); assert.equal(held, false)
+  }
 })

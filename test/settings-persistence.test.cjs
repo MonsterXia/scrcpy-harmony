@@ -23,6 +23,16 @@ test('language survives immediate process exit and preserves other settings and 
     assert.deepEqual(changed, ['language', 'en-US'])
     assert.equal(JSON.parse(fs.readFileSync(file, 'utf8')).language, 'en-US')
     assert.deepEqual(fs.readdirSync(path.dirname(file)), ['settings.json'])
+    const events = []
+    reloaded.on('change', (key, value) => {
+      assert.equal(JSON.parse(fs.readFileSync(file, 'utf8'))[key], value)
+      events.push([key, value])
+    })
+    reloaded.set('language', 'zh-CN')
+    reloaded.save = () => { throw Error('disk failed') }
+    assert.throws(() => reloaded.set('language', 'en-US'), /disk failed/)
+    assert.equal(reloaded.get('language'), 'zh-CN')
+    assert.deepEqual(events, [['language', 'zh-CN']])
     fs.writeFileSync(file, '{broken')
     assert.equal(new Store(file, { language: 'system' }).get('language'), 'system')
   } finally { fs.rmSync(root, { recursive: true, force: true }) }

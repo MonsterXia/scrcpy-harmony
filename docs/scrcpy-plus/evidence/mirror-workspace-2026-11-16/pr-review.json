@@ -1,0 +1,36 @@
+{
+  "pr": "https://github.com/MonsterXia/scrcpy-harmony/pull/89",
+  "deliveryStatus": "https://github.com/MonsterXia/scrcpy-harmony/pull/89#issuecomment-6912315624",
+  "base": "35a2fd6d1583382a8560f94fdf1e90216af67c0d",
+  "review": {
+    "independent": true,
+    "fixed": [
+      "GUI ownership when focusing an automation-created mirror without revealing merged source",
+      "Retain temporary Android connection ownership after cleanup failure and drain before reacquisition"
+    ],
+    "remainingP1P2": 0,
+    "independentNewRegressionsPassed": 2
+  },
+  "localValidation": {
+    "application": {
+      "pass": 1118,
+      "skip": 2,
+      "fail": 0
+    },
+    "liciaProduction": {
+      "pass": 606,
+      "pending": 4
+    },
+    "liciaFallback": {
+      "pass": 606,
+      "pending": 4
+    },
+    "lintAndI18n": "passed",
+    "mainBuild": "passed"
+  },
+  "limits": [
+    "Prior installed app does not contain these subsequent review fixes",
+    "Real-device continuous video, long-term polling, iOS and other-host device testing remain outside this review",
+    "Final remote checks and merge SHA recorded in linked PR delivery status"
+  ]
+}

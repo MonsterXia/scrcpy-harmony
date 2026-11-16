@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite'
 import { t } from 'common/util'
 import { notify } from 'share/renderer/lib/util'
 import store from '../../store'
-import DeviceSwitcher from './DeviceSwitcher'
 import MultiMirrorIcon from './MultiMirrorIcon'
 import useMainFeedback from './useMainFeedback'
 import Style from './Workspace.module.scss'
@@ -64,8 +63,7 @@ export default observer(function Workspace({
             <small>{t('plusPlatforms')}</small>
           </span>
         </button>
-        <div className={Style.toolsLabel}>{t('plusHarmonyTools')}</div>
-        <DeviceSwitcher />
+
         <nav className={Style.navigation} aria-label={t('workspaceNavigation')}>
           {groups.map((group) => (
             <div className={Style.group} key={group.title}>
@@ -79,7 +77,8 @@ export default observer(function Workspace({
                   aria-current={store.panel === item.id ? 'page' : undefined}
                   aria-controls={`panel-${item.id}`}
                   aria-label={item.label}
-                  title={item.label}
+                  disabled={item.id !== 'overview' && store.overviewTarget?.platform === 'android'}
+                  title={item.id !== 'overview' && store.overviewTarget?.platform === 'android' ? t('plusHarmonyToolsOnly') : item.label}
                   onClick={() => store.selectPanel(item.id)}
                 >
                   <span className={`icon-${item.icon}`} aria-hidden="true" />

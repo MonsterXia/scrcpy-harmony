@@ -16,13 +16,9 @@ import { PannelLoading } from './components/common/loading'
 import useHapDrop from '../lib/useHapDrop'
 
 export default observer(function App() {
-  useHapDrop(!store.target?.platform || store.target.platform === 'harmony' ? store.target?.key : undefined)
+  useHapDrop(store.overviewTarget?.platform === 'android' ? undefined : store.target?.key)
   const openSettings = () => store.selectPanel('settings')
   const panels = [
-    {
-      id: 'overview',
-      content: <Overview onOpenSettings={openSettings} />,
-    },
     { id: 'application', content: <Application /> },
     { id: 'process', content: <Process /> },
     { id: 'shell', content: <Shell /> },
@@ -38,6 +34,9 @@ export default observer(function App() {
           <SettingsContent />
         </Panel>
         <Panel id="devices" active={store.panel === 'devices'}><Devices /></Panel>
+        <Panel id="overview" active={store.panel === 'overview'}>
+          {store.ready ? <Overview onOpenSettings={openSettings} /> : <PannelLoading />}
+        </Panel>
         {store.ready && (!store.target?.platform || store.target.platform === 'harmony') ? (
           <div key={store.target?.key || ''}>
             {panels.map((panel) => (

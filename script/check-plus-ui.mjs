@@ -41,6 +41,8 @@ try {
       executablePath: process.argv[3] || createRequire(import.meta.url)('electron'),
       args: [entry], env: { ...process.env, OHOS_HDC_SERVER_PORT: String(server.address().port) }, timeout: 30000,
     })
+    application.process().stderr?.on('data', chunk => { void writeFile(path.join(directory, `${language}-runtime.log`), chunk, { flag: 'a' }) })
+    application.process().once('exit', (code, signal) => { console.log(`${language}: Electron exit code=${code} signal=${signal}`) })
     await application.evaluate(({ ipcMain, BrowserWindow }) => {
       const targets = [
         { key: 'harmony:a', name: 'HUAWEI Mate 80', platform: 'harmony', state: 'ready' },
@@ -50,25 +52,37 @@ try {
         { key: 'ios:01234567-1234567890abcdef', name: 'iPhone Fixture', platform: 'ios', state: 'ready' },
         { key: 'ios:airplay-receiver', name: 'AirPlay', platform: 'ios', transport: 'receiver', state: 'waiting' },
       ]
-      const sessions = []; globalThis.__plusArrangeCount = 0; globalThis.__plusMergeCount = 0; globalThis.__plusLayouts = []
-      for (const channel of ['getDevices', 'showScreencast', 'getMirrorSessions', 'stopMirrorSession', 'arrangeMirrors', 'showMergedMirrors', 'applyMirrorLayout']) ipcMain.removeHandler(channel)
-      ipcMain.handle('getDevices', () => ({ targets, errors: [] }))
+      targets.push(
+        { key: 'android:running', name: 'Mi 10 Ultra', platform: 'android', state: 'ready', transport: 'usb' },
+        { key: 'harmony:running', name: 'nova 15', platform: 'harmony', state: 'ready', transport: 'usb' },
+      )
+      const sessions = targets.filter(t => t.key.endsWith(':running')).map(t => ({ id: t.key, deviceKey: t.key, name: t.name, platform: t.platform, state: 'running' }))
+      let layout = 'independent'
+      globalThis.__plusLayouts = []; globalThis.__plusFocused = []; globalThis.__plusOverviewReads = []
+      globalThis.__plusDiscoveryReads = 0; globalThis.__plusTargets = targets; globalThis.__plusSessions = sessions
+      for (const channel of ['getDevices', 'showScreencast', 'getMirrorSessions', 'stopMirrorSession', 'applyMirrorLayout', 'getMirrorLayout', 'focusMirror', 'getDeviceOverview']) ipcMain.removeHandler(channel)
+      ipcMain.handle('getDevices', () => { globalThis.__plusDiscoveryReads++; return { targets, errors: [] } })
       ipcMain.handle('showScreencast', (_, key) => {
         const target = targets.find(target => target.key === key)
-        const deviceKey = target.platform === 'ios' ? 'ios:airplay-receiver' : key
-        if (!sessions.some(item => item.deviceKey === deviceKey)) sessions.push({ id: deviceKey, deviceKey, name: target.name, platform: target.platform, state: target.platform === 'ios' ? 'waiting' : 'running' })
+        if (!sessions.some(item => item.deviceKey === key)) sessions.push({ id: key, deviceKey: key, name: target.name, platform: target.platform, state: target.platform === 'ios' ? 'waiting' : 'running' })
       })
       ipcMain.handle('getMirrorSessions', () => sessions)
-      ipcMain.handle('arrangeMirrors', () => { globalThis.__plusArrangeCount++ })
-      ipcMain.handle('showMergedMirrors', () => { globalThis.__plusMergeCount++ })
-      ipcMain.handle('applyMirrorLayout', (_, request) => { globalThis.__plusLayouts.push(request) })
+      ipcMain.handle('getMirrorLayout', () => layout)
+      ipcMain.handle('focusMirror', (_, key) => { globalThis.__plusFocused.push(key) })
+      ipcMain.handle('applyMirrorLayout', (_, request) => { globalThis.__plusLayouts.push(request); layout = request.layout })
       ipcMain.handle('stopMirrorSession', (_, id) => { const index = sessions.findIndex(item => item.id === id); if (index >= 0) sessions.splice(index, 1) })
+      ipcMain.handle('getDeviceOverview', (_, key) => {
+        globalThis.__plusOverviewReads.push(key)
+        const target = targets.find(target => target.key === key)
+        return { name: target.name, brand: target.platform === 'android' ? 'Google' : 'HUAWEI', model: target.name,
+          osVersion: target.platform === 'android' ? 'Android 16 (API 36)' : '', processor: 'ARM', abi: 'arm64-v8a', memTotal: 8589934592, physicalResolution: '1080x2400', serialNum: 'fixture', kernelVersion: '6.1' }
+      })
       for (const window of BrowserWindow.getAllWindows()) window.webContents.send('changeTarget')
     })
     const page = await application.firstWindow(); page.setDefaultTimeout(15000)
     const errors = []; page.on('pageerror', error => errors.push(error.message))
     await page.locator('[data-workspace]').waitFor()
-    await page.waitForFunction(() => document.querySelector('[data-device-picker]')?.options.length === 6 && document.querySelector('#workspace-device')?.options.length === 1)
+    await page.waitForFunction(() => document.querySelectorAll('[data-device-row]').length === 4 && document.querySelectorAll('[data-session-row]').length === 2)
     const feature = page.locator('[data-navigation="devices"]')
     assert.equal(await feature.locator('svg').count(), 1)
     assert.equal(await page.locator('nav [data-navigation]').count(), 8)
@@ -76,7 +90,8 @@ try {
     for (const width of [960, 1280]) {
       await application.evaluate(({ BrowserWindow }, width) => BrowserWindow.getAllWindows()[0].setSize(width, 850), width)
       for (const theme of ['light', 'dark']) {
-        await page.locator('[data-workspace]').evaluate((node, theme) => { node.dataset.theme = theme }, theme)
+        await page.evaluate(theme => main.setSettingsStore('theme', theme), theme)
+        await page.waitForFunction(theme => document.querySelector('[data-workspace]').dataset.theme === theme, theme)
         const geometry = await feature.evaluate(node => {
           const rect = node.getBoundingClientRect(), sidebar = node.closest('aside').getBoundingClientRect()
           const svg = node.querySelector('svg').getBoundingClientRect()
@@ -87,67 +102,135 @@ try {
         sidebarCases.push({ width, theme, ...geometry })
       }
     }
-    await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(960, 850))
-    await page.locator('[data-device-picker]').selectOption('harmony:a')
-    assert.match(await page.locator('#panel-devices h2').first().innerText(), /HUAWEI Mate 80/)
-    assert.equal(await page.locator('[data-navigation="shell"]').isDisabled(), false)
-    await page.locator('[data-device-picker]').selectOption('android:a')
-    assert.equal(await page.locator('#workspace-device').inputValue(), 'harmony:a')
-    assert.equal(await page.locator('[data-navigation="shell"]').isDisabled(), false)
-    await page.locator('[data-action="start-selected"]').click()
-    await page.waitForFunction(async () => (await main.getMirrorSessions()).length === 1)
-    assert.equal((await page.evaluate(() => main.getMirrorSessions()))[0].platform, 'android')
+    assert.equal(await page.locator('aside #workspace-device').count(), 0)
+    assert.equal(await page.locator('[data-device-row="android:b"] input').isDisabled(), true)
+    assert.equal(await page.locator('[data-device-row="android:c"] input').isDisabled(), true)
+    assert.equal(await page.locator('[data-action="start-selected"]').isDisabled(), true)
+    await page.locator('[data-device-row="android:a"] input').check()
+    await page.locator('[data-device-row="harmony:a"] input').check()
+    await page.screenshot({ path: path.join(directory, `${language}-unavailable-devices.png`) })
+    // Match the approved two-available/two-running reference for visual comparison.
+    await application.evaluate(({ BrowserWindow }) => {
+      const targets = globalThis.__plusTargets
+      globalThis.__plusUnavailable = targets.filter(t => t.state === 'unauthorized' || t.state === 'offline')
+      for (let i = targets.length - 1; i >= 0; i--) if (globalThis.__plusUnavailable.includes(targets[i])) targets.splice(i, 1)
+      for (const win of BrowserWindow.getAllWindows()) win.webContents.send('changeTarget')
+    })
+    await page.waitForFunction(() => document.querySelectorAll('[data-device-row]').length === 2)
+    // Themes must use identical geometry, including after responsive reflow.
     for (const width of [960, 1280]) {
       await application.evaluate(({ BrowserWindow }, width) => BrowserWindow.getAllWindows()[0].setSize(width, 850), width)
-      await page.screenshot({ path: path.join(directory, `${language}-independent-devices-${width}.png`) })
-    }
-    // Choosing another tools device leaves the mirroring picker untouched.
-    await page.locator('details summary').click()
-    await page.locator('#workspace-device').selectOption('harmony:a')
-    assert.equal(await page.locator('[data-device-picker]').inputValue(), 'android:a')
-    await page.locator('[data-device-picker]').selectOption('ios:01234567-1234567890abcdef')
-    await page.locator('[data-action="start-selected"]').click()
-    await page.waitForFunction(async () => (await main.getMirrorSessions()).length === 2)
-    assert.equal(await page.locator('[data-navigation="shell"]').isDisabled(), false)
-    assert.equal(await page.locator('#workspace-device').inputValue(), 'harmony:a')
-    await page.reload()
-    await page.waitForFunction(() => document.querySelector('[data-device-picker]')?.value === 'ios:01234567-1234567890abcdef')
-    assert.equal(await page.locator('#workspace-device').inputValue(), 'harmony:a')
-    assert.equal(await page.locator('[data-navigation="shell"]').isDisabled(), false)
-    await page.screenshot({ path: path.join(directory, `${language}-devices.png`) })
-    const sessions = await page.evaluate(() => main.getMirrorSessions())
-    assert.equal(sessions.length, 2)
-    await page.evaluate(async () => { const sessions = await main.getMirrorSessions(); await main.stopMirrorSession(sessions.find(item => item.platform === 'android').id) })
-    assert.equal((await page.evaluate(() => main.getMirrorSessions())).length, 1)
-    await page.locator('[data-start-mode]').selectOption('all')
-    await page.locator('[data-action="start-mode"]').click()
-    await page.waitForFunction(async () => (await main.getMirrorSessions()).length === 3)
-    assert.deepEqual((await page.evaluate(() => main.getMirrorSessions())).map(s => s.platform).sort(), ['android', 'harmony', 'ios'])
-    await page.locator('#panel-devices button').filter({ hasText: language === 'zh-CN' ? '并排排列' : 'Arrange side by side' }).click()
-    await page.waitForFunction(() => !document.querySelector('[data-action="apply-layout"]').disabled)
-    assert.equal(await application.evaluate(() => globalThis.__plusLayouts.at(-1).layout), 'side-by-side')
-    await page.locator('#panel-devices button').filter({ hasText: language === 'zh-CN' ? '合并排列' : 'Merge views' }).click()
-    await page.waitForFunction(() => !document.querySelector('[data-action="apply-layout"]').disabled)
-    assert.equal(await application.evaluate(() => globalThis.__plusLayouts.at(-1).layout), 'merged')
-    for (const mode of ['single', 'android-harmony', 'all']) {
-      await page.locator('[data-start-mode]').selectOption(mode)
-      for (const layout of ['independent', 'side-by-side', 'merged']) {
-        await page.locator('[data-layout-mode]').selectOption(layout)
-        await page.locator('[data-action="start-mode"]').click()
-        await page.waitForFunction(() => !document.querySelector('[data-action="start-mode"]').disabled)
-        const applied = await application.evaluate(() => globalThis.__plusLayouts.at(-1))
-        assert.equal(applied.layout, layout)
-        const expected = mode === 'single' ? ['ios:airplay-receiver'] : mode === 'android-harmony' ? ['android:a', 'harmony:a'] : ['android:a', 'harmony:a', 'ios:airplay-receiver']
-        assert.deepEqual(applied.deviceKeys.sort(), expected)
-        assert.equal((await page.evaluate(() => main.getMirrorSessions())).length, 3)
+      let previous
+      for (const theme of ['light', 'dark']) {
+        await page.evaluate(theme => main.setSettingsStore('theme', theme), theme)
+        await page.waitForFunction(theme => document.querySelector('[data-workspace]').dataset.theme === theme, theme)
+        const geometry = await page.locator('[data-mirror-workspace]').evaluate(node => ({
+          fits: node.scrollWidth <= node.clientWidth,
+          rows: [...node.querySelectorAll('[data-device-row], [data-session-row], [data-layout], [data-action="start-selected"]')].map(item => {
+            const { x, y, width, height } = item.getBoundingClientRect(); return { x, y, width, height }
+          }),
+        }))
+        assert.equal(geometry.fits, true)
+        if (previous) assert.deepEqual(geometry.rows, previous.rows)
+        previous = geometry
+        await page.screenshot({ path: path.join(directory, `${language}-mirrors-${width}-${theme}.png`) })
       }
     }
-    await page.screenshot({ path: path.join(directory, `${language}-modes.png`) })
+    await application.evaluate(({ BrowserWindow }) => {
+      globalThis.__plusTargets.push(...globalThis.__plusUnavailable)
+      for (const win of BrowserWindow.getAllWindows()) win.webContents.send('changeTarget')
+    })
+    await page.waitForFunction(() => document.querySelectorAll('[data-device-row]').length === 4)
+    await page.locator('[data-action="start-selected"]').click()
+    await page.waitForFunction(() => document.querySelectorAll('[data-session-row]').length === 4)
+    await page.locator('[data-session-row="android:a"] [data-action="focus"]').click()
+    assert.equal(await application.evaluate(() => globalThis.__plusFocused.at(-1)), 'android:a')
+    for (const layout of ['side-by-side', 'merged', 'independent']) {
+      await page.locator(`[data-layout="${layout}"]`).click()
+      await page.waitForFunction(value => document.querySelector(`[data-layout="${value}"]`)?.getAttribute('aria-pressed') === 'true', layout)
+      const request = await application.evaluate(() => globalThis.__plusLayouts.at(-1))
+      assert.equal(request.layout, layout); assert.equal(request.deviceKeys, undefined)
+    }
+    await page.locator('[data-session-row="android:a"] [data-action="stop"]').click()
+    await page.locator('[data-device-row="android:a"]').waitFor()
+    assert.equal((await page.evaluate(() => main.getMirrorSessions())).length, 3)
+    await page.locator('[data-action="start-receiver"]').click()
+    await page.locator('[data-action="focus-receiver"]').waitFor()
+    assert.equal((await page.evaluate(() => main.getMirrorSessions())).at(-1).state, 'waiting')
+    // One selector now lives inside Overview, including both supported platforms.
+    await page.locator('[data-navigation="overview"]').click()
+    await page.locator('#workspace-device').selectOption('android:a')
+    await page.waitForFunction(() => document.querySelector('[data-overview-field="ohosVersion"]')?.textContent === 'Android 16 (API 36)')
+    assert.equal(await page.locator('[data-navigation="shell"]').isDisabled(), true)
+    assert.equal(await page.locator('#workspace-device option').count(), 6)
+    const readCount = await application.evaluate(() => globalThis.__plusOverviewReads.length)
+    await page.evaluate(() => { window.__overviewField = document.querySelector('[data-overview-field="name"]') })
+    for (let index = 0; index < 3; index++) {
+      await page.locator('#panel-overview [data-action="refresh-devices"]').click()
+      await page.waitForFunction(() => !document.querySelector('#panel-overview [data-action="refresh-devices"]').disabled)
+    }
+    // Let two real five-second Store polling cycles run; no overview reload.
+    const pollingObserved = await application.evaluate(() => new Promise(resolve => {
+      const initial = globalThis.__plusDiscoveryReads
+      const timer = setInterval(() => {
+        if (globalThis.__plusDiscoveryReads >= initial + 2) { clearInterval(timer); clearTimeout(deadline); resolve(true) }
+      }, 100)
+      const deadline = setTimeout(() => { clearInterval(timer); resolve(false) }, 12000)
+    }))
+    assert.equal(pollingObserved, true)
+    assert.equal(await application.evaluate(() => globalThis.__plusOverviewReads.length), readCount)
+    assert.equal(await page.evaluate(() => window.__overviewField === document.querySelector('[data-overview-field="name"]')), true)
+    await page.waitForFunction(() => !document.querySelector('.luna-notification-item'))
+    for (const theme of ['light', 'dark']) {
+      await page.evaluate(theme => main.setSettingsStore('theme', theme), theme)
+        await page.waitForFunction(theme => document.querySelector('[data-workspace]').dataset.theme === theme, theme)
+      await page.screenshot({ path: path.join(directory, `${language}-overview-android-${theme}.png`) })
+    }
+    await page.locator('#workspace-device').selectOption('harmony:a')
+    await page.waitForFunction(() => document.querySelector('[data-overview-field="name"]')?.textContent === 'HUAWEI Mate 80')
+    assert.equal(await page.locator('[data-navigation="shell"]').isDisabled(), false)
+    await page.screenshot({ path: path.join(directory, `${language}-overview-harmony.png`) })
+    assert.equal((await page.evaluate(() => main.getMirrorSessions())).length, 4)
     await page.locator('[data-action="settings"]').click()
     await page.screenshot({ path: path.join(directory, `${language}-settings.png`) })
+    // Change the real persisted preference while both renderer pages stay mounted.
+    const sessionSnapshot = await page.evaluate(() => main.getMirrorSessions())
+    const processId = await application.evaluate(() => process.pid)
+    const auxiliaryPromise = application.waitForEvent('window')
+    await page.evaluate(() => main.showProcess())
+    const auxiliary = await auxiliaryPromise
+    await auxiliary.locator('.luna-data-grid-header').waitFor()
+    await auxiliary.evaluate(() => { window.__languageGrid = document.querySelector('.luna-data-grid') })
+    await page.locator('#settings-hdc-path').fill('/unsaved/language-test')
+    await page.evaluate(() => { window.__languageInput = document.querySelector('#settings-hdc-path') })
+    const liveLanguageCases = []
+    for (const choice of [language === 'en-US' ? 'zh-CN' : 'en-US', language, 'system']) {
+      await page.locator('[data-settings] select').first().selectOption(choice)
+      await page.waitForFunction(() => !document.querySelector('[data-settings] select').disabled)
+      const resolved = await page.evaluate(() => main.getLanguage())
+      await page.waitForFunction(locale => document.documentElement.lang === locale, resolved)
+      await auxiliary.waitForFunction(locale => document.documentElement.lang === locale, resolved)
+      const chinese = resolved === 'zh-CN'
+      assert.equal(await page.locator('[data-settings] h1').innerText(), chinese ? '设置' : 'Settings')
+      assert.match(await auxiliary.locator('.luna-data-grid-header').innerText(), chinese ? /进程名称/ : /Process Name/)
+      assert.equal(await auxiliary.title(), chinese ? '进程管理器' : 'Process Manager')
+      const menus = await application.evaluate(({ Menu }) => Menu.getApplicationMenu().items.map(item => item.label))
+      assert.ok(menus.includes(chinese ? '工具' : 'Tools'))
+      assert.equal(await page.locator('#settings-hdc-path').inputValue(), '/unsaved/language-test')
+      assert.equal(await page.evaluate(() => window.__languageInput === document.querySelector('#settings-hdc-path')), true)
+      assert.equal(await auxiliary.evaluate(() => window.__languageGrid === document.querySelector('.luna-data-grid')), true)
+      assert.deepEqual(await page.evaluate(() => main.getMirrorSessions()), sessionSnapshot)
+      assert.equal(await application.evaluate(() => process.pid), processId)
+      assert.equal(await page.evaluate(() => main.getSettingsStore('language')), choice)
+      await page.screenshot({ path: path.join(directory, `${language}-live-${choice}.png`) })
+      liveLanguageCases.push({ choice, resolved, statePreserved: true, menuAndAuxiliaryTranslated: true })
+    }
+    await auxiliary.close()
     assert.deepEqual(errors, [])
-    report.cases.push({ language, sidebarCases, dedicatedMultiMirrorEntry: true, independentDeviceSelection: true, independentChoicesRestoredAfterReload: true, harmonyToolsEnabledDuringAndroidAndIosMirroring: true, harmonyDestinations: 8, devices: 6, harmonySelectableOnDevicePage: true, concurrentSessions: 3, platforms: ['android', 'harmony', 'ios'], stopIsolation: true, startupLayoutPairs: 9, otherSessionsPreserved: true,
-      runtime: await application.evaluate(() => process.versions.electron), passed: true })
+    report.cases.push({ language, liveLanguageCases, sidebarCases,
+      batchSelection: true, focusWithoutRestart: true, layoutScopeAllSessions: true, stopIsolation: true,
+      iosReceiverSeparated: true, overviewPlatforms: ['android', 'harmony'], repeatedDiscoveryPreservesOverview: true,
+      sameGeometryInBothThemes: true, runtime: await application.evaluate(() => process.versions.electron), passed: true })
     await application.close(); application = undefined
   }
   report.passed = true

@@ -108,7 +108,7 @@ HAP 拖入由主窗口和投屏根组件各注册一次 `src/renderer/lib/useHap
 
 `hdc/parameters.ts` 的同步 `parseTargetParameters` 供枚举及概览有限读取共用；旧 `getTargetParameters` reader 导出保留，但这两个处理器不再经其读取。解析前拒绝行首 `[Fail]`、`[E` 加六位数字 `]`、`error:` 等明确命令错误；合法参数值中的同名文本不算错误，缺少可选字段仍交给上层兼容处理。解析层不修改服务生命周期或共享 shell。
 
-概览 `Overview.refresh()` 在读取失败后清空旧概览并提示错误，释放加载状态后允许再次刷新，避免将上次数据呈现为当前结果。
+概览 `Overview.refresh()` 在读取失败后清空旧概览并提示错误，释放加载状态后允许再次刷新，避免将上次数据呈现为当前结果。设备选择器位于概览内，`overviewTarget` 支持 Android/Harmony；`target` 继续只供鸿蒙工具使用。概览组件不跟随 HDC target key 重挂载，以 key/平台/state 的语义身份管理读取会话，禁止以设备对象引用判断轮询中的同一设备。统一 IPC `getDeviceOverview` 按当前发现记录分派；Android 固定只读命令与有界读取见 `devices/androidOverview.ts`，连接复用/临时连接/停止期归属见 `devices/android.ts`。多端投屏页的勾选启动与已创建窗口排列范围独立，`getMirrorLayout`/`focusMirror` 不创建或重启视频会话。
 
 `hdc.ts` 的 `getTargets` 对每个设备单独读取参数并隔离失败，保留可读取设备的原始顺序。版本从可识别的点分数字字段提取；缺失或未知版本返回空字符串并记警告，名称缺失回退到 connectKey，API 字段缺失返回空字符串。`listTargets` 失败记录 error，非空设备列表全部读取失败记录 warn，两者均拒绝 IPC；正常无设备记录 info 并返回空数组；部分设备失败仍返回其余设备。成功返回类型仍为 `ITarget[]`。主窗口 `refreshTargets()` 捕获失败、清空列表和选择、设置 `targetsError` 并返回 false；初始化和设备事件刷新也使用此路径。`workspace/DeviceSwitcher.tsx` 区分读取失败与正常无设备，手动刷新按布尔结果提示成功或错误，并在组件卸载后忽略通知。
 
@@ -229,3 +229,5 @@ Canvas pointer 事件
 自动化坐标校验延伸到派发点：AndroidMirror.input 的内部 expectedGeometry 由 nativeMirrors.inputBackend 绑定原截图尺寸，设备队列执行时再核对，释放不受新几何阻断；Harmony adapter 接受缩放但检查图像方向/比例，并在非释放触摸前有界读取实际尺寸。GUI IPC不接收expectedGeometry，自动化不伪造GUI sender。
 
 原生投屏失败的 `MirrorSession/NativeMirrorInfo.connectionIssue` 为固定分类，不承载原始异常：Android ACCESS/BUSY通过nativeMirrorState/info IPC给renderer双语提示；重试/恢复清除。USB仍由后端独占，不自动detach其他ADB。共享window.ts的延迟位置保存及ready兜底必须先核对窗口存活。真实Codex宿主探针为 `script/check-automation-codex.mjs`，其结果与SDK模拟测试分开。
+
+投屏来源的 `claimGui` 回调在仅聚焦现有窗口时声明 GUI 所有权，不重启后端，也不显示合并视图中隐藏的来源窗口；自动化最后一个 lease 释放不会关闭用户已接管的会话。Android 临时概览连接单独保留清理所有权，关闭失败后必须重试释放，其他读取或投屏连接才能再次取得 USB。

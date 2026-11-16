@@ -1,10 +1,11 @@
+import { observer } from 'mobx-react-lite'
 import { useEffect, useRef, useState } from 'react'
 import type { UpdateAction, UpdateState } from 'common/types'
 import { t } from 'common/util'
 import icon from '../assets/icon.png'
 import Style from './App.module.scss'
 
-export default function UpdateApp() {
+export default observer(function UpdateApp() {
   const [state, setState] = useState<UpdateState>({ status: 'checking', productName: PRODUCT_NAME, currentVersion: VERSION })
   const [acting, setActing] = useState(false)
   const panel = useRef<HTMLDivElement>(null)
@@ -70,4 +71,4 @@ export default function UpdateApp() {
         </>}
     </div>
   </div>
-}
+})

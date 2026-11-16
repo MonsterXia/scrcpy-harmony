@@ -29,14 +29,10 @@ export default observer(function SettingsContent() {
       await settings.set(name, value)
       if (active.current)
         setStatus(
-          t(
-            name === 'language' || name === 'hdcPath'
-              ? 'requireReload'
-              : 'workspaceSettingsSaved',
-          ),
+          name === 'hdcPath' ? 'requireReload' : 'workspaceSettingsSaved',
         )
     } catch {
-      if (active.current) setError(t('settingsSaveFailed'))
+      if (active.current) setError('settingsSaveFailed')
     } finally {
       busy.current.delete(name)
       if (active.current) setPending([...busy.current])
@@ -51,7 +47,7 @@ export default observer(function SettingsContent() {
         await save('hdcPath', result.filePaths[0])
       }
     } catch {
-      if (active.current) setError(t('workspaceBrowseFailed'))
+      if (active.current) setError('workspaceBrowseFailed')
     }
   }
   return (
@@ -62,12 +58,12 @@ export default observer(function SettingsContent() {
       </header>
       {error && (
         <div role="alert" className={Style.error}>
-          {error}
+          {t(error === 'settingsSaveFailed' ? 'settingsSaveFailed' : error === 'workspaceBrowseFailed' ? 'workspaceBrowseFailed' : 'commonErr')}
         </div>
       )}
       {status && (
         <div role="status" className={Style.status}>
-          {status}
+          {t(status === 'requireReload' ? 'requireReload' : 'workspaceSettingsSaved')}
         </div>
       )}
       <section className={Style.card}>
@@ -75,7 +71,7 @@ export default observer(function SettingsContent() {
         <label className={Style.row}>
           <span>
             <strong>{t('language')}</strong>
-            <small>{t('languageRestartHint')}</small>
+            <small>{t('languageInstantHint')}</small>
           </span>
           <select
             aria-label={t('language')}
@@ -165,14 +161,14 @@ export default observer(function SettingsContent() {
       <section className={Style.card}>
         <h2>{t('workspaceProduct')}</h2>
         <div className={Style.row}>
-          <span>{t('languageRestartHint')}</span>
+          <span>{t('hdcRestartHint')}</span>
           <button
             type="button"
             onClick={async () => {
               try {
                 await main.relaunch()
               } catch {
-                setError(t('commonErr'))
+                setError('commonErr')
               }
             }}
           >

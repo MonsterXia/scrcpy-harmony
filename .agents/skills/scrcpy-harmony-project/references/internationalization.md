@@ -7,9 +7,9 @@
 - 业务词条：`src/common/langs/en-US.json` 与 `zh-CN.json`。业务代码从 `common/util` 导入 `t`，它注册两份独立词典并合并共享词条。
 - 共享窗口/组件词条：`src/share/common/langs/`；共享代码从对应 `share/common/i18n` 导入。已有词条语义相同时复用，不为同一含义添加新 key。业务和共享层的同名覆盖应保持相同含义。
 - `src/share/common/i18n.ts` 提供格式化、英文兜底及 `resolveLocale`。未知 key 显示 key 以便诊断；检查器应在交付前拦截，兜底不是允许漏翻译。
-- `src/share/main/lib/language.ts` 在启动时读取 settings.json 的 `language`，显式设置优先；`system` 或无效设置使用系统语言，不支持的系统语言使用英文。英语地区变体归 `en-US`，中文地区/脚本变体归 `zh-CN`（当前没有繁体词典）。
-- 设置页提供系统、English、简体中文，使用语言自称方便跨语言切换。低频 settings 使用 `src/main/lib/SettingsStore.ts` 同步临时文件替换保存，IPC 返回前落盘，避免选择后立即重启丢失；窗口几何信息继续使用防抖 FileStore。保存后提示重启，由用户点击重启按钮应用；不要自动重启或刷新正在投屏的窗口。
-- `src/renderer/lib/language.ts` 在页面懒加载前同步业务 i18n、`document.documentElement.lang` 与 `LunaModal.i18n`。这保证模块顶层初始化的表头和第三方确认框一致。不要让第三方组件单独依赖 navigator.language。
+- `src/share/main/lib/language.ts` 在启动及设置变更时读取 settings.json 的 `language`，显式设置优先；`system` 或无效设置使用系统语言，不支持的系统语言使用英文。英语地区变体归 `en-US`，中文地区/脚本变体归 `zh-CN`（当前没有繁体词典）。
+- 设置页提供系统、English、简体中文，使用语言自称方便跨语言切换。低频 settings 使用 `src/main/lib/SettingsStore.ts` 同步临时文件替换保存，IPC 返回前落盘，避免选择后立即重启丢失；窗口几何信息继续使用防抖 FileStore。保存成功后才发布 change 事件，主进程更新译文并通过 `updateLanguage(resolvedLocale)` 通知全部已注册窗口，菜单同步重建；语言无需重启或刷新，保留投屏和页面状态。HDC 路径变更仍提示重启。
+- `src/renderer/lib/language.ts` 在页面懒加载前同步业务 i18n、`document.documentElement.lang` 与 `LunaModal.i18n`。初始化时先订阅 `updateLanguage` 再读当前语言，避免过期 IPC 回包覆盖新选择。`t()` 读取 MobX locale，使用译文的 React 组件须由 `observer` 包裹；模块级表头使用 `computed` 延迟求值，避免永久缓存首次译文。Luna DataGrid 的 columns 更新支持 title 原位更新；窗口标题通过 reaction/effect 更新，设备名称标题保持设备名。不要按语言改变组件 key、刷新窗口或让第三方组件单独依赖 navigator.language。
 
 ## 每次开发的步骤
 
@@ -17,7 +17,7 @@
 2. **同步两种语言。** 在正确层的两个 JSON 中同时增加/修改语义明确的 camelCase key。用完整句子和命名占位符，避免拼接句子、中文充当英文或仅写一份翻译。计数可用不依赖单复数的完整文案（例如 `Applications: {{total}}`）。
 3. **接入显示位置。** 使用 `t('key', { name })`。条件文案用 `t(condition ? 'keyA' : 'keyB')` 或显式翻译映射，使检查器能核对所有 key。不要用任意运行时字符串组装 key。不要翻译之后再把值用于协议判断、命令或持久化枚举。
 4. **验证。** 运行 `npm run check:i18n`；语言选择、fallback、插值或组件初始化有改动时运行 `node --test test/i18n*.test.cjs`。按改动范围执行 lint、应用测试和构建。检查器同时在 lint 和应用测试中执行，CI 沿用现有检查名称。
-5. **双语 UI 验收。** 涉及布局或组件时，在两种语言分别检查页面/菜单/弹窗、长文案换行与按钮可见性、空态与错误提示；涉及语言设置时检查保存、重启、所有窗口标题和确认框。记录运行环境和未验证项，不把词条静态检查当作视觉验收。
+5. **双语 UI 验收。** 涉及布局或组件时，在两种语言分别检查页面/菜单/弹窗、长文案换行与按钮可见性、空态与错误提示；涉及语言设置时检查保存后即时生效、系统语言、跨窗口同步、表头/菜单/标题和确认框，以及未保存输入和会话保持。记录运行环境和未验证项，不把词条静态检查当作视觉验收。
 
 示例：
 

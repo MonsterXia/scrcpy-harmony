@@ -23,7 +23,7 @@ const DataGrid = compiled.exports.default
 const tick = () => new Promise(resolve => setTimeout(resolve, 60))
 function fixture(t, rowHeight) {
   const host = document.body.appendChild(document.createElement('div'))
-  const grid = new DataGrid(host, { columns: [{ id: 'name', title: 'Name' }], rowHeight })
+  const grid = new DataGrid(host, { columns: [{ id: 'name', title: 'Name' }], selectable: true, rowHeight })
   grid.setData(Array.from({ length: 200 }, (_, id) => ({ name: String(id) })))
   t.after(() => { grid.destroy(); host.remove() })
   return { host, grid }
@@ -60,4 +60,18 @@ test('default height remains 20 and nonfinite or out-of-bounds heights fall back
     assert.equal(grid.getOption('rowHeight'), 20)
     assert.equal(host.querySelector('.luna-data-grid-data-space').style.height, '4000px')
   }
+})
+
+test('column title updates translate the mounted grid without replacing rows or selection', async t => {
+  const { host, grid } = fixture(t, 28)
+  await tick()
+  const row = host.querySelector('.luna-data-grid-node')
+  grid.selectSingle(row.dataGridNode)
+  grid.setOption('columns', [{ id: 'name', title: '名称' }])
+  await tick()
+  assert.match(host.querySelector('.luna-data-grid-header').textContent, /名称/)
+  assert.equal(host.querySelector('.luna-data-grid-node'), row)
+  assert.equal(grid.getActiveNode(), row.dataGridNode)
+  grid.setOption('columns', [{ id: 'name', title: 'Name' }])
+  assert.match(host.querySelector('.luna-data-grid-header').textContent, /Name/)
 })

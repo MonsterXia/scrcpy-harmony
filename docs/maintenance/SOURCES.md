@@ -1,5 +1,7 @@
 # 维护来源记录
 
+2026-11-16 用户要求“为什么切换语言需要重启？，请做即时切换”。本地实现、构建及真实 Electron 双语运行验证见[即时语言切换](instant-language.md)，初轮设备和投屏为模拟 IPC；用户随后明确授权更新本机安装，已备份旧应用及配置、替换 Plus 并启动设置页供试用。未公开发布。
+
 2026-11-16 用户进一步要求“按照项目规范提起pr，审核没问题且CI通过后合入”。本轮授权整分支通过正常 PR 门禁交付，见 [PR #88](https://github.com/MonsterXia/scrcpy-harmony/pull/88) 与[交付记录](agent-automation-pr-2026-11-16.md)；不扩大为发布或安装替换。
 
 2026-11-16 用户进一步要求“独立审查修改内容，如果有问题请修改”。新上下文审查 `fb476c6..aa3bf70`，六项确认问题（含旧Minor及主代理补充）已修复并本地验证，源码 `2e70424`；范围、失败复现及验证见[独立审查记录](agent-automation-review-2026-11-16.md)。未扩展到发布或安装替换。
@@ -239,3 +241,7 @@
 2026-11-16 安卓失败与Codex续验：来源为用户失败截图、本机USB claim探针、现有ADB目标状态、用户授权反馈与真实Codex app-server；源码 `1f48fbd`。35工具、双端PNG/XML、租约与GUI共享、现场销毁窗口回调修复及失败记录见[专项报告](agent-automation-android-codex-2026-11-16.md)和[脱敏证据](../scrcpy-plus/evidence/agent-automation/codex/2026-11-16/verification.json)。用户进一步授权开发中关闭日常安装版；最终保留源码构建双端投屏，未替换安装。
 
 同轮HAP补查沿[历史签名包哈希](hap-install.md)在桌面找到1.0.0/1.0.1；手机已有1.0.1，补产品CLI同版本覆盖/启动/停止，保留既存数据；证据并入本轮Codex专项，首次/升级/破坏性矩阵未冒充通过。
+
+- 2026-11-16：多端投屏统一深浅样式、概览整合 Android/Harmony 选择与五秒闪烁修复，见 [维护记录](mirror-workspace.md)。
+
+2026-11-16 用户追加授权按项目规范提 PR，并在审查、CI 通过后合入；本轮即时语言切换、多端投屏和概览统一由 [PR #89](https://github.com/MonsterXia/scrcpy-harmony/pull/89) 交付，审查修复及最终门禁见 [维护记录](mirror-workspace.md#pr-交付)与 [PR 持续状态](https://github.com/MonsterXia/scrcpy-harmony/pull/89#issuecomment-6912315624)。未公开发行。

@@ -1,8 +1,9 @@
+import { observer } from 'mobx-react-lite'
 import { PropsWithChildren, useEffect, useId, useRef } from 'react'
 import { t } from 'common/util'
 import Style from './WorkspaceDialog.module.scss'
 
-export default function WorkspaceDialog({
+export default observer(function WorkspaceDialog({
   visible,
   title,
   onClose,
@@ -85,4 +86,4 @@ export default function WorkspaceDialog({
       </div>
     </dialog>
   )
-}
+})

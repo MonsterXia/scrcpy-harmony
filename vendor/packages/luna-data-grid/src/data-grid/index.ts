@@ -750,6 +750,9 @@ export default class DataGrid extends Component<IOptions> {
             if (!column) {
               return
             }
+            if (!isUndef(column.title)) {
+              oldColumn.title = column.title
+            }
             if (!isUndef(column.visible)) {
               oldColumn.visible = column.visible
             }

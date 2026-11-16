@@ -1,10 +1,11 @@
+import { observer } from 'mobx-react-lite'
 import { t } from 'common/util'
 import Style from './BundleInfoModal.module.scss'
 
 export type BundleAction =
   'open' | 'stop' | 'cleanCache' | 'cleanData' | 'uninstall'
 
-export default function ApplicationActions({
+export default observer(function ApplicationActions({
   busy,
   canOpen,
   onAction,
@@ -52,4 +53,4 @@ export default function ApplicationActions({
       </button>
     </div>
   )
-}
+})

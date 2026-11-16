@@ -7,6 +7,19 @@ import Store from 'licia/Store'
 // Keep window geometry on FileStore; it benefits from debounced writes.
 export default class SettingsStore extends Store {
   declare save: (data: Record<string, unknown>) => void
+  declare private _data: Record<string, unknown>
+
+  set<T>(key: string | Record<string, unknown>, value?: T) {
+    const changes = typeof key === 'string' ? { [key]: value } : key
+    const previous = this._data
+    const next = { ...previous, ...changes }
+    // Publish only committed settings. Failed writes must not switch the UI.
+    this.save(next)
+    this._data = next
+    for (const [name, current] of Object.entries(changes)) {
+      this.emit('change', name, current, previous[name])
+    }
+  }
 
   constructor(file: string, defaults: Record<string, unknown>) {
     let saved: Record<string, unknown> = {}

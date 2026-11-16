@@ -1,5 +1,17 @@
 # Scrcpy Plus 跨平台改造（2026-11-03）
 
+## 多端投屏交互重设计（2026-11-16）
+
+状态：**源码实现、自动回归、Electron 模拟界面及本机安装更新完成。** 按用户批准的第二轮第一张实现分组设备列表/勾选批量启动，深浅模式共用布局、仅颜色不同；已有会话独立排列/打开/停止，iOS 单列接收器。追加把侧栏设备选择器移入概览，支持 Android/Harmony；按平台限制鸿蒙工具，安卓元数据复用投屏连接或临时只读连接。修复五秒发现轮询将同设备新对象误判为切换而清空概览的闪烁，保持真正切换/断连与异步过期保护。
+
+应用测试 1116 pass / 2 skip、lint/i18n、三项构建通过；tsc 55 项既有诊断（前次 57 项，本次无新增）。真实 Electron 45 + 模拟 IPC 验证双语/双主题/960 与 1280 宽度、主题几何一致、批量/排列/停止隔离、双平台概览与连续两次五秒轮询不重读；独立审查两项生命周期问题已修复并复核。详见[维护记录](docs/maintenance/mirror-workspace.md)和[验证证据](docs/scrcpy-plus/evidence/mirror-workspace-2026-11-16/verification.json)。用户随后授权更新本机：完整 build/arm64 打包、deep/strict 签名、38 个打包代码文件对照及安装后 smoke 均通过；已备份旧应用和 67 个配置文件并替换 `/Applications/Scrcpy Plus.app`，保留设置。已打开供用户试用，实际观察到 Android/Harmony 概览信息及移入页面的选择器。下一步收集用户试用反馈、验证视频连续性与跨平台，不将字段显示或模拟 IPC 当全面真机验收。
+
+本轮已提交 [PR #89](https://github.com/MonsterXia/scrcpy-harmony/pull/89)，用户授权审查和 CI 通过后合入。新增修复聚焦自动化会话时的 GUI 所有权、临时 Android 连接清理失败后的重试；最终检查与合入状态见 [PR 交付记录](https://github.com/MonsterXia/scrcpy-harmony/pull/89#issuecomment-6912315624)。本机试用包先于这两项修复，后续按需更新。
+
+## 即时语言切换（2026-11-16）
+
+本地实现和 Electron 双语切换已验证：语言保存后同步主窗口、已打开工具窗口、菜单和表头；不刷新窗口，保留未保存输入和模拟会话。设置落盘成功后才广播，失败保留旧配置。lint/i18n、三项构建通过，tsc 与 HEAD 均 57 项既有诊断，无新增。完整测试应用 1110 pass / 2 skip，Licia 两模式各 606 passing / 4 pending；证据见[维护记录](docs/maintenance/instant-language.md)。用户随后授权更新本机：完整 build/arm64 打包、签名及已安装 smoke 通过，已备份并替换 `/Applications/Scrcpy Plus.app`，保持原配置并启动到设置页供用户试用。下一步补用户试用反馈、真机视频连续性及 Windows/Intel Mac；未公开发布。
+
 ## Agent 自动化长任务（2026-11-16）
 
 状态：**Android/Harmony 核心真机及本机 Codex MCP 宿主已验收，剩余平台矩阵待补。** 真机验收源码 `1f48fbd`，分支 `codex/agent-automation`。安卓失败实测为 ADB 占用 USB，精确释放/手机授权后恢复，补明确双语提示；Codex实际发现35工具，两端PNG、Harmony XML、独占及GUI共享lease释放通过，并修复窗口销毁后的延迟保存/显示回调。全量应用1094pass/2skip、Licia各606/4、lint/fullbuild、安装包、Electron模拟通过，tsc既有诊断不变。已补专用HAP同版本覆盖/启动/停止；既存数据保留。见[安卓恢复与Codex验收](docs/maintenance/agent-automation-android-codex-2026-11-16.md)；此前[Harmony清理17轮回归](docs/maintenance/agent-automation-device-acceptance-2026-11-16.md)保留。当前只保留源码构建双端GUI投屏，MCP lease=0，日常版按授权关闭、未替换；目标USB留给Plus，不重新交回ADB。iOS暂缓；Windows、HAP首次/升级及清空卸载、物理旋转/完整断连与长期矩阵待补，当前聊天热加载单独未验证。入口：[spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[计划](docs/superpowers/plans/2026-11-16-agent-automation.md)、[维护状态](docs/maintenance/agent-automation.md)、[验收交接](docs/scrcpy-plus/automation/acceptance.md)。已创建 [PR #88](https://github.com/MonsterXia/scrcpy-harmony/pull/88)，独立审查三项问题均修复并复核，源码 `d687855`；全量1106pass/2skip、lint/build/包检查/Electron模拟通过。[最终门禁与合入状态](https://github.com/MonsterXia/scrcpy-harmony/pull/88#issuecomment-6910516962)及[交付记录](docs/maintenance/agent-automation-pr-2026-11-16.md)追踪最终门禁与合入。未发布或替换安装。

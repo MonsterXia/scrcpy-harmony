@@ -8,7 +8,7 @@ import log from 'share/common/log'
 import once from 'licia/once'
 import { arrangeMirrors } from './arrangeMirrors'
 import { showMergedMirrors } from './mergedMirrors'
-import { applyMirrorLayout } from './mirrorLayout'
+import { applyMirrorLayout, getMirrorLayout, focusMirror } from './mirrorLayout'
 import type { MirrorLayoutRequest } from 'common/types'
 
 const logger = log('mainWin')
@@ -86,6 +86,9 @@ const initIpc = once(() => {
     ...screencast.getSources(),
     ...mirrorSessions.getSources(),
   ]))
+  const mirrorSources = () => [...screencast.getSources(), ...mirrorSessions.getSources()]
+  handleEvent('getMirrorLayout', () => getMirrorLayout(mirrorSources))
+  handleEvent('focusMirror', (key: string) => focusMirror(key, mirrorSources))
   handleEvent('applyMirrorLayout', (request: MirrorLayoutRequest) => {
     if (!win || win.isDestroyed()) return
     applyMirrorLayout(request, () => [...screencast.getSources(), ...mirrorSessions.getSources()],

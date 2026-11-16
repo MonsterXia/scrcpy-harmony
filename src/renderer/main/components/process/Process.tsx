@@ -1,3 +1,4 @@
+import { computed } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import store from '../../store'
@@ -245,7 +246,7 @@ export default observer(function Process() {
           <LunaDataGrid
             rowHeight={28}
             data={visibleProcesses}
-            columns={columns}
+            columns={columns.get()}
             uniqueId="pid"
             selectable={true}
             onSelect={(node) => setSelectedPid(String((node as any).data.pid))}
@@ -283,7 +284,7 @@ export default observer(function Process() {
   )
 })
 
-const columns = [
+const columns = computed(() => [
   {
     id: 'name',
     title: t('processName'),
@@ -316,4 +317,4 @@ const columns = [
     title: t('user'),
     sortable: true,
   },
-]
+])

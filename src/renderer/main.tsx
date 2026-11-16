@@ -1,8 +1,9 @@
+import { autorun } from 'mobx'
 import { lazy } from 'react'
 import { createRoot } from 'react-dom/client'
 import log from 'share/common/log'
 import { t } from 'common/util'
-import { applyLanguage } from './lib/language'
+import { initLanguage } from './lib/language'
 import getUrlParam from 'licia/getUrlParam'
 import 'share/renderer/main'
 import 'luna-toolbar/css'
@@ -35,48 +36,47 @@ function renderApp() {
   const container: HTMLElement = document.getElementById('app') as HTMLElement
 
   let App = lazy(() => import('./main/App.js') as Promise<any>)
-  let title = PRODUCT_NAME
+  let title = () => PRODUCT_NAME
 
   switch (getUrlParam('page')) {
     case 'update':
       App = lazy(() => import('./update/App.js') as Promise<any>)
       document.body.classList.add('update-window')
-      title = t('softwareUpdate')
+      title = () => t('softwareUpdate')
       break
     case 'terminal':
       App = lazy(() => import('share/renderer/terminal/App.js') as Promise<any>)
-      title = t('terminal')
+      title = () => t('terminal')
       break
     case 'process':
       App = lazy(() => import('share/renderer/process/App.js') as Promise<any>)
-      title = t('processManager')
+      title = () => t('processManager')
       break
     case 'native-mirror':
       App = lazy(() => import('./native-mirror/App.js') as Promise<any>)
-      title = t('screencast')
+      title = () => ''
       break
     case 'merged-mirror':
       App = lazy(() => import('./merged-mirror/App.js') as Promise<any>)
-      title = ''
+      title = () => ''
       break
     case 'screencast':
       App = lazy(() => import('./screencast/App.js') as Promise<any>)
-      title = t('screencast')
+      title = () => t('screencast')
       break
     case 'about':
       App = lazy(() => import('share/renderer/about/App.js') as Promise<any>)
-      title = t('aboutApp')
+      title = () => t('aboutApp')
       break
   }
 
-  preload.setTitle(title)
+  autorun(() => preload.setTitle(title()))
 
   createRoot(container).render(<App />)
 }
 
 ;(async function () {
-  const language = await main.getLanguage()
-  applyLanguage(language)
+  await initLanguage()
 
   renderApp()
 })()

@@ -283,3 +283,10 @@
     gap: 24px;
   }
 }
+.deviceSwitcher {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
+  label { color: var(--workspace-secondary); }
+  select { flex: 1; min-width: 200px; padding: 10px 14px; border: 1px solid var(--workspace-line); border-radius: 8px; background-color: var(--workspace-bg); color: var(--workspace-text); }
+  p { flex-basis: 100%; color: var(--workspace-danger); margin: 0; }
+}
+.platformHint { color: var(--workspace-secondary); padding: 16px 0; line-height: 1.7; }

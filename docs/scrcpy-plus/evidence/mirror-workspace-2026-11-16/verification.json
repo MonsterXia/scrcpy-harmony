@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-16",
+  "scope": "Source implementation and simulated-device Electron acceptance; no physical device or installed-package acceptance",
+  "applicationTests": {
+    "command": "node --test test/*.test.cjs",
+    "passed": 1116,
+    "skipped": 2,
+    "failed": 0
+  },
+  "lintAndI18n": "passed",
+  "builds": [
+    "main",
+    "preload",
+    "renderer"
+  ],
+  "typecheck": {
+    "baseline": 57,
+    "current": 55,
+    "added": [],
+    "resolved": [
+      "src/renderer/main/components/devices/Devices.tsx: error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.",
+      "src/renderer/main/components/devices/Devices.tsx: error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'."
+    ]
+  },
+  "electron": {
+    "version": "45.0.0",
+    "languages": [
+      "zh-CN",
+      "en-US"
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      960,
+      1280
+    ],
+    "sameThemeGeometry": true,
+    "pollCyclesWithoutOverviewReload": 2,
+    "passed": true
+  },
+  "review": {
+    "importantFindings": 2,
+    "fixed": 2,
+    "recheck": "No further important findings"
+  },
+  "verificationRetry": "One prior Electron run lost its main-process execution context during the polling wait. Added runtime exit logging; complete rerun passed both languages with clean exit code 0. Cause of the isolated interruption was not established.",
+  "notVerified": [
+    "Physical Android/Harmony video continuity and long-term behavior; overview fields observed in installed app",
+    "iOS live receiver",
+    "Windows and Intel Mac"
+  ],
+  "installationUpdated": true,
+  "sourceSha256": {
+    "src/main/lib/devices/android.ts": "af80338acb25950604ef901d3ccf0581da88ed9e73b9f1771da331c7d89d0c24",
+    "src/main/lib/devices/androidOverview.ts": "555ca4b40509141bb609af0391ed82ab2ee800a2e443eadbd42aee528742296d",
+    "src/main/lib/devices/index.ts": "0bb17140f462f309037bf8a11c5d777d52d431f19e2a854f961e40382448a306",
+    "src/main/window/mirrorLayout.ts": "55aeb2d763c55f4ef66fccfb4fa9487865fe967070c389a907086932382c2d6e",
+    "src/main/window/mergedMirrors.ts": "01421aca61cc07395804e9833364f2ffe78437cf83b5bfbce5770ab039c189e3",
+    "src/main/window/main.ts": "13cfb85ee04e33935dfce9b357c5fbb12e367e24af22d0c14d31333d3fde5a3e",
+    "src/preload/main.ts": "599fd045b40d9b6ad6f217e41183848cbbea746c2471bdf5c66237cd479ef5b5",
+    "src/common/types.ts": "64990dcf42ded2945b693b4490f2ac147766aa6dd7bf626e244c25d019ac7656",
+    "src/renderer/main/App.tsx": "f2aa7ac298e25fd3a6a94ed37652651ca4ee27ac757f72077d790a00502390ec",
+    "src/renderer/main/store/index.ts": "3924a556b22692a7f90c0770cca3682907a0d08cc100b06bfadfd90bc9102981",
+    "src/renderer/main/components/devices/Devices.tsx": "8fa053cb4bd2b50cb2f6bc94e746aabbb90b6b021a126011f0707420fbe93d47",
+    "src/renderer/main/components/devices/Devices.module.scss": "5c15ef2774ea934792b8f7d649e2986be3468ea4b478312e20ec0a1bdc6cd578",
+    "src/renderer/main/components/overview/Overview.tsx": "6cd9d016ef5a108375f16aa78f753330005835cf8260a4b7e55cc0d573ec1a52",
+    "src/renderer/main/components/workspace/DeviceSwitcher.tsx": "546db4185d1350bd5ca134b25cef081f4f4c1fb96b87df136558ca1d18d5c671",
+    "script/check-plus-ui.mjs": "fb491ded16f9e3ffaec9a076157ee58075205634c8102f11b47b44e6a7d272d9"
+  },
+  "installationEvidence": "local-install.json"
+}

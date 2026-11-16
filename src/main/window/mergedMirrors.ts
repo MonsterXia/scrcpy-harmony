@@ -3,7 +3,7 @@ import type { BrowserWindow, WebContents } from 'electron'
 import type { MergedMirrorFrame, MirrorPlatform } from 'common/types'
 import * as windows from 'share/main/lib/window'
 
-export interface MirrorSource { window: BrowserWindow; platform: MirrorPlatform; deviceKey: string }
+export interface MirrorSource { window: BrowserWindow; platform: MirrorPlatform; deviceKey: string; claimGui?(): void }
 interface SourceState {
   source: MirrorSource
   throttled: boolean
@@ -76,6 +76,12 @@ function capture(): MergedMirrorFrame[] {
     // Every window hidden by syncSources must have a column in the merged view.
     return state.frame || { sourceId: source.window.id, platform, image: '', width: 0, height: 0 }
   }))
+}
+
+export function getMergedMirrorWindow(deviceKey?: string) {
+  if (!win || win.isDestroyed()) return undefined
+  if (deviceKey && !sources().some(source => source.deviceKey === deviceKey && !source.window.isDestroyed())) return undefined
+  return win
 }
 
 export function closeMergedMirrors() {

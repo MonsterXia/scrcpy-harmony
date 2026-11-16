@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite'
 import { useEffect, useId, useRef } from 'react'
 import { t } from '../../common/i18n'
 import Style from './ToolConfirm.module.scss'
@@ -12,7 +13,7 @@ export interface ConfirmDialogProps {
 }
 
 // A workspace-local confirmation; messages are rendered as text, never HTML.
-export default function ConfirmDialog({
+export default observer(function ConfirmDialog({
   visible,
   title,
   message,
@@ -104,4 +105,4 @@ export default function ConfirmDialog({
       </div>
     </div>
   )
-}
+})

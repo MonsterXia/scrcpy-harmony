@@ -4,6 +4,7 @@ import { app } from 'electron'
 import { handleEvent } from './util'
 import log from '../../common/log'
 import { IpcGetLanguage } from '../../common/types'
+import * as window from './window'
 
 const logger = log('language')
 
@@ -14,9 +15,7 @@ export const get: IpcGetLanguage = function () {
   return language
 }
 
-export function init() {
-  logger.info('init')
-
+function update() {
   const lang = store.get('language')
   const systemLanguage = resolveLocale(app.getLocale()) || 'en-US'
 
@@ -27,5 +26,16 @@ export function init() {
   }
 
   i18n.locale(language)
+}
+
+export function init() {
+  logger.info('init')
+  update()
   handleEvent('getLanguage', get)
+  store.on('change', (name) => {
+    if (name !== 'language') return
+    const previous = language
+    update()
+    if (previous !== language) window.sendAll('updateLanguage', language)
+  })
 }
