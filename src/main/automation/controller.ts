@@ -15,7 +15,7 @@ interface ControllerOptions {
   discover(): Promise<DeviceDiscovery>
   open(target: ITarget, gui: boolean): Promise<unknown>
   input?: (target: ITarget, context: AutomationContext) => InputBackend
-  perform?: (source: Parameters<AutomationWindowHooks>[0], action: InputAction, geometry: { width: number; height: number } | undefined, context: AutomationContext) => Promise<void>
+  perform?: (source: Parameters<AutomationWindowHooks>[0], action: InputAction, geometry: { width: number; height: number; rotation?: number } | undefined, context: AutomationContext) => Promise<void>
 }
 export class AutomationController {
   readonly sessions: AutomationSessions
@@ -79,7 +79,7 @@ export class AutomationController {
     const device = found.targets.find(item => item.key === deviceKey)
     if (!device) throw new AutomationFault(found.errors.length ? 'UNAVAILABLE' : 'NOT_FOUND', 'Device not found')
     if (device.state === 'offline' || (device.platform === 'harmony' && device.state !== 'ready')) throw new AutomationFault('UNAVAILABLE', 'Device is not ready or needs authorization')
-    const target = device.platform === 'ios' ? { ...device, key: 'ios:airplay-receiver', name: 'AirPlay', connectionId: undefined, transport: 'receiver' as const } : device
+    const target = device.platform === 'ios' && device.transport !== 'usb' ? { ...device, key: 'ios:airplay-receiver', name: 'AirPlay', connectionId: undefined, transport: 'receiver' as const } : device
     return this.sessions.start(target, context, () => this.options.open(target, false))
   }
   private source(id: string) {
@@ -105,7 +105,7 @@ export class AutomationController {
   }
   async input(id: string, action: InputAction, frameId: string | undefined, context: AutomationContext) {
     const info = this.sessions.requireLease(id, context.clientId)
-    if (info.platform === 'ios') throw new AutomationFault('UNSUPPORTED', 'iOS reception is view-only')
+    if (info.platform === 'ios' && info.deviceKey === 'ios:airplay-receiver') throw new AutomationFault('UNSUPPORTED', 'iOS reception is view-only')
     const source = this.source(id)
     if (info.state !== 'running') throw new AutomationFault('UNAVAILABLE', 'Session has not presented a frame')
     return this.queue.automatic(info.deviceKey, context, async current => {

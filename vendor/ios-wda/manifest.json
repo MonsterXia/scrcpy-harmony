@@ -1,0 +1,15 @@
+{
+  "repository": "https://github.com/droidrun/WebDriverAgent",
+  "commit": "8ce9d6f528e6f6c01bc0fa903b33555842d43571",
+  "archive": "https://codeload.github.com/droidrun/WebDriverAgent/tar.gz/8ce9d6f528e6f6c01bc0fa903b33555842d43571",
+  "sha256": "66e1e8b3bbc8c1bbf5d7a0a62627fed8d2a9987447efd5bd7f26a9f87a4ba64f",
+  "license": "LICENSE",
+  "purpose": "Device-side XCTest control and ReplayKit H.264 capture; built with script/ios-wda.mjs. No mobilerun-ios binary.",
+  "localPatch": {
+    "file": "WebDriverAgentLib/Routing/FBTCPSocket.m",
+    "sha256": "d897961fd5dcb232665f7a80a2614f26a0df028cf5f590e4ed00e1147bf566b9",
+    "patchedSha256": "b75487f793dae49aae390e3152a8671e11ad4b0b227e98e5754ad096c550bba6",
+    "find": "    _port = port;\n    _delegate = nil;",
+    "replace": "    _port = port;\n    // Scrcpy Plus: all media listeners are USB/loopback only.\n    _interface = @\"127.0.0.1\";\n    _delegate = nil;"
+  }
+}

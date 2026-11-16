@@ -43,7 +43,8 @@
     "build:cli": "node script/build-cli.mjs",
     "cli": "node dist/cli/index.cjs",
     "precli": "npm run --silent build:cli",
-    "check:automation-package": "node script/check-automation-package.mjs"
+    "check:automation-package": "node script/check-automation-package.mjs",
+    "ios:wda": "node script/ios-wda.mjs"
   },
   "repository": {
     "type": "git",

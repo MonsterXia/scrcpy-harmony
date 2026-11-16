@@ -20,15 +20,17 @@ function socket() {
 }
 // One framed response per operation; returned Connect sockets switch to raw
 // lockdown framing only after the usbmux result is fully consumed.
-function response(stream: net.Socket, packet: Buffer, mux: boolean): Promise<Buffer> {
+function response(stream: net.Socket, packet: Buffer, mux: boolean, signal?: AbortSignal): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     let buffered = Buffer.alloc(0)
     const cleanup = () => {
       clearTimeout(timer); stream.removeListener('data', data)
       stream.removeListener('error', fail); stream.removeListener('end', ended)
+      signal?.removeEventListener('abort', aborted)
     }
     const fail = (error: Error) => { cleanup(); stream.destroy(); reject(error) }
     const ended = () => fail(new Error('Apple device connection closed'))
+    const aborted = () => fail(new Error('Apple device request cancelled'))
     const timer = setTimeout(() => fail(new Error('Apple device query timed out')), 2500)
     const data = (chunk: Buffer) => {
       buffered = Buffer.concat([buffered, chunk])
@@ -38,33 +40,49 @@ function response(stream: net.Socket, packet: Buffer, mux: boolean): Promise<Buf
       if (mux && (buffered.readUInt32LE(4) !== 1 || buffered.readUInt32LE(8) !== 8 || buffered.readUInt32LE(12) !== 1))
         return fail(new Error('Invalid usbmux response header'))
       if (buffered.length < length) return
+      stream.pause()
       cleanup()
       if (buffered.length > length) stream.unshift(buffered.subarray(length))
       resolve(buffered.subarray(mux ? 16 : 4, length))
     }
     stream.on('data', data); stream.once('error', fail); stream.once('end', ended)
+    signal?.addEventListener('abort', aborted, { once: true })
+    if (signal?.aborted) { aborted(); return }
+    stream.resume()
     stream.write(packet)
   })
 }
-async function queryMux(request: Record<string, unknown>, keep = false) {
+async function queryMux(request: Record<string, unknown>, keep = false, signal?: AbortSignal) {
   const stream = socket()
   // Guard errors while handing the connected stream between framed queries.
   stream.on('error', () => {})
   try {
     const bytes = await response(stream, muxPacket({ ClientVersionString: 'scrcpy-plus',
-      ProgName: 'scrcpy-plus', kLibUSBMuxVersion: 3, ...request }), true)
+      ProgName: 'scrcpy-plus', kLibUSBMuxVersion: 3, ...request }), true, signal)
     const value = decodePlist(bytes)
     if (keep) return { stream, value }
     stream.destroy(); return { stream, value }
   } catch (error) { stream.destroy(); throw error }
 }
+// Resolve the serial on every connection: usbmux device IDs change on reconnect.
+// The returned socket is paused, with post-handshake bytes preserved for its owner.
+export async function connectIos(udid: string, port: number, signal?: AbortSignal): Promise<net.Socket> {
+  if (!/^[a-fA-F0-9-]{8,64}$/.test(udid) || !Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid iOS USB endpoint')
+  signal?.throwIfAborted()
+  const devices = muxDevices((await queryMux({ MessageType: 'ListDevices' }, false, signal)).value)
+  const device = devices.find(item => item.serial === udid)
+  if (!device) throw new Error('iOS USB device not found')
+  const { stream, value } = await queryMux({ MessageType: 'Connect', DeviceID: device.id,
+    PortNumber: ((port & 255) << 8) | (port >> 8) }, true, signal)
+  if (value.Number !== 0 || signal?.aborted) { stream.destroy(); throw new Error('iOS USB connection refused or cancelled') }
+  stream.setNoDelay(true)
+  return stream
+}
 async function deviceName(id: number) {
   const { stream, value } = await queryMux({ MessageType: 'Connect', DeviceID: id, PortNumber: 32498 }, true) // htons(62078)
   try {
     if (value.Number !== 0) throw new Error('Apple device unavailable')
-    const body = Buffer.from(build({ Label: 'scrcpy-plus', Request: 'GetValue', Key: 'DeviceName' }))
-    const prefix = Buffer.alloc(4); prefix.writeUInt32BE(body.length)
-    const reply = decodePlist(await response(stream, Buffer.concat([prefix, body]), false))
+    const reply = await lockdownValue(stream, 'DeviceName')
     if (typeof reply.Value !== 'string' || !reply.Value) throw new Error('Apple device requires trust')
     return reply.Value.slice(0, 256)
   } finally { stream.destroy() }
@@ -87,4 +105,32 @@ export async function discoverIos(): Promise<ITarget[]> {
     return { key: `ios:${device.serial}`, connectionId: device.serial, name,
       platform: 'ios' as const, transport: 'usb' as const, state, ohosVersion: '', sdkVersion: '' }
   }))
+}
+
+async function lockdownValue(stream: net.Socket, key?: string) {
+  const body = Buffer.from(build({ Label: 'scrcpy-plus', Request: 'GetValue', ...(key ? { Key: key } : {}) }))
+  const prefix = Buffer.alloc(4); prefix.writeUInt32BE(body.length)
+  const reply = decodePlist(await response(stream, Buffer.concat([prefix, body]), false))
+  if (!reply || reply.Error) throw new Error('Apple lockdown requires an unlocked, trusted device')
+  return reply
+}
+
+// Public lockdown metadata needs neither WDA nor developer mode. Resolve the
+// USB identity again instead of trusting a DeviceID from the discovery poll.
+export async function getIosOverview(target: ITarget): Promise<Record<string, string | number>> {
+  if (target.platform !== 'ios' || target.transport !== 'usb' || !target.connectionId || target.key !== `ios:${target.connectionId}`) throw new Error('Invalid iOS overview target')
+  const stream = await connectIos(target.connectionId, 62078)
+  try {
+    const value = (await lockdownValue(stream)).Value
+    if (!value || typeof value !== 'object' || Array.isArray(value) || (typeof value.ProductType !== 'string' && typeof value.DeviceName !== 'string')) throw new Error('Invalid iOS metadata')
+    const text = (key: string) => typeof value[key] === 'string' ? value[key].slice(0, 256) : ''
+    const version = text('ProductVersion'), deviceClass = text('DeviceClass')
+    return {
+      name: text('DeviceName'), brand: 'Apple', model: text('ProductType'),
+      osVersion: version ? `${deviceClass === 'iPad' ? 'iPadOS' : 'iOS'} ${version}` : '',
+      buildVersion: text('BuildVersion'), serialNum: text('SerialNumber'),
+      abi: text('CPUArchitecture'), hardwareModel: text('HardwareModel'),
+      modelNumber: text('ModelNumber'), deviceClass, udid: target.connectionId,
+    }
+  } finally { stream.destroy() }
 }

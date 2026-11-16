@@ -3,13 +3,14 @@ export interface Capability { supported: boolean; available: boolean; reason?: s
 const platformOperations: Record<string, readonly string[]> = {
   'sessions.start': ['android', 'harmony', 'ios'],
   'screen.capture': ['android', 'harmony', 'ios'],
-  'input.tap': ['android', 'harmony'], 'input.swipe': ['android', 'harmony'],
-  'input.scroll': ['android', 'harmony'], 'input.text': ['android', 'harmony'], 'input.key': ['android', 'harmony'],
+  'input.tap': ['android', 'harmony', 'ios'], 'input.swipe': ['android', 'harmony', 'ios'],
+  'input.scroll': ['android', 'harmony', 'ios'], 'input.text': ['android', 'harmony', 'ios'], 'input.key': ['android', 'harmony', 'ios'],
   'apps.start': ['harmony'], 'apps.stop': ['harmony'], 'apps.install': ['harmony'], 'apps.uninstall': ['harmony'], 'apps.clear-data': ['harmony'], 'apps.clear-cache': ['harmony'],
   'overview.get': ['harmony'], 'apps.list': ['harmony'], 'apps.info': ['harmony'], 'apps.top': ['harmony'], 'processes.list': ['harmony'], 'logs.capture': ['harmony'], 'layout.dump': ['harmony'], 'shell.run': ['harmony'], 'ports.list': ['harmony'], 'ports.add': ['harmony'], 'ports.remove': ['harmony'],
 }
-export function deviceCapabilities(target: Pick<ITarget, 'key' | 'platform' | 'state'>, enabled: ReadonlySet<string>, running = false): Record<string, Capability> {
+export function deviceCapabilities(target: Pick<ITarget, 'key' | 'platform' | 'state' | 'transport'>, enabled: ReadonlySet<string>, running = false): Record<string, Capability> {
   return Object.fromEntries(Object.entries(platformOperations).map(([operation, platforms]) => {
+    if (operation.startsWith('input.') && target.platform === 'ios' && target.transport !== 'usb') return [operation, { supported: false, available: false, reason: 'platform-unsupported' }]
     if (!target.platform || !platforms.includes(target.platform)) return [operation, { supported: false, available: false, reason: 'platform-unsupported' }]
     if (!enabled.has(operation)) return [operation, { supported: false, available: false, reason: 'not-implemented' }]
     if (target.state !== 'ready' && !(operation === 'sessions.start' && target.key === 'ios:airplay-receiver') && !running) return [operation, { supported: true, available: false, reason: target.state || 'unavailable' }]

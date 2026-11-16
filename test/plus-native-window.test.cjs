@@ -38,6 +38,7 @@ function fixture() {
     },
     '../lib/devices/android': { AndroidMirror: Android },
     '../lib/devices/airplay': { AirplayMirror: Ios },
+    '../lib/devices/ios': { IosMirror: class extends Android {} },
     '../lib/devices/media': load('src/main/lib/devices/media.ts', {}),
   })
   const invoke = (name, window, ...args) => Promise.resolve().then(() => handlers.get(name)({ sender: window.webContents, senderFrame: window.webContents.mainFrame }, ...args))
@@ -246,4 +247,20 @@ test('only Android USB access or busy failures receive the USB issue classificat
     assert.equal((await f.invoke('nativeMirrorInfo', f.windows[0])).connectionIssue, issue)
     await f.nativeMirrors.dispose()
   }
+})
+
+test('USB iPhones keep separate identities and PNG frames reach only their own window', async () => {
+  const f = fixture(), manager = f.nativeMirrors
+  for (const id of ['01234567','abcdefab']) await manager.start({ key: `ios:${id}`, connectionId: id, name: 'iPhone', platform: 'ios', transport: 'usb' })
+  assert.equal(f.windows.length, 2)
+  await f.invoke('nativeMirrorOpen', f.windows[0])
+  const info = await f.invoke('nativeMirrorInfo', f.windows[0])
+  assert.equal(info.target.connectionId, '01234567')
+  assert.equal(info.target.transport, 'usb')
+  f.backends[0].frame({ format: 'png', data: Uint8Array.from([137,80,78,71]), timestamp: 1, rotation: 0 })
+  assert.equal(f.windows[0].frames.filter(([name]) => name === 'nativeMirrorFrame').length, 1)
+  assert.equal(f.windows[1].frames.filter(([name]) => name === 'nativeMirrorFrame').length, 0)
+  await f.invoke('nativeMirrorInput', f.windows[0], { type: 'touch', action: 'cancel', x: .5, y: .5 })
+  assert.equal(f.backends[0].inputs.length, 1)
+  await manager.dispose()
 })

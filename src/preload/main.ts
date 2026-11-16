@@ -2,6 +2,7 @@ import type { FrameResponse, FrameState } from 'common/automation/frames'
 import {
   IpcNativeMirrorInfo,
   IpcNativeMirrorOpen,
+  IpcNativeMirrorVideo,
   IpcNativeMirrorInput,
   IpcNativeMirrorAck,
   IpcNativeMirrorFit,
@@ -68,6 +69,7 @@ export default Object.assign(mainObj, {
   automationFrameResult: invoke<(requestId: string, result: FrameResponse) => Promise<void>>('automationFrameResult'),
   nativeMirrorInfo: invoke<IpcNativeMirrorInfo>('nativeMirrorInfo'),
   nativeMirrorOpen: invoke<IpcNativeMirrorOpen>('nativeMirrorOpen'),
+  nativeMirrorVideo: invoke<IpcNativeMirrorVideo>('nativeMirrorVideo'),
   nativeMirrorInput: invoke<IpcNativeMirrorInput>('nativeMirrorInput'),
   nativeMirrorAck: invoke<IpcNativeMirrorAck>('nativeMirrorAck'),
   nativeMirrorFit: invoke<IpcNativeMirrorFit>('nativeMirrorFit'),

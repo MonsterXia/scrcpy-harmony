@@ -4,6 +4,8 @@ import { randomUUID } from 'node:crypto'
 import type { ITarget, MirrorSession, NativeMirrorInput } from 'common/types'
 import * as windows from 'share/main/lib/window'
 import { AndroidMirror } from '../lib/devices/android'
+import { IosMirror } from '../lib/devices/ios'
+import type { InputAction } from '../automation/input'
 import { AirplayMirror } from '../lib/devices/airplay'
 import { FrameGate } from '../lib/devices/media'
 
@@ -11,7 +13,7 @@ interface Session {
   info: MirrorSession
   target: ITarget
   window: BrowserWindow
-  backend?: AndroidMirror | AirplayMirror
+  backend?: AndroidMirror | AirplayMirror | IosMirror
   ready: boolean
   automation?: AutomationWindowObserver
   gate: FrameGate
@@ -20,13 +22,14 @@ interface Session {
 }
 export function validateNativeInput(input: NativeMirrorInput) {
   if (!input || typeof input !== 'object') throw new Error('Invalid input')
+  if (input.display && (![input.display.width, input.display.height].every(n => Number.isInteger(n) && n > 0 && n <= 16384) || ![0,90,180,270].includes(input.display.rotation))) throw new Error('Invalid input display')
   if (input.type === 'text') {
     if (typeof input.text !== 'string' || input.text.length > 16384) throw new Error('Invalid text')
   } else if (input.type === 'key') {
     if (!Number.isInteger(input.keyCode) || input.keyCode < 0 || input.keyCode > 300) throw new Error('Invalid key')
   } else if (input.type === 'touch' || input.type === 'scroll') {
     if (![input.x, input.y].every(value => Number.isFinite(value) && value >= 0 && value <= 1)) throw new Error('Invalid position')
-    if (input.type === 'touch' && !['down', 'move', 'up'].includes(input.action)) throw new Error('Invalid touch')
+    if (input.type === 'touch' && !['down', 'move', 'up', 'cancel'].includes(input.action)) throw new Error('Invalid touch')
     if (input.type === 'scroll' && ![input.dx, input.dy].every(value => Number.isFinite(value) && Math.abs(value) <= 1)) throw new Error('Invalid scroll')
   } else throw new Error('Invalid input type')
 }
@@ -42,7 +45,8 @@ class NativeMirrors {
     .map(session => ({ window: session.window, platform: session.target.platform!, deviceKey: session.info.deviceKey, claimGui: () => session.automation?.guiOpened(false) })) }
   async start(target: ITarget, gui = true) {
     if (this.disposed) throw new Error('Mirrors closed')
-    const key = target.platform === 'ios' ? 'ios:airplay-receiver' : target.key
+    const receiver = target.platform === 'ios' && target.transport !== 'usb'
+    const key = receiver ? 'ios:airplay-receiver' : target.key
     const existing = [...this.sessions.values()].find(session => session.info.deviceKey === key)
     if (existing) {
       if (existing.stopping || existing.window.isDestroyed()) { await this.stop(existing.info.id); return this.start(target, gui) }
@@ -58,8 +62,8 @@ class NativeMirrors {
     this.init()
     const id = randomUUID()
     const win = windows.create({ name: `native-mirror-${encodeURIComponent(key)}`, width: 480, height: 800, minWidth: 320, minHeight: 400 })
-    const session: Session = { info: { id, deviceKey: key, name: target.platform === 'ios' ? 'Scrcpy Plus' : target.name,
-      platform: target.platform!, state: 'starting' }, target: target.platform === 'ios'
+    const session: Session = { info: { id, deviceKey: key, name: receiver ? 'Scrcpy Plus' : target.name,
+      platform: target.platform!, state: 'starting' }, target: receiver
       ? { ...target, key, name: 'AirPlay', connectionId: undefined, transport: 'receiver' } : { ...target },
       window: win, ready: false, gate: new FrameGate() }
     this.sessions.set(id, session)
@@ -82,6 +86,11 @@ class NativeMirrors {
   }
   private state(session: Session, value: string) {
     if (session.stopping || this.sessions.get(session.info.id) !== session) return
+    if (['screenshot', 'video-starting', 'video', 'video-error'].includes(value)) {
+      session.info.videoMode = value as MirrorSession['videoMode']
+      if (session.ready && !session.window.isDestroyed()) session.window.webContents.send('nativeMirrorState', { ...session.info })
+      return
+    }
     if (value !== 'error') delete session.info.connectionIssue
     session.automation?.state(value)
     session.info.state = value === 'connected' ? 'running' : value as MirrorSession['state']
@@ -90,12 +99,12 @@ class NativeMirrors {
   private open(session: Session): Promise<void> {
     if (session.starting) return session.starting
     if (session.backend && !['error', 'disconnected'].includes(session.info.state)) return Promise.resolve()
-    let backend: AndroidMirror | AirplayMirror | undefined = session.backend
+    let backend: AndroidMirror | AirplayMirror | IosMirror | undefined = session.backend
     session.starting = (async () => {
       await session.backend?.close()
       if (session.stopping) throw new Error('Mirror is stopping')
       session.gate.reset()
-      backend = session.target.platform === 'android' ? new AndroidMirror(session.target) : new AirplayMirror()
+      backend = session.target.platform === 'android' ? new AndroidMirror(session.target) : session.target.transport === 'usb' ? new IosMirror(session.target) : new AirplayMirror()
       session.backend = backend
       this.state(session, 'starting')
       await backend.start(frame => {
@@ -112,6 +121,7 @@ class NativeMirrors {
         if (session.target.platform === 'android' && /LIBUSB_ERROR_(ACCESS|BUSY)|device is already in use/i.test(message)) {
           session.info.connectionIssue = 'usb-access'
         }
+        if (session.target.platform === 'ios' && session.target.transport === 'usb') session.info.connectionIssue = 'ios-wda'
         this.state(session, 'error')
       }
       console.error('Native mirror startup failed:', error instanceof Error ? error.message : 'unknown')
@@ -150,6 +160,11 @@ class NativeMirrors {
     const backend = session.backend
     return (input: NativeMirrorInput) => { validateNativeInput(input); return backend.input(input, geometry) }
   }
+  iosInput(key: string, action: InputAction, geometry: { width: number; height: number; rotation?: number } | undefined, signal: AbortSignal) {
+    const session = [...this.sessions.values()].find(session => session.info.deviceKey === key)
+    if (!session || !session.ready || session.stopping || !(session.backend instanceof IosMirror)) throw new Error('iOS control unavailable')
+    return session.backend.perform(action, geometry, signal)
+  }
   async dispose() { this.disposed = true; await Promise.all([...this.sessions.keys()].map(id => this.stop(id))) }
   private owner(event: Electron.IpcMainInvokeEvent) {
     const session = [...this.sessions.values()].find(session => session.window.webContents === event.sender)
@@ -159,8 +174,14 @@ class NativeMirrors {
   private init() {
     if (this.initialized) return
     this.initialized = true
-    ipcMain.handle('nativeMirrorInfo', event => { const s = this.owner(event); return { id: s.info.id, target: s.target, state: s.info.state, connectionIssue: s.info.connectionIssue } })
+    ipcMain.handle('nativeMirrorInfo', event => { const s = this.owner(event); return { id: s.info.id, target: s.target, state: s.info.state, connectionIssue: s.info.connectionIssue, videoMode: s.info.videoMode } })
     ipcMain.handle('nativeMirrorOpen', event => this.open(this.owner(event)))
+    ipcMain.handle('nativeMirrorVideo', (event, enabled: boolean) => {
+      const session = this.owner(event)
+      if (typeof enabled !== 'boolean' || !(session.backend instanceof IosMirror)) throw new Error('Video control unavailable')
+      const run = () => (session.backend as IosMirror).setVideo(enabled)
+      return session.automation ? session.automation.input(undefined, run) : run()
+    })
     ipcMain.handle('nativeMirrorFit', (event, width: number, height: number, verticalInset: number, horizontalInset: number) => {
       const win = this.owner(event).window
       if (![width, height].every(value => Number.isInteger(value) && value > 0 && value <= 16384) ||
@@ -186,9 +207,11 @@ class NativeMirrors {
     })
     ipcMain.handle('nativeMirrorInput', (event, input: NativeMirrorInput) => {
       const session = this.owner(event); validateNativeInput(input)
-      if (!(session.backend instanceof AndroidMirror)) throw new Error('Control unsupported')
-      const run = () => (session.backend as AndroidMirror).input(input)
-      return session.automation ? session.automation.input(input.type === 'touch' ? input.action : undefined, run) : run()
+      const backend = session.backend
+      if (!(backend instanceof AndroidMirror) && !(backend instanceof IosMirror)) throw new Error('Control unsupported')
+      const normalized = input.type === 'touch' && input.action === 'cancel' && backend instanceof AndroidMirror && !(backend instanceof IosMirror) ? { ...input, action: 'up' as const } : input
+      const run = () => backend.input(normalized, input.display)
+      return session.automation ? session.automation.input(input.type === 'touch' ? input.action === 'cancel' ? 'up' : input.action : undefined, run) : run()
     })
   }
 }

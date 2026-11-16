@@ -14,7 +14,7 @@ import { AutomationController } from './controller'
 import { AutomationFault, checkContext } from '../../common/automation/protocol'
 import type { AutomationContext } from '../../common/automation/protocol'
 import type { InputAction } from './input'
-import { executeInput } from './input'
+import { executeInput, UnsafeInputFault } from './input'
 import { createAutomationService } from './service'
 import { nativeMirrors } from '../window/nativeMirror'
 import * as screencast from '../window/screencast'
@@ -31,6 +31,17 @@ export function createAutomationRuntime(instanceId: string, version: string) {
     open: async (target,gui) => target.platform === 'harmony' ? screencast.showWin(target,gui) : nativeMirrors.start(target,gui),
     perform: async (source,action,geometry,context) => {
       if (source.target.platform === 'android') return executeInput(action,geometry,androidInput(nativeMirrors.inputBackend(source.target.key,geometry)),context)
+      if (source.target.platform === 'ios' && source.target.transport === 'usb') {
+        checkContext(context)
+        try { await nativeMirrors.iosInput(source.target.key, action, geometry, context.signal) }
+        catch (error) {
+          if (error instanceof UnsafeInputFault) throw error
+          checkContext(context)
+          throw new AutomationFault('INVALID_ARGUMENT', error instanceof Error ? error.message : 'iOS input rejected', 'not-started')
+        }
+        try { checkContext(context) } catch { throw new UnsafeInputFault() }
+        return
+      }
       if (source.target.platform !== 'harmony') throw new AutomationFault('UNSUPPORTED', 'Input is not supported on this platform')
       return withTrustedCaptureInput(source.window.webContents,source.target.key,async (key,signal,lease) => {
         const current: AutomationContext = { ...context, signal: AbortSignal.any([context.signal,signal]) }

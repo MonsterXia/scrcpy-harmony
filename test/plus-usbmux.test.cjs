@@ -4,7 +4,7 @@ const fs = require('node:fs')
 const vm = require('node:vm')
 const net = require('node:net')
 const { transformSync } = require('esbuild')
-async function fixture(t, malformed = false) {
+async function fixture(t, malformed = false, overviewValue = undefined) {
   const plist = await import('plist'), seen = [], sockets = new Set()
   const server = net.createServer(socket => {
     sockets.add(socket); socket.on('close', () => sockets.delete(socket)); socket.on('error', () => {})
@@ -23,7 +23,7 @@ async function fixture(t, malformed = false) {
         { DeviceID: 10, Properties: { SerialNumber: 'invalid' } },
       ] }
       else if (request.MessageType === 'Connect') { assert.equal(request.PortNumber, 32498); value = { Number: 0 } }
-      else { assert.equal(request.Key, 'DeviceName'); value = { Value: 'iPhone Fixture' } }
+      else { value = request.Key === 'DeviceName' ? { Value: 'iPhone Fixture' } : overviewValue; assert.equal(request.Request, 'GetValue') }
       const bytes = Buffer.from(plist.build(value)), prefix = Buffer.alloc(header)
       if (mux) { prefix.writeUInt32LE(bytes.length + header); prefix.writeUInt32LE(1,4); prefix.writeUInt32LE(8,8); prefix.writeUInt32LE(malformed ? 99 : 1,12) }
       else prefix.writeUInt32BE(bytes.length)
@@ -61,4 +61,21 @@ test('device list validates serials and IDs before using them in another protoco
   const f = await fixture(t)
   assert.deepEqual(Array.from(f.muxDevices({ DeviceList: [{ DeviceID: -1, Properties: { SerialNumber: '01234567' } }, { DeviceID: 1, Properties: { SerialNumber: 'not-a-udid' } }] })), [])
   assert.throws(() => f.muxDevices({}), /device list/)
+})
+
+const iosTarget = {key:'ios:01234567-1234567890abcdef',connectionId:'01234567-1234567890abcdef',platform:'ios',transport:'usb'}
+test('iOS overview binds the UDID and reads public metadata without WDA or developer services',async t=>{
+  const f=await fixture(t,false,{Value:{DeviceName:'Phone',ProductVersion:'27.2.1',BuildVersion:'24B156',ProductType:'iPhone18,1',CPUArchitecture:'arm64e',SerialNumber:'FIXTURE',HardwareModel:'V53AP',ModelNumber:'AB123',DeviceClass:'iPhone'}})
+  const info=await f.getIosOverview(iosTarget)
+  assert.equal(info.name,'Phone');assert.equal(info.osVersion,'iOS 27.2.1');assert.equal(info.model,'iPhone18,1');assert.equal(info.serialNum,'FIXTURE')
+  assert.equal(info.buildVersion,'24B156');assert.equal(info.abi,'arm64e');assert.equal(info.memTotal,undefined)
+  assert.deepEqual(f.seen.map(x=>x.MessageType||x.Request),['ListDevices','Connect','GetValue'])
+  assert.equal(f.seen[1].DeviceID,9);assert.equal(f.seen[2].Key,undefined)
+})
+test('iOS overview rejects lockdown errors, invalid metadata and receiver targets',async t=>{
+  const f=await fixture(t,false,{Error:'PairingDialogResponsePending'})
+  await assert.rejects(f.getIosOverview(iosTarget),/trust|lockdown/i)
+  await assert.rejects(f.getIosOverview({...iosTarget,transport:'receiver'}),/target/i)
+  const invalid=await fixture(t,false,{Value:'not a dictionary'})
+  await assert.rejects(invalid.getIosOverview(iosTarget),/metadata/i)
 })

@@ -1,0 +1,140 @@
+{
+  "scope": "Real Electron UI shell with simulated device/session IPC; no physical phone or backend acceptance",
+  "cases": [
+    {
+      "language": "en-US",
+      "liveLanguageCases": [
+        {
+          "choice": "zh-CN",
+          "resolved": "zh-CN",
+          "statePreserved": true,
+          "menuAndAuxiliaryTranslated": true
+        },
+        {
+          "choice": "en-US",
+          "resolved": "en-US",
+          "statePreserved": true,
+          "menuAndAuxiliaryTranslated": true
+        },
+        {
+          "choice": "system",
+          "resolved": "en-US",
+          "statePreserved": true,
+          "menuAndAuxiliaryTranslated": true
+        }
+      ],
+      "sidebarCases": [
+        {
+          "width": 960,
+          "theme": "light",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 960,
+          "theme": "dark",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 1280,
+          "theme": "light",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 1280,
+          "theme": "dark",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        }
+      ],
+      "batchSelection": true,
+      "focusWithoutRestart": true,
+      "layoutScopeAllSessions": true,
+      "stopIsolation": true,
+      "iosReceiverSeparated": true,
+      "overviewPlatforms": [
+        "android",
+        "harmony",
+        "ios"
+      ],
+      "repeatedDiscoveryPreservesOverview": true,
+      "sameGeometryInBothThemes": true,
+      "runtime": "45.0.0",
+      "passed": true
+    },
+    {
+      "language": "zh-CN",
+      "liveLanguageCases": [
+        {
+          "choice": "en-US",
+          "resolved": "en-US",
+          "statePreserved": true,
+          "menuAndAuxiliaryTranslated": true
+        },
+        {
+          "choice": "zh-CN",
+          "resolved": "zh-CN",
+          "statePreserved": true,
+          "menuAndAuxiliaryTranslated": true
+        },
+        {
+          "choice": "system",
+          "resolved": "en-US",
+          "statePreserved": true,
+          "menuAndAuxiliaryTranslated": true
+        }
+      ],
+      "sidebarCases": [
+        {
+          "width": 960,
+          "theme": "light",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 960,
+          "theme": "dark",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 1280,
+          "theme": "light",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        },
+        {
+          "width": 1280,
+          "theme": "dark",
+          "inside": true,
+          "iconVisible": true,
+          "scrollFits": true
+        }
+      ],
+      "batchSelection": true,
+      "focusWithoutRestart": true,
+      "layoutScopeAllSessions": true,
+      "stopIsolation": true,
+      "iosReceiverSeparated": true,
+      "overviewPlatforms": [
+        "android",
+        "harmony",
+        "ios"
+      ],
+      "repeatedDiscoveryPreservesOverview": true,
+      "sameGeometryInBothThemes": true,
+      "runtime": "45.0.0",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

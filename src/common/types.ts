@@ -19,15 +19,19 @@ export interface MirrorSession {
   name: string
   platform: string
   state: 'starting' | 'authorizing' | 'waiting' | 'running' | 'disconnected' | 'error' | 'stopping'
-  connectionIssue?: 'usb-access'
+  connectionIssue?: 'usb-access' | 'ios-wda'
+  videoMode?: 'screenshot' | 'video-starting' | 'video' | 'video-error'
 }
-export type NativeMirrorInput =
-  | { type: 'touch'; action: 'down' | 'move' | 'up'; x: number; y: number }
+export type NativeMirrorInput = (
+  | { type: 'touch'; action: 'down' | 'move' | 'up' | 'cancel'; x: number; y: number }
   | { type: 'scroll'; x: number; y: number; dx: number; dy: number }
   | { type: 'key'; keyCode: number }
   | { type: 'text'; text: string }
-export interface NativeMirrorInfo { id: string; target: ITarget; state: MirrorSession['state']; connectionIssue?: MirrorSession['connectionIssue'] }
+) & { display?: { width: number; height: number; rotation: number } }
+export interface NativeMirrorInfo { id: string; target: ITarget; state: MirrorSession['state']; connectionIssue?: MirrorSession['connectionIssue']; videoMode?: MirrorSession['videoMode'] }
 export interface NativeMirrorFrame {
+  format?: 'png'
+  rotation?: number
   sessionId: string
   sequence: number
   data: Uint8Array
@@ -39,6 +43,7 @@ export interface NativeMirrorFrame {
 }
 export type IpcNativeMirrorInfo = () => Promise<NativeMirrorInfo>
 export type IpcNativeMirrorOpen = () => Promise<void>
+export type IpcNativeMirrorVideo = (enabled: boolean) => Promise<void>
 export type IpcNativeMirrorInput = (input: NativeMirrorInput) => Promise<void>
 export type IpcNativeMirrorAck = (sequence: number) => Promise<void>
 export type IpcNativeMirrorFit = (width: number, height: number, verticalInset: number, horizontalInset: number) => Promise<void>

@@ -2,6 +2,8 @@
 
 Android, HarmonyOS and iOS mirroring workbench, based on Scrcpy Harmony. See [integration status and setup](docs/scrcpy-plus/integration.md). Android USB/ADB and iOS AirPlay are integrated as source libraries and built-in app windows; developer build requirements and unverified device coverage are documented there. The upstream documentation below describes the original Harmony project.
 
+The development branch adds iOS USB screenshot/control through WDA and opt-in ReplayKit video; signing and physical-device acceptance are still pending. See [iOS USB setup](docs/scrcpy-plus/ios-usb-wda.md).
+
 Development automation: the shared local service, standalone Node CLI and [MCP stdio adapter](docs/scrcpy-plus/automation/mcp.md) expose sessions, screenshots, input and existing Harmony tools. See the [automation guide](docs/scrcpy-plus/automation/README.md) and [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md). Local simulated workflows pass; real-device and Windows acceptance remain pending.
 
 ---
