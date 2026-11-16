@@ -175,3 +175,9 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 - 用户明确允许开发中关闭日常安装版，现已退出；源码构建双端GUI保留运行，ADB目标保持释放，避免再次冲突。未替换安装或推送。
 - HAP已追溯到桌面，哈希匹配；现有1.0.1同版本覆盖（cleanupConfirmed=true）、启动、前台确认、停止通过，前后应用集合一致。既存测试包数据未清理。
 - iOS暂缓；Windows、HAP首次/升级/清空卸载、物理旋转/更广断连/长期矩阵待补。当前已有聊天工具热加载未验证，与实际app-server宿主通过分开记录。
+
+## PR 交付（2026-11-16）
+
+已按用户授权创建 [PR #88](https://github.com/MonsterXia/scrcpy-harmony/pull/88)，整分支新上下文审查发现AUTO-BUG-015～017（三项）均已复现修复并独立复核；初始head五项CI通过，修复后的最终head仍需正常门禁；本地全量1094pass/2skip、Licia各606/4及lint重新通过。最终审查、门禁与合入以[交付记录](agent-automation-pr-2026-11-16.md)及PR交付评论为准。上文“未推送”等保留各历史阶段语境；全平台剩余验收不因PR交付而勾选完成。
+
+PR最终本机源码 `d687855`：AUTO-BUG-015～017已关闭且独立复核；全量1106pass/2skip、Licia各606/4、lint/build/安装包/Electron模拟均通过，tsc既有诊断不变。最后head的远端门禁及合入SHA以[固定交付评论](https://github.com/MonsterXia/scrcpy-harmony/pull/88#issuecomment-6910516962)为准，不提前声明未来结果。

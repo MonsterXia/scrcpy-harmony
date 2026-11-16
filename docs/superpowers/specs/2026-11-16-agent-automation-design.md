@@ -198,3 +198,9 @@ Codex 宿主验收使用本机 Codex app-server 的实际 MCP 发现/调用，�
 本节最终结果：源码 `1f48fbd`，Codex实际宿主查询、双端PNG、Harmony XML、独占/GUI共享lease释放通过；当前聊天热加载不作已验证声明。详见[续验报告](../../maintenance/agent-automation-android-codex-2026-11-16.md)。本节更新此前“Codex宿主待验收”状态，Windows/专用HAP/物理旋转与更广矩阵继续待补。
 
 同轮补充HAP：按历史用户测试包哈希核验本机文件，手机已有1.0.1。已通过同版本覆盖、启动/前台确认/停止，保留既存数据；首次安装/升级与清空/卸载继续待验收，不以测试包名称推断可删除现有数据。
+
+## 代码交付补充（2026-11-16）
+
+用户授权按项目规范提 PR，独立审查确认无阻塞问题且最终 head 的五项必需 CI 通过后合入 master。交付为 [PR #88](https://github.com/MonsterXia/scrcpy-harmony/pull/88)，详见[交付记录](../../maintenance/agent-automation-pr-2026-11-16.md)。不放宽本 spec 的全矩阵验收标准；iOS暂缓和其他pending事项继续明确记录，不以代码合入代替真机证据。
+
+合入前审查明确：已派发写请求的响应解码/身份/版本/大小校验失败必须保留 unknown 且不可自动重试；已验证服务错误仍保留其 outcome。所有 native 停止入口必须同步会话清理屏障，禁止在 backend.close 在途时获取新 lease 或 GUI owner。端口清单只按完整方向字段及空清单哨兵解析，合法端点名称不参与状态判定。AUTO-BUG-015～017 的失败回归与复核见上述交付记录。

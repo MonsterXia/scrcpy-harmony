@@ -179,3 +179,11 @@ M6 本地候选交付见[验收与交接](../../scrcpy-plus/automation/acceptanc
 - [x] 用户授权关闭日常安装版后，最终只保留源码构建双端GUI，MCP lease=0；同步spec/进度/[报告](../../maintenance/agent-automation-android-codex-2026-11-16.md)/证据。
 - [x] 从历史记录追溯桌面签名HAP并匹配哈希；手机既有1.0.1，同版本覆盖/启动/前台确认/停止通过，包集合一致，保留已有数据。
 - [ ] Windows、HAP首次/升级/清空卸载、物理旋转/更广断连/长期矩阵；当前聊天热加载未验证，iOS继续暂缓。此前“实际Codex宿主pending”由本节更新，不据此勾选全平台总验收。
+
+## 正常 PR 门禁交付（2026-11-16）
+
+- [x] 用户授权后推送整分支，创建 [PR #88](https://github.com/MonsterXia/scrcpy-harmony/pull/88)，重新执行全量测试与 lint。
+- [x] 完成新上下文整分支审查；AUTO-BUG-015～017均复现修复并独立复核，无剩余阻塞项。
+- [x] 最终源码 `d687855` 全量1106pass/2skip、Licia各606/4、lint/build/包检查/Electron模拟通过，tsc基线不变。
+- 最终 head 的五项 CI 和合入为远端门禁，实时结果记录在[固定交付评论](https://github.com/MonsterXia/scrcpy-harmony/pull/88#issuecomment-6910516962)；仓库中的本项仅定义门禁及结果入口，不在合入前预填通过。
+- [ ] 继续上述明确未验收矩阵；iOS保持暂缓，代码合入不等同全矩阵完成。

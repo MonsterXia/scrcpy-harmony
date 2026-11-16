@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-16",
+  "sourceCommit": "d6878555939b31fc54754bd1f46ef569cd13808e",
+  "baseCommit": "fb476c60f0e6e064c9e15bdcdd5d84e0b802ce1a",
+  "pullRequest": "https://github.com/MonsterXia/scrcpy-harmony/pull/88",
+  "deliveryRecord": "https://github.com/MonsterXia/scrcpy-harmony/pull/88#issuecomment-6910516962",
+  "independentReview": {
+    "status": "passed-after-fixes",
+    "initialImportant": 2,
+    "initialMinor": 1,
+    "remainingBlockingFindings": 0,
+    "finalTargetedTestsPassed": 55
+  },
+  "regressions": [
+    {
+      "id": "AUTO-BUG-015",
+      "severity": "P2",
+      "red": {
+        "failed": 7,
+        "passed": 1
+      },
+      "greenRelatedTestsPassed": 23
+    },
+    {
+      "id": "AUTO-BUG-016",
+      "severity": "P3",
+      "red": {
+        "failed": 2,
+        "passed": 2
+      },
+      "greenRelatedTestsPassed": 4
+    },
+    {
+      "id": "AUTO-BUG-017",
+      "severity": "P2",
+      "red": {
+        "failed": 2,
+        "passed": 12
+      },
+      "greenRelatedTestsPassed": 43
+    }
+  ],
+  "localValidation": {
+    "applicationTests": {
+      "exitCode": 0,
+      "total": 1108,
+      "passed": 1106,
+      "skipped": 2,
+      "failed": 0
+    },
+    "licia": {
+      "production": {
+        "passed": 606,
+        "pending": 4
+      },
+      "fallback": {
+        "passed": 606,
+        "pending": 4
+      }
+    },
+    "lintI18nExitCode": 0,
+    "fullBuildExitCode": 0,
+    "installedClientPackage": {
+      "exitCode": 0,
+      "mcpTools": 35
+    },
+    "typescript": {
+      "exitCode": 2,
+      "baselineUnchangedIgnoringLineColumn": true,
+      "baselineReport": "../../codex/2026-11-16/verification.json"
+    },
+    "electron": {
+      "deviceMode": "SIMULATED ONLY",
+      "realElectron": true,
+      "host": "darwin",
+      "arch": "arm64",
+      "checks": {
+        "status": true,
+        "sharedBackend": true,
+        "independentLeases": true,
+        "realCanvasPng": true,
+        "inputObservationBarrier": true,
+        "guiCloseRetainsRenderer": true,
+        "hiddenCapture": true,
+        "lastOwnerCleanup": true,
+        "discoveryCleanup": true
+      },
+      "frame": {
+        "width": 240,
+        "height": 100,
+        "beforeSequence": 3,
+        "afterSequence": 5
+      }
+    }
+  },
+  "requiredChecks": [
+    "test",
+    "lint",
+    "windows-package",
+    "macos-package-arm64",
+    "macos-package-x64"
+  ],
+  "finalRemoteOutcome": "See deliveryRecord for observed final head, required CI and merge SHA; not predeclared in this pre-merge artifact.",
+  "hardwareRetestedForTheseThreeFixes": false,
+  "pending": [
+    "iOS deferred by user",
+    "Windows hardware",
+    "physical rotation/full disconnect/long running matrix",
+    "HAP fresh install/upgrade/clear/uninstall",
+    "already-running Codex chat tool hot reload"
+  ],
+  "privateLogSha256": {
+    "outcomes-red.log": "1d0a1729340fefa1d262e656e3fe5d935ddf6eced97884cfcdc785cf092282e6",
+    "outcomes-green.log": "6e699205e1c54e22b55860c0cdf78978aabe984454b1057eb901c01a2454545a",
+    "ports-red.log": "0cf0a5c499cb3ea1ea44d2f386214dc3e62ef9180324d9d236c7ed871c86d050",
+    "ports-green.log": "43e3d64f8ba1b1c99ea83b066bafe3475fec81c3d89c95ea022c7ba2ac8acd4e",
+    "native-stop-red.log": "6cb2d1f4893e691ecdcb8c648ffeacac18fd3866e82cf1a83ca4fea9d21f2b9e",
+    "native-stop-green.log": "87d55c3f2134e0d9111b441aeb25d89cce46849f39833e7596e1ef5cd87ef074",
+    "test-reviewed.log": "f8328b91ef185d584ed4e7bf68e77a03f4784fb6684e98d7f861890827a5227a",
+    "lint-reviewed.log": "95645ae3697e927ed3630e18f37d90670eba8b948aa3ced56360fc4bbf54c660",
+    "build-reviewed.log": "0e59a83a00139bb5279a116e33556de006cd922a1b0c0b6808edd32bb9c5968d",
+    "package-reviewed.log": "57fb26354d0bf096f41d89529e1456610a5792a32911b36b4cdf513ebed27c05",
+    "types-reviewed.log": "f57971181871a4bfbffb3cac28b9f6924b120395e11c7728d7c11907342664e0",
+    "electron-reviewed.log": "a4580c178d460114c490c2fda98d9f0ea467f18c9aea13d28e1cc66dffbe4c64"
+  }
+}
