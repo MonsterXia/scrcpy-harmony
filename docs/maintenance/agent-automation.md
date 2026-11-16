@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-**M1—M5 本地候选实现完成；M6 全量回归、构建和独立审查修复完成，完整真机/Windows矩阵仍未验收。** 共享服务、CLI、35个MCP工具及Agent skill已交付。最终实现源码 `4c37ba6`，工作分支 `codex/agent-automation`；[验收与交接](../scrcpy-plus/automation/acceptance.md)包含全部需求映射、取舍及遗留事项。真实Harmony只读工具和截图通过；锁屏下Home后无新帧，不能据此声明完整交互闭环通过。
+**M1—M5 本地候选实现完成；M6 全量回归、构建和独立审查修复完成，完整真机/Windows矩阵仍未验收。** 共享服务、CLI、35个MCP工具及Agent skill已交付。最新审查修复源码 `2e70424`，工作分支 `codex/agent-automation`；[验收与交接](../scrcpy-plus/automation/acceptance.md)包含全部需求映射、取舍及遗留事项。真实Harmony只读工具和截图通过；锁屏下Home后无新帧，不能据此声明完整交互闭环通过。
 
 - [Spec：SP-AUTO-001](../superpowers/specs/2026-11-16-agent-automation-design.md)
 - [连续实施计划](../superpowers/plans/2026-11-16-agent-automation.md)
@@ -22,12 +22,12 @@
 | M3 | 会话、截图、输入闭环 | 本机候选，真机部分验证 | Electron模拟闭环通过；Harmony截图及Home返回通过但动作后新帧超时；Android USB access失败；完整交互/旋转pending |
 | M4 | 现有设备工具覆盖 | 四批本机候选完成；真机部分验证 | Harmony概览/应用列表/进程/端口列表/shell/logs/layout通过；应用和端口写入真机pending |
 | M5 | Agent skill、MCP | 本机候选完成 | 官方 SDK 2.4.0、真实 stdio 客户端、安装包通过；Codex 宿主 pending |
-| M6 | 全量回归、跨平台验收与交付 | 本地候选交付；全矩阵待验收 | 1076pass/2skip，Licia各606/4，lint/fullbuild、安装包、Electron通过；独立审查2项Important修复，2项Minor记录 |
+| M6 | 全量回归、跨平台验收与交付 | 本地候选交付；全矩阵待验收 | 1084pass/2skip，Licia各606/4，lint/fullbuild、安装包、Electron通过；新独立审查及补充检查共六项修复，详见专项记录 |
 
 ## 恢复与下一步
 
 1. 阅读本页和 spec，再核对 `git status --short` 与当前 commit；保留用户改动。
-2. 方向已确认，不重复询问；不重复实现M1—M5，从交接页未测矩阵继续：已解锁专用设备、Android USB access、Windows、实际Codex宿主。Minor遗留按优先级单独处理。
+2. 方向已确认，不重复询问；不重复实现M1—M5，从交接页未测矩阵继续：已解锁专用设备、Android USB access、Windows、实际Codex宿主。上轮Minor已修复，最新结果见[独立审查修复记录](agent-automation-review-2026-11-16.md)。
 3. 每阶段同步本页、计划 checkbox、证据和 RUNBOOK；已有 M1/M2 测试不要重新实现。
 4. 真机或系统缺席时先推进契约、测试、文档和其他可做阶段，保留 pending；不把环境缺席视作已验收。
 5. 若出现方向变更，先更新 spec 的决策及需求映射，再调整计划；普通修复不改变需求编号。
@@ -127,8 +127,8 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 
 - AUTO-BUG-005（已修复）：文字/滚动已派发后普通后端异常被转为 INTERNAL/not-started。`input.ts` 统一派发后 unknown/no-retry，保留不安全释放隔离，兼顾触摸中途/结束时取消；新增行为回归先失败后通过。
 - AUTO-BUG-006（已修复）：后端新尺寸先于 renderer 呈现时，旧截图坐标被按新尺寸解释。Android 把截图尺寸传到实际输入队列，并在非释放派发前核对；Harmony 对照图像方向/比例，非释放触摸前再次查询实际尺寸并约束等待。释放动作仍尝试执行。新回归模拟队列中尺寸变化和旧画布方向，2 项先失败，随后 43 项定向通过。同尺寸 180° 仍不宣称已解决。
-- AUTO-FOLLOWUP-001（Minor，暂留）：同客户端对仍存活会话释放后重新获取，会覆盖旧 lease 记录，旧 release 再试可能 NOT_FOUND/UNAUTHORIZED。新 lease 不会被误释放；恢复时先 leases，按当前归属操作。
-- AUTO-FOLLOWUP-002（Minor，暂留）：已确认安装成功后，本地暂存文件清理异常可能覆盖成功结果为 unknown。当前不会自动重试；先查询应用状态，清理结果分离列为后续改进。
+- AUTO-FOLLOWUP-001（原Minor，已修复于 `2e70424`）：同客户端重获会话覆盖旧 lease，导致重复释放失败。现在按 leaseId 保留已释放记录至少五分钟，旧释放不影响新 lease；失败复现、过期及跨client回归见[审查记录](agent-automation-review-2026-11-16.md)。
+- AUTO-FOLLOWUP-002（原Minor，已修复于 `2e70424`）：本地清理异常可能覆盖已确认安装结果。现在各清理步骤独立尝试，成功返回 completed 和独立 cleanupConfirmed，失败保留原安装错误；不因清理失败重装。
 
 审查中暂不裁决的事项已由执行者明确处理：硬件/Windows/180°按实际证据保留 pending；同操作系统用户读取同 profile 会话/截图与选择 clientId 属文档定义的信任边界；HDC reader 发出 SIGKILL 但未收到 close 时保持 unknown，不声称清理成功，极少数未确认进程需后续诊断。
 
@@ -141,3 +141,15 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 首次真机释放通过；静止复查另有一次释放OUTCOME_UNKNOWN，应用正常退出且discovery删除，保留该失败记录；后续独立重跑首次release返回stopped，未重现该超时，不能称真实同lease重试已经通过；对应超时/重试加入同一清理过程由单测覆盖。原始屏幕/日志仅在忽略目录，不入公开证据。
 
 最终证据：[M6 verification.json](../scrcpy-plus/evidence/agent-automation/M6/2026-11-16/verification.json)。AUTO-OBS-001：真实Harmony静止探针一次release超过清理预算，重跑未重现；保持OUTCOME_UNKNOWN证据，后续优先复现并核对同lease恢复，不能被重跑成功覆盖。
+
+
+## 用户要求的独立审查与修复（最新）
+
+用户要求独立审查并修改问题。新上下文 reviewer 审查 `fb476c6..aa3bf70` 发现两项 P2，主代理复现修复并补充两个生命周期问题，同时关闭上轮两项 Minor；源码提交 `2e70424`。
+
+- AUTO-BUG-007（已修复）：共用系统键白名单遗漏 GUI 遥控器方向、确定和应用切换，恢复既有键码并继续使用统一门禁。
+- AUTO-BUG-008（已修复）：apps.start 允许的 `$` 被设备 shell 展开；bundle/ability 改为字面参数。
+- AUTO-BUG-009（已修复）：SDK 同步取消并抛错留下未处理 rejection；先接入 Promise race 后调用操作。
+- AUTO-BUG-010（已修复）：清理等待超时但后台 close 在途时仍可获取新 owner；现在拒绝新 lease、GUI 认领及操作授权，允许原 lease 加入原关闭过程。
+
+上述四项及 AUTO-FOLLOWUP-001/002 共六项的最小复现、代码/测试定位和 RED→GREEN 见[专项记录](agent-automation-review-2026-11-16.md)，机器证据见[verification.json](../scrcpy-plus/evidence/agent-automation/review/2026-11-16/verification.json)。最终应用1084pass/2skip、Licia各606pass/4pending、lint、完整build、Electron模拟9项、临时安装CLI/MCP35工具全部通过；tsc退出2，诊断与M6原记录逐行相同。未重验真机/Windows；AUTO-OBS-001仍开放，不能用在途清理门禁修复解释设备超时根因。下一步按验收交接补实际环境矩阵；未发布或替换安装。

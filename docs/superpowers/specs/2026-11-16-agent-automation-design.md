@@ -99,6 +99,7 @@ M4 的必需盘点：设备概览；应用列表/详情/前台应用/启动/停�
 - `sessions start` 同设备复用后端，但为调用方分配 lease；返回 `{ sessionId, leaseId, state, created }`。CLI lease 可跨命令持有；普通命令退出不关闭会话。
 - 客户端身份持久化在当前用户的客户端配置中，CLI 与 MCP 使用不同默认 clientId，可通过命名 client profile 分离多个 Agent；clientId 不是认证凭据，token 验证仍是本机用户信任边界。`sessions leases` 仅列出当前 client 的 lease，`sessions release --lease <id>` 可恢复清理；start 响应丢失时先查询再继续，不盲目重复启动。按 clientId + deviceKey 复用同一 lease；同一 client 的多个命令共享该归属，需独立生命周期时使用不同 client profile。已释放 lease 的凭据不出现在其他 client 的列表中。
 - `sessions stop --session ... --lease ...` 释放自身 lease，重复释放成功；仅最后一个 lease 且无 GUI owner 时关闭后端。不能凭 session ID 停掉其他调用者的会话。显式应用退出仍终止全部本实例资源。
+- 已释放 lease 按 leaseId 保留至少 5 分钟；同客户端重新获取同一会话后，旧 lease 在保留期内仍可重复释放，不能释放新 lease。清理等待超时但后端关闭尚在途时，拒绝新的 lease、GUI 认领及操作授权；原 lease 可重试并加入原关闭过程。
 - GUI 关闭投屏窗口时，若仍有自动化 lease，则释放 GUI owner 并隐藏窗口，保留解码 renderer 和捕获 owner；再次从 GUI 打开则认领 GUI owner 并显示同一会话。最后一个 owner 释放才真正 destroy。隐藏/最后一次释放不得意外弹出主窗口；自动化 lease 存在时关闭主窗口可隐藏，菜单“退出”仍是终止全实例。renderer 崩溃不能视作普通关窗：会话转 error，通知客户端并执行有限清理，旧帧/代际失效。首期不引入独立无头解码器。
 - GUI 与自动化共用每设备输入队列；一个完整手势执行期间不交错其他输入。断连/关窗/取消时尽力释放按键/触点；未确认释放则阻止后续输入并报告恢复需要，不无限排队。
 - 自动化状态至少区分 starting、authorizing、waiting、running、disconnected、error、stopping、stopped；running 需要实际首帧，输入就绪另由 capability.available 表达。记录停止 tombstone 至少 5 分钟以支持重复 stop/get；状态变化需带递增 revision。
@@ -170,3 +171,11 @@ AUTO-DEC-008（M4 实施）：日志/布局用有界 blob envelope（最多1MiB�
 AUTO-DEC-009（M5 实施）：使用官方 @modelcontextprotocol/server/client 2.4.0，serveStdio 兼容 2025/2026-07-28 客户端。操作 schema 唯一来源仍为 protocol.ts；工具名点/连字符转下划线，参数保持camelCase，timeoutMs单独传递。图片为image结果，文件为有界嵌入blob资源，不落盘、不提供可重取URL。MCP退出保留持久lease供同名客户端恢复；独立调用者用不同client。
 
 M6 实施补充：截图几何校验需延伸到实际派发点，不能只比较 renderer 元数据。Android 非释放输入在后端队列核对原图尺寸；Harmony 允许缩放但拒绝方向/比例不一致，并在非释放触摸前有界读取当前显示尺寸。Harmony SDK 读取与触摸不是原子操作，不宣称消除设备侧读取后立即旋转的所有竞态；物理180°保留验收缺口。已派发后的错误/取消一律不得报告not-started，除非有明确未派发证据。
+
+## 用户要求的独立审查修订（2026-11-16）
+
+- `apps.install` 成功返回 `{completed:true,cleanupConfirmed:boolean}`：completed 表示设备安装已确认，cleanupConfirmed 仅表示主机文件句柄和暂存目录清理是否全部确认。清理异常不能覆盖已确认安装结果或原始安装错误；各清理步骤均独立尝试，不因清理失败重装。
+- `apps.start` 的 bundle/ability 作为设备 shell 字面参数传入，允许的 `$` 等字符不得被展开。
+- 共用输入门禁须兼容 GUI 遥控器既有键码，包括方向、确定和应用切换；不扩大自动化命名系统键 schema。
+- 有限只读等待须在调用 SDK 前接入取消/拒绝处理；同步抛错与同步取消同时发生时，不产生未处理 rejection。
+- 问题、回归和验证范围见[独立审查修复记录](../../maintenance/agent-automation-review-2026-11-16.md)；这些修复不改变尚未验收的真机/Windows范围。

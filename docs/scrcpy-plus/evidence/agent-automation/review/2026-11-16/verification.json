@@ -1,0 +1,218 @@
+{
+  "stage": "user-requested-independent-review",
+  "recordedAt": "2026-11-16T06:17:48.511397+00:00",
+  "baseCommit": "aa3bf70",
+  "reviewRange": "fb476c6..aa3bf70",
+  "sourceCommit": "2e7042430257998d30b56af3db5c77042039f184",
+  "branch": "codex/agent-automation",
+  "host": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "versions": {
+    "app": "1.0.5-dev.1",
+    "apiVersion": 1,
+    "node": "v22.22.3"
+  },
+  "review": {
+    "mode": "fresh-context read-only independent reviewer plus coordinator reproduction",
+    "independentFindings": [
+      "AUTO-BUG-007 GUI remote key allowlist regression (P2)",
+      "AUTO-BUG-008 shell expansion of accepted ability names (P2)"
+    ],
+    "additionalConfirmedFindings": [
+      "AUTO-BUG-009 synchronous SDK failure/cancellation unhandled rejection",
+      "AUTO-BUG-010 new owner admitted during timed-out in-flight cleanup"
+    ],
+    "previousFollowupsClosed": [
+      "AUTO-FOLLOWUP-001 old lease release after reacquisition",
+      "AUTO-FOLLOWUP-002 local cleanup masking installation result"
+    ],
+    "allSixFixed": true,
+    "independentRereviewOfFixes": false
+  },
+  "redGreen": [
+    {
+      "log": "known-red.log",
+      "passed": 12,
+      "failed": 3,
+      "greenLog": "known-green.log",
+      "greenPassed": 21
+    },
+    {
+      "log": "read-wait-red.log",
+      "passed": 0,
+      "failed": 1,
+      "greenLog": "read-wait-green.log",
+      "greenPassed": 10
+    },
+    {
+      "log": "gui-ability-red.log",
+      "passed": 55,
+      "failed": 2,
+      "greenLog": "gui-ability-green.log",
+      "greenPassed": 57
+    },
+    {
+      "log": "cleanup-red.log",
+      "passed": 11,
+      "failed": 1,
+      "greenLog": "cleanup-green.log",
+      "greenPassed": 12
+    }
+  ],
+  "checks": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "application": {
+        "total": 1086,
+        "passed": 1084,
+        "skipped": 2
+      },
+      "licia": {
+        "default": {
+          "passed": 606,
+          "pending": 4
+        },
+        "fallback": {
+          "passed": 606,
+          "pending": 4
+        }
+      }
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "command": "npx tsc --noEmit --ignoreDeprecations 6.0",
+      "exitCode": 2,
+      "passed": false,
+      "result": "Repository baseline diagnostics; entire output identical to prior M6 types log",
+      "newDiagnostics": []
+    },
+    {
+      "command": "node script/check-automation-electron.mjs <empty-private-directory>",
+      "exitCode": 0,
+      "result": {
+        "deviceMode": "SIMULATED ONLY",
+        "realElectron": true,
+        "host": "darwin",
+        "arch": "arm64",
+        "checks": {
+          "status": true,
+          "sharedBackend": true,
+          "independentLeases": true,
+          "realCanvasPng": true,
+          "inputObservationBarrier": true,
+          "guiCloseRetainsRenderer": true,
+          "hiddenCapture": true,
+          "lastOwnerCleanup": true,
+          "discoveryCleanup": true
+        },
+        "frame": {
+          "width": 240,
+          "height": 100,
+          "beforeSequence": 2,
+          "afterSequence": 6
+        }
+      }
+    },
+    {
+      "command": "npm run check:automation-package",
+      "exitCode": 0,
+      "tools": 35,
+      "freshInstall": true
+    }
+  ],
+  "validationScope": {
+    "realDeviceOperations": false,
+    "realGuiButtonClickAcceptance": false,
+    "guiRemoteTransportAndGate": "automated shared main-process integration test",
+    "abilityLiteralShell": "real local /bin/sh with simulated aa, no device call",
+    "windows": false,
+    "physicalRotation": false,
+    "realCleanupTimeoutRootCause": "not established; AUTO-OBS-001 remains open"
+  },
+  "publication": {
+    "pushed": false,
+    "merged": false,
+    "published": false,
+    "installedApplicationReplaced": false
+  },
+  "logs": {
+    "build.log": {
+      "sha256": "a12d758f2a48dcad23fbac39bd5585a854ef280c5184d6468cc09d55660811bf",
+      "createdAt": "2026-11-16T06:15:12.545992+00:00",
+      "lastWrittenAt": "2026-11-16T06:15:38.123780+00:00"
+    },
+    "cleanup-green.log": {
+      "sha256": "67169850edf40725b01f5d2999761c10615b6787e4141ae05550854a22cae6f8",
+      "createdAt": "2026-11-16T06:14:19.480282+00:00",
+      "lastWrittenAt": "2026-11-16T06:14:19.711588+00:00"
+    },
+    "cleanup-red.log": {
+      "sha256": "7420e83ab1bd8a7d774396d811db72d79b4e2b96c6ff37406479566b803d829c",
+      "createdAt": "2026-11-16T06:14:08.549838+00:00",
+      "lastWrittenAt": "2026-11-16T06:14:08.791486+00:00"
+    },
+    "electron.log": {
+      "sha256": "a7dfa7999ab001c284dbc063a57cfff9e7a55cefec2af273e3a9062da201302c",
+      "createdAt": "2026-11-16T06:16:10.612034+00:00",
+      "lastWrittenAt": "2026-11-16T06:16:12.000236+00:00"
+    },
+    "full-test.log": {
+      "sha256": "39871cca53ec8e40080807bcc268caaf12ca88444e419ca021247a116af69d38",
+      "createdAt": "2026-11-16T06:14:19.736848+00:00",
+      "lastWrittenAt": "2026-11-16T06:15:06.849759+00:00"
+    },
+    "gui-ability-green.log": {
+      "sha256": "8c23c135b9328e9ac1d12ad9f0e1ad4d3e7cc112dd81502be3d539c353dd5a1b",
+      "createdAt": "2026-11-16T06:11:55.668648+00:00",
+      "lastWrittenAt": "2026-11-16T06:11:56.147153+00:00"
+    },
+    "gui-ability-red.log": {
+      "sha256": "0ccc25522cd859ec140409be16e3b69938d634d64ab701680eb35c59ac4dcd30",
+      "createdAt": "2026-11-16T06:11:55.067434+00:00",
+      "lastWrittenAt": "2026-11-16T06:11:55.632760+00:00"
+    },
+    "known-green.log": {
+      "sha256": "4c992e9c0d20031b6404e9242cd6796e5d528236ac8b62d2c294748d7a021e85",
+      "createdAt": "2026-11-16T06:09:44.380639+00:00",
+      "lastWrittenAt": "2026-11-16T06:09:44.616863+00:00"
+    },
+    "known-red.log": {
+      "sha256": "f43b6a5e8efe0a0a893bfea50da0cf2649fa672d586745c048d566b39115e42f",
+      "createdAt": "2026-11-16T06:09:06.200568+00:00",
+      "lastWrittenAt": "2026-11-16T06:09:06.414960+00:00"
+    },
+    "lint.log": {
+      "sha256": "95645ae3697e927ed3630e18f37d90670eba8b948aa3ced56360fc4bbf54c660",
+      "createdAt": "2026-11-16T06:14:55.198679+00:00",
+      "lastWrittenAt": "2026-11-16T06:14:57.355488+00:00"
+    },
+    "package.log": {
+      "sha256": "57fb26354d0bf096f41d89529e1456610a5792a32911b36b4cdf513ebed27c05",
+      "createdAt": "2026-11-16T06:16:22.242265+00:00",
+      "lastWrittenAt": "2026-11-16T06:16:23.181257+00:00"
+    },
+    "read-wait-green.log": {
+      "sha256": "1ea8e8b4ad1006532713468c82c771a7ec496631d1712acec1c9257ff5e2d700",
+      "createdAt": "2026-11-16T06:10:30.408742+00:00",
+      "lastWrittenAt": "2026-11-16T06:10:30.581443+00:00"
+    },
+    "read-wait-red.log": {
+      "sha256": "07aaa6e3d9d8ca368b100a08b78a5fc2b866367624fd4ce098b946a66eb771c0",
+      "createdAt": "2026-11-16T06:10:30.209397+00:00",
+      "lastWrittenAt": "2026-11-16T06:10:30.373684+00:00"
+    },
+    "types.log": {
+      "sha256": "5d7663a0e3634c1b1e9d4ec55bef0834727f26afac4de06d9be435271b0f35b7",
+      "createdAt": "2026-11-16T06:14:55.198622+00:00",
+      "lastWrittenAt": "2026-11-16T06:14:58.055717+00:00"
+    }
+  },
+  "timingNote": "Log timestamps bound output creation/writes; not exact command execution timestamps."
+}

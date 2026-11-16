@@ -62,6 +62,8 @@ scrcpy-plus sessions stop --session "$SID" --lease "$LEASE" --client agent-a --j
 
 普通 CLI 退出保留 lease；GUI 关窗时若有 lease 则隐藏并保留 renderer，再次 GUI 打开会认领 GUI owner。输入需要当前 client 的 lease。若 start 响应丢失，先用同一 `--client` 查询 `sessions leases`，再继续或 release；不要凭另一 client 的 session ID 停止它。应用显式退出终止全实例资源。
 
+已释放 lease 至少保留 5 分钟用于重复 stop/release，即使同客户端已重新获取新 lease，也不会误释放新 lease。关闭仍在途时不接受新的 start/GUI 认领；原 lease 可重试清理。
+
 文本上限 16384 UTF-16 code units，文件/stdin 额外有 64KiB UTF-8 输入上限。不要把敏感文本放在命令参数中。MCP 仍待 M5 实现。
 
 ## Harmony 查询
@@ -86,7 +88,7 @@ scrcpy-plus sessions stop --session "$SID" --lease "$LEASE" --client agent-a --j
 | --- | --- | --- |
 | `apps start` | `--bundle <名称> --ability <名称>` | 启动指定 ability |
 | `apps stop` | `--bundle <名称>` | 强制停止应用 |
-| `apps install` | `--path <绝对HAP路径>` | 安装或替换应用，默认 120 秒 |
+| `apps install` | `--path <绝对HAP路径>` | 安装或替换应用，默认 120 秒；成功返回 completed 和独立的 cleanupConfirmed |
 | `apps uninstall` | `--bundle <名称>` | 卸载并删除应用数据 |
 | `apps clear-data` | `--bundle <名称>` | 删除应用数据 |
 | `apps clear-cache` | `--bundle <名称>` | 删除应用缓存 |

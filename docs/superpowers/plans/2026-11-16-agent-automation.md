@@ -152,3 +152,11 @@ M3 真机验收保留未勾选：模拟 Electron 部分已通过；Android USB c
 - [ ] 仅在 spec 完成标准满足时把总任务标为验收完成；否则准确交付候选并继续处理可解决项。提交 `docs: record automation acceptance and maintenance handoff`。
 
 M6 本地候选交付见[验收与交接](../../scrcpy-plus/automation/acceptance.md)。全矩阵未满足的两项保持未勾选，不冒充任务已完全验收。
+
+
+## 用户要求的独立审查修复（2026-11-16）
+
+- [x] 新上下文独立审查 `fb476c6..aa3bf70`；复现并修复遥控器键白名单及 ability shell 参数展开。
+- [x] 关闭旧 lease 幂等和安装清理结果两项 Minor；补修同步取消 rejection、在途清理认领竞态，均保留失败回归。
+- [x] 全量1084pass/2skip、Licia各606/4、lint/fullbuild、真实Electron模拟9项、安装包CLI/MCP35工具通过；tsc基线诊断逐行未变。
+- [x] 更新 spec、接口文档、RUNBOOK、[问题记录](../../maintenance/agent-automation-review-2026-11-16.md)与[结构化证据](../../scrcpy-plus/evidence/agent-automation/review/2026-11-16/verification.json)。源码 `2e70424`，仅本地提交；M6待验收两项维持未勾选。

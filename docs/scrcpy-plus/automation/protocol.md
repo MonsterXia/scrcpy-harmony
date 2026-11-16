@@ -48,6 +48,10 @@ POSIX 目录 0700、凭据文件 0600，拒绝符号链接目录和非当前用�
 
 停止最多等待 5 秒确认；超时返回 OUTCOME_UNKNOWN，保留清理义务及 lease，后续 release 加入同一关闭过程。输入队列按设备串行，取消时仍独立尝试最多 5 秒的触点释放；无法确认则隔离该代际。输入成功只签发新观察屏障，不证明设备业务动作成功。
 
+后端关闭仍在途时，即使状态已变为 error，也拒绝新的 lease、GUI 认领和操作授权。已释放 lease 按 ID 至少保留 5 分钟，同客户端重新获取新 lease 后仍可重复释放旧 ID，且不会释放新 lease。
+
+`apps.install` 成功的 data 为 `{completed:true,cleanupConfirmed:boolean}`。前者确认设备安装，后者独立报告主机暂存清理；false 不表示安装失败，也不是重装依据。安装本身失败时保留原错误，清理异常不覆盖设备结果。
+
 ## 有限文件结果
 
 logs.capture/layout.dump 使用 `application/vnd.scrcpy-plus.blob`，同样为 4 字节 envelope 长度 + JSON + 原始字节；data.artifact 包含 artifactId、mimeType、byteLength，日志另含 durationMs/truncated。字节数最多 1MiB，允许空日志；截图仍要求非空。CLI output 不进入服务参数。

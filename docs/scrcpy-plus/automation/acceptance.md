@@ -1,6 +1,6 @@
 # 本地候选验收与维护交接
 
-日期：2026-11-16；源码基线 `fb476c6`，最终实现/修复 `4c37ba6`，分支 `codex/agent-automation`。这是本地候选交付，整个平台矩阵尚未验收完成。发布、远端合入、日常安装替换均未执行。
+日期：2026-11-16；源码基线 `fb476c6`，最新独立审查修复 `2e70424`，分支 `codex/agent-automation`。这是本地候选交付，整个平台矩阵尚未验收完成。发布、远端合入、日常安装替换均未执行。
 
 ## 可运行产物
 
@@ -16,16 +16,16 @@
 | --- | --- | --- | --- |
 | AUTO-01 | common/automation/protocol、CLI index、MCP index | protocol/cli/mcp；35个注册操作 | 新平台工具未扩展 |
 | AUTO-02 | main/automation/server/auth/discovery/lifecycle/profile | server/profile/lifecycle；真实 Electron 服务/退出 | Windows ACL 实机 pending |
-| AUTO-03 | sessions/controller/window hooks | sessions/native-window；双调用者/GUI owner 模拟闭环 | 同客户端旧 lease 重复释放的 Minor |
+| AUTO-03 | sessions/controller/window hooks | sessions/native-window；双调用者/GUI owner 模拟闭环 | 在途清理拒绝新 owner；真机清理超时仍待复现 |
 | AUTO-04 | FrameSource/frameBridge/frames/wire | frames/binary/renderer；真实 Canvas、Harmony截图 | 物理180°、锁屏下动作后新帧 pending |
 | AUTO-05 | input/runtime、Android/Harmony adapters | input/adapters/plus-devices；旋转与派发错误 RED→GREEN | Android USB access；Harmony完整交互/iOS不支持 |
 | AUTO-06 | harmonyTools、共享 hdc 模块 | tools/ports/shell/layout/host-command；Harmony只读工具实际通过 | 安装卸载/清数据/端口写操作真机 pending |
 | AUTO-07 | context/client/server/input/hostCommand | 超时、取消、不重发、释放与大小边界回归 | 强杀后无close确认保持unknown |
 | AUTO-08 | cli help/schema、automation docs、Agent skill | tarball安装、命令帮助、五场景Agent复测 | 需要Node22.12+ |
 | AUTO-09 | src/mcp/index.ts、SDK2.4.0 | 真实SDK stdio新旧协议、错误/取消/图片/文件 | Codex宿主实际工具调用 pending |
-| AUTO-10 | 上述整体、script/build | 全量1076pass/2skip；Licia各606pass/4pending；lint/fullbuild | 仓库既有tsc诊断、Windows/完整真机矩阵 |
+| AUTO-10 | 上述整体、script/build | 全量1084pass/2skip；Licia各606pass/4pending；lint/fullbuild | 仓库既有tsc诊断、Windows/完整真机矩阵 |
 
-[最终结构化证据](../evidence/agent-automation/M6/2026-11-16/verification.json)；此前阶段证据仍保留，不以本次局部真机结果覆盖旧失败记录。真实屏幕、原始设备日志、序列号与 token 不进入公开证据；本地私有探针记录保留在被忽略的 `.superpowers/sdd/2026-11-16-agent-automation/`，无需从对话恢复工作进度。
+[最新审查修复证据](../evidence/agent-automation/review/2026-11-16/verification.json)与[M6原始证据](../evidence/agent-automation/M6/2026-11-16/verification.json)；此前阶段证据仍保留，不以本次局部真机结果覆盖旧失败记录。真实屏幕、原始设备日志、序列号与 token 不进入公开证据；本地私有探针记录保留在被忽略的 `.superpowers/sdd/2026-11-16-agent-automation/`，无需从对话恢复工作进度。
 
 ## 执行决策及代价
 
@@ -44,10 +44,12 @@
 11. 同OS用户为服务信任边界；clientId仅管理归属，同一账号下不能当安全隔离。
 12. HDC子进程强杀但无close确认时保持unknown并结束有界等待；不声称清理成功，极少数情况仍需进程诊断。
 
-## 非阻断遗留与继续验收
+## 审查修复与继续验收
 
-- AUTO-FOLLOWUP-001：同客户端释放后重新获取仍存活会话会替换旧lease记录，旧release重试可能NOT_FOUND/UNAUTHORIZED；新的lease安全保留。后续可增加有期限的旧lease tombstone。
-- AUTO-FOLLOWUP-002：已确认安装成功后，本地暂存清理异常可能遮蔽成功为unknown；不会自动重试。后续将设备结果与主机清理结果分离。
+本轮另修复遥控器键白名单、ability shell 展开、同步取消未处理 rejection、在途清理的新 owner 竞态。六项问题的复现和修复验证见[独立审查记录](../../maintenance/agent-automation-review-2026-11-16.md)。
+
+- AUTO-FOLLOWUP-001 已修复：已释放 lease 按 ID 保留至少五分钟，同客户端重获后旧 release 仍幂等，新 lease 保持有效。
+- AUTO-FOLLOWUP-002 已修复：已确认安装返回 completed:true 和独立 cleanupConfirmed；清理异常不覆盖设备结果，不触发重装。
 - AUTO-OBS-001：真实Harmony静止探针有一次清理未确认；独立重跑首次释放成功，尚不能宣称复现根因或真实同lease恢复已通过。
 - 真机：使用已解锁的专用测试页面完成Harmony点击/滑动/文字→新帧验证，补临时HAP及端口写入清理；Android需可用USB接口；iOS需真实发送端。物理90°/180°与断连/恢复继续独立记录。
 - Windows：实际ACL、空格/Unicode路径、退出和子进程取消；Codex：用户选择的配置中实际启动与调用MCP。

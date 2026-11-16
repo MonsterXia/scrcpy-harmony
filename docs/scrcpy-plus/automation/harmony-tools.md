@@ -26,6 +26,8 @@ M4-A 证据：[查询批次](../evidence/agent-automation/M4/2026-11-16-query/ve
 
 M4-B 证据：[应用写操作](../evidence/agent-automation/M4/2026-11-16-app-writes/verification.json)。测试只操作临时主机文件和模拟 HDC 客户端，没有安装/卸载/清理真实用户应用。
 
+审查修订：`apps start` 将 bundle/ability 编码为字面 shell 参数，`$` 不展开。`apps install` 已确认成功时返回 `{completed:true,cleanupConfirmed:boolean}`；清理失败单独报告为 false，不覆盖安装成功，也不触发重装。失败安装仍返回原操作错误；关闭文件句柄和删除暂存目录均会尝试。回归见[独立审查记录](../../maintenance/agent-automation-review-2026-11-16.md)，本轮未做真机应用写入。
+
 M4-C/D：`layout dump --output <file>` 输出最多 1 MiB 的 XML；属性转义、不修改原树，深度 128/节点 20000 上限。SDK 读取受截止/取消等待保护；已经在途的共享 UITest 初始化/读取可能迟到结束，不会继续下一阶段，也不会停止 GUI 所持有的 UITest。
 
 `logs capture --duration-ms 5000 --max-bytes 1048576 --output <file>` 使用独立有限 HDC reader，时长 1—60000ms、输出最多 1MiB，默认请求期限 70000ms。到时终止自己的 reader；达到大小上限返回 `truncated=true`；空日志合法。取消/期限不足返回错误，不清除设备日志、不操作 GUI reader。所有文件在调用端原子写入，默认拒绝覆盖，`--overwrite` 明确覆盖。
