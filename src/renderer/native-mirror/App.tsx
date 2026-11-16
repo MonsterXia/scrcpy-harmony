@@ -5,13 +5,13 @@ import { t } from 'common/util'
 import H264Decoder from '../screencast/lib/H264Decoder'
 import Style from './App.module.scss'
 
-function statusLabel(state: string) {
+function statusLabel(state: string, issue?: MirrorSession['connectionIssue']) {
   switch (state) {
     case 'authorizing': return t('plusAuthorizing')
     case 'waiting': return t('plusAirplayHint')
     case 'running': return t('plusNativeConnected')
     case 'disconnected': return t('plusNativeDisconnected')
-    case 'error': return t('plusNativeError')
+    case 'error': return t(issue === 'usb-access' ? 'plusAndroidUsbAccessError' : 'plusNativeError')
     default: return t('plusNativeStarting')
   }
 }
@@ -20,6 +20,7 @@ export default function App() {
   const [info, setInfo] = useState<NativeMirrorInfo>()
   const [status, setStatus] = useState<MirrorSession['state']>('starting')
   const [error, setError] = useState('')
+  const [connectionIssue, setConnectionIssue] = useState<MirrorSession['connectionIssue']>()
   const touching = useRef(false)
   const pointer = useRef<number | null>(null)
   const lastPoint = useRef({ x: 0, y: 0 })
@@ -66,7 +67,7 @@ export default function App() {
     })
     const unsubscribeState = main.on('nativeMirrorState', (session: MirrorSession) => {
       if (active && session.id === id) {
-        setStatus(session.state)
+        setStatus(session.state); setConnectionIssue(session.connectionIssue)
         if (session.state === 'error' || session.state === 'disconnected' || session.state === 'starting') frames.reset(session.state)
       }
     })
@@ -74,7 +75,7 @@ export default function App() {
       try {
         const value = await main.nativeMirrorInfo()
         if (!active) return
-        id = value.id; setInfo(value); setStatus(value.state)
+        id = value.id; setInfo(value); setStatus(value.state); setConnectionIssue(value.connectionIssue)
         if (value.target.platform === 'android') preload.setTitle(value.target.name)
         await main.nativeMirrorOpen()
       } catch { if (active) setStatus('error') }
@@ -111,7 +112,7 @@ export default function App() {
     send({ type: 'touch', action: 'up', ...lastPoint.current })
   }
   return <main className={`${Style.page} ${android ? Style.android : ''}`}>
-    {(!android || status !== 'running' || error) && <header><strong>{info?.target.name || t('screencast')}</strong><span>{statusLabel(status)}</span></header>}
+    {(!android || status !== 'running' || error) && <header><strong>{info?.target.name || t('screencast')}</strong><span>{statusLabel(status, connectionIssue)}</span></header>}
     {error && <p className={Style.error} role="alert">{error}</p>}
     {(status === 'error' || status === 'disconnected') && <button type="button" onClick={() => {
       setError(''); setStatus('starting'); void main.nativeMirrorOpen().catch(() => setStatus('error'))

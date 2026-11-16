@@ -19,13 +19,14 @@ export interface MirrorSession {
   name: string
   platform: string
   state: 'starting' | 'authorizing' | 'waiting' | 'running' | 'disconnected' | 'error' | 'stopping'
+  connectionIssue?: 'usb-access'
 }
 export type NativeMirrorInput =
   | { type: 'touch'; action: 'down' | 'move' | 'up'; x: number; y: number }
   | { type: 'scroll'; x: number; y: number; dx: number; dy: number }
   | { type: 'key'; keyCode: number }
   | { type: 'text'; text: string }
-export interface NativeMirrorInfo { id: string; target: ITarget; state: MirrorSession['state'] }
+export interface NativeMirrorInfo { id: string; target: ITarget; state: MirrorSession['state']; connectionIssue?: MirrorSession['connectionIssue'] }
 export interface NativeMirrorFrame {
   sessionId: string
   sequence: number

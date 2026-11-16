@@ -178,3 +178,37 @@ test('automation attachment shares the native window and can retain it on GUI cl
  await f.nativeMirrors.start(target());assert.ok(events.includes('gui'));assert.equal(f.windows.length,1)
  await attachment.close();assert.ok(events.includes('closed'))
 })
+
+test('USB claim failure exposes a safe actionable issue and clears it on retry', async () => {
+  const f = fixture(); let attempts = 0
+  f.Android.prototype.start = async function(frame, state) {
+    if (++attempts === 1) throw new Error('claimInterface error: Error: LIBUSB_ERROR_ACCESS private detail')
+    state('connected')
+  }
+  await f.nativeMirrors.start(target())
+  await assert.rejects(f.invoke('nativeMirrorOpen', f.windows[0]), /connection failed/)
+  const info = await f.invoke('nativeMirrorInfo', f.windows[0])
+  assert.equal(info.connectionIssue, 'usb-access')
+  const reported = f.windows[0].frames.filter(([name]) => name === 'nativeMirrorState').at(-1)[1]
+  assert.equal(reported.connectionIssue, 'usb-access')
+  assert.ok(!JSON.stringify(reported).includes('private detail'))
+  await f.nativeMirrors.start(target())
+  assert.equal(f.nativeMirrors.list()[0].state, 'running')
+  assert.equal((await f.invoke('nativeMirrorInfo', f.windows[0])).connectionIssue, undefined)
+  await f.nativeMirrors.dispose()
+})
+
+test('only Android USB access or busy failures receive the USB issue classification', async () => {
+  for (const [platform, message, issue] of [
+    ['android', 'LIBUSB_ERROR_BUSY', 'usb-access'],
+    ['android', 'Android connection timed out', undefined],
+    ['ios', 'LIBUSB_ERROR_ACCESS', undefined],
+  ]) {
+    const f = fixture()
+    f.Android.prototype.start = async () => { throw new Error(message) }
+    await f.nativeMirrors.start({ ...target(), platform })
+    await assert.rejects(f.invoke('nativeMirrorOpen', f.windows[0]))
+    assert.equal((await f.invoke('nativeMirrorInfo', f.windows[0])).connectionIssue, issue)
+    await f.nativeMirrors.dispose()
+  }
+})

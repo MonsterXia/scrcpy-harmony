@@ -82,6 +82,7 @@ class NativeMirrors {
   }
   private state(session: Session, value: string) {
     if (session.stopping || this.sessions.get(session.info.id) !== session) return
+    if (value !== 'error') delete session.info.connectionIssue
     session.automation?.state(value)
     session.info.state = value === 'connected' ? 'running' : value as MirrorSession['state']
     if (session.ready && !session.window.isDestroyed()) session.window.webContents.send('nativeMirrorState', { ...session.info })
@@ -107,6 +108,10 @@ class NativeMirrors {
       try { await backend?.close(); cleaned = true } catch { /* Keep ownership so cleanup can be retried. */ }
       if (!session.stopping) {
         if (cleaned) session.backend = undefined
+        const message = error && typeof error.message === 'string' ? error.message : ''
+        if (session.target.platform === 'android' && /LIBUSB_ERROR_(ACCESS|BUSY)|device is already in use/i.test(message)) {
+          session.info.connectionIssue = 'usb-access'
+        }
         this.state(session, 'error')
       }
       console.error('Native mirror startup failed:', error instanceof Error ? error.message : 'unknown')
@@ -153,7 +158,7 @@ class NativeMirrors {
   private init() {
     if (this.initialized) return
     this.initialized = true
-    ipcMain.handle('nativeMirrorInfo', event => { const s = this.owner(event); return { id: s.info.id, target: s.target, state: s.info.state } })
+    ipcMain.handle('nativeMirrorInfo', event => { const s = this.owner(event); return { id: s.info.id, target: s.target, state: s.info.state, connectionIssue: s.info.connectionIssue } })
     ipcMain.handle('nativeMirrorOpen', event => this.open(this.owner(event)))
     ipcMain.handle('nativeMirrorFit', (event, width: number, height: number, verticalInset: number, horizontalInset: number) => {
       const win = this.owner(event).window

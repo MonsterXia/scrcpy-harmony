@@ -271,6 +271,7 @@
   "plusAuthorizing": "Unlock your phone and allow the USB debugging connection.",
   "plusNativeConnected": "Connected",
   "plusNativeDisconnected": "Device disconnected. Reconnect it and retry.",
+  "plusAndroidUsbAccessError": "Cannot access the Android USB interface. ADB or another mirroring app may be using it, or USB access may be denied. Release this phone in the other tool, then retry. Allow USB debugging on the phone if prompted.",
   "plusNativeError": "Connection failed. Check phone authorization, USB access and built-in resources. Close other debugging apps using the USB interface, then retry.",
   "plusNativeInputError": "Could not send input. Check the device connection.",
   "plusNativeDecodeError": "Video decoding failed. Waiting for a new keyframe.",
