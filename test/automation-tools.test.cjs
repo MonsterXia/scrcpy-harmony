@@ -37,3 +37,8 @@ test('port node validation rejects wildcard/whitespace and accepts only explicit
  for(const value of ['tcp:1234','localabstract:debug.socket','localfilesystem:/tmp/test.sock'])validatePortNode(value,false)
  validatePortNode('jdwp:123',true)
 })
+test('confirmed install reports staging cleanup independently instead of device outcome unknown',async()=>{
+ const {createHarmonyToolHandlers}=load('src/main/automation/adapters/harmonyTools.ts')
+ const h=createHarmonyToolHandlers({discover:async()=>({targets:[{key:'h',platform:'harmony',state:'ready'}],errors:[]}),writeApp:async()=>({value:undefined,cleanupConfirmed:false})})
+ assert.deepEqual(await h['apps.install']({device:'h',path:'/tmp/test.hap'},ctx()),{completed:true,cleanupConfirmed:false})
+})

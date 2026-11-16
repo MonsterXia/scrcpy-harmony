@@ -92,3 +92,32 @@ test('unconfirmed cleanup returns within its budget, retains lease and closes on
  assert.equal(sessions.get(id).state,'error');assert.equal(sessions.leases('a').length,1)
  finish();await new Promise(setImmediate);assert.equal(sessions.get(id).state,'stopped')
 })
+test('releasing an old lease after reacquisition stays idempotent without releasing the new owner',async()=>{
+ const {AutomationSessions}=load('src/main/automation/sessions.ts');let now=1000,closes=0
+ const sessions=new AutomationSessions('review',()=>now)
+ sessions.register(target,{close:async()=>{closes++},hide(){},show(){}},true)
+ const first=await sessions.start(target,context('a'),async()=>{})
+ await sessions.releaseLease(first.leaseId,context('a'))
+ const next=await sessions.start(target,context('a'),async()=>{})
+ assert.notEqual(first.leaseId,next.leaseId)
+ now+=299999
+ await sessions.release(first.sessionId,first.leaseId,context('a'))
+ await sessions.releaseLease(first.leaseId,context('a'))
+ assert.deepEqual(sessions.leases('a').map(x=>x.leaseId),[next.leaseId]);assert.equal(closes,0)
+ await assert.rejects(sessions.release(first.sessionId,first.leaseId,context('b')),{code:'UNAUTHORIZED'})
+ now++;await assert.rejects(sessions.releaseLease(first.leaseId,context('a')),{code:'NOT_FOUND'})
+ assert.equal(sessions.requireLease(next.sessionId,'a').sessionId,next.sessionId)
+})
+test('timed-out cleanup keeps the session unavailable until backend close actually settles',async()=>{
+ const {AutomationSessions}=load('src/main/automation/sessions.ts')
+ const sessions=new AutomationSessions('review',Date.now,10);let finish,closes=0,shown=0
+ const first=await sessions.start(target,context('a'),async()=>sessions.register(target,{hide(){},show(){shown++},close(){closes++;return new Promise(resolve=>{finish=resolve})}},false))
+ await assert.rejects(sessions.release(first.sessionId,first.leaseId,context('a')),{code:'OUTCOME_UNKNOWN'})
+ await assert.rejects(sessions.start(target,context('b'),async()=>assert.fail('must not open twice')),{code:'BUSY'})
+ assert.throws(()=>sessions.claimGui(first.sessionId),{code:'UNAVAILABLE'})
+ assert.throws(()=>sessions.requireLease(first.sessionId,'a'),{code:'UNAVAILABLE'})
+ assert.equal(sessions.leases('b').length,0);assert.equal(shown,0);assert.equal(closes,1)
+ const retry=sessions.release(first.sessionId,first.leaseId,context('a'))
+ finish();await retry
+ assert.equal(sessions.get(first.sessionId).state,'stopped');assert.equal(closes,1)
+})

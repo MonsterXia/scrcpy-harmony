@@ -418,8 +418,16 @@ test('automation application writes confirm shell exit markers and host installe
  await f.api.cleanBundleCache('DEVICE_TEST','com.example.test',context)
  await f.api.installBundle('DEVICE_TEST','/tmp/a file.hap',context)
  await f.api.uninstallBundle('DEVICE_TEST','com.example.test',context)
- assert.equal(commands.length,4);assert.match(commands[0],/aa start -a EntryAbility -b com.example.test/)
+ assert.equal(commands.length,4);assert.match(commands[0],/aa start -a 'EntryAbility' -b 'com.example.test'/)
  assert.deepEqual(host.map(args=>Array.from(args)),[['install','-r','/tmp/a file.hap'],['uninstall','com.example.test']]);assert.equal(f.commands.length,0)
  await assert.rejects(f.api.stopBundle('DEVICE_TEST','com.example.test',{...context,shell:async()=> 'error: denied\nSCRCPY_APP_EXIT:0\n'}),/confirm/)
  await assert.rejects(f.api.installBundle('DEVICE_TEST','/tmp/a.hap',{...context,host:async()=> 'operation failed'}),/confirm/)
+})
+test('accepted dollar characters in ability names remain literal device shell arguments',{skip:process.platform==='win32'},async()=>{
+ const {execFileSync}=require('node:child_process'),f=await loadBundles({});let output
+ const context={clientId:'test',deviceKey:'DEVICE_TEST',deadline:Date.now()+1000,signal:new AbortController().signal,shell:async command=>{
+  output=execFileSync('/bin/sh',['-c','aa() { printf "%s\\n" "$@"; }; '+command],{encoding:'utf8',env:{...process.env,AUTOMATION_REVIEW_ABILITY:'_expanded'}});return output
+ }}
+ await f.api.startBundle('DEVICE_TEST','com.example.test','Entry$AUTOMATION_REVIEW_ABILITY',context)
+ assert.ok(output.includes('\nEntry$AUTOMATION_REVIEW_ABILITY\n'),output)
 })

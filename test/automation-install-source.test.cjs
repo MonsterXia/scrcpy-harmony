@@ -14,3 +14,17 @@ test('invalid install sources fail before dispatch and cleanup survives a reject
  await assert.rejects(withInstallationSource(good,ctx(),async file=>{staged=file;throw Error('install failed')}),/install failed/)
  await assert.rejects(fs.access(staged))
 })
+test('cleanup failures preserve confirmed installation and attempt every cleanup step',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'plus-cleanup-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));const source=path.join(dir,'source.hap');await fs.writeFile(source,Buffer.from([0x50,0x4b,3,4]))
+ let removed=0,staged
+ const mocked={...fs,open:async(...args)=>{const file=await fs.open(...args);return new Proxy(file,{get(target,key){if(key==='close')return async()=>{await target.close();throw Error('close acknowledgement lost')};const value=Reflect.get(target,key,target);return typeof value==='function'?value.bind(target):value}})},rm:async(...args)=>{removed++;return fs.rm(...args)}}
+ const {withInstallationSource}=load('src/main/automation/adapters/installSource.ts',{'node:fs/promises':mocked})
+ const result=await withInstallationSource(source,ctx(),async file=>{staged=file;return 'installed'})
+ assert.equal(result.value,'installed');assert.equal(result.cleanupConfirmed,false);assert.equal(removed,1);await assert.rejects(fs.access(staged))
+})
+test('staging removal failure does not replace the original installation failure',async t=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'plus-cleanup-error-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));const source=path.join(dir,'source.hap');await fs.writeFile(source,Buffer.from([0x50,0x4b,3,4]));let staged
+ const {withInstallationSource}=load('src/main/automation/adapters/installSource.ts',{'node:fs/promises':{...fs,rm:async()=>{throw Error('cleanup denied')}}})
+ t.after(async()=>{if(staged)await fs.rm(path.dirname(staged),{recursive:true,force:true})})
+ await assert.rejects(withInstallationSource(source,ctx(),async file=>{staged=file;throw Error('install refused')}),/install refused/)
+})

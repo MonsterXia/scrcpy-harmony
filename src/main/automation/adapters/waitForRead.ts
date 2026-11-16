@@ -13,7 +13,7 @@ export async function waitForRead<T>(context: AutomationContext, operation: () =
       if (context.signal.aborted) cancel()
     })
     checkContext(context)
-    const result = await Promise.race([operation(),cancelled])
+    const result = await Promise.race([Promise.resolve().then(() => { checkContext(context); return operation() }),cancelled])
     checkContext(context)
     return result
   } finally {

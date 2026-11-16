@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { waitForRead } from './waitForRead'
 import { runOneShotShell } from './oneShotShell'
 import type { DeviceDiscovery } from '../../../common/types'
-import { AutomationFault, checkContext } from '../../../common/automation/protocol'
+import { AutomationFault, checkContext, isRecord } from '../../../common/automation/protocol'
 import type { AutomationContext } from '../../../common/automation/protocol'
 import type { DeviceOperationContext } from '../../../common/automation/deviceContext'
 import type { OperationHandler } from '../service'
@@ -81,8 +81,8 @@ export function createHarmonyToolHandlers(deps: Dependencies): Record<string,Ope
     handlers[`apps.${action}`] = read(async(p,c) => {
       if (action !== 'install') validateBundleName(p.bundle)
       if (action === 'start' && (typeof p.ability !== 'string' || !/^[a-zA-Z_$][a-zA-Z0-9_.$]{0,254}$/.test(p.ability))) throw new AutomationFault('INVALID_ARGUMENT','Invalid ability name')
-      await deps.writeApp!(action,c.deviceKey,p,c)
-      return { completed: true }
+      const result = await deps.writeApp!(action,c.deviceKey,p,c)
+      return { completed: true, ...(action === 'install' && isRecord(result) && typeof result.cleanupConfirmed === 'boolean' ? { cleanupConfirmed: result.cleanupConfirmed } : {}) }
     }, true)
   }
   handlers['shell.run'] = read((p,c)=>runOneShotShell(p.command as string,(p.maxBytes ?? 131072) as number,c,command=>c.shell(command)),true,true)

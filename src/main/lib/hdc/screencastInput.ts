@@ -26,7 +26,9 @@ export async function sendScreencastInput(connectKey: string, action: Screencast
   return runInputCommand(connectKey, command, endpoint, signal)
 }
 export function sendScreencastSystemKey(connectKey: string, keyCode: number, endpoint: { host?: string; port: number }, signal?: AbortSignal) {
-  if (![1,2,16,17,18].includes(keyCode)) throw new Error('Invalid system key')
+  // Preserve the existing GUI remote buttons, including d-pad/confirm and
+  // its legacy app-switch code; named automation keys remain schema-limited.
+  if (![-1,1,2,16,17,18,2012,2013,2014,2015,2016].includes(keyCode)) throw new Error('Invalid system key')
   return runInputCommand(connectKey, `uinput -K -d ${keyCode} -u ${keyCode}`, endpoint, signal)
 }
 async function runInputCommand(connectKey: string, command: string, endpoint: { host?: string; port: number }, signal?: AbortSignal) {

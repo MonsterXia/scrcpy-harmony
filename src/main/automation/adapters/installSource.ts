@@ -13,6 +13,8 @@ export async function withInstallationSource<T>(source: string, context: Automat
   try { file = await fs.open(source,constants.O_RDONLY | (constants.O_NOFOLLOW || 0)) }
   catch { throw new AutomationFault('INVALID_ARGUMENT','Installation source is not a readable regular file') }
   let directory: string | undefined
+  let value: T
+  let cleanupConfirmed = true
   try {
     const stat=await file.stat()
     if (!stat.isFile() || stat.size < 4 || stat.size > MAX_HAP_BYTES) throw new AutomationFault('INVALID_ARGUMENT','HAP file must be a regular ZIP package from 4 bytes to 512 MiB')
@@ -25,9 +27,15 @@ export async function withInstallationSource<T>(source: string, context: Automat
     // original path is never interpolated into a shell or reused after check.
     await pipeline(file.createReadStream({start:0,end:stat.size-1,autoClose:false}),createWriteStream(staged,{flags:'wx',mode:0o600}),{signal:context.signal})
     checkContext(context)
-    return await install(staged)
+    value = await install(staged)
   } finally {
-    await file.close()
-    if (directory) await fs.rm(directory,{recursive:true,force:true})
+    // Cleanup must neither overwrite the device outcome nor prevent the
+    // remaining cleanup steps. Surface its independent status to the caller.
+    const results = await Promise.allSettled([
+      Promise.resolve().then(() => file.close()),
+      ...(directory ? [Promise.resolve().then(() => fs.rm(directory!,{recursive:true,force:true}))] : []),
+    ])
+    cleanupConfirmed = results.every(result => result.status === 'fulfilled')
   }
+  return { value, cleanupConfirmed }
 }

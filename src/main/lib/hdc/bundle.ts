@@ -222,7 +222,7 @@ export const installBundle = async (connectKey: string, hap: string, context?: D
 }
 
 export const startBundle = async (connectKey: string, bundleName: string, ability: string, context?: DeviceOperationContext) => {
-  await writeBundleShell(connectKey, `aa start -a ${ability} -b ${bundleName}`, context)
+  await writeBundleShell(connectKey, `aa start -a '${ability.replace(/'/g, "'\"'\"'")}' -b '${bundleName.replace(/'/g, "'\"'\"'")}'`, context)
 }
 
 export const stopBundle = async (connectKey: string, bundleName: string, context?: DeviceOperationContext) => {

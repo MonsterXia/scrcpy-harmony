@@ -8,7 +8,7 @@ export type SessionState = 'starting' | 'authorizing' | 'waiting' | 'running' | 
 export interface SessionInfo { sessionId: string; deviceKey: string; platform: string; name: string; state: SessionState; revision: number }
 export interface SessionControls { close(): Promise<void>; hide(): void; show(): void }
 interface Lease { leaseId: string; clientId: string; active: boolean }
-interface Entry { info: SessionInfo; controls: SessionControls; gui: boolean; leases: Map<string, Lease>; stoppedAt?: number; stopping?: Promise<void>; cleanup?: Promise<void> }
+interface Entry { info: SessionInfo; controls: SessionControls; gui: boolean; leases: Map<string, Lease>; released: Map<string, { lease: Lease; at: number }>; stoppedAt?: number; stopping?: Promise<void>; cleanup?: Promise<void> }
 export class AutomationSessions {
   private entries = new Map<string, Entry>()
   private devices = new Map<string, string>()
@@ -16,7 +16,10 @@ export class AutomationSessions {
   private claimants = new Map<string, number>()
   constructor(readonly instanceId: string, private now = Date.now, private cleanupTimeoutMs = 5000) {}
   private prune() {
-    for (const [id, entry] of this.entries) if (entry.stoppedAt !== undefined && this.now() - entry.stoppedAt >= 300000) this.entries.delete(id)
+    for (const [id, entry] of this.entries) {
+      if (entry.stoppedAt !== undefined && this.now() - entry.stoppedAt >= 300000) this.entries.delete(id)
+      else for (const [leaseId, released] of entry.released) if (this.now() - released.at >= 300000) entry.released.delete(leaseId)
+    }
   }
   private entry(id: string) {
     this.prune()
@@ -31,7 +34,7 @@ export class AutomationSessions {
     const existing = this.devices.get(target.key)
     if (existing) throw new AutomationFault('BUSY', 'A session already owns this device')
     const sessionId = `${this.instanceId}:${randomUUID()}`
-    this.entries.set(sessionId, { info: { sessionId, deviceKey: target.key, platform: target.platform || 'harmony', name: target.name, state: 'starting', revision: 1 }, controls, gui, leases: new Map() })
+    this.entries.set(sessionId, { info: { sessionId, deviceKey: target.key, platform: target.platform || 'harmony', name: target.name, state: 'starting', revision: 1 }, controls, gui, leases: new Map(), released: new Map() })
     this.devices.set(target.key, sessionId)
     return sessionId
   }
@@ -44,12 +47,12 @@ export class AutomationSessions {
     const entry = this.entries.get(id)
     if (!entry || entry.info.state === 'stopped') return
     entry.info.state = 'stopped'; entry.info.revision++; entry.stoppedAt = this.now(); entry.gui = false
-    for (const lease of entry.leases.values()) lease.active = false
+    for (const lease of entry.leases.values()) this.retire(entry, lease)
     if (this.devices.get(entry.info.deviceKey) === id) this.devices.delete(entry.info.deviceKey)
   }
   claimGui(id: string) {
     const entry = this.entry(id)
-    if (entry.info.state === 'stopped' || entry.stopping) throw new AutomationFault('UNAVAILABLE', 'Session is stopping or stopped')
+    if (entry.info.state === 'stopped' || entry.stopping || entry.cleanup) throw new AutomationFault('UNAVAILABLE', 'Session is stopping or stopped')
     entry.gui = true; entry.controls.show()
   }
   releaseGui(id: string) {
@@ -70,7 +73,7 @@ export class AutomationSessions {
   requireLease(id: string, clientId: string) {
     const entry = this.entry(id)
     if (!entry.leases.get(clientId)?.active) throw new AutomationFault('UNAUTHORIZED', 'Client does not hold this session')
-    if (entry.info.state === 'stopping' || entry.info.state === 'stopped') throw new AutomationFault('UNAVAILABLE', 'Session is not active')
+    if (entry.info.state === 'stopping' || entry.info.state === 'stopped' || entry.cleanup) throw new AutomationFault('UNAVAILABLE', 'Session is not active')
     return { ...entry.info }
   }
   async start(target: ITarget, context: AutomationContext, open: () => Promise<unknown>) {
@@ -103,7 +106,7 @@ export class AutomationSessions {
     if (!id) throw new AutomationFault('UNAVAILABLE', 'Backend did not register a session')
     const entry = this.entry(id)
     checkContext(context)
-    if (entry.stopping) throw new AutomationFault('BUSY', 'Session cleanup is in progress')
+    if (entry.stopping || entry.cleanup) throw new AutomationFault('BUSY', 'Session cleanup is in progress')
     let lease = entry.leases.get(context.clientId)
     if (!lease?.active) { lease = { leaseId: randomUUID(), clientId: context.clientId, active: true }; entry.leases.set(context.clientId, lease) }
     return { ...entry.info, leaseId: lease.leaseId, created }
@@ -128,18 +131,25 @@ export class AutomationSessions {
     }).finally(() => { clearTimeout(timer); entry.stopping = undefined })
     return entry.stopping
   }
+  private retire(entry: Entry, lease: Lease) {
+    if (!lease.active) return
+    lease.active = false
+    entry.released.set(lease.leaseId, { lease, at: this.now() })
+  }
   async release(id: string, leaseId: string, context: AutomationContext) {
     checkContext(context)
-    const entry = this.entry(id), lease = entry.leases.get(context.clientId)
-    if (!lease || lease.leaseId !== leaseId) throw new AutomationFault('UNAUTHORIZED', 'Lease does not belong to this client')
+    const entry = this.entry(id), current = entry.leases.get(context.clientId)
+    const lease = current?.leaseId === leaseId ? current : entry.released.get(leaseId)?.lease
+    if (!lease || lease.clientId !== context.clientId) throw new AutomationFault('UNAUTHORIZED', 'Lease does not belong to this client')
     if (!lease.active) return this.get(id)
     const otherOwners = entry.gui || [...entry.leases.values()].some(other => other !== lease && other.active)
-    if (otherOwners) lease.active = false
-    else { await this.closeEntry(entry); lease.active = false }
+    if (otherOwners) this.retire(entry, lease)
+    else { await this.closeEntry(entry); this.retire(entry, lease) }
     return this.get(id)
   }
   async releaseLease(leaseId: string, context: AutomationContext) {
-    for (const entry of this.entries.values()) if (entry.leases.get(context.clientId)?.leaseId === leaseId) return this.release(entry.info.sessionId, leaseId, context)
+    this.prune()
+    for (const entry of this.entries.values()) if (entry.leases.get(context.clientId)?.leaseId === leaseId || entry.released.get(leaseId)?.lease.clientId === context.clientId) return this.release(entry.info.sessionId, leaseId, context)
     throw new AutomationFault('NOT_FOUND', 'Lease not found for this client')
   }
   async wait(id: string, state: SessionState, context: AutomationContext) {
