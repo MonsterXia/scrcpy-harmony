@@ -242,3 +242,17 @@ test('Android key injection attempts key-up even when key-down acknowledgement f
  await assert.rejects(backend.input({type:'key',keyCode:66}),/lost down response/)
  assert.deepEqual(actions,[0,1]);await backend.close()
 })
+test('automation geometry is rechecked inside Android input queue while release remains possible',async t=>{
+ const f=androidFixture(directory(t)),mirror=new f.AndroidMirror({key:'android:a',connectionId:'a'})
+ await mirror.start(()=>{},()=>{});await new Promise(setImmediate)
+ const expected={width:1000,height:2000},input={type:'touch',action:'down',x:.25,y:.5}
+ await mirror.input(input,expected)
+ let proceed;mirror.inputTail=new Promise(r=>proceed=r)
+ const queued=mirror.input({...input,action:'move'},expected)
+ mirror.width=2000;mirror.height=1000;proceed()
+ await assert.rejects(queued,/geometry changed/)
+ await assert.rejects(mirror.input({type:'scroll',x:.25,y:.5,dx:0,dy:1},expected),/geometry changed/)
+ await mirror.input({...input,action:'up'},expected)
+ assert.deepEqual(f.clients[0].calls.map(c=>c.action),[0,1]);assert.equal(f.clients[0].calls[1].videoWidth,2000)
+ await mirror.close()
+})

@@ -18,6 +18,11 @@ export class UnsafeInputFault extends AutomationFault {
   readonly unsafeInput = true
   constructor() { super('OUTCOME_UNKNOWN', 'Input release could not be confirmed; reopen the session before sending more input', 'unknown') }
 }
+function inputFailure(error: unknown) {
+  if (error instanceof UnsafeInputFault) return error
+  if (error instanceof AutomationFault) return new AutomationFault(error.code,error.message,'unknown',false)
+  return new AutomationFault('OUTCOME_UNKNOWN','Input acknowledgement failed','unknown')
+}
 // A backend may ignore cancellation. Bound the caller while quarantining an
 // unconfirmed write; a late press must never authorize another gesture.
 async function writeInput(operation: () => Promise<void>, context: AutomationContext) {
@@ -31,7 +36,8 @@ async function writeInput(operation: () => Promise<void>, context: AutomationCon
       context.signal.addEventListener('abort', cancelled, { once: true })
       if (context.signal.aborted) cancelled()
     })])
-  } finally {
+    checkContext(context)
+  } catch (error) { throw inputFailure(error) } finally {
     clearTimeout(timer)
     if (cancelled) context.signal.removeEventListener('abort', cancelled)
   }
@@ -46,19 +52,19 @@ export async function executeInput(action: InputAction, geometry: { width: numbe
   if (!action || typeof action !== 'object') return invalid()
   if (action.type === 'text') {
     if (typeof action.text !== 'string' || action.text.length > 16384 || action.text.includes('\0')) return invalid()
-    await writeInput(() => backend.text(action.text, context.signal), context); checkContext(context); return
+    await writeInput(() => backend.text(action.text, context.signal), context); return
   }
   if (action.type === 'key') {
     if (!['home','back','enter','backspace','tab','up','down','left','right','power','volume-up','volume-down'].includes(action.key)) return invalid()
     try { await writeInput(() => backend.key(action.key, context.signal), context) }
     catch { throw new UnsafeInputFault() }
-    checkContext(context); return
+    return
   }
   if (!['tap','swipe','scroll'].includes(action.type)) return invalid()
   const start = point(action.x, action.y)
   if (action.type === 'scroll') {
     if (![action.dx, action.dy].every(n => Number.isFinite(n) && Math.abs(n) <= 1)) return invalid()
-    await writeInput(() => backend.scroll(start.x, start.y, action.dx, action.dy, context.signal), context); checkContext(context); return
+    await writeInput(() => backend.scroll(start.x, start.y, action.dx, action.dy, context.signal), context); return
   }
   const end = action.type === 'swipe' ? point(action.toX, action.toY) : start
   if (action.type === 'swipe' && (!Number.isInteger(action.durationMs) || action.durationMs < 1 || action.durationMs > 10000)) return invalid()
@@ -88,8 +94,8 @@ export async function executeInput(action: InputAction, geometry: { width: numbe
     await Promise.race([backend.touch('up', last.x, last.y, controller.signal), expired])
   } catch { throw new UnsafeInputFault() }
   finally { clearTimeout(timer) }
-  if (failed) throw operationError instanceof AutomationFault ? operationError : new AutomationFault('OUTCOME_UNKNOWN', 'Input acknowledgement failed', 'unknown')
-  checkContext(context)
+  if (failed) throw inputFailure(operationError)
+  try { checkContext(context) } catch(error) { throw inputFailure(error) }
 }
 interface InputSlot { tail: Promise<unknown>; pending: number; automatic: number; guiTouch: boolean; unsafe: boolean; abort: AbortController }
 export class DeviceInputQueue {

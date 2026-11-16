@@ -120,3 +120,14 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 ## M5 MCP 与 Agent 说明
 
 官方 SDK server/client 2.4.0 已锁定；低层 handler 共用产品 schema/client，无第二套设备连接。真实 stdio 客户端在 2026-07-28 与 legacy 模式通过工具发现、图片/嵌入文件、参数/错误、取消传播；15 项 MCP/CLI 专项通过，临时 tarball 安装后两个 bin 可运行，含35个工具。独立 Agent 使用 skill 已做五场景 baseline→读取skill复测；由此发现的子命令帮助缺口已补回归并修复。标准 Python validator 缺 PyYAML，另用本机 YAML 解析器检查结构，不能称标准脚本通过。详见[结构化证据](../scrcpy-plus/evidence/agent-automation/M5/2026-11-16/verification.json)。接下来 M6 完整回归、构建、Electron 与整段独立审查。
+
+## M6 独立审查与单轮修复
+
+独立 reviewer 检查 `fb476c6..1925a3e`，结论为 0 Critical、2 Important、2 Minor；修复由主代理做 RED→GREEN，无二次同段审查。
+
+- AUTO-BUG-005（已修复）：文字/滚动已派发后普通后端异常被转为 INTERNAL/not-started。`input.ts` 统一派发后 unknown/no-retry，保留不安全释放隔离，兼顾触摸中途/结束时取消；新增行为回归先失败后通过。
+- AUTO-BUG-006（已修复）：后端新尺寸先于 renderer 呈现时，旧截图坐标被按新尺寸解释。Android 把截图尺寸传到实际输入队列，并在非释放派发前核对；Harmony 对照图像方向/比例，非释放触摸前再次查询实际尺寸并约束等待。释放动作仍尝试执行。新回归模拟队列中尺寸变化和旧画布方向，2 项先失败，随后 43 项定向通过。同尺寸 180° 仍不宣称已解决。
+- AUTO-FOLLOWUP-001（Minor，暂留）：同客户端对仍存活会话释放后重新获取，会覆盖旧 lease 记录，旧 release 再试可能 NOT_FOUND/UNAUTHORIZED。新 lease 不会被误释放；恢复时先 leases，按当前归属操作。
+- AUTO-FOLLOWUP-002（Minor，暂留）：已确认安装成功后，本地暂存文件清理异常可能覆盖成功结果为 unknown。当前不会自动重试；先查询应用状态，清理结果分离列为后续改进。
+
+审查中暂不裁决的事项已由执行者明确处理：硬件/Windows/180°按实际证据保留 pending；同操作系统用户读取同 profile 会话/截图与选择 clientId 属文档定义的信任边界；HDC reader 发出 SIGKILL 但未收到 close 时保持 unknown，不声称清理成功，极少数未确认进程需后续诊断。

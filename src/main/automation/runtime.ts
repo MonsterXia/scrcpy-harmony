@@ -1,3 +1,4 @@
+import { waitForRead } from './adapters/waitForRead'
 import * as ports from '../lib/hdc/port'
 import { captureHilog } from '../lib/hdc/hilog'
 import { dumpWindowHierarchy } from '../lib/hdc/uitest'
@@ -29,17 +30,18 @@ export function createAutomationRuntime(instanceId: string, version: string) {
   const controller = new AutomationController({ instanceId, ipc: ipcMain, discover: getDevices,
     open: async (target,gui) => target.platform === 'harmony' ? screencast.showWin(target,gui) : nativeMirrors.start(target,gui),
     perform: async (source,action,geometry,context) => {
-      if (source.target.platform === 'android') return executeInput(action,geometry,androidInput(nativeMirrors.inputBackend(source.target.key)),context)
+      if (source.target.platform === 'android') return executeInput(action,geometry,androidInput(nativeMirrors.inputBackend(source.target.key,geometry)),context)
       if (source.target.platform !== 'harmony') throw new AutomationFault('UNSUPPORTED', 'Input is not supported on this platform')
       return withTrustedCaptureInput(source.window.webContents,source.target.key,async (key,signal,lease) => {
         const current: AutomationContext = { ...context, signal: AbortSignal.any([context.signal,signal]) }
         checkContext(current)
-        const size = await lease.driver.getDisplaySize()
+        const size = await waitForRead(current, () => lease.driver.getDisplaySize())
         const endpoint = captureInputEndpoint()
         const backend = harmonyInput(lease,size,{
+          size: () => waitForRead(current, () => lease.driver.getDisplaySize()),
           text: (text,signal) => sendScreencastInput(key,{type:'text',text},endpoint,signal),
           key: (name,signal) => systemKeys[name] ? sendScreencastSystemKey(key,systemKeys[name],endpoint,signal) : sendScreencastInput(key,{type:'keys',keys:[typingKeys[name]]},endpoint,signal),
-        })
+        },geometry)
         // Harmony wheel deltas are emulated by a 250 ms finger swipe, clamped
         // within the selected screenshot. Positive deltas move the finger right/down.
         const translated: InputAction = action.type === 'scroll' && geometry ? {

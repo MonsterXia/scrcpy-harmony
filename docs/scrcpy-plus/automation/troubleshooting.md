@@ -26,3 +26,7 @@
 - OUTCOME_UNKNOWN 或释放失败：保留原 lease 重试清理；不会自动重复输入。
 
 真实 Electron 模拟验收脚本为 `script/check-automation-electron.mjs`；它不连接真实设备，产物明确标注 SIMULATED。
+
+输入返回 outcome=unknown 时先观察，不重放文字或手势。旋转后的新后端尺寸与旧截图不匹配时输入会失败，重新截图后再选择坐标；Android 在实际设备输入队列检查，Harmony 检查显示方向/比例并在非释放触摸前重新读取尺寸。Harmony 的尺寸读取与触摸 API 不提供设备侧原子快照，同尺寸物理180°仍待验收。
+
+恢复边界：同客户端释放后又重新获取同一存活会话，旧 lease 的重复 release 可能 NOT_FOUND/UNAUTHORIZED；先 sessions leases，勿据此释放新的 lease。安装若结果 unknown，先 apps info 确认；当前本地暂存清理失败也可能导致该保守结果。对应 AUTO-FOLLOWUP-001/002 见维护记录。

@@ -11,3 +11,12 @@ test('Harmony adapter maps normalized canvas coordinates to queried display pixe
  await b.touch('up',.25,.5,signal);assert.equal(lease.touch,undefined);assert.deepEqual(calls,[['down',250,1000],['up',250,1000]])
  lease.driver.touchUp=async()=>{throw Error('unknown')};await b.touch('down',.25,.5,signal);await assert.rejects(b.touch('up',.25,.5,signal));assert.ok(lease.touch)
 })
+test('Harmony refuses mismatched canvas orientation and rechecks display before later moves',async()=>{
+ const {harmonyInput}=load('src/main/automation/adapters/harmony.ts');let size={width:1000,height:2000};const calls=[]
+ const lease={driver:{touchDown:async()=>calls.push('down'),touchMove:async()=>calls.push('move'),touchUp:async()=>calls.push('up')}}
+ const send={text:async()=>{},key:async()=>{},size:async()=>size},signal=new AbortController().signal
+ assert.throws(()=>harmonyInput(lease,size,send,{width:200,height:100}),{code:'UNAVAILABLE'})
+ const b=harmonyInput(lease,size,send,{width:100,height:200});await b.touch('down',.25,.5,signal)
+ size={width:2000,height:1000};await assert.rejects(b.touch('move',.25,.5,signal),{code:'UNAVAILABLE'})
+ await b.touch('up',.25,.5,signal);assert.deepEqual(calls,['down','up'])
+})

@@ -76,3 +76,16 @@ test('replacement generation waits for the preceding gesture cleanup',async()=>{
  const next=queue.automatic('a',context(),async()=>{order.push('new')})
  await new Promise(setImmediate);assert.deepEqual(order,['old']);finish();await Promise.all([old,next]);assert.deepEqual(order,['old','release','new'])
 })
+test('dispatched text/scroll failures and cancellation never claim not-started',async()=>{
+ const {executeInput}=load('src/main/automation/input.ts');const actions=[{type:'text',text:'once'},{type:'scroll',x:1,y:1,dx:0,dy:1},{type:'tap',x:1,y:1}]
+ for(const action of actions){
+  const b=backend([]);if(action.type!=='tap'){
+   b[action.type]=async()=>{throw Error('lost acknowledgement')}
+   await assert.rejects(executeInput(action,geometry,b,context()),{code:'OUTCOME_UNKNOWN',outcome:'unknown'})
+  }
+  const abort=new AbortController();const c=backend([])
+  if(action.type==='tap')c.touch=async phase=>{if(phase==='down')abort.abort()}
+  else c[action.type]=async()=>{abort.abort()}
+  await assert.rejects(executeInput(action,geometry,c,{...context(),signal:abort.signal}),error=>{assert.equal(error.outcome,'unknown');assert.equal(error.retryable,false);return true})
+ }
+})

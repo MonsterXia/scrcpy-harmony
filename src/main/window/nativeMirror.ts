@@ -138,11 +138,11 @@ class NativeMirrors {
     })
     return session.stopping
   }
-  inputBackend(key: string) {
+  inputBackend(key: string, geometry?: { width: number; height: number }) {
     const session = [...this.sessions.values()].find(session => session.info.deviceKey === key)
     if (!session || !session.ready || session.stopping || !(session.backend instanceof AndroidMirror)) throw new Error('Control unavailable')
     const backend = session.backend
-    return (input: NativeMirrorInput) => { validateNativeInput(input); return backend.input(input) }
+    return (input: NativeMirrorInput) => { validateNativeInput(input); return backend.input(input, geometry) }
   }
   async dispose() { this.disposed = true; await Promise.all([...this.sessions.keys()].map(id => this.stop(id))) }
   private owner(event: Electron.IpcMainInvokeEvent) {

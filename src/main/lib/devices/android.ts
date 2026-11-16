@@ -208,7 +208,7 @@ export class AndroidMirror {
       })()
     } catch (error) { await this.close(); throw error }
   }
-  input(message: NativeMirrorInput) {
+  input(message: NativeMirrorInput, expectedGeometry?: { width: number; height: number }) {
     if (this.closed || !this.client?.controller) return Promise.reject(new Error('Android control unavailable'))
     if (this.pendingInput >= 64 && message.type === 'touch' && message.action === 'move') return Promise.resolve()
     const release = message.type === 'touch' && message.action === 'up'
@@ -228,6 +228,9 @@ export class AndroidMirror {
         finally { await controller.injectKeyCode({ action: 1, keyCode: message.keyCode as AndroidKeyCode, repeat: 0, metaState: 0 }) }
       } else {
         if (!this.width || !this.height) throw new Error('Android screen size unavailable')
+        // Check at dispatch, after the backend queue: a new SPS can arrive
+        // before its keyframe is presented by the renderer. Always allow up.
+        if (!release && expectedGeometry && (this.width !== expectedGeometry.width || this.height !== expectedGeometry.height)) throw new Error('Android display geometry changed; capture a new frame')
         const point = { pointerX: Math.min(this.width - 1, Math.round(message.x * this.width)),
           pointerY: Math.min(this.height - 1, Math.round(message.y * this.height)), videoWidth: this.width, videoHeight: this.height }
         if (message.type === 'touch') await controller.injectTouch({ ...point,

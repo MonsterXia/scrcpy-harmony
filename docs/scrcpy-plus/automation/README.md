@@ -54,4 +54,4 @@ node dist/cli/index.cjs service start \
 
 继续阅读：[命令参考](cli.md)、[协议](protocol.md)、[能力矩阵](capabilities.md)、[问题定位](troubleshooting.md)、[实际验证进度](../../maintenance/agent-automation.md)。
 
-Agent 使用入口：[独立 skill](../../../../.agents/skills/scrcpy-plus-automation/SKILL.md)、[MCP 安装与配置](mcp.md)。`npm run build:cli` 构建两个独立 bin；`npm run check:automation-package` 在临时目录安装 tarball 并验证 CLI/MCP。
+Agent 使用入口：[独立 skill](../../../.agents/skills/scrcpy-plus-automation/SKILL.md)、[MCP 安装与配置](mcp.md)。`npm run build:cli` 构建两个独立 bin；`npm run check:automation-package` 在临时目录安装 tarball 并验证 CLI/MCP。

@@ -168,3 +168,5 @@ MCP 作为本地 stdio 适配器复用客户端和 schema。至少暴露设备�
 AUTO-DEC-008（M4 实施）：日志/布局用有界 blob envelope（最多1MiB，日志允许为空），调用端负责文件输出；日志默认抓取5秒、最大60秒，请求默认70秒以容纳reader退出，清理仍最多额外5秒。布局SDK没有安全的独立取消API，截止/取消只结束等待并阻止后续阶段，在途共享SDK可能迟到完成，不停止GUI工具。一次性shell输出默认/最大128KiB，保留真实exitCode与truncated，不自动重发。详见[操作登记](../../scrcpy-plus/automation/harmony-tools.md)。
 
 AUTO-DEC-009（M5 实施）：使用官方 @modelcontextprotocol/server/client 2.4.0，serveStdio 兼容 2025/2026-07-28 客户端。操作 schema 唯一来源仍为 protocol.ts；工具名点/连字符转下划线，参数保持camelCase，timeoutMs单独传递。图片为image结果，文件为有界嵌入blob资源，不落盘、不提供可重取URL。MCP退出保留持久lease供同名客户端恢复；独立调用者用不同client。
+
+M6 实施补充：截图几何校验需延伸到实际派发点，不能只比较 renderer 元数据。Android 非释放输入在后端队列核对原图尺寸；Harmony 允许缩放但拒绝方向/比例不一致，并在非释放触摸前有界读取当前显示尺寸。Harmony SDK 读取与触摸不是原子操作，不宣称消除设备侧读取后立即旋转的所有竞态；物理180°保留验收缺口。已派发后的错误/取消一律不得报告not-started，除非有明确未派发证据。
