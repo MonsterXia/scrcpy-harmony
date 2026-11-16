@@ -2,7 +2,7 @@
 
 ## Agent 自动化长任务（2026-11-16）
 
-状态：**方向已确认，M1/M2 本机验证完成；CLI 已提供服务与发现命令，M3—M6 继续实施。** 用户要求只确认大方向，后续自主推进并保留可定位/可恢复的文档。推荐共享控制服务 → CLI 设备观察/操作闭环 → 现有设备工具 → MCP。入口为 [spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[实施计划](docs/superpowers/plans/2026-11-16-agent-automation.md)和[状态/证据/故障定位](docs/maintenance/agent-automation.md)。本轮 26 项自动化专项、应用 991 passed / 2 skipped、Licia 两模式、lint、主进程/CLI 构建和客户端 tarball 安装通过；真实 Electron 服务握手、设备发现、退出清理通过。Windows、真机截图/输入、MCP 尚未验收；M3 已实现并通过应用 1044 passed / 2 skipped、lint、三部分构建与真实 Electron 模拟闭环；Android USB claim 返回 LIBUSB_ERROR_ACCESS，真机截图/输入及 Windows 验收 pending。M4 四批（查询、应用读写、日志/布局、端口/shell）本机回归与构建完成，真机 pending；M5 MCP/Agent 文档及真实 SDK 客户端、独立安装包通过；继续 M6 完整回归与独立审查，不重复确认细节。
+状态：**Agent自动化本地候选已实现并验证；完整真机/Windows矩阵待验收。** 源码 `4c37ba6`、分支 `codex/agent-automation`；共享服务、CLI核心闭环、Harmony工具、MCP35项与Agent skill已交付。应用1076pass/2skip、Licia各606/4、lint/fullbuild、安装包、真实Electron模拟闭环通过；独立审查2项Important已修复，2项Minor留档。真实Harmony只读工具和截图通过；锁屏后无新帧、一次释放清理未确认、Android USB access及Windows/180°/完整输入仍需继续验收。入口：[spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[计划](docs/superpowers/plans/2026-11-16-agent-automation.md)、[状态/故障定位](docs/maintenance/agent-automation.md)、[验收交接](docs/scrcpy-plus/automation/acceptance.md)。用户已授权自主推进细节，不重复方向确认；没有发布、远端合入或替换日常安装。
 
 ## 上游更新与标准分支交付（2026-11-05）
 

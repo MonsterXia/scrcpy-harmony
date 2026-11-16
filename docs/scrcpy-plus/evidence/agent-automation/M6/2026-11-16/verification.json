@@ -1,0 +1,386 @@
+{
+  "stage": "M6",
+  "status": "local-candidate-full-device-and-Windows-acceptance-pending",
+  "sourceCommit": "4c37ba6",
+  "baseCommit": "fb476c6",
+  "branch": "codex/agent-automation",
+  "recordedAt": "2026-11-16T05:41:39.613950+00:00",
+  "host": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "versions": {
+    "app": "1.0.5-dev.1",
+    "apiVersion": 1,
+    "node": "v22.22.3",
+    "mcpSdk": "2.4.0"
+  },
+  "checks": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "application": {
+        "total": 1078,
+        "passed": 1076,
+        "skipped": 2
+      },
+      "licia": {
+        "default": {
+          "passed": 606,
+          "pending": 4
+        },
+        "fallback": {
+          "passed": 606,
+          "pending": 4
+        }
+      }
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "command": "node script/check-automation-electron.mjs <empty-private-directory>",
+      "exitCode": 0,
+      "deviceMode": "SIMULATED ONLY",
+      "result": {
+        "deviceMode": "SIMULATED ONLY",
+        "realElectron": true,
+        "host": "darwin",
+        "arch": "arm64",
+        "checks": {
+          "status": true,
+          "sharedBackend": true,
+          "independentLeases": true,
+          "realCanvasPng": true,
+          "inputObservationBarrier": true,
+          "guiCloseRetainsRenderer": true,
+          "hiddenCapture": true,
+          "lastOwnerCleanup": true,
+          "discoveryCleanup": true
+        },
+        "frame": {
+          "width": 240,
+          "height": 100,
+          "beforeSequence": 2,
+          "afterSequence": 4
+        }
+      }
+    },
+    {
+      "command": "npm run check:automation-package",
+      "exitCode": 0,
+      "tools": 35,
+      "freshInstall": true
+    },
+    {
+      "command": "npx tsc --noEmit --ignoreDeprecations 6.0",
+      "exitCode": null,
+      "result": "failed with repository baseline diagnostics; shell pipeline did not retain tsc numeric exit separately",
+      "newAutomationCliMcpDiagnostics": []
+    }
+  ],
+  "review": {
+    "range": "fb476c6..1925a3e",
+    "mode": "fresh independent read-only reviewer",
+    "critical": 0,
+    "important": 2,
+    "importantFixed": [
+      "AUTO-BUG-005 dispatched input error outcome",
+      "AUTO-BUG-006 backend geometry race"
+    ],
+    "redGreen": [
+      "input failure test failed then 12 passed",
+      "2 geometry tests failed then 43 focused regressions passed"
+    ],
+    "fullSuiteAfterFix": true,
+    "minorDeferred": [
+      "AUTO-FOLLOWUP-001 repeated old lease after reacquire",
+      "AUTO-FOLLOWUP-002 staged-file cleanup may mask confirmed install success"
+    ],
+    "secondIndependentReview": false
+  },
+  "realApplication": {
+    "kind": "real-application-real-device-observation",
+    "host": "darwin",
+    "arch": "arm64",
+    "inputSent": false,
+    "status": true,
+    "platforms": [
+      "harmony",
+      "android",
+      "ios"
+    ],
+    "providerErrors": [],
+    "androidWait": "UNAVAILABLE",
+    "androidRelease": "stopped",
+    "gracefulExit": true,
+    "discoveryRemoved": true
+  },
+  "realHarmony": {
+    "kind": "real-application-real-Harmony",
+    "host": "darwin",
+    "arch": "arm64",
+    "checks": {
+      "status": {
+        "ok": true
+      },
+      "discovery": {
+        "ok": true
+      },
+      "overview": {
+        "ok": true
+      },
+      "apps": {
+        "ok": true,
+        "count": 9
+      },
+      "processes": {
+        "ok": true,
+        "count": 190
+      },
+      "forwardPorts": {
+        "ok": true,
+        "count": 1
+      },
+      "reversePorts": {
+        "ok": true,
+        "count": 0
+      },
+      "shell": {
+        "ok": true,
+        "exitCode": 7,
+        "truncated": false
+      },
+      "logs": {
+        "ok": true,
+        "byteLength": 16384,
+        "truncated": true
+      },
+      "layout": {
+        "ok": true,
+        "byteLength": 74379
+      },
+      "sessionStart": {
+        "ok": true
+      },
+      "running": {
+        "ok": true
+      },
+      "before": {
+        "ok": true
+      },
+      "home": {
+        "ok": true
+      },
+      "after": {
+        "ok": false,
+        "code": "TIMEOUT",
+        "message": "Operation deadline exceeded",
+        "outcome": "not-started",
+        "retryable": true
+      },
+      "release": {
+        "ok": true
+      }
+    },
+    "inputSent": true,
+    "appDataWritesPerformed": false,
+    "portWritesPerformed": false,
+    "platforms": [
+      "harmony",
+      "android",
+      "ios"
+    ],
+    "frame": {
+      "width": 542,
+      "height": 1206,
+      "stale": false
+    },
+    "gracefulExit": true,
+    "discoveryRemoved": true
+  },
+  "idleFollowup": {
+    "kind": "real-application-real-Harmony",
+    "host": "darwin",
+    "arch": "arm64",
+    "checks": {
+      "status": {
+        "ok": true
+      },
+      "discovery": {
+        "ok": true
+      },
+      "sessionStart": {
+        "ok": true
+      },
+      "running": {
+        "ok": true
+      },
+      "before": {
+        "ok": true
+      },
+      "idleCapture": {
+        "ok": true,
+        "sameSequence": true,
+        "stale": true,
+        "ageMs": 3661
+      },
+      "release": {
+        "ok": false,
+        "code": "OUTCOME_UNKNOWN",
+        "message": "Session cleanup could not be confirmed",
+        "outcome": "unknown",
+        "retryable": false
+      }
+    },
+    "inputSent": false,
+    "appDataWritesPerformed": false,
+    "portWritesPerformed": false,
+    "platforms": [
+      "harmony",
+      "android",
+      "ios"
+    ],
+    "frame": {
+      "width": 542,
+      "height": 1206,
+      "stale": false
+    },
+    "gracefulExit": true,
+    "discoveryRemoved": true
+  },
+  "independentCleanupFollowup": {
+    "kind": "real-application-real-Harmony",
+    "host": "darwin",
+    "arch": "arm64",
+    "checks": {
+      "status": {
+        "ok": true
+      },
+      "discovery": {
+        "ok": true
+      },
+      "sessionStart": {
+        "ok": true
+      },
+      "running": {
+        "ok": true
+      },
+      "before": {
+        "ok": true
+      },
+      "idleCapture": {
+        "ok": true,
+        "sameSequence": true,
+        "stale": true,
+        "ageMs": 3668
+      },
+      "release": {
+        "ok": true
+      }
+    },
+    "inputSent": false,
+    "appDataWritesPerformed": false,
+    "portWritesPerformed": false,
+    "platforms": [
+      "harmony",
+      "android",
+      "ios"
+    ],
+    "frame": {
+      "width": 542,
+      "height": 1206,
+      "stale": false
+    },
+    "releaseAttempts": [
+      {
+        "ok": true,
+        "state": "stopped"
+      }
+    ],
+    "gracefulExit": true,
+    "discoveryRemoved": true
+  },
+  "interpretation": [
+    "Real screenshot visually showed lock/ambient screen; Home acknowledged but after-action timed out. This is not full device input-loop acceptance.",
+    "No-input followups returned same presentation sequence after >3.5s, stale=true; old image was not reported as new observation.",
+    "One real release returned OUTCOME_UNKNOWN; app exit/discovery cleanup passed. Independent rerun released successfully on its first attempt; no real same-lease retry success claimed.",
+    "Real private screen/XML/log contents retained only in ignored local workspace, not copied into this evidence."
+  ],
+  "pending": [
+    "unlocked dedicated Harmony page tap/swipe/text and physical rotation acceptance",
+    "real Harmony temporary-HAP writes and explicit temporary-port add/remove",
+    "investigate/reproduce intermittent real cleanup timeout; same-lease recovery currently covered by mocks",
+    "Android USB LIBUSB_ERROR_ACCESS prevents screenshot/input",
+    "iOS actual AirPlay sender acceptance",
+    "Windows ACL/path/process cancellation acceptance",
+    "same-size physical 180-degree direction change detection",
+    "actual Codex host MCP tool call"
+  ],
+  "publication": {
+    "pushed": false,
+    "merged": false,
+    "published": false,
+    "installedApplicationReplaced": false
+  },
+  "logs": {
+    "m6-final-test.log": {
+      "sha256": "65235a131df5aa1c9c0c2db71983d9e1ea6432f64cb3a0cccdef52343db17b03",
+      "modifiedAt": "2026-11-16T05:27:01.982308+00:00"
+    },
+    "m6-final-lint.log": {
+      "sha256": "95645ae3697e927ed3630e18f37d90670eba8b948aa3ced56360fc4bbf54c660",
+      "modifiedAt": "2026-11-16T05:27:04.206639+00:00"
+    },
+    "m6-final-build.log": {
+      "sha256": "ba1e38107fe281d7b8386cc1ec83ed87207aa77ba7b6e2c3b1789028f53058ac",
+      "modifiedAt": "2026-11-16T05:27:29.533237+00:00"
+    },
+    "m6-final-types.log": {
+      "sha256": "5d7663a0e3634c1b1e9d4ec55bef0834727f26afac4de06d9be435271b0f35b7",
+      "modifiedAt": "2026-11-16T05:27:32.167311+00:00"
+    },
+    "m6-final-electron.log": {
+      "sha256": "3b08cc40d245fe06a9b641faca844ca54015c3d3b9dd019244ff8f64868f609a",
+      "modifiedAt": "2026-11-16T05:28:44.761326+00:00"
+    },
+    "m6-final-package.log": {
+      "sha256": "57fb26354d0bf096f41d89529e1456610a5792a32911b36b4cdf513ebed27c05",
+      "modifiedAt": "2026-11-16T05:28:45.537367+00:00"
+    },
+    "m6-input-red.log": {
+      "sha256": "b5095f3b0c6d70c01a9fe2b17511e23a277698ad3ed71ab48c8efedc3e270777",
+      "modifiedAt": "2026-11-16T05:20:53.553439+00:00"
+    },
+    "m6-input-green.log": {
+      "sha256": "eed564b7b14c2b4e0f13a12e33e5f50e9b5f1c57186d4fc5b9b81af73f95a189",
+      "modifiedAt": "2026-11-16T05:20:53.728361+00:00"
+    },
+    "m6-geometry-red.log": {
+      "sha256": "59de5b27064c0148bce47d60dfa08e0c8a7c723887b46549015c96295033d66e",
+      "modifiedAt": "2026-11-16T05:24:58.918584+00:00"
+    },
+    "m6-geometry-green.log": {
+      "sha256": "f8ab9846485ea246357e7b664ff5616bfee80c297b2f65019433242bd48aa064",
+      "modifiedAt": "2026-11-16T05:25:22.650783+00:00"
+    },
+    "m6-real.log": {
+      "sha256": "a409a62d00c45afcb44ac98506480119df1e51268db874e5d103e1fe04eab2b9",
+      "modifiedAt": "2026-11-16T05:22:19.806864+00:00"
+    },
+    "m6-harmony-run.log": {
+      "sha256": "c49bf03c4f9c8a0fedd548cd29254253653e7c3119c2a305f1f46aaeb78c473a",
+      "modifiedAt": "2026-11-16T05:28:10.496981+00:00"
+    },
+    "m6-harmony-idle-run.log": {
+      "sha256": "ec8565f3a49636f863ecadd833a6ed097f209409d7d84e9a19e83de213109286",
+      "modifiedAt": "2026-11-16T05:31:18.760839+00:00"
+    },
+    "m6-harmony-cleanup-run.log": {
+      "sha256": "869cc310f52392dd77d5ecfdd6272fb4d47bb3d594087d164e1dc504eed24e54",
+      "modifiedAt": "2026-11-16T05:39:23.925821+00:00"
+    }
+  }
+}

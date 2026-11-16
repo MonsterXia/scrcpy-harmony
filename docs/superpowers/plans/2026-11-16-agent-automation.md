@@ -6,11 +6,11 @@
 
 **Architecture:** Electron 主进程持有设备连接和会话服务，GUI IPC、CLI 和 MCP 共用业务实现。CLI/MCP 通过同 profile 的鉴权 loopback 服务访问，不自行连接 USB。首期允许可见投屏窗口，后续扩展不复制平台业务。
 
-**Tech Stack:** TypeScript、Electron、Node >=22.12.0、现有 HDC/Tango/AirPlay 后端、node:test；MCP SDK 在 M5 按官方规范选择并锁定版本。
+**Tech Stack:** TypeScript、Electron、Node >=22.12.0、现有 HDC/Tango/AirPlay 后端、node:test；MCP SDK server/client 2.4.0，M5按官方规范锁定。
 
 **Spec:** [SP-AUTO-001](../specs/2026-11-16-agent-automation-design.md)
 
-**Status:** M0 已完成，用户已确认方向；M1/M2 本机验证完成，M3 实现/模拟闭环通过但真机/Windows pending，M4 本机候选完成，M5 本机候选完成，M6 继续执行。连续执行 M6；具体阶段状态以[维护记录](../../maintenance/agent-automation.md)为准。
+**Status:** M0 已完成，用户已确认方向；M1/M2 本机验证完成，M3 实现/模拟闭环通过但真机/Windows pending，M4 本机候选完成，M5 本机候选完成，M6 本机回归/构建/审查修复完成，完整真机与Windows矩阵待验收；具体阶段状态以[维护记录](../../maintenance/agent-automation.md)为准。
 
 ## Global Constraints
 
@@ -144,9 +144,11 @@ M3 真机验收保留未勾选：模拟 Electron 部分已通过；Android USB c
 
 **Modify:** 各实现/文档中的确认缺陷、`docs/maintenance/agent-automation.md`、RUNBOOK、集成说明、构建指南、证据目录。
 
-- [ ] 顺序执行 `npm test`、`npm run lint`、`npm run build`；核对 TypeScript 实际可用检查和基线，新改动诊断须修复。环境失败保留命令和原因，不写 passed。
-- [ ] 执行 CLI 安装冒烟、真实 Electron 闭环、MCP stdio、双设备/双调用者、服务重启/旧 lease、超时/断连/取消；重新确认所有权和清理结果。
+- [x] 顺序执行 `npm test`、`npm run lint`、`npm run build`；核对 TypeScript 实际可用检查和基线，新改动诊断须修复。环境失败保留命令和原因，不写 passed。
+- [x] 执行 CLI 安装冒烟、真实 Electron 闭环、MCP stdio、双设备/双调用者、服务重启/旧 lease、超时/断连/取消；重新确认所有权和清理结果。
 - [ ] 在可用 macOS/Windows 环境分别验证客户端、服务和退出；缺平台明确 pending。真机证据不得沿用旧投屏测试作为新 CLI 验收。
-- [ ] 做整段变更审查，修复确认问题并仅重跑受影响验证；将每个 AUTO-01—10 映射到实现、测试、证据和限制。
-- [ ] 校对命令参考/schema/skill/README，记录最终源码身份、构建产物位置、回退方式、未测矩阵与下一步。
+- [x] 做整段变更审查，修复确认问题并仅重跑受影响验证；将每个 AUTO-01—10 映射到实现、测试、证据和限制。
+- [x] 校对命令参考/schema/skill/README，记录最终源码身份、构建产物位置、回退方式、未测矩阵与下一步。
 - [ ] 仅在 spec 完成标准满足时把总任务标为验收完成；否则准确交付候选并继续处理可解决项。提交 `docs: record automation acceptance and maintenance handoff`。
+
+M6 本地候选交付见[验收与交接](../../scrcpy-plus/automation/acceptance.md)。全矩阵未满足的两项保持未勾选，不冒充任务已完全验收。

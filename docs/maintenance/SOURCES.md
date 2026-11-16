@@ -227,3 +227,5 @@
 [PR #72](https://github.com/MonsterXia/scrcpy-harmony/pull/72) 合入复审补充：确认 `fport ls` 同时返回 Forward/Reverse 后，修复合法 Reverse 清单导致恢复拒绝的问题；五个新增故障/成功分支有修复前失败及修复后通过证据。复审 finding 已关闭，最终 CI 和合入状态见 PR，先前本机安装哈希维持其原验收范围。
 
 2026-11-03 连续实施结果：UI-1～6源码、串行阶段审查、整分支审查及三项P2单轮修复复核完成。最终运行源码d717ece应用886/886、Licia两模式各606/4、lint/i18n及完整build通过；本地1.0.5-dev.0 arm64 DMG复制签名启动通过。交付入口为[草稿PR #81](https://github.com/MonsterXia/scrcpy-harmony/pull/81)及[验证记录](v1.0.5-ui-validation.json)；远端和人工验收以各自证据为准，未合入或发布。
+
+2026-11-16 Agent 自动化：用户授权连续实施共享服务/CLI/MCP，最终本地候选源码4c37ba6，见[维护记录](agent-automation.md)、[需求与验收交接](../scrcpy-plus/automation/acceptance.md)。真实Harmony只读工具和截图证据与模拟Electron/MCP证据分开；完整真机/Windows不标记验收完成。

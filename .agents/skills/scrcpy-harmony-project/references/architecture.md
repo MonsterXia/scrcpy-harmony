@@ -221,3 +221,5 @@ Canvas pointer 事件
 自动化 Harmony 工具：`automation/adapters/harmonyTools.ts` 固定设备并注入 `DeviceOperationContext`；共享 hdc/{base,bundle,port,uitest,hilog} 业务接收显式 context。`hostCommand.ts` 管理单次 HDC 子进程，`layoutXml.ts` 有界 XML，`oneShotShell.ts` 退出标记与输出截断；日志/布局通过 blob 二进制响应交由客户端写文件。
 
 `src/mcp/index.ts` 是独立 Node stdio 适配器，共用 automation/protocol 注册表、CLI client/profile，经同profile服务调用。`script/build-cli.mjs` 同时打包CLI和MCP，包含SDK依赖及许可；不在Electron主进程启动MCP。
+
+自动化坐标校验延伸到派发点：AndroidMirror.input 的内部 expectedGeometry 由 nativeMirrors.inputBackend 绑定原截图尺寸，设备队列执行时再核对，释放不受新几何阻断；Harmony adapter 接受缩放但检查图像方向/比例，并在非释放触摸前有界读取实际尺寸。GUI IPC不接收expectedGeometry，自动化不伪造GUI sender。

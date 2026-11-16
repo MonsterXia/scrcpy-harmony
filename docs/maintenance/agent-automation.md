@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-**M1/M2 本机验证完成，M3 实现及本机模拟验证完成，真机/平台验收 pending；M4/M5 本机候选完成，继续 M6。** 已实现会话 lease、真实画布截图、二进制传输、CLI 文件输出及 Android/Harmony 输入适配；已完成真实 Electron 模拟闭环，真机未验收，MCP SDK stdio 新旧协议与安装包验证通过。源码检查基线 `fb476c6`，工作区开始时干净。
+**M1—M5 本地候选实现完成；M6 全量回归、构建和独立审查修复完成，完整真机/Windows矩阵仍未验收。** 共享服务、CLI、35个MCP工具及Agent skill已交付。最终实现源码 `4c37ba6`，工作分支 `codex/agent-automation`；[验收与交接](../scrcpy-plus/automation/acceptance.md)包含全部需求映射、取舍及遗留事项。真实Harmony只读工具和截图通过；锁屏下Home后无新帧，不能据此声明完整交互闭环通过。
 
 - [Spec：SP-AUTO-001](../superpowers/specs/2026-11-16-agent-automation-design.md)
 - [连续实施计划](../superpowers/plans/2026-11-16-agent-automation.md)
@@ -19,15 +19,15 @@
 | M0 | spec、计划、定位入口、独立文档审查 | 完成 | 独立审查 4 项边界已纳入；链接/需求追踪检查通过；用户已确认 |
 | M1 | 契约、能力、鉴权本地服务 | 本机完成 | 协议/传输/生命周期专项、真实 Electron 服务验证；Windows 待验收 |
 | M2 | CLI、启动诊断、可分发客户端 | 本机完成 | 子进程/并发启动、tarball 安装、发现链路；Windows 待验收 |
-| M3 | 会话、截图、输入闭环 | 本机候选，真机 pending | 应用 1044 passed / 2 skipped；lint、三部分构建通过；真实 Electron 模拟闭环通过；Android USB claim 失败，未获得真机截图/输入证据 |
-| M4 | 现有设备工具覆盖 | 四批本机候选完成；真机 pending | 已登记逐操作矩阵；概览/应用查询/进程通过 167 项相关回归及 55 项最终查询/协议专项、lint、主进程/CLI 构建；真机 pending |
+| M3 | 会话、截图、输入闭环 | 本机候选，真机部分验证 | Electron模拟闭环通过；Harmony截图及Home返回通过但动作后新帧超时；Android USB access失败；完整交互/旋转pending |
+| M4 | 现有设备工具覆盖 | 四批本机候选完成；真机部分验证 | Harmony概览/应用列表/进程/端口列表/shell/logs/layout通过；应用和端口写入真机pending |
 | M5 | Agent skill、MCP | 本机候选完成 | 官方 SDK 2.4.0、真实 stdio 客户端、安装包通过；Codex 宿主 pending |
-| M6 | 全量回归、跨平台验收与交付 | 进行中 | 不沿用历史投屏证据冒充自动化验收 |
+| M6 | 全量回归、跨平台验收与交付 | 本地候选交付；全矩阵待验收 | 1076pass/2skip，Licia各606/4，lint/fullbuild、安装包、Electron通过；独立审查2项Important修复，2项Minor记录 |
 
 ## 恢复与下一步
 
 1. 阅读本页和 spec，再核对 `git status --short` 与当前 commit；保留用户改动。
-2. 方向已确认，不重复询问；M1/M2 本机完成，从 M4 的逐操作矩阵及共享设备查询业务继续；M3 外部环境验证仍保留。
+2. 方向已确认，不重复询问；不重复实现M1—M5，从交接页未测矩阵继续：已解锁专用设备、Android USB access、Windows、实际Codex宿主。Minor遗留按优先级单独处理。
 3. 每阶段同步本页、计划 checkbox、证据和 RUNBOOK；已有 M1/M2 测试不要重新实现。
 4. 真机或系统缺席时先推进契约、测试、文档和其他可做阶段，保留 pending；不把环境缺席视作已验收。
 5. 若出现方向变更，先更新 spec 的决策及需求映射，再调整计划；普通修复不改变需求编号。
@@ -131,3 +131,13 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 - AUTO-FOLLOWUP-002（Minor，暂留）：已确认安装成功后，本地暂存文件清理异常可能覆盖成功结果为 unknown。当前不会自动重试；先查询应用状态，清理结果分离列为后续改进。
 
 审查中暂不裁决的事项已由执行者明确处理：硬件/Windows/180°按实际证据保留 pending；同操作系统用户读取同 profile 会话/截图与选择 clientId 属文档定义的信任边界；HDC reader 发出 SIGKILL 但未收到 close 时保持 unknown，不声称清理成功，极少数未确认进程需后续诊断。
+
+## M6 最终验证
+
+应用完整回归1078项：1076 passed/2 skipped；Licia两模式各606 passed/4 pending；lint与完整build通过；最终Electron模拟闭环9项、tarball安装与35个MCP工具通过。新增automation/CLI/MCP无类型诊断，仓库整体tsc仍有基线USB类型等错误，不称类型全绿。
+
+真实应用在独立profile发现Harmony/Android/iOS、无provider错误；Android接口仍LIBUSB_ERROR_ACCESS。Harmony概览、应用列表、进程、双向端口清单、shell真实exitCode=7、16KiB日志截断、XML布局、新鲜542×1206截图均通过。只发送一次Home，不发送文字/坐标，不安装卸载或清数据；Home返回成功但after-action超时。查看私有截图可见锁屏/息屏显示；后续无输入探针确认同一sequence在3.5秒后stale，旧帧没有伪装为新证据。native首次帧等待也记录超时，不能外推完整流畅捕获/设备交互已通过。
+
+首次真机释放通过；静止复查另有一次释放OUTCOME_UNKNOWN，应用正常退出且discovery删除，保留该失败记录；后续独立重跑首次release返回stopped，未重现该超时，不能称真实同lease重试已经通过；对应超时/重试加入同一清理过程由单测覆盖。原始屏幕/日志仅在忽略目录，不入公开证据。
+
+最终证据：[M6 verification.json](../scrcpy-plus/evidence/agent-automation/M6/2026-11-16/verification.json)。AUTO-OBS-001：真实Harmony静止探针一次release超过清理预算，重跑未重现；保持OUTCOME_UNKNOWN证据，后续优先复现并核对同lease恢复，不能被重跑成功覆盖。

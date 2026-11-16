@@ -20,7 +20,7 @@
 
 未扩展：进程结束、通用文件传输、Android 新工具、iOS 控制、无 Node 分发。它们不属于本轮现有能力适配。
 
-验收需要区分共享业务单测、真实 loopback/CLI、模拟传输以及真机。当前未发现 Harmony 设备，不能把模拟传输标记为真机通过。
+验收需要区分共享业务单测、真实 loopback/CLI、模拟传输以及真机。早期批次未发现Harmony；M6新增实际设备只读验证，见[验收交接](acceptance.md)。应用/端口写入仍不以模拟传输标记为真机通过。
 
 M4-A 证据：[查询批次](../evidence/agent-automation/M4/2026-11-16-query/verification.json)。apps list 默认包含系统应用，`--user-only` 使用现有应用前缀过滤；apps info 使用 `--bundle` 指定一项，不进行线上名称/图标补全。apps top 沿用现有行为，仅返回非系统前台应用；无匹配时 name 为空、pid 为 0。
 
@@ -34,4 +34,4 @@ M4-C/D：`layout dump --output <file>` 输出最多 1 MiB 的 XML；属性转义
 
 `shell run --command <script>` 或 `--command-file <file>` / `--command-stdin` 运行一次设备 shell。脚本最多 65536 个字符，文件/stdin 最多 64KiB UTF-8；`--max-bytes` 为 1—131072，默认 128KiB。返回 `{output,exitCode,truncated}`；CLI 退出 0 表示取得结果，设备脚本失败要检查 `data.exitCode`。超时/断连时不能推断设备副作用已撤销，不自动重发。
 
-本批证据：[日志/布局/端口/shell](../evidence/agent-automation/M4/2026-11-16-artifacts/verification.json)。仅本机与模拟 HDC，真实 Harmony 行为仍 pending。
+本批证据：[日志/布局/端口/shell](../evidence/agent-automation/M4/2026-11-16-artifacts/verification.json)。该批当时仅本机与模拟HDC；M6补充实际Harmony有限日志/布局/端口列表/只读shell通过，写操作及完整交互仍pending。
