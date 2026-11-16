@@ -20,7 +20,7 @@
 | M1 | 契约、能力、鉴权本地服务 | 本机完成 | 协议/传输/生命周期专项、真实 Electron 服务验证；Windows 待验收 |
 | M2 | CLI、启动诊断、可分发客户端 | 本机完成 | 子进程/并发启动、tarball 安装、发现链路；Windows 待验收 |
 | M3 | 会话、截图、输入闭环 | 本机候选，真机 pending | 应用 1044 passed / 2 skipped；lint、三部分构建通过；真实 Electron 模拟闭环通过；Android USB claim 失败，未获得真机截图/输入证据 |
-| M4 | 现有设备工具覆盖 | 未开始 | 需要逐操作登记矩阵 |
+| M4 | 现有设备工具覆盖 | M4-A 查询本机完成；其余继续 | 已登记逐操作矩阵；概览/应用查询/进程通过 167 项相关回归及 55 项最终查询/协议专项、lint、主进程/CLI 构建；真机 pending |
 | M5 | Agent skill、MCP | 未开始 | 无宿主接入证据 |
 | M6 | 全量回归、跨平台验收与交付 | 未开始 | 不沿用历史投屏证据冒充自动化验收 |
 
@@ -100,3 +100,9 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 真实应用发现 Android/iOS receiver，未发现 Harmony。Android 打开后端返回 `LIBUSB_ERROR_ACCESS`，没有发送输入、没有取得截图；lease 释放、正常退出、discovery 删除均通过。不能将模拟图视为真机验收。运行中发现的销毁窗口引用错误已补 RED→GREEN 测试，重新运行不再出现。
 
 下一步 M4：逐项列出 overview/apps/processes/layout/logs/ports/shell 的现有入口、参数、取消能力和验收；先实现查询与有界传输，再逐批接入写操作。M5 MCP/M6 仍未完成。
+
+## M4-A 查询批次
+
+共享 `DeviceOperationContext` 显式固定 deviceKey、deadline 和 AbortSignal；`base.shell` 在有 context 时使用该请求的有限传输，GUI 原有调用保持原路径。getOverview/getBundles/getBundleInfos/getTopBundle/getProcesses 复用现有解析实现。自动化应用详情不发起线上商店请求。
+
+[逐操作登记](../scrcpy-plus/automation/harmony-tools.md)，[本批证据](../scrcpy-plus/evidence/agent-automation/M4/2026-11-16-query/verification.json)。下一步 M4-B 应用写操作/安装的参数边界、结果确认、取消与不重试，再做布局/日志/端口/shell。M4 整阶段尚未完成。

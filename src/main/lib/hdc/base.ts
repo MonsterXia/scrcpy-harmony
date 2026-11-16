@@ -1,3 +1,4 @@
+import type { DeviceOperationContext } from '../../../common/automation/deviceContext'
 import { Client } from 'hdckit'
 import isStr from 'licia/isStr'
 import map from 'licia/map'
@@ -24,15 +25,24 @@ export const getPidNames = singleton(async (deviceId: string) => {
   return pidNames
 })
 
-export async function shell(connectKey: string, cmd: string): Promise<string>
+export async function shell(connectKey: string, cmd: string, context?: DeviceOperationContext): Promise<string>
 export async function shell(
   connectKey: string,
-  cmd: string[]
+  cmd: string[],
+  context?: DeviceOperationContext
 ): Promise<string[]>
 export async function shell(
   connectKey: string,
-  cmd: string | string[]
+  cmd: string | string[],
+  context?: DeviceOperationContext
 ): Promise<string | string[]> {
+  if (context) {
+    if (context.deviceKey !== connectKey) throw new Error('Device context mismatch')
+    if (typeof cmd === 'string') return context.shell(cmd)
+    const output: string[] = []
+    for (const command of cmd) output.push(await context.shell(command))
+    return output
+  }
   logger.debug('shell', cmd)
 
   const target = await client.getTarget(connectKey)
@@ -48,14 +58,14 @@ export async function shell(
   return map(output.split('echo_separator'), (val) => trim(val))
 }
 
-const getProcesses = singleton(async (deviceId: string) => {
+export async function getProcesses(deviceId: string, context?: DeviceOperationContext) {
   const columns = ['pid', '%cpu', 'time+', 'res', 'user', 'name', 'args']
   let command = 'top -b -n 1'
   each(columns, (column) => {
     command += ` -o ${column}`
   })
 
-  const result: string = await shell(deviceId, command)
+  const result: string = await shell(deviceId, command, context)
   let lines = result.split('\n')
   let start = -1
   for (let i = 0, len = lines.length; i < len; i++) {
@@ -88,7 +98,7 @@ const getProcesses = singleton(async (deviceId: string) => {
   })
 
   return processes
-})
+}
 
 export async function forwardTcp(connectKey: string, remote: string) {
   const target = await client.getTarget(connectKey)

@@ -16,5 +16,10 @@
   "input.swipe": "Swipe between screenshot pixels and always release the touch.",
   "input.scroll": "Scroll by normalized deltas at screenshot pixels.",
   "input.text": "Type text without clearing the focused field.",
-  "input.key": "Press and release a supported named key."
+  "input.key": "Press and release a supported named key.",
+  "overview.get": "Read device overview from a selected Harmony device.",
+  "apps.list": "List installed Harmony bundles; optionally omit system bundles.",
+  "apps.info": "Read one Harmony application from device metadata without online enrichment.",
+  "apps.top": "Read the foreground non-system Harmony application.",
+  "processes.list": "Read the Harmony process snapshot with bounded device transport."
 }

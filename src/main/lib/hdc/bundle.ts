@@ -1,10 +1,8 @@
+import type { DeviceOperationContext } from '../../../common/automation/deviceContext'
 import {
   IBundleInfo,
   IpcCleanBundleCache,
   IpcCleanBundleData,
-  IpcGetBundleInfos,
-  IpcGetBundles,
-  IpcGetTopBundle,
   IpcInstallBundle,
   IpcStartBundle,
   IpcStopBundle,
@@ -26,8 +24,8 @@ const logger = log('hdcBundle')
 
 let client: Client
 
-const getBundles: IpcGetBundles = async (connectKey, system = true) => {
-  const result = await shell(connectKey, 'bm dump -a')
+export const getBundles = async (connectKey: string, system = true, context?: DeviceOperationContext) => {
+  const result = await shell(connectKey, 'bm dump -a', context)
   const bundles = map(trim(result).split('\n').slice(1), (line) => trim(line))
 
   return system ? bundles : filter(bundles, (bundle) => !isSystemBundle(bundle))
@@ -64,7 +62,7 @@ function isSystemBundle(bundle: string) {
   return false
 }
 
-const getBundleInfos: IpcGetBundleInfos = async (connectKey, bundleNames) => {
+export const getBundleInfos = async (connectKey: string, bundleNames: string[], context?: DeviceOperationContext) => {
   const result: IBundleInfo[] = []
   // Probe the connected device, not the app's target API. Keep this scoped to
   // one request so reconnects and system updates cannot leave stale support.
@@ -74,7 +72,7 @@ const getBundleInfos: IpcGetBundleInfos = async (connectKey, bundleNames) => {
     try {
       // Keep transport, parsing and metadata tied to this bundle. The shared
       // batch shell framing cannot isolate transport failures or delimiter text.
-      const dump = (await shell(connectKey, `bm dump -n ${bundleName}`)).trim()
+      const dump = (await shell(connectKey, `bm dump -n ${bundleName}`, context)).trim()
       let json = dump
       if (!dump.startsWith('{')) {
         const newline = dump.indexOf('\n')
@@ -144,7 +142,7 @@ const getBundleInfos: IpcGetBundleInfos = async (connectKey, bundleNames) => {
         if (supportsLabel === undefined) {
           supportsLabel = false
           try {
-            const help = await shell(connectKey, 'bm dump -h')
+            const help = await shell(connectKey, 'bm dump -h', context)
             supportsLabel = /^\s*-l,\s*--label\b/m.test(help)
           } catch (error) {
             logger.warn('Failed to check bundle label support', connectKey, error)
@@ -153,7 +151,7 @@ const getBundleInfos: IpcGetBundleInfos = async (connectKey, bundleNames) => {
         if (supportsLabel) {
           try {
             const label = displayableLabel(
-              await shell(connectKey, `bm dump -n ${bundleName} -l`)
+              await shell(connectKey, `bm dump -n ${bundleName} -l`, context)
             )
             if (!label) {
               throw new Error('Empty, unresolved or invalid bundle label response')
@@ -166,7 +164,7 @@ const getBundleInfos: IpcGetBundleInfos = async (connectKey, bundleNames) => {
         }
       }
 
-      if (!bundleInfo.system && !startWith(bundleName, 'com.huawei')) {
+      if (!context && !bundleInfo.system && !startWith(bundleName, 'com.huawei')) {
         try {
           const onlineInfo = await getOnlineBundleInfo(bundleName)
           if (!localLabel && onlineInfo.name) {
@@ -241,8 +239,8 @@ const uninstallBundle: IpcUninstallBundle = async (connectKey, bundleName) => {
   await target.uninstall(bundleName)
 }
 
-const getTopBundle: IpcGetTopBundle = async (connectKey) => {
-  const abilityInfo = await shell(connectKey, 'aa dump -a')
+export const getTopBundle = async (connectKey: string, context?: DeviceOperationContext) => {
+  const abilityInfo = await shell(connectKey, 'aa dump -a', context)
   const lines = map(abilityInfo.split('\n'), (line) => trim(line))
 
   let name = ''

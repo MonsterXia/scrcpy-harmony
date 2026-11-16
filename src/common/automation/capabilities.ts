@@ -5,7 +5,7 @@ const platformOperations: Record<string, readonly string[]> = {
   'screen.capture': ['android', 'harmony', 'ios'],
   'input.tap': ['android', 'harmony'], 'input.swipe': ['android', 'harmony'],
   'input.scroll': ['android', 'harmony'], 'input.text': ['android', 'harmony'], 'input.key': ['android', 'harmony'],
-  'overview.get': ['harmony'], 'apps.list': ['harmony'], 'layout.dump': ['harmony'], 'shell.run': ['harmony'],
+  'overview.get': ['harmony'], 'apps.list': ['harmony'], 'apps.info': ['harmony'], 'apps.top': ['harmony'], 'processes.list': ['harmony'], 'layout.dump': ['harmony'], 'shell.run': ['harmony'],
 }
 export function deviceCapabilities(target: Pick<ITarget, 'key' | 'platform' | 'state'>, enabled: ReadonlySet<string>, running = false): Record<string, Capability> {
   return Object.fromEntries(Object.entries(platformOperations).map(([operation, platforms]) => {

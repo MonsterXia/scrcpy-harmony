@@ -37,7 +37,7 @@ export const operations: Record<string, OperationSchema> = {
   'sessions.start': { description: descriptions['sessions.start'], readOnly: false, parameters: { device: { type: 'string', minLength: 1, maxLength: 1024 } }, required: ['device'] },
   'sessions.list': { description: descriptions['sessions.list'], readOnly: true, parameters: {}, required: [] },
   'sessions.get': { description: descriptions['sessions.get'], readOnly: true, parameters: session, required: ['session'] },
-  'sessions.wait': { description: descriptions['sessions.wait'], readOnly: true, parameters: { ...session, state: { type: 'string', enum: ['starting','authorizing','waiting','running','disconnected','error','stopping','stopped'] } }, required: ['session'] },
+  'sessions.wait': { description: descriptions['sessions.wait'], readOnly: true, timeoutMs: 60000, parameters: { ...session, state: { type: 'string', enum: ['starting','authorizing','waiting','running','disconnected','error','stopping','stopped'] } }, required: ['session'] },
   'sessions.leases': { description: descriptions['sessions.leases'], readOnly: true, parameters: {}, required: [] },
   'sessions.release': { description: descriptions['sessions.release'], readOnly: false, parameters: { lease: identity }, required: ['lease'] },
   'sessions.stop': { description: descriptions['sessions.stop'], readOnly: false, parameters: { ...session, lease: identity }, required: ['session','lease'] },
@@ -47,6 +47,11 @@ export const operations: Record<string, OperationSchema> = {
   'input.scroll': { description: descriptions['input.scroll'], readOnly: false, parameters: { ...pointer, dx: { type: 'number', minimum: -1, maximum: 1 }, dy: { type: 'number', minimum: -1, maximum: 1 } }, required: ['session','frame','x','y','dx','dy'] },
   'input.text': { description: descriptions['input.text'], readOnly: false, parameters: { ...session, text: { type: 'string', maxLength: 16384 } }, required: ['session','text'] },
   'input.key': { description: descriptions['input.key'], readOnly: false, parameters: { ...session, key: { type: 'string', enum: ['home','back','enter','backspace','tab','up','down','left','right','power','volume-up','volume-down'] } }, required: ['session','key'] },
+  'overview.get': { description: descriptions['overview.get'], readOnly: true, parameters: { device: identity }, required: ['device'] },
+  'apps.list': { description: descriptions['apps.list'], readOnly: true, parameters: { device: identity, userOnly: { type: 'boolean' } }, required: ['device'] },
+  'apps.info': { description: descriptions['apps.info'], readOnly: true, parameters: { device: identity, bundle: { type: 'string', minLength: 1, maxLength: 255 } }, required: ['device','bundle'] },
+  'apps.top': { description: descriptions['apps.top'], readOnly: true, parameters: { device: identity }, required: ['device'] },
+  'processes.list': { description: descriptions['processes.list'], readOnly: true, parameters: { device: identity }, required: ['device'] },
 }
 export interface AutomationRequest {
   apiVersion: 1; requestId: string; clientId: string; operation: string

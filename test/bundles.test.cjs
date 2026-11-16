@@ -54,7 +54,7 @@ async function loadBundles(entries, online = async (name) => ({ data: { name: `L
   } } } }
   await base.init(client)
   await load('src/main/lib/hdc/bundle.ts').init(client)
-  return { getInfos: async (names) => JSON.parse(JSON.stringify(await handlers.get('getBundleInfos')('DEVICE_TEST', names))), logs, commands, lookups, events, install: hap => handlers.get('installBundle')('DEVICE_TEST', hap) }
+  return { api: load('src/main/lib/hdc/bundle.ts'), getInfos: async (names) => JSON.parse(JSON.stringify(await handlers.get('getBundleInfos')('DEVICE_TEST', names))), logs, commands, lookups, events, install: hap => handlers.get('installBundle')('DEVICE_TEST', hap) }
 }
 function info(name, version = '1.0') {
   return { name, installTime: 1000, releaseType: 'Release', mainEntry: 'entry',
@@ -399,4 +399,12 @@ test('unlisted app metadata expires so a later store listing can be discovered',
   assert.equal((await f.getInfos(['app']))[0].label, 'app')
   now += 300001
   assert.equal((await f.getInfos(['app']))[0].label, 'Now listed')
+})
+
+test('automation metadata shares the parser but never queries online enrichment or legacy transport',async()=>{
+ const f=await loadBundles({});const commands=[]
+ const context={clientId:'test',deviceKey:'DEVICE_TEST',deadline:Date.now()+1000,signal:new AbortController().signal,shell:async command=>{commands.push(command);return command==='bm dump -h'?'usage':dump('good')}}
+ const infos=await f.api.getBundleInfos('DEVICE_TEST',['good'],context)
+ assert.equal(infos[0].bundleName,'good');assert.equal(infos[0].label,'good')
+ assert.equal(f.lookups.length,0);assert.equal(f.commands.length,0);assert.equal(commands[0],'bm dump -n good')
 })

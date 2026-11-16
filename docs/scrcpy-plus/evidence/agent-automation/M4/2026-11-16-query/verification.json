@@ -1,0 +1,46 @@
+{
+  "batch": "M4-A queries",
+  "status": "local-verification-complete-real-Harmony-pending",
+  "baseCommit": "35e8d0d",
+  "operations": [
+    "overview.get",
+    "apps.list",
+    "apps.info",
+    "apps.top",
+    "processes.list"
+  ],
+  "tests": {
+    "affectedExisting": {
+      "passed": 167,
+      "command": "node --test test/automation-tools.test.cjs test/bundles.test.cjs test/shell-timeout.test.cjs test/hilog-lifecycle.test.cjs test/finite-shell.test.cjs test/overview-deadline.test.cjs test/memory-deadline.test.cjs"
+    },
+    "finalQueryProtocol": {
+      "passed": 55,
+      "command": "node --test test/automation-tools.test.cjs test/bundles.test.cjs test/automation-protocol.test.cjs"
+    }
+  },
+  "lint": true,
+  "mainBuild": true,
+  "cliBuild": true,
+  "typescript": {
+    "wholeRepositoryClean": false,
+    "newModuleDiagnostics": [],
+    "existingTouchedDiagnostic": "base.ts unknown -> string existed at M2 line48; now line58"
+  },
+  "realHarmony": "not available",
+  "remaining": [
+    "app writes/install",
+    "layout/logs",
+    "ports/shell",
+    "MCP",
+    "M6 acceptance"
+  ],
+  "logHashes": {
+    "m4-query-tests.log": "3c8a2b6889032d00050818f7c2b65d6296486a37008ef7b59eae7b20b447f76d",
+    "m4-query-tests2.log": "965f2a747f77c6bec8b7a50aeccdf6b1078e87396314b0f6326f51f838ecca03",
+    "m4-query-lint.log": "95645ae3697e927ed3630e18f37d90670eba8b948aa3ced56360fc4bbf54c660",
+    "m4-query-build.log": "589d0c5e14f712a96f6dd2daea8434e4f0d99bc00ce9beeb31a6407087119200",
+    "m4-query-cli-build.log": "2c23b31c5e5e6c601110739f648bc0e0395a2f26deb6726f71f4c4ed1fa945d3",
+    "m4-types.log": "0b446c3d6fb01b37d691a75bf18f4f15d55ed82e9c79091ac289b9036eb3c1b2"
+  }
+}

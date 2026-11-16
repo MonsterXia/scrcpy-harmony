@@ -63,3 +63,17 @@ scrcpy-plus sessions stop --session "$SID" --lease "$LEASE" --client agent-a --j
 普通 CLI 退出保留 lease；GUI 关窗时若有 lease 则隐藏并保留 renderer，再次 GUI 打开会认领 GUI owner。输入需要当前 client 的 lease。若 start 响应丢失，先用同一 `--client` 查询 `sessions leases`，再继续或 release；不要凭另一 client 的 session ID 停止它。应用显式退出终止全实例资源。
 
 文本上限 16384 UTF-16 code units，文件/stdin 额外有 64KiB UTF-8 输入上限。不要把敏感文本放在命令参数中。MCP 仍待 M5 实现。
+
+## Harmony 查询
+
+以下命令必须指定 `--device <Harmony key>`；不会跟随 GUI 的目标选择，Android/iOS 返回 UNSUPPORTED。
+
+| 命令 | 额外参数 | 返回 |
+| --- | --- | --- |
+| `overview get` | 无 | 设备参数、CPU、内存、屏幕等现有概览字段 |
+| `apps list` | 可选 `--user-only` | bundle 名称数组，默认包含系统应用 |
+| `apps info` | `--bundle <名称>` | 单项设备元数据；不查询线上商店 |
+| `apps top` | 无 | 非系统前台应用 name/pid；无匹配为空/0 |
+| `processes list` | 无 | 进程快照 |
+
+使用 `--json --timeout-ms <期限>`；取消/截止会关闭有界设备查询，不自动重试。完整工具覆盖与尚未开放的写操作见[逐操作登记](harmony-tools.md)。

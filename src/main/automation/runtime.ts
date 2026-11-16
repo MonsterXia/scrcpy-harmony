@@ -1,3 +1,7 @@
+import { createHarmonyToolHandlers } from './adapters/harmonyTools'
+import { automationShell, getOverview } from '../lib/hdc'
+import { getProcesses } from '../lib/hdc/base'
+import { getBundles, getBundleInfos, getTopBundle } from '../lib/hdc/bundle'
 import { registerSessionOperations } from './sessionOperations'
 import { ipcMain } from 'electron'
 import { AutomationController } from './controller'
@@ -48,5 +52,7 @@ export function createAutomationRuntime(instanceId: string, version: string) {
   const service = createAutomationService({ instanceId,version,discover:getDevices,
     running: key => controller.sessions.list().some(session => session.deviceKey === key && session.state === 'running') })
   registerSessionOperations(service, controller)
+  const tools = createHarmonyToolHandlers({ discover: getDevices, shell: automationShell, overview: getOverview, appsList: getBundles, appsInfo: getBundleInfos, appsTop: getTopBundle, processes: getProcesses })
+  for (const [name, handler] of Object.entries(tools)) service.register(name, handler)
   return { ...service, controller }
 }
