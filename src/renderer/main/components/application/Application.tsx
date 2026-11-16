@@ -1,3 +1,4 @@
+import { computed } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import store from '../../store'
@@ -430,7 +431,7 @@ export default observer(function Application() {
             onContextMenu(e, (node.data as any).info)
           }}
           filter=""
-          columns={columns}
+          columns={columns.get()}
           data={gridData}
           selectable={true}
           uniqueId="bundleName"
@@ -682,7 +683,7 @@ export default observer(function Application() {
   )
 })
 
-const columns = [
+const columns = computed(() => [
   {
     id: 'label',
     title: t('name'),
@@ -725,4 +726,4 @@ const columns = [
     sortable: true,
     weight: 10,
   },
-]
+])

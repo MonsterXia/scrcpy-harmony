@@ -1,0 +1,9 @@
+{
+  "baseline": 57,
+  "current": 55,
+  "added": [],
+  "resolved": [
+    "src/renderer/main/components/devices/Devices.tsx: error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.",
+    "src/renderer/main/components/devices/Devices.tsx: error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'."
+  ]
+}

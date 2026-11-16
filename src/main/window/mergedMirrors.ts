@@ -78,6 +78,12 @@ function capture(): MergedMirrorFrame[] {
   }))
 }
 
+export function getMergedMirrorWindow(deviceKey?: string) {
+  if (!win || win.isDestroyed()) return undefined
+  if (deviceKey && !sources().some(source => source.deviceKey === deviceKey && !source.window.isDestroyed())) return undefined
+  return win
+}
+
 export function closeMergedMirrors() {
   const closing = win
   win = undefined

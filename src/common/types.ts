@@ -48,6 +48,8 @@ export type IpcArrangeMirrors = () => Promise<void>
 export type MirrorPlatform = 'android' | 'ios' | 'harmony'
 export type MirrorLayout = 'independent' | 'side-by-side' | 'merged'
 export interface MirrorLayoutRequest { layout: MirrorLayout; deviceKeys?: string[] }
+export type IpcGetMirrorLayout = () => Promise<MirrorLayout>
+export type IpcFocusMirror = (deviceKey: string) => Promise<void>
 export type IpcApplyMirrorLayout = (request: MirrorLayoutRequest) => Promise<void>
 export interface MergedMirrorFrame { sourceId: number; platform: MirrorPlatform; image: string; width: number; height: number }
 export type IpcShowMergedMirrors = () => Promise<void>
@@ -74,6 +76,7 @@ export interface IProcess {
 // Rejects on enumeration failure or when every listed target fails to read.
 // A successful enumeration with no connected targets resolves to [].
 export type IpcGetTargets = () => Promise<ITarget[]>
+export type IpcGetDeviceOverview = (key: string) => Promise<Record<string, string | number>>
 export type IpcGetOverview = (connectKey: string) => Promise<{
   name: string
   brand: string

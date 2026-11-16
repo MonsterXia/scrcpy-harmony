@@ -19,7 +19,7 @@ const { createRoot } = require('react-dom/client')
 test('overview clears stale details after a failed refresh and recovers on retry', async (t) => {
   const requests = [], notifications = []
   const main = {
-    getOverview(key) {
+    getDeviceOverview(key) {
       assert.equal(key, 'synthetic-target')
       return new Promise((resolve, reject) => requests.push({ resolve, reject }))
     },
@@ -27,8 +27,8 @@ test('overview clears stale details after a failed refresh and recovers on retry
   const h = React.createElement
   const Empty = () => null
   const mocks = {
-    './Overview.module.scss': {},
-    '../../store': { target: { key: 'synthetic-target', ohosVersion: '6.0', sdkVersion: '20' } },
+    './Overview.module.scss': {}, '../workspace/DeviceSwitcher': () => null,
+    '../../store': { overviewTarget: { key: 'synthetic-target', ohosVersion: '6.0', sdkVersion: '20' } },
     'common/util': { t: (key) => key },
     'share/renderer/lib/util': { notify: (...args) => notifications.push(args) },
     'share/renderer/components/ToolbarIcon': ({ icon, onClick, disabled }) =>

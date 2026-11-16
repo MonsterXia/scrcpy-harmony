@@ -10,6 +10,7 @@ import { PannelLoading } from '../common/loading'
 import PortMappingModal from './PortMappingModal'
 import RemoteControllerModal from './RemoteControllerModal'
 import Style from './Overview.module.scss'
+import DeviceSwitcher from '../workspace/DeviceSwitcher'
 
 export default observer(function Overview({
   onOpenSettings,
@@ -21,34 +22,37 @@ export default observer(function Overview({
     useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [failed, setFailed] = useState(false)
-  const [detecting, setDetecting] = useState(false)
-  const detectingRef = useRef(false)
   const [overview, setOverview] = useState<types.PlainObj<string | number>>({})
   const readSession = useRef<{ active: boolean; pending: boolean } | null>(null)
-  const { target } = store
+  const target = store.overviewTarget
+  const android = target?.platform === 'android'
+  const ready = !!target && (!target.state || target.state === 'ready')
+  const identity = target ? `${target.platform || 'harmony'}:${target.key}:${target.state || 'ready'}` : ''
 
   useEffect(() => {
     const session = { active: true, pending: false }
     readSession.current = session
     setOverview({})
+    setPortModalVisible(false)
+    setRemoteControllerModalVisible(false)
     setIsLoading(false)
     setFailed(false)
     void refresh()
     return () => {
       session.active = false
     }
-  }, [target])
+  }, [identity])
 
   async function refresh() {
     const session = readSession.current
-    if (!target || !session?.active || session.pending) return
-    const isCurrent = () => session.active && store.target === target
+    if (!target || !ready || !session?.active || session.pending) return
+    const isCurrent = () => session.active && store.overviewTarget?.key === target.key && (store.overviewTarget?.state || 'ready') === (target.state || 'ready')
     if (!isCurrent()) return
     session.pending = true
     setIsLoading(true)
     setFailed(false)
     try {
-      const result = await main.getOverview(target.key)
+      const result = await main.getDeviceOverview(target.key)
       if (isCurrent()) setOverview(result)
     } catch {
       if (isCurrent()) {
@@ -59,21 +63,6 @@ export default observer(function Overview({
     } finally {
       session.pending = false
       if (isCurrent()) setIsLoading(false)
-    }
-  }
-
-  async function detectDevices() {
-    if (detectingRef.current) return
-    const session = readSession.current
-    detectingRef.current = true
-    setDetecting(true)
-    try {
-      await store.refreshTargets()
-    } catch {
-      if (session?.active) notify(t('targetRefreshFailed'), { icon: 'error' })
-    } finally {
-      detectingRef.current = false
-      if (session?.active) setDetecting(false)
     }
   }
 
@@ -106,16 +95,17 @@ export default observer(function Overview({
         <button
           type="button"
           className={Style.primary}
-          disabled={!target}
+          disabled={!ready}
           title={!target ? t('targetNotConnected') : t('screencast')}
           onClick={() => {
-            void runTool(() => main.showScreencast())
+            void runTool(() => main.showScreencast(target!.key))
           }}
         >
           <span className="icon-screencast" aria-hidden="true" />
           {t('workspaceStartMirroring')}
         </button>
       </header>
+      <DeviceSwitcher />
       {!target ? (
         <div className={Style.empty}>
           <span className="icon-phone" aria-hidden="true" />
@@ -134,16 +124,6 @@ export default observer(function Overview({
             )}
           </p>
           <div className={Style.emptyActions}>
-            <button
-              type="button"
-              className={Style.primary}
-              disabled={detecting}
-              onClick={() => {
-                void detectDevices()
-              }}
-            >
-              {t(detecting ? 'workspaceRefreshing' : 'workspaceDetectDevices')}
-            </button>
             {onOpenSettings && (
               <button
                 type="button"
@@ -159,7 +139,7 @@ export default observer(function Overview({
         <>
           <section className={Style.hero}>
             <div className={Style.phone} aria-hidden="true">
-              <span className="icon-ohos" />
+              <span className={android ? 'icon-phone' : 'icon-ohos'} />
             </div>
             <div className={Style.identity}>
               <p className={Style.eyebrow}>{t('workspaceCurrentDevice')}</p>
@@ -168,7 +148,7 @@ export default observer(function Overview({
                 {[overview.brand, overview.model].filter(Boolean).join(' · ') ||
                   t('unknown')}
               </p>
-              <span className={Style.status}>{t('workspaceConnected')}</span>
+              <span className={Style.status}>{t(ready ? 'workspaceConnected' : target.state === 'unauthorized' ? 'plusDebugAuthorizationHint' : target.state === 'offline' ? 'plusOfflineHint' : 'plusMetadataHint')}</span>
             </div>
             <button
               type="button"
@@ -210,12 +190,12 @@ export default observer(function Overview({
               <div className={Style.infoGrid}>
                 <div className={Style.infoBlock}>
                   <h3>
-                    <span className="icon-ohos" aria-hidden="true" />
+                    <span className={android ? 'icon-phone' : 'icon-ohos'} aria-hidden="true" />
                     {t('workspaceSystem')}
                   </h3>
                   {item(
-                    t('ohosVersion'),
-                    target.ohosVersion
+                    t('plusOsVersion'),
+                    android ? overview.osVersion : target.ohosVersion
                       ? `OpenHarmony ${target.ohosVersion}${target.sdkVersion ? ` (API ${target.sdkVersion})` : ''}`
                       : undefined,
                     'ohosVersion',
@@ -248,11 +228,12 @@ export default observer(function Overview({
           )}
         </>
       )}
+      {android ? <p className={Style.platformHint}>{t('plusAndroidOverviewHint')}</p> : <>
       <h2 className={Style.sectionTitle}>{t('workspaceDeviceTools')}</h2>
       <div className={Style.tools}>
         <button
           type="button"
-          disabled={!target}
+          disabled={!ready}
           onClick={() => setPortModalVisible(true)}
         >
           <span className="icon-bidirection" aria-hidden="true" />
@@ -263,7 +244,7 @@ export default observer(function Overview({
         </button>
         <button
           type="button"
-          disabled={!target}
+          disabled={!ready}
           onClick={() => setRemoteControllerModalVisible(true)}
         >
           <span className="icon-remote-controller" aria-hidden="true" />
@@ -285,6 +266,7 @@ export default observer(function Overview({
           </span>
         </button>
       </div>
+      </>}
       <PortMappingModal
         visible={portModalVisible}
         onClose={() => setPortModalVisible(false)}

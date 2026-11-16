@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite'
 import { AutomationFrameSource } from '../lib/AutomationFrameSource'
 import { useEffect, useRef, useState } from 'react'
 import type { MirrorSession, NativeMirrorFrame, NativeMirrorInfo, NativeMirrorInput } from 'common/types'
@@ -15,7 +16,7 @@ function statusLabel(state: string, issue?: MirrorSession['connectionIssue']) {
     default: return t('plusNativeStarting')
   }
 }
-export default function App() {
+export default observer(function App() {
   const canvas = useRef<HTMLCanvasElement>(null)
   const [info, setInfo] = useState<NativeMirrorInfo>()
   const [status, setStatus] = useState<MirrorSession['state']>('starting')
@@ -25,7 +26,9 @@ export default function App() {
   const pointer = useRef<number | null>(null)
   const lastPoint = useRef({ x: 0, y: 0 })
   const android = info?.target.platform === 'android'
-  const send = (input: NativeMirrorInput) => { void main.nativeMirrorInput(input).catch(() => setError(t('plusNativeInputError'))) }
+  const title = android ? info.target.name : t('screencast')
+  useEffect(() => preload.setTitle(title), [title])
+  const send = (input: NativeMirrorInput) => { void main.nativeMirrorInput(input).catch(() => setError('plusNativeInputError')) }
   useEffect(() => {
     const frames = new AutomationFrameSource(main, () => canvas.current)
     let active = true, id: string | undefined
@@ -56,7 +59,7 @@ export default function App() {
         const context = element.getContext('2d')
         if (context) { context.drawImage(frame, 0, 0); frames.presented() }
       } finally { frame.close() }
-    }, error => { console.error('Native video decode failed', error); if (active) { frames.reset('error'); setError(t('plusNativeDecodeError')) } })
+    }, error => { console.error('Native video decode failed', error); if (active) { frames.reset('error'); setError('plusNativeDecodeError') } })
     const unsubscribeFrame = main.on('nativeMirrorFrame', (packet: NativeMirrorFrame) => {
       if (!active || packet.sessionId !== id) return
       try {
@@ -76,7 +79,6 @@ export default function App() {
         const value = await main.nativeMirrorInfo()
         if (!active) return
         id = value.id; setInfo(value); setStatus(value.state); setConnectionIssue(value.connectionIssue)
-        if (value.target.platform === 'android') preload.setTitle(value.target.name)
         await main.nativeMirrorOpen()
       } catch { if (active) setStatus('error') }
     })()
@@ -113,7 +115,7 @@ export default function App() {
   }
   return <main className={`${Style.page} ${android ? Style.android : ''}`}>
     {(!android || status !== 'running' || error) && <header><strong>{info?.target.name || t('screencast')}</strong><span>{statusLabel(status, connectionIssue)}</span></header>}
-    {error && <p className={Style.error} role="alert">{error}</p>}
+    {error && <p className={Style.error} role="alert">{t(error === 'plusNativeInputError' ? 'plusNativeInputError' : 'plusNativeDecodeError')}</p>}
     {(status === 'error' || status === 'disconnected') && <button type="button" onClick={() => {
       setError(''); setStatus('starting'); void main.nativeMirrorOpen().catch(() => setStatus('error'))
     }}>{t('retry')}</button>}
@@ -142,4 +144,4 @@ export default function App() {
         else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey) { event.preventDefault(); send({ type: 'text', text: event.key }) }
       }} />
   </main>
-}
+})

@@ -6,7 +6,13 @@ dev.1 合入商店空响应按应用缓存（避免后续图标被全局冷却�
 
 ## 功能入口
 
-左侧顶部「多端投屏」是独立入口，使用手绘 SVG 三屏图标、彩色渐变和选中描边；窄侧栏保留图标及 tooltip，展开侧栏显示名称和三种系统。路由仍为 `devices`，原持久化配置继续兼容。主页面不再显示绕过所选启动模式的通用投屏按钮。下方「鸿蒙设备工具」保留设备切换、概览、应用、截图、终端、日志、进程、布局和网页入口。左侧仅列出鸿蒙设备，保存在 `target`，供原工具和 HDC 入口使用；多端投屏页单独使用 `mirrorTarget`，可选择全部平台，启动及排列均读取此选择。两者各自持久化与刷新，互不修改，也不因切换选择而停止已有会话。旧版共享的 Android／iOS 选择迁移到 `mirrorTarget`，原 `target` 清除后从可用鸿蒙设备中恢复；设备断开时不会将安卓分配给鸿蒙工具。此前因安卓选择而禁用侧栏及对应提示已移除。验证见 [独立选择记录](evidence/independent-device-selection-2026-11-05/ui.json)。导航在 `src/renderer/main/components/workspace/Workspace.tsx`，专属图标在同目录 `MultiMirrorIcon.tsx`。中英文、宽窄窗口和明暗主题验证见 [界面证据](evidence/multi-mirror-navigation-2026-11-05/ui.json)。
+左侧顶部「多端投屏」保留独立入口，窄侧栏显示图标，展开侧栏显示名称。页面按“可用设备 → 勾选批量启动 → 正在投屏”组织；iOS 是单独的 AirPlay 接收器。明暗主题共用布局，仅改变语义颜色。
+
+侧栏不再单独提供设备选择器，选择器移入「概览」顶部，支持 Android 和 HarmonyOS。`overviewTarget` 持久化概览选择；选中鸿蒙时同步原 `target`（供 HDC 工具使用），选中安卓不会把安卓 key 传给 HDC。安卓概览显示设备信息、启动投屏，其他鸿蒙专用工具入口禁用；恢复旧页面或程序选择受限页面时回到概览。iOS USB 发现项不进入概览。旧 `mirrorTarget` 配置仍兼容保留，投屏页批量选择使用本页稳定 key 集合，不读写工具选择，也不因选择变化停止已有会话。
+
+概览只在设备 key/平台/连接状态改变时重置，五秒设备轮询产生同一设备的新对象不会清空内容或重读。`getDeviceOverview(key)` 根据当前发现的平台分派：鸿蒙复用原有限 HDC 读取，安卓执行固定只读 `getprop`、`uname -r`、`wm size`、`cat /proc/meminfo`。安卓有活动投屏时复用其 ADB 连接；无投屏时临时连接，读取后释放；停止中的连接完成清理后才允许临时连接。每条 shell 读取有超时与输出上限，超时仅取消该 shell，不关闭共享投屏连接。
+
+导航入口为 `workspace/Workspace.tsx`；设备选择为 `workspace/DeviceSwitcher.tsx`；状态与生命周期见 `store/index.ts`、`overview/Overview.tsx`、`main/lib/devices/androidOverview.ts`。此次模拟设备的 Electron、中英文、宽窄窗口与明暗主题证据见 [工作区验证](evidence/mirror-workspace-2026-11-16/ui.json)。早期独立选择/九种组合记录是历史实现证据，不代表当前 UI。
 
 ## 运行结构
 
@@ -59,13 +65,13 @@ npm start
 
 ## 使用与能力边界
 
-启动模式支持「单端（当前设备）」「安卓＋鸿蒙」「全部（三端）」；排列模式支持「独立窗口」「并排排列」「合并排列」，共九种组合。选择后点击「按模式启动」，会打开该范围的可用设备并应用所选排列。只调整已有会话时点击「应用排列」；这不会启动尚未打开的设备。其他已连接会话保持运行，模式切换不自动停止它们。单端可在设备选择器选择任意平台，双端／全部模式自动按平台筛选并归一 iOS 接收器，缺失平台会明确提示。
+在可用设备列表勾选 Android／HarmonyOS 设备后点击「启动所选」，或使用行内单台启动。已存在的会话只显示在正在投屏区；失败/断开的会话可重试，单台失败不丢失其他启动结果。关闭一台不会停止其他会话。iPhone 在单独的 iOS 无线投屏区开启接收器后，从手机「屏幕镜像」选择 Scrcpy Plus；未收到连接时明确显示等待。
 
-排列请求经 `applyMirrorLayout` 验证模式和设备 key 列表后，过滤真实活动窗口。合并视图随所选设备数量显示对应列，只有实际活动的来源才显示；iOS 存在时仍在最右侧。实现入口为 `src/renderer/main/components/devices/modes.ts`、`src/main/window/mirrorLayout.ts`；九种组合与会话保持验证见 [verification.json](evidence/start-layout-modes/verification.json)。
+「独立窗口／并排／合并」直接调用 `applyMirrorLayout`，作用于全部实际活动窗口，与勾选待启动设备无关。后端保留带 key 过滤的接口兼容调用方，但本页不发送过滤范围。`getMirrorLayout` 读取合并窗口是否存在及上次排列后的窗口几何；窗口移动、数量变化或关闭合并窗口后不会继续显示失效的排列状态。「打开窗口」通过 `focusMirror(key)` 恢复/聚焦已有窗口；属于合并视图的设备聚焦合并窗口，不重新启动后端。实现为 `devices/Devices.tsx`、`main/window/mirrorLayout.ts`。
 
-三端可以同时投屏：安卓与鸿蒙保持各自的 USB／HDC 连接，iPhone 通过同一局域网的屏幕镜像连接。投屏页先选启动模式与排列模式，再点击「按模式启动」；也可用「并排排列」快捷按钮，然后使用系统截图工具截取窗口。切换当前选择或单独关闭一个窗口不关闭其他会话。2026-11-05 已用三台真机验证同时出图与安卓独立重开，见 [并发证据](evidence/three-platform/live.json)。
+三端可以同时投屏：安卓与鸿蒙保持各自 USB／HDC 连接，iPhone 通过同一局域网 AirPlay 连接。2026-11-05 三台真机同时出图与安卓独立重开的历史后端证据见 [并发证据](evidence/three-platform/live.json)；本次 UI 改造的模拟验收不替代新的真机验证。
 
-「并排排列」右侧的「合并排列」将每台选中设备的画面放入一个窗口，按 Android／HarmonyOS／iOS 排列，同系统多设备各占一栏，顶部仅保留系统名称。参与组合的单端窗口隐藏并保持后台解码，切换为独立／并排、关闭组合窗口或排除某端时恢复原显示与后台节流策略，不重建设备连接。组合模式用于查看和截图；需触控时切回单端／并排。每端独立异步导出原尺寸 JPEG（质量 0.95），每端最多一个未完成任务；组合窗口约每 66ms 读取最新完成帧，不等待其他端，不累积队列。临时失败保留上一帧，源退出后移除对应列。IPC 只接受组合窗口主文档。实现入口为 `src/main/window/mergedMirrors.ts` 和 `src/renderer/merged-mirror/`。三台真机旧实现证据见 [live.json](evidence/merged-view/live.json)；本次安卓＋鸿蒙窗口隐藏、模式切换和持续刷新检查见 [验证记录](evidence/merged-refresh-2026-11-05/verification.json)。
+「合并」将每台活动设备的画面放入一个窗口，按 Android／HarmonyOS／iOS 排列，同系统多设备各占一栏，顶部仅保留系统名称。参与组合的单端窗口隐藏并保持后台解码，切换为独立／并排、关闭组合窗口或排除某端时恢复原显示与后台节流策略，不重建设备连接。组合模式用于查看和截图；需触控时切回单端／并排。每端独立异步导出原尺寸 JPEG（质量 0.95），每端最多一个未完成任务；组合窗口约每 66ms 读取最新完成帧，不等待其他端，不累积队列。临时失败保留上一帧，源退出后移除对应列。IPC 只接受组合窗口主文档。实现入口为 `src/main/window/mergedMirrors.ts` 和 `src/renderer/merged-mirror/`。三台真机旧实现证据见 [live.json](evidence/merged-view/live.json)；本次安卓＋鸿蒙窗口隐藏、模式切换和持续刷新检查见 [验证记录](evidence/merged-refresh-2026-11-05/verification.json)。
 
 安卓设备开启 USB 调试，插入后自动列出；选择设备并打开投屏窗口，在手机上确认首次 RSA 授权。主机私钥以受限权限持久化于应用配置目录，写完临时文件后原子发布，避免两台手机首次同时授权时读取到半写入密钥。USB 接口不能与其他调试客户端同时占用；若连接失败，应关闭占用该接口的其他调试程序。应用不会自动结束全局 adb 服务。Android ACCESS/BUSY失败通过固定connectionIssue显示双语USB提示；本机可用ADB时可在核对目标后精确detach/attach，但这不是自动接管或并发共享。2026-11-16用户报告的接口占用和授权恢复见[专项记录](../maintenance/agent-automation-android-codex-2026-11-16.md)。
 

@@ -6,11 +6,11 @@ module.exports = function targetPicker(load, store, notifications) {
     react: { useState: value => [value, () => {}], useRef: value => ({ current: value }), useEffect() {} },
     'mobx-react-lite': { observer: component => component },
     '../../store': { __esModule: true, default: store },
-    './Workspace.module.scss': {},
+    '../overview/Overview.module.scss': {},
     'common/util': { t: key => key },
     'share/renderer/lib/util': { notify: (...args) => notifications.push(args) },
   }).default
-  const children = Component().props.children[1].props.children
+  const children = Component().props.children
   const select = children.find(child => child?.type === 'select').props
   const options = Object.fromEntries([select.children].flat(Infinity).filter(Boolean)
     .map(option => [option.props.children, option.props.value]))

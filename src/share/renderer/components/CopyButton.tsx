@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite'
 import { useState } from 'react'
 import { t } from '../../common/i18n'
 import className from 'licia/className'
@@ -7,7 +8,7 @@ interface IProps {
   onClick: () => void
 }
 
-export default function CopyButton(props: IProps) {
+export default observer(function CopyButton(props: IProps) {
   const [showSuccess, setShowSuccess] = useState(false)
 
   const onClick = () => {
@@ -30,4 +31,4 @@ export default function CopyButton(props: IProps) {
       ></span>
     </div>
   )
-}
+})

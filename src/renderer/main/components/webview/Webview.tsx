@@ -1,3 +1,4 @@
+import { computed } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import Style from './Webview.module.scss'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -251,7 +252,7 @@ export default observer(function Webview() {
           onDeselect={() => setSelected(null)}
           className={Style.webviews}
           filter=""
-          columns={columns}
+          columns={columns.get()}
           data={visible}
           selectable={true}
           uniqueId="id"
@@ -292,7 +293,7 @@ export default observer(function Webview() {
   )
 })
 
-const columns = [
+const columns = computed(() => [
   {
     id: 'title',
     title: t('title'),
@@ -310,4 +311,4 @@ const columns = [
     sortable: true,
     weight: 10,
   },
-]
+])

@@ -204,11 +204,11 @@ test('network keys survive real hdckit, getTargets, selection and toolbar option
   const { state, store, toolbar } = await fixture(t)
   state.keys = [KEY, OTHER]
   await store.refreshTargets()
-  store.selectTarget(OTHER)
+  store.selectOverviewTarget(OTHER)
   assert.equal(store.target.key, OTHER)
   assert.deepEqual(Array.from(store.targets, (target) => target.key), [KEY, OTHER])
   assert.equal(toolbar().select.value, OTHER)
-  assert.equal(toolbar().select.options[`harmony · Synthetic network target (${OTHER})`], OTHER)
+  assert.equal(toolbar().select.options[`HarmonyOS · Synthetic network target (${OTHER})`], OTHER)
   assert.ok(state.requests.some(({ key, command }) => key === OTHER && command === 'shell param get'))
 })
 

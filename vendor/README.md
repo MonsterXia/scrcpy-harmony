@@ -34,7 +34,7 @@ TypeScript 编译使用 `noCheck` 生成模块与声明，不是完整类型检�
 
 ## Luna DataGrid 本地适配
 
-`luna-data-grid` 的可选 `rowHeight` 同时驱动单元格 CSS、高度/总空间与虚拟滚动偏移，默认仍为 20px。只接受 16–80 的有限数值并取整；无效输入恢复 20px。React 包装支持创建与后续属性更新。主工作区显式采用应用列表 32px、进程/WebView/端口列表 28px，独立进程工具窗口采用 28px；其他使用者保持原默认，不得仅用 CSS 拉高虚拟行。表头继续使用引擎测量值。回归见 `test/data-grid-height.test.cjs`，包含真实引擎的非默认高度滚动、动态切换与默认兼容性；`npm run build:vendor` 重建生成入口与样式。
+`luna-data-grid` 的可选 `rowHeight` 同时驱动单元格 CSS、高度/总空间与虚拟滚动偏移，默认仍为 20px。只接受 16–80 的有限数值并取整；无效输入恢复 20px。React 包装支持创建与后续属性更新。主工作区显式采用应用列表 32px、进程/WebView/端口列表 28px，独立进程工具窗口采用 28px；其他使用者保持原默认，不得仅用 CSS 拉高虚拟行。表头继续使用引擎测量值。`columns` 选项更新会按 id 同步 title，供运行时语言切换使用，无需重建网格、数据行或选择。回归见 `test/data-grid-height.test.cjs`，包含真实引擎的非默认高度滚动、动态切换与默认兼容性；`npm run build:vendor` 重建生成入口与样式。
 
 ## 来源、许可证与更新
 

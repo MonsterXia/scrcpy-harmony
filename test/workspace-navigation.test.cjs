@@ -5,16 +5,17 @@ const { setup, load, React } = require('./helpers/workspace-renderer.cjs')
 const createRoot = setup()
 const { act } = React
 
-async function fixture(t) {
+async function fixture(t, picker = false) {
   const selected = [], pending = [], notices = [], opened = []
   const store = observable({
     theme: 'light', panel: 'application', ready: true,
-    targets: [], target: null, targetsError: false,
+    targets: [], target: null, overviewTarget: null, targetsError: false,
     selectPanel(id) { this.panel = id; selected.push(id) },
+    selectOverviewTarget(key) { this.overviewTarget = this.targets.find(d => d.key === key) },
     selectTarget(key) { this.target = this.targets.find(d => d.key === key) },
     refreshTargets() { return new Promise((resolve, reject) => pending.push({ resolve, reject })) },
   })
-  const Workspace = load('src/renderer/main/components/workspace/Workspace.tsx', {
+  const Workspace = load(picker ? 'src/renderer/main/components/workspace/DeviceSwitcher.tsx' : 'src/renderer/main/components/workspace/Workspace.tsx', {
     '../../store': store,
     'common/util': { t: key => key },
     'share/renderer/lib/util': { notify: (...args) => notices.push(args) },
@@ -41,20 +42,20 @@ test('workspace keeps nine panel IDs, allows settings without a device and disab
 })
 
 test('device picker preserves network keys, refresh is single-flight and failure stays distinct from empty', async t => {
-  const f = await fixture(t)
+  const f = await fixture(t, true)
   await act(async () => runInAction(() => {
     f.store.targets = [{ key: '127.0.0.1:45678', name: 'A long device name' }, { key: 'usb-key', name: 'Second' }]
-    f.store.target = f.store.targets[0]
+    f.store.overviewTarget = f.store.targets[0]
   }))
   const select = f.host.querySelector('select')
   assert.equal(select.value, '127.0.0.1:45678')
   await act(async () => { select.value = 'usb-key'; select.dispatchEvent(new window.Event('change', { bubbles: true })) })
-  assert.equal(f.store.target.key, 'usb-key')
+  assert.equal(f.store.overviewTarget.key, 'usb-key')
   const refresh = f.host.querySelector('[data-action="refresh-devices"]')
   await act(async () => { refresh.click(); refresh.click() })
   assert.equal(f.pending.length, 1)
   assert.equal(refresh.disabled, true)
-  await act(async () => { runInAction(() => { f.store.targets = []; f.store.target = null; f.store.targetsError = true }); f.pending[0].resolve(false) })
+  await act(async () => { runInAction(() => { f.store.targets = []; f.store.overviewTarget = null; f.store.targetsError = true }); f.pending[0].resolve(false) })
   assert.equal(refresh.disabled, false)
   assert.ok(f.host.textContent.includes('targetRefreshFailed'))
   assert.equal(f.notices[0][1].icon, 'error')
@@ -63,7 +64,7 @@ test('device picker preserves network keys, refresh is single-flight and failure
 })
 
 test('device selector consumes a rejected refresh and permits retry', async t => {
-  const f = await fixture(t)
+  const f = await fixture(t, true)
   const refresh = f.host.querySelector('[data-action="refresh-devices"]')
   await act(async () => refresh.click())
   await act(async () => f.pending[0].reject(new Error('IPC disconnected')))
@@ -76,7 +77,7 @@ test('device selector consumes a rejected refresh and permits retry', async t =>
 
 for (const result of ['resolve', 'reject']) {
   test(`unmounted device selector ignores late refresh ${result}`, async t => {
-    const f = await fixture(t)
+    const f = await fixture(t, true)
     await act(async () => f.host.querySelector('[data-action="refresh-devices"]').click())
     await act(async () => f.unmount())
     await act(async () => f.pending[0][result](result === 'resolve' ? true : new Error('late IPC')))
@@ -124,13 +125,16 @@ test('multi-device mirroring has a dedicated icon entry and preserves all Harmon
   assert.deepEqual(f.selected.slice(-8), ids)
 })
 
-test('Harmony selector excludes Android and iOS while their mirroring selection remains independent', async t => {
-  const f = await fixture(t)
+test('overview picker supports Android and Harmony, excludes iOS, and sidebar has no duplicate selector', async t => {
+  const f = await fixture(t, true)
   await act(async () => runInAction(() => {
     f.store.targets = [{key:'h',platform:'harmony',name:'Harmony'}, {key:'a',platform:'android',name:'Android'}, {key:'i',platform:'ios',name:'iPhone'}]
-    f.store.target = f.store.targets[0]
+    f.store.overviewTarget = f.store.targets[0]
   }))
-  assert.deepEqual([...f.host.querySelector('#workspace-device').options].map(option => option.value), ['h'])
-  assert.ok([...f.host.querySelectorAll('nav [data-navigation]')].every(button => !button.disabled))
-  assert.equal(f.host.querySelector('[data-harmony-tools-hint]'), null)
+  assert.deepEqual([...f.host.querySelector('#workspace-device').options].map(option => option.value), ['h', 'a'])
+  const nav = await fixture(t)
+  assert.equal(nav.host.querySelector('#workspace-device'), null)
+  await act(async () => runInAction(() => { nav.store.overviewTarget = {key:'a',platform:'android'} }))
+  assert.equal(nav.host.querySelector('[data-navigation="overview"]').disabled, false)
+  assert.equal(nav.host.querySelector('[data-navigation="shell"]').disabled, true)
 })

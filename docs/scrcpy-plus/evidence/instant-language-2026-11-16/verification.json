@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-16",
+  "scope": "Local source build and Electron UI; simulated device/session IPC",
+  "tests": {
+    "command": "npm test",
+    "exitCode": 0,
+    "application": {
+      "pass": 1110,
+      "skip": 2,
+      "fail": 0
+    },
+    "liciaProduction": {
+      "pass": 606,
+      "pending": 4
+    },
+    "liciaFallback": {
+      "pass": 606,
+      "pending": 4
+    }
+  },
+  "lintAndI18n": "passed",
+  "builds": [
+    "main",
+    "preload",
+    "renderer"
+  ],
+  "typeCheck": {
+    "baselineDiagnostics": 57,
+    "currentDiagnostics": 57,
+    "added": 0
+  },
+  "electron": "45.0.0",
+  "liveLanguageChanges": 6,
+  "physicalMirroringContinuity": "not tested",
+  "installedAppReplacement": false
+}

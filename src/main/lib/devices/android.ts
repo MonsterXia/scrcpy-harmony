@@ -12,6 +12,7 @@ import path from 'node:path'
 import type { ITarget, NativeMirrorInput } from 'common/types'
 import { getUserDataPath, resolveResources } from 'share/main/lib/util'
 import type { NativeFrame } from './media'
+import { readAndroidOverview } from './androidOverview'
 
 export class FileAdbCredentials implements AdbCredentialStore {
   constructor(private file: string) {}
@@ -140,9 +141,30 @@ async function deadline<T>(promise: Promise<T>, cancel: () => void, milliseconds
     })])
   } finally { clearTimeout(timer) }
 }
+const activeMirrors = new Map<string, AndroidMirror>()
+const overviewReads = new Map<string, Promise<Awaited<ReturnType<typeof readAndroidOverview>>>>()
+export function getAndroidOverview(target: ITarget) {
+  const pending = overviewReads.get(target.key)
+  if (pending) return pending
+  const request = (async () => {
+    let active = activeMirrors.get(target.key)
+    // Closing still owns USB. Do not open a temporary connection until every
+    // native handle has drained; retrying close also handles cleanup failures.
+    if (active?.isClosed()) { await active.close(); active = undefined }
+    const connection = active || new AndroidMirror(target)
+    try { return await connection.overview() }
+    finally { if (!active) await connection.close() }
+  })().finally(() => {
+    if (overviewReads.get(target.key) === request) overviewReads.delete(target.key)
+  })
+  overviewReads.set(target.key, request)
+  return request
+}
+
 export class AndroidMirror {
   private device?: AdbDaemonWebUsbDevice
   private adb?: Adb
+  private connecting?: Promise<Adb>
   private client?: AdbScrcpyClient<AdbScrcpyOptions3_3_3<true>>
   private closed = false
   private closing?: Promise<void>
@@ -153,13 +175,16 @@ export class AndroidMirror {
   private touchGeneration = 0
   private releaseQueuedFor: number | undefined
   constructor(private target: ITarget) {}
+  isClosed() { return this.closed }
   private check() { if (this.closed) throw new Error('Android session closed') }
-  async start(frame: (frame: NativeFrame) => void, state: (state: string) => void) {
-    try {
+  private connect(): Promise<Adb> {
+    this.check()
+    if (this.adb) return Promise.resolve(this.adb)
+    if (!this.connecting) this.connecting = (async () => {
       this.device = (await usbDevices()).find(device => usbIdentity(device) === this.target.connectionId)
       if (!this.device) throw new Error('Android device disconnected')
       configureAndroidUsb(this.device.raw)
-      this.check(); state('authorizing')
+      this.check()
       const connection = await deadline(this.device.connect().then(async connection => {
         if (this.closed) { await this.device?.raw.close(); this.check() }
         return connection
@@ -172,16 +197,30 @@ export class AndroidMirror {
         if (this.closed) { await transport.close(); this.check() }
         return transport
       }), () => { void this.device?.raw.close() })
-      this.adb = new Adb(transport); this.check(); state('starting')
+      this.adb = new Adb(transport); this.check()
+      return this.adb
+
+    })()
+    return this.connecting
+  }
+  async overview() { return readAndroidOverview(await this.connect()) }
+  async start(frame: (frame: NativeFrame) => void, state: (state: string) => void) {
+    try {
+      activeMirrors.set(this.target.key, this)
+      // A temporary overview may already own USB; let it finish and release it.
+      await overviewReads.get(this.target.key)?.catch(() => {})
+      this.check(); state('authorizing')
+      const adb = await this.connect()
+      this.check(); state('starting')
       const server = await readFile(resolveResources('android/scrcpy-server'))
       this.check()
       // Each device has its own ADB transport and server process/socket namespace.
       const serverPath = '/data/local/tmp/scrcpy-plus-server.jar'
-      await deadline(AdbScrcpyClient.pushServer(this.adb, new ReadableStream({
+      await deadline(AdbScrcpyClient.pushServer(adb, new ReadableStream({
         start(controller) { controller.enqueue(server); controller.close() },
       }), serverPath), () => { void this.adb?.close() })
       this.check()
-      this.client = await deadline(AdbScrcpyClient.start(this.adb, serverPath,
+      this.client = await deadline(AdbScrcpyClient.start(adb, serverPath,
         new AdbScrcpyOptions3_3_3({ video: true, audio: false, control: true,
           videoCodec: 'h264', maxSize: 1920, maxFps: 60, tunnelForward: true })).then(async client => {
         if (this.closed) { await client.close(); this.check() }
@@ -251,6 +290,7 @@ export class AndroidMirror {
       await deadline(Promise.resolve().then(() => this.client?.close()), () => {}, 2000).catch(() => {})
       try { await this.adb?.close() }
       finally { await this.device?.raw.close() }
+      if (activeMirrors.get(this.target.key) === this) activeMirrors.delete(this.target.key)
     })().catch(error => { this.closing = undefined; throw error })
     return this.closing
   }

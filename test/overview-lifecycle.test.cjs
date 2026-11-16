@@ -35,12 +35,12 @@ const details = name => ({
 // IPC/notifications and unrelated modals are controlled. ToolbarIcon's thin
 // presentation adapter keeps this runnable in CI without src/share.
 async function fixture(t, { strict = false } = {}) {
-  const store = observable({ target: target('synthetic-a') })
+  const store = observable({ overviewTarget: target('synthetic-a') })
   const requests = [], notifications = []
   const h = React.createElement
   let onClick
   const mocks = {
-    './Overview.module.scss': {}, '../../store': store,
+    './Overview.module.scss': {}, '../workspace/DeviceSwitcher': () => null, '../../store': store,
     'common/util': { t: key => key },
     'share/renderer/lib/util': { notify: (...args) => notifications.push(args) },
     'share/renderer/components/ToolbarIcon': props => {
@@ -59,7 +59,7 @@ async function fixture(t, { strict = false } = {}) {
     loader: 'tsx', format: 'cjs', jsx: 'automatic',
   }).code, {
     module, exports: module.exports, setTimeout,
-    main: { getOverview(key) {
+    main: { getDeviceOverview(key) {
       return new Promise((resolve, reject) => requests.push({ key, resolve, reject }))
     } },
     require(id) {
@@ -88,7 +88,7 @@ async function fixture(t, { strict = false } = {}) {
     busy: () => container.querySelector('[data-action="refresh"]')?.disabled ?? false,
     click: () => container.querySelector('[data-action="refresh"]').click(),
     invoke: () => container.querySelector('[data-action="refresh"]').click(),
-    change: next => act(async () => runInAction(() => { store.target = next })),
+    change: next => act(async () => runInAction(() => { store.overviewTarget = next })),
   }
 }
 
@@ -106,7 +106,7 @@ for (const strict of [false, true]) {
   })
 }
 
-for (const replacement of ['synthetic-b', 'synthetic-a']) {
+for (const replacement of ['synthetic-b']) {
   for (const outcome of ['resolve', 'reject']) {
     test(`target replacement ${replacement} ignores old ${outcome} and preserves new loading`, async t => {
       const f = await fixture(t)
@@ -161,3 +161,19 @@ test('StrictMode discarded initial read cannot overwrite the active read', async
   assert.ok(f.text().includes('current'))
   assert.equal(f.text().includes('obsolete'), false)
 })
+
+for (const pending of [false, true]) {
+  test(`same device polling preserves content and in-flight read (pending=${pending})`, async t => {
+    const f = await fixture(t)
+    if (!pending) await act(async () => f.requests[0].resolve(details('stable')))
+    await f.change(target('synthetic-a'))
+    assert.equal(f.requests.length, 1, 'same key must not restart overview reads')
+    if (pending) await act(async () => f.requests[0].resolve(details('stable')))
+    assert.ok(f.text().includes('stable'))
+    assert.equal(f.loading(), false)
+    await act(async () => f.click())
+    assert.equal(f.requests.length, 2, 'manual refresh must remain available')
+    await act(async () => f.requests[1].resolve(details('manual')))
+    assert.ok(f.text().includes('manual'))
+  })
+}

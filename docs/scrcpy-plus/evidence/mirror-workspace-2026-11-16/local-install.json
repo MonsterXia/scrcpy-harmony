@@ -1,0 +1,16 @@
+{
+  "version": "1.0.5-dev.1",
+  "arch": "arm64",
+  "sourceFilesVerified": 38,
+  "asarSha256": "6a8097e8388389d0c471710132d6983bddaa84e6dc0f8cc7786a28d7581386bb",
+  "installedPath": "/Applications/Scrcpy Plus.app",
+  "profileFilesVerified": 67,
+  "settingsPreserved": true,
+  "signature": "ad-hoc; deep/strict verification passed",
+  "installedSmoke": "passed",
+  "launchedInstalledApp": true,
+  "overviewSelectorObserved": true,
+  "harmonyOverviewFieldsObserved": true,
+  "androidOverviewFieldsObserved": true,
+  "deviceInteractionTesting": "User trial in progress; video continuity and long-term polling not revalidated here"
+}

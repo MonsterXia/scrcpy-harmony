@@ -109,10 +109,10 @@ test('real memory timeout clears Overview details and permits UI retry', { timeo
   const { createRoot } = require('react-dom/client')
   const f = await fixture(t), notifications = []
   let pending
-  const main = { getOverview() { pending = outcome(f.overview()); return pending.then(({ value, error }) => { if (error) throw error; return value }) } }
+  const main = { getDeviceOverview() { pending = outcome(f.overview()); return pending.then(({ value, error }) => { if (error) throw error; return value }) } }
   const Component = load('src/renderer/main/components/overview/Overview.tsx', {
-    './Overview.module.scss': {},
-    '../../store': { target: { key: KEY, ohosVersion: '6.0', sdkVersion: '20' } },
+    './Overview.module.scss': {}, '../workspace/DeviceSwitcher': () => null,
+    '../../store': { overviewTarget: { key: KEY, ohosVersion: '6.0', sdkVersion: '20' } },
     'common/util': { t: (key) => key },
     'share/renderer/lib/util': { notify: (...args) => notifications.push(args) },
     'share/renderer/components/ToolbarIcon': ({ icon, onClick, disabled }) => h('button', { 'data-action': icon, onClick, disabled }),

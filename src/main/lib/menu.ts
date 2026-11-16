@@ -195,6 +195,10 @@ export function init() {
   if (!settingsListenerRegistered) {
     settingsListenerRegistered = true
     getSettingsStore().on('change', (name, value) => {
+      if (name === 'language') {
+        updateMenu()
+        return
+      }
       if (name !== 'betaUpdate') return
       const item = Menu.getApplicationMenu()?.getMenuItemById('beta-update')
       if (!item) return

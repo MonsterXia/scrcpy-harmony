@@ -7,6 +7,7 @@ import contain from 'licia/contain'
 import unique from 'licia/unique'
 import concat from 'licia/concat'
 import each from 'licia/each'
+import { observable, runInAction } from 'mobx'
 
 const langs = {
   'en-US': enUS,
@@ -15,7 +16,17 @@ const langs = {
 
 let locales = keys(langs)
 
-export const i18n = new I18n('en-US', langs)
+const locale = observable.box('en-US')
+export const getLocale = () => locale.get()
+
+class ReactiveI18n extends I18n {
+  locale(language: string) {
+    super.locale(language)
+    runInAction(() => locale.set(language))
+  }
+}
+
+export const i18n = new ReactiveI18n('en-US', langs)
 const fallback = new I18n('en-US', { 'en-US': { ...enUS } })
 
 export function init(langs: types.PlainObj<any>) {
@@ -31,6 +42,8 @@ export function hasLocale(locale: string) {
 }
 
 export function t(path: string | string[], data?: types.PlainObj<any>) {
+  // Translation reads participate in the surrounding MobX observer/reaction.
+  getLocale()
   return i18n.t(path, data) || fallback.t(path, data) || (Array.isArray(path) ? path.join('.') : path)
 }
 

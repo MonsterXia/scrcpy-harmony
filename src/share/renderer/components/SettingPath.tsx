@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite'
 import { LunaSettingHtml } from 'luna-setting/react'
 import LunaSetting from 'luna-setting'
 import Style from './SettingPath.module.scss'
@@ -13,7 +14,7 @@ interface IProps {
   onChange: (val: string) => void
 }
 
-export default function (props: IProps) {
+export default observer(function (props: IProps) {
   const browse = async () => {
     const { filePaths } = await main.showOpenDialog(props.options)
     if (!isEmpty(filePaths)) {
@@ -39,4 +40,4 @@ export default function (props: IProps) {
       </div>
     </LunaSettingHtml>
   )
-}
+})

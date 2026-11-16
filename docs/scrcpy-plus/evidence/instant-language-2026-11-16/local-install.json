@@ -1,0 +1,13 @@
+{
+  "installedPath": "/Applications/Scrcpy Plus.app",
+  "asarSha256": "3243c2bafc8c3662b376b3dc9b4fa1ef6a391ae8b2f525c584bd0274e84d03f0",
+  "signature": "ad-hoc; deep/strict verification passed",
+  "version": "1.0.5-dev.1",
+  "arch": "arm64",
+  "sourceFilesVerified": 38,
+  "installedSmoke": "passed",
+  "settingsPreserved": true,
+  "launchedInstalledApp": true,
+  "settingsPageObserved": true,
+  "instantLanguageHintObserved": true
+}

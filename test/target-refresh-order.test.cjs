@@ -136,7 +136,7 @@ test('Harmony tools and mirroring keep independent selections and persist to sep
   const devices=[{key:'a',platform:'android'}, {key:'h',platform:'harmony'}, {key:'h2',platform:'harmony'}, {key:'i',platform:'ios'}]
   f.requests[0].resolve(devices); await tick()
   assert.equal(f.store.target.key,'h'); assert.equal(f.store.mirrorTarget.key,'a')
-  f.store.selectPanel('shell'); f.store.selectMirrorTarget('i')
+  f.store.selectOverviewTarget('h'); f.store.selectPanel('shell'); f.store.selectMirrorTarget('i')
   assert.equal(f.store.target.key,'h'); assert.equal(f.store.panel,'shell')
   f.store.selectTarget('h2'); assert.equal(f.store.mirrorTarget.key,'i')
   assert.ok(f.writes.some(([scope,key,value])=>scope==='main'&&key==='mirrorTarget'&&value?.key==='i'))
@@ -164,4 +164,20 @@ test('saved independent choices are restored even when device discovery order ch
   const f = await fixture({initialize:false,saved:{target:{key:'h2',platform:'harmony'},mirrorTarget:{key:'i',platform:'ios'}}})
   f.requests[0].resolve([{key:'h',platform:'harmony'},{key:'i',platform:'ios'},{key:'h2',platform:'harmony'}]);await tick()
   assert.equal(f.store.target.key,'h2');assert.equal(f.store.mirrorTarget.key,'i')
+})
+
+test('overview selects both platforms, keeps Harmony tool target and prevents stale tool navigation', async () => {
+  const f = await fixture({ initialize: false, saved: { panel: 'shell', overviewTarget: { key: 'a', platform: 'android' } } })
+  const devices = [{key:'h',platform:'harmony'}, {key:'a',platform:'android'}, {key:'i',platform:'ios'}]
+  f.requests[0].resolve(devices); await tick()
+  assert.equal(f.store.overviewTarget.key, 'a')
+  assert.equal(f.store.panel, 'overview')
+  f.store.selectPanel('application'); assert.equal(f.store.panel, 'overview')
+  f.store.selectOverviewTarget('h'); f.store.selectPanel('shell')
+  assert.equal(f.store.panel, 'shell'); assert.equal(f.store.target.key, 'h')
+  f.store.selectOverviewTarget('a'); assert.equal(f.store.panel, 'overview')
+  assert.equal(f.store.target.key, 'h')
+  f.store.selectOverviewTarget('i'); assert.equal(f.store.overviewTarget.key, 'a')
+  const request = f.store.refreshTargets(); f.requests[1].resolve(devices); await request
+  assert.equal(f.store.overviewTarget.key, 'a')
 })

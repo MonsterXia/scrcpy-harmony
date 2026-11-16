@@ -12,6 +12,7 @@ export default class BaseStore {
     this.updateTheme()
     this.updateLanguage()
     main.on('updateTheme', this.updateTheme)
+    main.on('updateLanguage', this.updateLanguage)
   }
   private updateTheme = async () => {
     const theme = await main.getTheme()

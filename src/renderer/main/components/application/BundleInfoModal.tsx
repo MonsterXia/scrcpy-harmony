@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite'
 import { useEffect, useRef } from 'react'
 import { t } from 'common/util'
 import Style from './BundleInfoModal.module.scss'
@@ -20,7 +21,7 @@ interface IProps extends IModalProps {
 
 // Kept under the historical filename so existing callers keep their interface.
 // The details surface stays inside the workspace's theme and device boundary.
-export default function BundleInfoModal({
+export default observer(function BundleInfoModal({
   bundleInfo,
   visible,
   onClose,
@@ -152,4 +153,4 @@ export default function BundleInfoModal({
       </aside>
     </div>
   )
-}
+})

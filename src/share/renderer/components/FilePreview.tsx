@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite'
 import { JSX, useEffect, useState } from 'react'
 import Style from './FilePreview.module.scss'
 import { IFile } from 'luna-file-list'
@@ -17,7 +18,7 @@ interface IProps {
   url?: string
 }
 
-export default function Preview(props: IProps) {
+export default observer(function Preview(props: IProps) {
   const { file, url } = props
   const [audioObj, setAudioObj] = useState<HTMLAudioElement>(new Audio())
 
@@ -60,7 +61,7 @@ export default function Preview(props: IProps) {
   }
 
   return <div className={Style.container}>{preview}</div>
-}
+})
 
 interface ITextViewerProps {
   url: string

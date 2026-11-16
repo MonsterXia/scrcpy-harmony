@@ -133,11 +133,14 @@ try {
   await page.waitForURL(expectedPage.href)
   assert.equal(await page.title(), pkg.productName)
   // The unified mirroring page is the default entry for a clean profile.
-  await page.locator('#app [data-panel="devices"] [data-device-picker]').waitFor({ state: 'visible' })
+  await page.locator('#app [data-panel="devices"] [data-mirror-workspace]').waitFor({ state: 'visible' })
   const bridge = await page.evaluate(async (hdcResource) => ({
     targets: await window.main.getTargets(),
     devices: await window.main.getDevices(),
     sessions: await window.main.getMirrorSessions(),
+    layout: await window.main.getMirrorLayout(),
+    overviewBridge: typeof window.main.getDeviceOverview,
+    focusBridge: typeof window.main.focusMirror,
     customTitlebar: await window.main.isCustomTitlebar(),
     hdcPath: await window.main.resolveResources(hdcResource),
   }), hdcResource)
@@ -147,6 +150,10 @@ try {
   )
   assert.ok(Array.isArray(bridge.devices.targets), 'Unified device discovery IPC failed')
   assert.ok(Array.isArray(bridge.sessions), 'Mirror session IPC failed')
+  assert.ok(['independent', 'side-by-side', 'merged'].includes(bridge.layout))
+  assert.equal(bridge.overviewBridge, 'function')
+  assert.equal(bridge.focusBridge, 'function')
+  assert.equal(await page.locator('aside #workspace-device').count(), 0)
   assert.equal(bridge.customTitlebar, true)
   await assertSamePath(bridge.hdcPath, path.join(resourcesDir, hdcResource))
   const nativeBackends = await application.evaluate(() => {

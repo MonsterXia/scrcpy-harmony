@@ -6,7 +6,7 @@ const fs = require('node:fs')
 
 function load(entry) {
   const module = { exports: {} }
-  const { text } = buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', write: false }).outputFiles[0]
+  const { text } = buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', write: false, external: ['mobx'] }).outputFiles[0]
   vm.runInNewContext(text, { module, exports: module.exports, require, console })
   return module.exports
 }
@@ -51,9 +51,10 @@ test('main-process language selection respects persisted choices and resolves sy
     vm.runInNewContext(transformSync(fs.readFileSync('src/share/main/lib/language.ts', 'utf8'), { loader: 'ts', format: 'cjs' }).code, {
       module, exports: module.exports,
       require(id) {
-        if (id.endsWith('/store')) return { getSettingsStore: () => ({ get: () => saved }) }
+        if (id.endsWith('/store')) return { getSettingsStore: () => ({ get: () => saved, on() {} }) }
         if (id.endsWith('/i18n')) return common
         if (id === 'electron') return { app: { getLocale: () => system } }
+        if (id === './window') return { sendAll() {} }
         if (id === './util') return { handleEvent: (key, fn) => { handlers[key] = fn } }
         if (id.endsWith('/log')) return () => ({ info() {} })
         throw new Error(id)
@@ -102,4 +103,74 @@ test('settings load and save the language preference through the existing persis
   saved.language = 42
   await reloaded.init()
   assert.equal(reloaded.language, 'system')
+})
+
+// Without reactive translation reads, mounted observer views retain old labels.
+test('translation consumers react to locale changes without remounting', () => {
+  const { autorun } = require('mobx')
+  const { i18n, t } = load('src/common/util.ts')
+  const labels = []
+  const stop = autorun(() => labels.push(t('settings')))
+  try {
+    i18n.locale('zh-CN')
+    i18n.locale('en-US')
+    assert.deepEqual(labels, ['Settings', '设置', 'Settings'])
+  } finally { stop() }
+})
+
+test('saved language changes update main translations and broadcast resolved locale', () => {
+  const Store = require('licia/Store')
+  const store = new Store({ language: 'en-US' })
+  const common = load('src/share/common/i18n.ts')
+  const module = { exports: {} }, events = []
+  vm.runInNewContext(transformSync(fs.readFileSync('src/share/main/lib/language.ts', 'utf8'), { loader: 'ts', format: 'cjs' }).code, {
+    module, exports: module.exports,
+    require(id) {
+      if (id.endsWith('/store')) return { getSettingsStore: () => store }
+      if (id.endsWith('/i18n')) return common
+      if (id === 'electron') return { app: { getLocale: () => 'zh-Hans-CN' } }
+      if (id === './util') return { handleEvent() {} }
+      if (id === './window') return { sendAll: (...args) => events.push(args) }
+      if (id.endsWith('/log')) return () => ({ info() {} })
+      throw new Error(id)
+    },
+  })
+  module.exports.init()
+  store.set('language', 'system')
+  assert.equal(module.exports.get(), 'zh-CN')
+  assert.equal(common.t('settings'), '设置')
+  assert.deepEqual(events, [['updateLanguage', 'zh-CN']])
+  store.set('theme', 'dark')
+  store.set('language', 'zh-CN')
+  assert.equal(events.length, 1)
+  store.set('language', 'en-US')
+  assert.equal(common.t('settings'), 'Settings')
+  assert.deepEqual(events.at(-1), ['updateLanguage', 'en-US'])
+})
+
+test('renderer subscribes before its initial read and ignores a stale startup reply', async () => {
+  const common = load('src/common/util.ts'), module = { exports: {} }
+  const document = { documentElement: {} }
+  let listener, resolveInitial
+  const main = {
+    on(event, fn) { assert.equal(event, 'updateLanguage'); listener = fn },
+    getLanguage: () => new Promise(resolve => { resolveInitial = resolve }),
+  }
+  vm.runInNewContext(transformSync(fs.readFileSync('src/renderer/lib/language.ts', 'utf8'), { loader: 'ts', format: 'cjs' }).code, {
+    module, exports: module.exports, document, main,
+    require(id) {
+      if (id === 'common/util') return common
+      if (id === 'luna-modal') return { i18n: { locale() {} } }
+      throw new Error(id)
+    },
+  })
+  const ready = module.exports.initLanguage()
+  listener('zh-CN')
+  resolveInitial('en-US')
+  await ready
+  assert.equal(document.documentElement.lang, 'zh-CN')
+  assert.equal(common.t('settings'), '设置')
+  listener('en-US')
+  assert.equal(document.documentElement.lang, 'en-US')
+  assert.equal(common.t('settings'), 'Settings')
 })
