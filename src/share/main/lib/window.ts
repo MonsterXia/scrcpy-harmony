@@ -153,12 +153,13 @@ export function create(opts: IWinOptions) {
   }
 
   const onSavePos = debounce(() => {
-    if (!win.isFullScreen()) {
+    if (!win.isDestroyed() && !win.isFullScreen()) {
       winOptions.onSavePos()
     }
   }, 1000)
 
   const readyAndShow = once(() => {
+    if (win.isDestroyed()) return
     logger.info(opts.name, 'ready and show')
     if (winOptions.maximized && isWindows) {
       win.maximize()

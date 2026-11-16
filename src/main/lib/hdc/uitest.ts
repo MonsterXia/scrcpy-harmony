@@ -1,15 +1,15 @@
+import type { DeviceOperationContext } from '../../../common/automation/deviceContext'
+import { toHierarchyXml } from './layoutXml'
 import { Client } from 'hdckit'
 import { ipcMain } from 'electron'
-import each from 'licia/each'
 import {
-  IpcDumpWindowHierarchy,
   IpcGetDisplaySize,
 } from 'common/types'
 import { getTargetStore, setTargetStore } from './base'
 import { getUserDataPath, handleEvent, resolveResources } from 'share/main/lib/util'
 import { CaptureUiDriver } from './captureDriver'
-import { initCaptureIpc, prepareCapture, withCaptureInput, withCaptureTouch } from './captureSessions'
-import { sendScreencastInput, validateScreencastInput } from './screencastInput'
+import { gateCaptureInput, initCaptureIpc, prepareCapture, withCaptureInput, withCaptureTouch } from './captureSessions'
+import { sendScreencastInput, sendScreencastSystemKey, validateScreencastInput } from './screencastInput'
 export { cancelCapturePreparation, shutdownCaptures } from './captureSessions'
 import { NativeVideo } from './nativeVideo'
 import { ControlRecovery } from './controlRecovery'
@@ -69,36 +69,21 @@ async function getUiDriver(connectKey: string, background = false): Promise<Capt
   }
 }
 
-const dumpWindowHierarchy: IpcDumpWindowHierarchy = async function (
-  connectKey,
-) {
-  const uiDriver = await getUiDriver(connectKey)
-  const layout = await uiDriver.captureLayout()
+export async function dumpWindowHierarchy(connectKey: string, context?: DeviceOperationContext) {
+  if (context && (context.deviceKey !== connectKey || !context.wait)) throw new Error('Device context mismatch')
+  const uiDriver = context ? await context.wait!(() => getUiDriver(connectKey)) : await getUiDriver(connectKey)
+  const layout = context ? await context.wait!(() => uiDriver.captureLayout()) : await uiDriver.captureLayout()
   return toHierarchyXml(layout)
-}
-
-function toHierarchyXml(json: any) {
-  const { attributes, children } = json
-  let xml = ''
-
-  const tagName = attributes.type
-  delete attributes.type
-  xml += `<${tagName || 'Layout'}`
-  each(attributes, (val, key) => {
-    xml += ` ${key}="${val}"`
-  })
-  xml += '>'
-
-  each(children, (child) => {
-    xml += toHierarchyXml(child)
-  })
-
-  return xml + `</${tagName || 'Layout'}>`
 }
 
 const getDisplaySize: IpcGetDisplaySize = async function (connectKey) {
   const uiDriver = await getUiDriver(connectKey)
   return uiDriver.getDisplaySize()
+}
+
+export function captureInputEndpoint() { return { host: client.options.host, port: client.options.port } }
+export function inputSystemKey(key: string, code: number) {
+  return gateCaptureInput(key, undefined, () => sendScreencastSystemKey(key, code, client.options))
 }
 
 export function init(c: Client) {

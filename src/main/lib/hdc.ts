@@ -1,5 +1,5 @@
+import type { DeviceOperationContext } from '../../common/automation/deviceContext'
 import {
-  IpcGetOverview,
   IpcInputKey,
   IpcScreencap,
   ITarget,
@@ -121,24 +121,32 @@ function parameterString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
 }
 
-const getOverview: IpcGetOverview = async function (connectKey) {
+function readDeviceShell(key: string, command: string, timeoutMs: number, context?: DeviceOperationContext) {
+  if (context) {
+    if (context.deviceKey !== key) throw new Error('Device context mismatch')
+    return context.shell(command)
+  }
+  return runFiniteShell(key, command, { ...HDC_ENDPOINT, timeoutMs })
+}
+export function automationHostEndpoint() { return { bin: client.options.bin || 'hdc', ...HDC_ENDPOINT } }
+export function automationShell(key: string, command: string, context: { deadline: number; signal: AbortSignal }) {
+  return runFiniteShell(key, command, { ...HDC_ENDPOINT, timeoutMs: Math.max(1,context.deadline-Date.now()), signal: context.signal })
+}
+export const getOverview = async function (connectKey: string, context?: DeviceOperationContext) {
   // Service startup remains owned by initialization/enumeration. An unavailable
   // server rejects this request; never fall back to unbounded shell here.
   const parameters = parseTargetParameters(
-    await runFiniteShell(connectKey, 'param get', {
-      ...HDC_ENDPOINT,
-      timeoutMs: PARAMETERS_TIMEOUT_MS,
-    })
+    await readDeviceShell(connectKey, 'param get', PARAMETERS_TIMEOUT_MS, context)
   )
   const deviceInfo = await readOverviewInfo(
     connectKey,
     'SP_daemon -deviceinfo',
-    DEVICE_INFO_TIMEOUT_MS
+    DEVICE_INFO_TIMEOUT_MS, context
   )
   const kernelVersion = await readOverviewInfo(
     connectKey,
     'uname -a',
-    KERNEL_TIMEOUT_MS
+    KERNEL_TIMEOUT_MS, context
   )
 
   return {
@@ -149,32 +157,26 @@ const getOverview: IpcGetOverview = async function (connectKey) {
     serialNum: getPropValue('sn', deviceInfo),
     kernelVersion: kernelVersion.slice(0, kernelVersion.indexOf('#')),
     processor: getPropValue('deviceTypeName', deviceInfo),
-    ...(await getMemory(connectKey)),
-    ...(await getScreen(connectKey)),
+    ...(await getMemory(connectKey, context)),
+    ...(await getScreen(connectKey, context)),
   }
 }
 
 async function readOverviewInfo(
   connectKey: string,
   command: string,
-  timeoutMs: number
+  timeoutMs: number,
+  context?: DeviceOperationContext
 ) {
-  const output = await runFiniteShell(connectKey, command, {
-    ...HDC_ENDPOINT,
-    timeoutMs,
-  })
+  const output = await readDeviceShell(connectKey, command, timeoutMs, context)
   if (/^\s*(?:\[Fail\]|\[E\d{6}\]|error:)/im.test(output)) {
     throw new Error('HDC device information command failed')
   }
   return trim(output)
 }
 
-async function getScreen(connectKey: string) {
-  const screen = await runFiniteShell(
-    connectKey,
-    'hidumper -s RenderService -a screen',
-    { ...HDC_ENDPOINT, timeoutMs: SCREEN_TIMEOUT_MS }
-  )
+async function getScreen(connectKey: string, context?: DeviceOperationContext) {
+  const screen = await readDeviceShell(connectKey, 'hidumper -s RenderService -a screen', SCREEN_TIMEOUT_MS, context)
   if (/^\s*(?:\[Fail\]|\[E\d{6}\]|error:)/im.test(screen)) {
     throw new Error('HDC screen command failed')
   }
@@ -196,12 +198,9 @@ async function getScreen(connectKey: string) {
   }
 }
 
-async function getMemory(connectKey: string) {
+async function getMemory(connectKey: string, context?: DeviceOperationContext) {
   // Do not fall back to unbounded shell or retry a failed memory request here.
-  const memInfo = await runFiniteShell(connectKey, 'cat /proc/meminfo', {
-    ...HDC_ENDPOINT,
-    timeoutMs: MEMORY_TIMEOUT_MS,
-  })
+  const memInfo = await readDeviceShell(connectKey, 'cat /proc/meminfo', MEMORY_TIMEOUT_MS, context)
   if (/^\s*(?:\[Fail\]|\[E\d{6}\]|error:)/im.test(memInfo)) {
     throw new Error('HDC memory command failed')
   }
@@ -237,7 +236,7 @@ function getPropValue(key: string, str: string) {
 }
 
 const inputKey: IpcInputKey = async function (connectKey, keyCode) {
-  await shell(connectKey, `uinput -K -d ${keyCode} -u ${keyCode}`)
+  await uitest.inputSystemKey(connectKey, keyCode)
 }
 
 const screencap: IpcScreencap = async function (connectKey) {

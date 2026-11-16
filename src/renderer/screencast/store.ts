@@ -1,3 +1,4 @@
+import { AutomationFrameSource } from '../lib/AutomationFrameSource'
 import BaseStore from 'share/renderer/store/BaseStore'
 import { ITarget } from 'common/types'
 import { action, makeObservable, observable, runInAction } from 'mobx'
@@ -55,7 +56,7 @@ class Store extends BaseStore {
       if (this.screencastClient) {
         this.screencastClient.destroy()
       }
-      this.screencastClient = new ScreencastClient(this.target.key)
+      this.screencastClient = new ScreencastClient(this.target.key, new AutomationFrameSource(main, () => this.screencastClient?.canvas || null))
     }
   }
   private async init() {

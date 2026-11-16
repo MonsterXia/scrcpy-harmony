@@ -41,7 +41,7 @@ async function discover(): Promise<DeviceDiscovery> {
       const online = new Set(result.value.filter(target => target.state !== 'offline').map(target => target.key))
       for (const session of [...screencast.listSessions(), ...mirrorSessions.list()]) {
         if (session.platform === providers[index].name && session.platform !== 'ios' && !online.has(session.deviceKey)) {
-          if (session.platform === 'harmony') screencast.closeSession(session.id)
+          if (session.platform === 'harmony') screencast.closeSession(session.id, true)
           else void mirrorSessions.stop(session.id).catch(() => console.error('Disconnected session cleanup unconfirmed'))
         }
       }
@@ -67,7 +67,7 @@ export function init() {
   handleEvent('getMirrorSessions', () => [...screencast.listSessions(), ...mirrorSessions.list()])
   handleEvent('stopMirrorSession', async (id: string) => {
     if (typeof id !== 'string') throw new Error('Invalid session')
-    if (!screencast.closeSession(id)) await mirrorSessions.stop(id)
+    if (!screencast.closeSession(id)) await mirrorSessions.stop(id, 'gui')
   })
   let cleaned = false, stopping = false
   app.on('before-quit', event => {
@@ -75,6 +75,7 @@ export function init() {
     event.preventDefault()
     if (stopping) return
     stopping = true
+    screencast.dispose()
     void mirrorSessions.dispose().catch(() => console.error('Mirror backend cleanup unconfirmed'))
       .finally(() => { cleaned = true; app.quit() })
   })

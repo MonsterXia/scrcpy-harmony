@@ -23,6 +23,15 @@ export async function sendScreencastInput(connectKey: string, action: Screencast
   const command = action.type === 'text'
     ? `uitest uiInput text '${action.text.replace(/'/g, "'\"'\"'")}'`
     : `uinput -K ${action.keys.map(key => `-d ${key}`).join(' ')} ${[...action.keys].reverse().map(key => `-u ${key}`).join(' ')}`
+  return runInputCommand(connectKey, command, endpoint, signal)
+}
+export function sendScreencastSystemKey(connectKey: string, keyCode: number, endpoint: { host?: string; port: number }, signal?: AbortSignal) {
+  // Preserve the existing GUI remote buttons, including d-pad/confirm and
+  // its legacy app-switch code; named automation keys remain schema-limited.
+  if (![-1,1,2,16,17,18,2012,2013,2014,2015,2016].includes(keyCode)) throw new Error('Invalid system key')
+  return runInputCommand(connectKey, `uinput -K -d ${keyCode} -u ${keyCode}`, endpoint, signal)
+}
+async function runInputCommand(connectKey: string, command: string, endpoint: { host?: string; port: number }, signal?: AbortSignal) {
   const output = await runFiniteShell(connectKey, `${command}; printf '\\nSH_INPUT_EXIT:%s\\n' "$?"`, {
     host: endpoint.host || '127.0.0.1', port: endpoint.port, timeoutMs: 10000, signal,
   })

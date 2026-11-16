@@ -1,3 +1,4 @@
+import type { AutomationWindowHooks, AutomationWindowObserver } from '../automation/windowHooks'
 import { BrowserWindow, ipcMain, screen } from 'electron'
 import { randomUUID } from 'node:crypto'
 import type { ITarget, MirrorSession, NativeMirrorInput } from 'common/types'
@@ -12,6 +13,7 @@ interface Session {
   window: BrowserWindow
   backend?: AndroidMirror | AirplayMirror
   ready: boolean
+  automation?: AutomationWindowObserver
   gate: FrameGate
   starting?: Promise<void>
   stopping?: Promise<void>
@@ -32,18 +34,23 @@ class NativeMirrors {
   private sessions = new Map<string, Session>()
   private initialized = false
   private disposed = false
+  private automationHooks?: AutomationWindowHooks
+  setAutomationHooks(hooks: AutomationWindowHooks) { this.automationHooks = hooks }
   list() { return [...this.sessions.values()].map(session => ({ ...session.info })) }
   getWindows() { return [...this.sessions.values()].filter(session => !session.stopping && !session.window.isDestroyed()).map(session => session.window) }
   getSources() { return [...this.sessions.values()].filter(session => !session.stopping && !session.window.isDestroyed())
     .map(session => ({ window: session.window, platform: session.target.platform!, deviceKey: session.info.deviceKey })) }
-  async start(target: ITarget) {
+  async start(target: ITarget, gui = true) {
     if (this.disposed) throw new Error('Mirrors closed')
     const key = target.platform === 'ios' ? 'ios:airplay-receiver' : target.key
     const existing = [...this.sessions.values()].find(session => session.info.deviceKey === key)
     if (existing) {
-      if (existing.stopping || existing.window.isDestroyed()) { await this.stop(existing.info.id); return this.start(target) }
+      if (existing.stopping || existing.window.isDestroyed()) { await this.stop(existing.info.id); return this.start(target, gui) }
       else {
-        existing.window.focus()
+        if (gui) {
+          if (existing.automation) existing.automation.guiOpened()
+          else existing.window.focus()
+        }
         if (existing.ready && ['error', 'disconnected'].includes(existing.info.state)) await this.open(existing)
         return
       }
@@ -56,6 +63,8 @@ class NativeMirrors {
       ? { ...target, key, name: 'AirPlay', connectionId: undefined, transport: 'receiver' } : { ...target },
       window: win, ready: false, gate: new FrameGate() }
     this.sessions.set(id, session)
+    session.automation = this.automationHooks?.({ target: session.target, window: win, gui, close: () => this.stop(id) })
+    win.on('close', event => { if (session.automation?.closeRequested()) event.preventDefault() })
     win.webContents.on('did-start-navigation', details => {
       if (details.isMainFrame && !details.isSameDocument) {
         session.ready = false; session.gate.reset()
@@ -64,11 +73,17 @@ class NativeMirrors {
     })
     win.webContents.on('did-navigate', () => { session.ready = true })
     win.webContents.on('render-process-gone', () => { session.ready = false; void this.stop(id).catch(() => {}) })
-    win.on('closed', () => { session.ready = false; void this.stop(id).catch(() => {}); windows.getWin('main')?.show() })
+    win.on('closed', () => {
+      const restoreMain = session.automation?.closed() ?? true
+      session.ready = false; void this.stop(id).catch(() => {})
+      if (restoreMain) windows.getWin('main')?.show()
+    })
     windows.loadPage(win, { page: 'native-mirror' })
   }
   private state(session: Session, value: string) {
     if (session.stopping || this.sessions.get(session.info.id) !== session) return
+    if (value !== 'error') delete session.info.connectionIssue
+    session.automation?.state(value)
     session.info.state = value === 'connected' ? 'running' : value as MirrorSession['state']
     if (session.ready && !session.window.isDestroyed()) session.window.webContents.send('nativeMirrorState', { ...session.info })
   }
@@ -93,6 +108,10 @@ class NativeMirrors {
       try { await backend?.close(); cleaned = true } catch { /* Keep ownership so cleanup can be retried. */ }
       if (!session.stopping) {
         if (cleaned) session.backend = undefined
+        const message = error && typeof error.message === 'string' ? error.message : ''
+        if (session.target.platform === 'android' && /LIBUSB_ERROR_(ACCESS|BUSY)|device is already in use/i.test(message)) {
+          session.info.connectionIssue = 'usb-access'
+        }
         this.state(session, 'error')
       }
       console.error('Native mirror startup failed:', error instanceof Error ? error.message : 'unknown')
@@ -101,11 +120,13 @@ class NativeMirrors {
     return session.starting
   }
 
-  stop(id: string): Promise<void> {
+  stop(id: string, reason: 'force' | 'gui' = 'force'): Promise<void> {
     const session = this.sessions.get(id)
     if (!session) return Promise.resolve()
+    if (reason === 'gui' && session.automation?.closeRequested()) return Promise.resolve()
     if (session.stopping) return session.stopping
     const wasReady = session.ready
+    session.automation?.state('stopping')
     session.info.state = 'stopping'; session.ready = false; session.gate.reset()
     session.stopping = (async () => {
       await session.backend?.close()
@@ -123,6 +144,12 @@ class NativeMirrors {
     })
     return session.stopping
   }
+  inputBackend(key: string, geometry?: { width: number; height: number }) {
+    const session = [...this.sessions.values()].find(session => session.info.deviceKey === key)
+    if (!session || !session.ready || session.stopping || !(session.backend instanceof AndroidMirror)) throw new Error('Control unavailable')
+    const backend = session.backend
+    return (input: NativeMirrorInput) => { validateNativeInput(input); return backend.input(input, geometry) }
+  }
   async dispose() { this.disposed = true; await Promise.all([...this.sessions.keys()].map(id => this.stop(id))) }
   private owner(event: Electron.IpcMainInvokeEvent) {
     const session = [...this.sessions.values()].find(session => session.window.webContents === event.sender)
@@ -132,7 +159,7 @@ class NativeMirrors {
   private init() {
     if (this.initialized) return
     this.initialized = true
-    ipcMain.handle('nativeMirrorInfo', event => { const s = this.owner(event); return { id: s.info.id, target: s.target, state: s.info.state } })
+    ipcMain.handle('nativeMirrorInfo', event => { const s = this.owner(event); return { id: s.info.id, target: s.target, state: s.info.state, connectionIssue: s.info.connectionIssue } })
     ipcMain.handle('nativeMirrorOpen', event => this.open(this.owner(event)))
     ipcMain.handle('nativeMirrorFit', (event, width: number, height: number, verticalInset: number, horizontalInset: number) => {
       const win = this.owner(event).window
@@ -160,7 +187,8 @@ class NativeMirrors {
     ipcMain.handle('nativeMirrorInput', (event, input: NativeMirrorInput) => {
       const session = this.owner(event); validateNativeInput(input)
       if (!(session.backend instanceof AndroidMirror)) throw new Error('Control unsupported')
-      return session.backend.input(input)
+      const run = () => (session.backend as AndroidMirror).input(input)
+      return session.automation ? session.automation.input(input.type === 'touch' ? input.action : undefined, run) : run()
     })
   }
 }

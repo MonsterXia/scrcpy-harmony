@@ -271,6 +271,7 @@
   "plusAuthorizing": "请解锁手机并允许 USB 调试连接。",
   "plusNativeConnected": "已连接",
   "plusNativeDisconnected": "设备已断开，可重新连接后重试。",
+  "plusAndroidUsbAccessError": "无法访问安卓 USB 接口：可能正被 ADB 或其他投屏工具占用，或 USB 访问被拒绝。请先在其他工具中释放这台手机，再重试；若手机出现 USB 调试授权，请允许连接。",
   "plusNativeError": "连接失败。请检查手机授权、USB 访问权限及内置资源，并关闭占用 USB 接口的其他调试程序后重试。",
   "plusNativeInputError": "操作未能发送，请检查设备连接。",
   "plusNativeDecodeError": "画面解码失败，正在等待新的关键帧。",

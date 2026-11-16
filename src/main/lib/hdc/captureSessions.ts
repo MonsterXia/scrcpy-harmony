@@ -5,12 +5,14 @@ import {
   WebFrameMain,
 } from 'electron'
 import { randomUUID } from 'node:crypto'
+import { captureTrace } from './captureTrace'
 import { CaptureScope, CaptureUiDriver, isControlRecoveryError } from './captureDriver'
 
 interface Owner {
   contents: WebContents
   ready: boolean
   sessions: Set<Session>
+  retiring: Map<Lease, Device>
 }
 interface Session {
   id: string
@@ -143,13 +145,37 @@ function invalidate(owner: Owner) {
   for (const session of [...owner.sessions]) {
     const { device, lease } = endSession(session)
     if (device && lease) {
-      void enqueue(session.connectKey, device, () =>
-        stopLease(device, lease),
-      ).catch(() =>
+      owner.retiring.set(lease, device)
+      void enqueue(session.connectKey, device, async () => {
+        await stopLease(device, lease)
+        owner.retiring.delete(lease)
+      }).catch(() =>
         console.error('Capture cleanup failed; device stop is unconfirmed'),
       )
     }
   }
+}
+
+export async function closeCaptureWindow(contents: WebContents) {
+  captureTrace('close.request')
+  const owner = registered.get(contents)
+  if (!owner) return
+  const leases = new Map(owner.retiring)
+  for (const session of owner.sessions) {
+    const device = devices.get(session.connectKey)
+    if (device?.lease?.session === session) leases.set(device.lease, device)
+  }
+  // Detach without scheduling an implicit retry: this explicit call reports the
+  // result of exactly one stop attempt, and retains obligations on failure.
+  owner.ready = false
+  for (const session of [...owner.sessions]) endSession(session)
+  for (const [lease, device] of leases) owner.retiring.set(lease, device)
+  await Promise.all([...leases].map(([lease, device]) => enqueue(lease.session.connectKey, device, async () => {
+    captureTrace('close.queue-enter')
+    await stopLease(device, lease)
+    owner.retiring.delete(lease)
+  })))
+  captureTrace('close.confirmed')
 }
 
 // Register before loadPage, so even navigation before the first capture IPC is
@@ -158,7 +184,7 @@ function invalidate(owner: Owner) {
 export function registerCaptureWindow(contents: WebContents) {
   const previous = registered.get(contents)
   if (previous) invalidate(previous)
-  const owner: Owner = { contents, ready: false, sessions: new Set() }
+  const owner: Owner = { contents, ready: false, sessions: new Set(), retiring: new Map() }
   registered.set(contents, owner)
   contents.on('did-start-navigation', (details) => {
     if (details.isMainFrame && !details.isSameDocument) invalidate(owner)
@@ -197,13 +223,36 @@ function current(session: Session, generation: number) {
   )
 }
 
+type InputPhase = 'down' | 'move' | 'up' | undefined
+type InputGate = <T>(key: string, phase: InputPhase, operation: () => Promise<T>) => Promise<T>
+let inputGate: InputGate = (_key, _phase, operation) => operation()
+export function setCaptureInputGate(gate: InputGate) { inputGate = gate }
+export function gateCaptureInput<T>(key: string, phase: InputPhase, operation: () => Promise<T>) { return inputGate(key, phase, operation) }
+
+// Internal main-process API: bind a real registered document and current lease.
+// No synthetic IpcMainInvokeEvent is created and no renderer ownership is bypassed.
+export function withTrustedCaptureInput<T>(contents: WebContents, key: string,
+  operation: (connectKey: string, signal: AbortSignal, lease: Lease) => Promise<T>) {
+  const owner = registered.get(contents)
+  if (!owner?.ready || contents.isDestroyed()) throw new Error('Automation requires a registered capture document')
+  const session = [...owner.sessions].find(session => session.connectKey === key && session.frame === contents.mainFrame)
+  if (!session) throw new Error('Automation requires an active capture session')
+  return enqueueInput(session, async (key, signal, lease) => {
+    if (lease.touch) throw new Error('A GUI gesture is active')
+    return operation(key, signal, lease)
+  })
+}
+
 export function withCaptureInput<T>(event: IpcMainInvokeEvent, id: string,
-  operation: (connectKey: string, signal: AbortSignal, lease: Lease) => Promise<T>, releaseTouch = false) {
+  operation: (connectKey: string, signal: AbortSignal, lease: Lease) => Promise<T>, releaseTouch = false, phase?: InputPhase) {
   const owner = sender(event)
   const session = sessions.get(id)
   if (!session || session.owner !== owner || session.frame !== event.senderFrame) {
     throw new Error('Input requires the active capture session')
   }
+  return enqueueInput(session, (key, signal, lease) => gateCaptureInput(key, phase, () => operation(key, signal, lease)), releaseTouch)
+}
+function enqueueInput<T>(session: Session, operation: (connectKey: string, signal: AbortSignal, lease: Lease) => Promise<T>, releaseTouch = false) {
   const generation = session.generation
   const signal = session.inputAbort.signal
   const device = deviceFor(session.connectKey)
@@ -230,7 +279,7 @@ export function withCaptureTouch(event: IpcMainInvokeEvent, key: string,
     if (type === 'touchDown' || lease.touch) lease.touch = { x, y }
     await lease.driver[type](x, y)
     if (type === 'touchUp') lease.touch = undefined
-  }, type === 'touchUp')
+  }, type === 'touchUp', type === 'touchDown' ? 'down' : type === 'touchMove' ? 'move' : 'up')
 }
 
 export function initCaptureIpc(

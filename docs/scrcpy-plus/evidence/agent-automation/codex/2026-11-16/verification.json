@@ -1,0 +1,675 @@
+{
+  "date": "2026-11-16",
+  "timezone": "Asia/Shanghai",
+  "sourceCommit": "1f48fbd38b8ce50ea397bc42ad8d09b25bee768a",
+  "baselineCommit": "23d6db2",
+  "sourceScope": "Final product source tested in both successful device runs. The committed harness adds diagnostic messages and host-exit validation after those runs; the final read-only host run verifies that harness revision.",
+  "version": "1.0.5-dev.1",
+  "host": {
+    "os": "macOS",
+    "arch": "arm64",
+    "node": "v22.22.3"
+  },
+  "androidRecovery": {
+    "baseline": {
+      "devices": 1,
+      "connected": false,
+      "error": "claimInterface error: Error: LIBUSB_ERROR_ACCESS"
+    },
+    "targetedExistingAdbDetach": true,
+    "userConfirmedUsbAuthorization": true,
+    "installedAppRealPictureRestored": true,
+    "adbReattachedBeforeFinalRun": true,
+    "secondTargetedDetach": true,
+    "adbServerTerminated": false,
+    "automaticUsbTakeoverImplemented": false,
+    "connectionIssue": "usb-access",
+    "bilingualVisualFixtureChecked": true
+  },
+  "windowLifecycle": {
+    "issue": "AUTO-BUG-014",
+    "before": "Object has been destroyed from delayed position-save callback",
+    "red": {
+      "total": 3,
+      "failed": 2,
+      "passed": 1
+    },
+    "greenRelated": {
+      "total": 15,
+      "passed": 15
+    },
+    "finalServiceLogDestroyedErrors": 0
+  },
+  "codex": {
+    "registeredServer": "scrcpy-plus",
+    "configuration": "existing user config; added one server; previous entries preserved",
+    "profileLabel": "Scrcpy Plus Codex",
+    "actualHost": "Codex app-server via installed CLI 0.169.0-alpha.11.1",
+    "modelTurnExecuted": false,
+    "currentChatHotReloadVerified": false,
+    "iosInvoked": false,
+    "ownershipConflictPreserved": true,
+    "failedAndroidRun": {
+      "host": "real Codex app-server",
+      "codexVersion": "codex-cli 0.169.0-alpha.11.1",
+      "modelTurn": false,
+      "ephemeral": true,
+      "checks": [
+        {
+          "tool": "schema",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "service_status",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_list",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_capabilities",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_capabilities",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "input_tap",
+          "ok": false,
+          "isError": true,
+          "code": "INVALID_ARGUMENT"
+        },
+        {
+          "tool": "sessions_leases",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_start",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_wait",
+          "ok": false,
+          "isError": true,
+          "code": "UNAVAILABLE"
+        },
+        {
+          "tool": "sessions_release",
+          "ok": true,
+          "isError": false
+        }
+      ],
+      "devices": [
+        {
+          "platform": "android",
+          "release": {
+            "state": "stopped",
+            "elapsedMs": 8
+          }
+        }
+      ],
+      "toolCount": 35,
+      "serviceVersion": "1.0.5-dev.1",
+      "providerErrors": 0,
+      "platforms": [
+        "harmony",
+        "android",
+        "ios",
+        "ios"
+      ],
+      "passed": false,
+      "failure": "Expected values to be strictly equal:\n\nfalse !== true\n",
+      "hostExit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    "exclusiveLeaseRun": {
+      "host": "real Codex app-server",
+      "codexVersion": "codex-cli 0.169.0-alpha.11.1",
+      "modelTurn": false,
+      "ephemeral": true,
+      "checks": [
+        {
+          "tool": "schema",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "service_status",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_list",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_capabilities",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_capabilities",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "input_tap",
+          "ok": false,
+          "isError": true,
+          "code": "INVALID_ARGUMENT"
+        },
+        {
+          "tool": "sessions_leases",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_start",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_wait",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "screen_capture",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_release",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "overview_get",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "layout_dump",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_start",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_wait",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "screen_capture",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_release",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_leases",
+          "ok": true,
+          "isError": false
+        }
+      ],
+      "devices": [
+        {
+          "platform": "android",
+          "frame": {
+            "width": 888,
+            "height": 1920,
+            "stale": false,
+            "byteLength": 1180306,
+            "sha256": "6ce6ec35d175755d8f2d4282d713f525a138e32c070e7d677297cfa5c55ac093"
+          },
+          "release": {
+            "state": "stopped",
+            "elapsedMs": 8
+          }
+        },
+        {
+          "platform": "harmony",
+          "xmlBytes": 17388,
+          "frame": {
+            "width": 1206,
+            "height": 542,
+            "stale": false,
+            "byteLength": 528594,
+            "sha256": "a4f0013c01af19b491b77d5bc3f3b1e50f457199dee3338f197df7745361f59f"
+          },
+          "release": {
+            "state": "stopped",
+            "elapsedMs": 233
+          }
+        }
+      ],
+      "toolCount": 35,
+      "serviceVersion": "1.0.5-dev.1",
+      "providerErrors": 0,
+      "platforms": [
+        "harmony",
+        "android",
+        "ios",
+        "ios"
+      ],
+      "finalLeases": 0,
+      "passed": true,
+      "hostExit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    "guiSharedRun": {
+      "host": "real Codex app-server",
+      "codexVersion": "codex-cli 0.169.0-alpha.11.1",
+      "modelTurn": false,
+      "ephemeral": true,
+      "checks": [
+        {
+          "tool": "schema",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "service_status",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_list",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_capabilities",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_capabilities",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "input_tap",
+          "ok": false,
+          "isError": true,
+          "code": "INVALID_ARGUMENT"
+        },
+        {
+          "tool": "sessions_leases",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_start",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_wait",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "screen_capture",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_release",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "overview_get",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "layout_dump",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_start",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_wait",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "screen_capture",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_release",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_leases",
+          "ok": true,
+          "isError": false
+        }
+      ],
+      "devices": [
+        {
+          "platform": "android",
+          "frame": {
+            "width": 888,
+            "height": 1920,
+            "stale": false,
+            "byteLength": 1305903,
+            "sha256": "f6326f51b4e36bb9f3af2fa356b89f5a77471c573dae51471247e1cf661ef69a"
+          },
+          "release": {
+            "state": "running",
+            "elapsedMs": 4
+          }
+        },
+        {
+          "platform": "harmony",
+          "xmlBytes": 17388,
+          "frame": {
+            "width": 2412,
+            "height": 1084,
+            "stale": false,
+            "byteLength": 1571611,
+            "sha256": "79177ecfc5b7e549f40c2fb2efe719aef6c04b4cb45c3fc51e79c0cef44d6091"
+          },
+          "release": {
+            "state": "running",
+            "elapsedMs": 3
+          }
+        }
+      ],
+      "toolCount": 35,
+      "serviceVersion": "1.0.5-dev.1",
+      "providerErrors": 0,
+      "platforms": [
+        "harmony",
+        "android",
+        "ios",
+        "ios"
+      ],
+      "finalLeases": 0,
+      "passed": true,
+      "hostExit": {
+        "code": 0,
+        "signal": null
+      }
+    },
+    "finalHarnessReadOnlyRun": {
+      "host": "real Codex app-server",
+      "codexVersion": "codex-cli 0.169.0-alpha.11.1",
+      "modelTurn": false,
+      "ephemeral": true,
+      "checks": [
+        {
+          "tool": "schema",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "service_status",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_list",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_capabilities",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "devices_capabilities",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "input_tap",
+          "ok": false,
+          "isError": true,
+          "code": "INVALID_ARGUMENT"
+        },
+        {
+          "tool": "sessions_leases",
+          "ok": true,
+          "isError": false
+        },
+        {
+          "tool": "sessions_leases",
+          "ok": true,
+          "isError": false
+        }
+      ],
+      "devices": [],
+      "toolCount": 35,
+      "serviceVersion": "1.0.5-dev.1",
+      "providerErrors": 0,
+      "platforms": [
+        "harmony",
+        "android",
+        "ios",
+        "ios"
+      ],
+      "finalLeases": 0,
+      "passed": true,
+      "hostExit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  },
+  "validation": {
+    "npm test": {
+      "exitCode": 0,
+      "application": {
+        "total": 1096,
+        "passed": 1094,
+        "skipped": 2
+      },
+      "liciaEachMode": {
+        "passed": 606,
+        "pending": 4
+      }
+    },
+    "npm run lint": {
+      "exitCode": 0
+    },
+    "npm run build": {
+      "exitCode": 0
+    },
+    "npx tsc --noEmit --ignoreDeprecations 6.0": {
+      "exitCode": 2,
+      "normalizedDiagnosticsEqualPriorBaseline": true
+    },
+    "npm run check:automation-package": {
+      "exitCode": 0,
+      "tools": 35
+    },
+    "electronSimulated": {
+      "deviceMode": "SIMULATED ONLY",
+      "realElectron": true,
+      "host": "darwin",
+      "arch": "arm64",
+      "checks": {
+        "status": true,
+        "sharedBackend": true,
+        "independentLeases": true,
+        "realCanvasPng": true,
+        "inputObservationBarrier": true,
+        "guiCloseRetainsRenderer": true,
+        "hiddenCapture": true,
+        "lastOwnerCleanup": true,
+        "discoveryCleanup": true
+      },
+      "frame": {
+        "width": 240,
+        "height": 100,
+        "beforeSequence": 3,
+        "afterSequence": 5
+      }
+    },
+    "documentation": {
+      "links": "passed",
+      "fences": "passed",
+      "gitDiffCheck": "passed"
+    }
+  },
+  "handoff": {
+    "installedAppClosedByUserAuthorization": true,
+    "installedAppReplaced": false,
+    "sourceAppRunning": true,
+    "guiOwnedPlatforms": [
+      "android",
+      "harmony"
+    ],
+    "mcpLeasesRemaining": 0,
+    "adbTargetLeftDetachedForPlus": true,
+    "iosDeferred": true,
+    "pushed": false
+  },
+  "pending": [
+    "Windows ACL/path/lifecycle",
+    "clean initial HAP install/version upgrade and destructive operations with isolated test data",
+    "physical rotation and broader disconnect/long-running matrix",
+    "current already-running chat tool hot reload",
+    "iOS deferred by user"
+  ],
+  "privateArtifactSha256": {
+    "usb-issue-red.log": "7f157c8efeec50e221909515afa456639916bbb0f7f546a72d0bcd8a887c0330",
+    "usb-issue-green.log": "ad209dabfe7379214656520c670add9ab15f3f3b33d7a57df6ce10a1fc061bfd",
+    "window-red.log": "8c69d5689639731a36e0e28c194468f5cdf40a9536c7f93e0d7f3dc0d1d86e28",
+    "window-green.log": "89782280c8a8efd1db2dadb7bbfb5054a000307fe85319c3b0db3b0a3e14606a",
+    "final-test.log": "057ace67e6eea9d579727e81cdd855d1008fa83cfdd25bed2c0b0dc3bca9f8fd",
+    "final-lint.log": "95645ae3697e927ed3630e18f37d90670eba8b948aa3ced56360fc4bbf54c660",
+    "final-build.log": "edd81f746cbbabb50822e397591fb96d80421739fcd42393e9193220aecd50b1",
+    "final-types.log": "f57971181871a4bfbffb3cac28b9f6924b120395e11c7728d7c11907342664e0",
+    "final-package.log": "57fb26354d0bf096f41d89529e1456610a5792a32911b36b4cdf513ebed27c05",
+    "final-electron.log": "a4580c178d460114c490c2fda98d9f0ea467f18c9aea13d28e1cc66dffbe4c64",
+    "service-before-window-fix.log": "5e3c330c666642b7a9822d640c60077131380ad654ea2ca27397eb3b19282863",
+    "final-codex/verification.json": "71dfe1de85c9ed6c3487f8b81b5497b7078570bf487cb46f555ba8e3a0fed447",
+    "final-codex-detached/verification.json": "5ac5182c60f07a80873f19b65934c2a88fcfee35577bd6c2eca6dbdb2fd5b7c9",
+    "final-gui-codex/verification.json": "f56bfafd06ef8d1287a62c87fda07617e8bc113628658116e08ddd55605ddd83",
+    "final-host-readonly/verification.json": "171ee477e0f828162f135f1cb95b58ce6ccf5f3a049fd9130c9cd230f7127512",
+    "service-final-snapshot.log": "3c25dc10462faafafdbc78cc2e15d4d45667137518b99f867368c7d8a3224726",
+    "hap-writes.json": "15442856e58920b7c4bca6afbbeee1b1b4bd216f5c5809e50ec3a9fd19877e92"
+  },
+  "privacy": "Only summaries and hashes are public. Device screenshots, XML, raw service logs, identifiers, profiles and configuration backup remain in the ignored private work directory.",
+  "harmonyApplicationAcceptance": {
+    "packages": [
+      {
+        "file": "HelloWorld-signed.hap",
+        "sha256": "7f2d38b11877412f4d8880cf9a57d5d04c8fa1bb32dae6fb03b2297d8e1a80b6",
+        "bundleName": "com.example.testhap",
+        "versionName": "1.0.0",
+        "versionCode": 1000000,
+        "abilities": [
+          "EntryAbility"
+        ]
+      },
+      {
+        "file": "HelloWorld-1.0.1-signed.hap",
+        "sha256": "4a302564608645cb7d4d9a524815bea555751c7fdcfc110a7ecf7b4334d09d1f",
+        "bundleName": "com.example.testhap",
+        "versionName": "1.0.1",
+        "versionCode": 1000001,
+        "abilities": [
+          "EntryAbility"
+        ]
+      }
+    ],
+    "result": {
+      "bundle": "com.example.testhap",
+      "initiallyPresent": true,
+      "expectedVersion": "1.0.1",
+      "steps": [
+        {
+          "operation": "apps.info",
+          "ok": true,
+          "elapsedMs": 906
+        },
+        {
+          "operation": "apps.install",
+          "ok": true,
+          "elapsedMs": 1115,
+          "result": {
+            "completed": true,
+            "cleanupConfirmed": true
+          }
+        },
+        {
+          "operation": "apps.info",
+          "ok": true,
+          "elapsedMs": 768
+        },
+        {
+          "operation": "apps.start",
+          "ok": true,
+          "elapsedMs": 452
+        },
+        {
+          "operation": "apps.top",
+          "ok": true,
+          "elapsedMs": 751
+        },
+        {
+          "operation": "apps.stop",
+          "ok": true,
+          "elapsedMs": 431
+        },
+        {
+          "operation": "apps.top",
+          "ok": true,
+          "elapsedMs": 333
+        },
+        {
+          "operation": "apps.list",
+          "ok": true,
+          "elapsedMs": 301
+        }
+      ],
+      "clearOrUninstall": false,
+      "versionAfter": "1.0.1",
+      "topConfirmed": true,
+      "stopConfirmed": true,
+      "noLongerTop": true,
+      "applicationSetUnchanged": true,
+      "passed": true
+    },
+    "limitations": [
+      "existing test package retained; no clean initial install or version upgrade",
+      "no clear-data/cache/uninstall",
+      "application data contents not verified"
+    ]
+  }
+}

@@ -67,7 +67,7 @@ npm start
 
 「并排排列」右侧的「合并排列」将每台选中设备的画面放入一个窗口，按 Android／HarmonyOS／iOS 排列，同系统多设备各占一栏，顶部仅保留系统名称。参与组合的单端窗口隐藏并保持后台解码，切换为独立／并排、关闭组合窗口或排除某端时恢复原显示与后台节流策略，不重建设备连接。组合模式用于查看和截图；需触控时切回单端／并排。每端独立异步导出原尺寸 JPEG（质量 0.95），每端最多一个未完成任务；组合窗口约每 66ms 读取最新完成帧，不等待其他端，不累积队列。临时失败保留上一帧，源退出后移除对应列。IPC 只接受组合窗口主文档。实现入口为 `src/main/window/mergedMirrors.ts` 和 `src/renderer/merged-mirror/`。三台真机旧实现证据见 [live.json](evidence/merged-view/live.json)；本次安卓＋鸿蒙窗口隐藏、模式切换和持续刷新检查见 [验证记录](evidence/merged-refresh-2026-11-05/verification.json)。
 
-安卓设备开启 USB 调试，插入后自动列出；选择设备并打开投屏窗口，在手机上确认首次 RSA 授权。主机私钥以受限权限持久化于应用配置目录，写完临时文件后原子发布，避免两台手机首次同时授权时读取到半写入密钥。USB 接口不能与其他调试客户端同时占用；若连接失败，应关闭占用该接口的其他调试程序。应用不会自动结束全局 adb 服务。
+安卓设备开启 USB 调试，插入后自动列出；选择设备并打开投屏窗口，在手机上确认首次 RSA 授权。主机私钥以受限权限持久化于应用配置目录，写完临时文件后原子发布，避免两台手机首次同时授权时读取到半写入密钥。USB 接口不能与其他调试客户端同时占用；若连接失败，应关闭占用该接口的其他调试程序。应用不会自动结束全局 adb 服务。Android ACCESS/BUSY失败通过固定connectionIssue显示双语USB提示；本机可用ADB时可在核对目标后精确detach/attach，但这不是自动接管或并发共享。2026-11-16用户报告的接口占用和授权恢复见[专项记录](../maintenance/agent-automation-android-codex-2026-11-16.md)。
 
 有序列号的设备按序列号区分；无序列号的 USB 设备使用总线/物理端口作为连接标识，不凭型号合并。当前安卓源码后端只接 USB，尚未实现无线调试配对/TLS 或远程 ADB 服务。
 
@@ -99,7 +99,7 @@ iPhone 与电脑处于同一局域网，在“控制中心 → 屏幕镜像”�
 
 ## 验证
 
-当前全量应用回归为 965/965，两种基础库模式各 606 passing / 4 pending；证据见 [verification.json](evidence/verification.json)。补查已复现并修复连续手势漏发抬起、首次并发授权读取半写入密钥，以及停止/启动清理失败后无法重试的问题。覆盖：源码编译、同名/无序列号 USB 设备识别、两台设备路由隔离、输入坐标、RSA 身份持久化、帧背压和重同步、直接 usbmux/lockdown 的真实回环 I/O，以及源码编译 AirPlay 模块的真实 RTSP `/info`、单实例保护、停止/重启和 worker 清理。
+2026-11-05 集成阶段全量应用回归为 965/965，两种基础库模式各 606 passing / 4 pending；证据见 [verification.json](evidence/verification.json)。补查已复现并修复连续手势漏发抬起、首次并发授权读取半写入密钥，以及停止/启动清理失败后无法重试的问题。覆盖：源码编译、同名/无序列号 USB 设备识别、两台设备路由隔离、输入坐标、RSA 身份持久化、帧背压和重同步、直接 usbmux/lockdown 的真实回环 I/O，以及源码编译 AirPlay 模块的真实 RTSP `/info`、单实例保护、停止/重启和 worker 清理。
 
 `SCRCPY_PLUS_NATIVE_TEST=1 npm test` 运行原生接收器测试；不设置变量时跳过需要本机原生模块及 multicast/loopback 权限的测试。`npm run check:plus-ui` 是真实 Electron 外壳配合模拟设备/会话 IPC 的双语 UI 检查，不能代替后端或真机验收。
 
@@ -121,3 +121,9 @@ npm start
 CI 和手动 Build 共用 `.github/actions/platform-toolchain`，固定动作 SHA，准备 JDK 17、Android 35／Build Tools 35.0.0、macOS 静态 OpenSSL 和 Windows UCRT64 GCC/CMake/OpenSSL。`script/setup-node-build-headers.mjs` 按当前 Node 版本下载头文件及 Windows 导入库并校验官方 SHA-256。安卓编译使用 `script/lib/android-server-build.mjs` 直接调用 AIDL、javac 与 D8，Java 参数文件处理 Windows 类路径及长度限制，不依赖电脑端 adb/scrcpy 程序。Mac 本地完整构建及两项上游 UI 回归见 [同步记录](evidence/upstream-sync-2026-11-05/verification.json)；其他平台的最终构建与安装以本次 PR CI 为准。
 
 Windows AirPlay 模块采用 MinGW 延迟导入库与宿主解析钩子，将 Node-API 指向当前 Electron 可执行文件，支持产品可执行文件重命名。GCC／C++／pthread 和 OpenSSL 使用静态链接；安装冒烟检查移除 CI 的 Node／MinGW PATH 后实际加载模块，防止开发环境掩盖外部运行时依赖。实现参考 Electron 的 win_delay_load_hook 约定和 GNU dlltool 的 output-delaylib。
+
+## Agent 自动化入口（开发中）
+
+`src/main/automation/` 在持有设备的 Electron 进程提供 loopback 鉴权服务；`src/cli/` 为独立 Node 客户端，不连接 USB。当前服务状态、诊断、发现、会话 lease、画布截图与 Android/Harmony 输入已实现，真实 Electron 模拟闭环通过；Android/Harmony核心点击/滑动/文字闭环已通过，本机Codex app-server实际35工具/双端PNG/Harmony XML/租约验收通过；Windows及剩余物理矩阵pending。Harmony同版本HAP覆盖/启动/停止也已补真机证据；首次/升级/清空卸载保留待验收。现有Harmony工具和MCP已完成本地候选，见[验收交接](automation/acceptance.md)。`npm run build:cli` 输出 `dist/cli`；完整 build 同时生成客户端包。显式 `SCRCPY_PLUS_PROFILE` 在单实例锁和 store 初始化前生效。协议、使用方法与验证边界见[自动化指南](automation/README.md)和[维护记录](../maintenance/agent-automation.md)。
+
+自动化最新验证源码 `1f48fbd`：应用1094pass/2skip、Licia各606/4、lint/fullbuild/包检查/Electron模拟通过；实际Codex app-server及双真机结果见[续验记录](../maintenance/agent-automation-android-codex-2026-11-16.md)。tsc既有诊断保留，iOS按用户要求暂缓；这些结果不回写上方历史集成阶段计数。

@@ -4,6 +4,7 @@ const fs = require('node:fs')
 const vm = require('node:vm')
 const { EventEmitter } = require('node:events')
 const { transformSync } = require('esbuild')
+const loadAutomation = require('./helpers/load-automation.cjs')
 const config = Uint8Array.from([0,0,0,1,0x67,0x42,0,0x1f,0,0,0,1,0x68,0x11])
 const key = Uint8Array.from([0,0,0,1,0x65,1])
 function fixture() {
@@ -43,6 +44,39 @@ function fixture() {
   return { ...api, handlers, windows, backends, invoke, Android }
 }
 const target = (id = 'a') => ({ key: `android:${id}`, connectionId: id, name: 'Same model', platform: 'android' })
+for (const reason of ['gui', 'force']) test(`native ${reason} stop blocks new automation owners until cleanup finishes`, async t => {
+  const f = fixture()
+  const { AutomationController } = loadAutomation('src/main/automation/controller.ts')
+  const controller = new AutomationController({ instanceId: 'stop-race', ipc: { handle: (key, handler) => f.handlers.set(key, handler) },
+    discover: async () => ({ targets: [{ ...target(), state: 'ready' }], errors: [] }), open: (device, gui) => f.nativeMirrors.start(device, gui) })
+  f.nativeMirrors.setAutomationHooks(controller.attach)
+  await f.nativeMirrors.start(target())
+  const win = f.windows[0]
+  win.webContents.isDestroyed = win.isDestroyed
+  await f.invoke('nativeMirrorOpen', win)
+  const presented = () => f.invoke('automationFrameState', win, { state: 'presented', metadata: { width: 2, height: 3, generation: 1, sequence: 1, rotation: 0, capturedAt: Date.now() } })
+  await presented()
+  const id = controller.sessions.list()[0].sessionId
+  assert.equal(controller.sessions.get(id).state, 'running')
+  let finish
+  const pending = new Promise(resolve => { finish = resolve })
+  f.backends[0].close = () => pending
+  const stopping = f.nativeMirrors.stop(f.nativeMirrors.list()[0].id, reason)
+  t.after(async () => { finish(); await stopping; await f.nativeMirrors.dispose() })
+  assert.equal(controller.sessions.get(id).state, 'stopping')
+  const context = () => ({ clientId: 'new-client', deadline: Date.now() + 1000, signal: new AbortController().signal })
+  await assert.rejects(controller.start(target().key, context()), { code: 'BUSY' })
+  assert.throws(() => controller.sessions.claimGui(id), { code: 'UNAVAILABLE' })
+  await presented()
+  assert.equal(controller.sessions.get(id).state, 'stopping')
+  assert.equal(controller.sessions.leases('new-client').length, 0)
+  finish(); await stopping
+  assert.equal(controller.sessions.get(id).state, 'stopped')
+  const reopened = await controller.start(target().key, context())
+  assert.notEqual(reopened.sessionId, id)
+  assert.equal(controller.sessions.leases('new-client').length, 1)
+  await controller.sessions.releaseLease(reopened.leaseId, context())
+})
 test('starting an existing failed session retries its backend without duplicating the window', async () => {
   const f = fixture(); let attempts = 0
   f.Android.prototype.start = async function(frame,state) { if (++attempts === 1) throw Error('Device disconnected'); state('connected') }
@@ -166,4 +200,49 @@ test('startup cleanup failure still publishes an error and allows a later reconn
   await f.invoke('nativeMirrorOpen', f.windows[0])
   assert.equal(manager.list()[0].state, 'running')
   await manager.dispose()
+})
+test('automation attachment shares the native window and can retain it on GUI close',async()=>{
+ const f=fixture();const events=[];let attachment
+ f.nativeMirrors.setAutomationHooks(value=>{attachment=value;return {state:s=>events.push(s),closed:()=>events.push('closed'),closeRequested:()=>true,guiOpened:()=>events.push('gui'),input:(_phase,operation)=>{events.push('input');return operation()}}})
+ await f.nativeMirrors.start(target(),false)
+ assert.equal(attachment.gui,false);assert.equal(attachment.target.key,'android:a')
+ await f.invoke('nativeMirrorOpen',f.windows[0]);assert.ok(events.includes('connected'))
+ await f.invoke('nativeMirrorInput',f.windows[0],{type:'key',keyCode:4});assert.ok(events.includes('input'))
+ let prevented=false;f.windows[0].emit('close',{preventDefault(){prevented=true}});assert.equal(prevented,true)
+ await f.nativeMirrors.start(target());assert.ok(events.includes('gui'));assert.equal(f.windows.length,1)
+ await attachment.close();assert.ok(events.includes('closed'))
+})
+
+test('USB claim failure exposes a safe actionable issue and clears it on retry', async () => {
+  const f = fixture(); let attempts = 0
+  f.Android.prototype.start = async function(frame, state) {
+    if (++attempts === 1) throw new Error('claimInterface error: Error: LIBUSB_ERROR_ACCESS private detail')
+    state('connected')
+  }
+  await f.nativeMirrors.start(target())
+  await assert.rejects(f.invoke('nativeMirrorOpen', f.windows[0]), /connection failed/)
+  const info = await f.invoke('nativeMirrorInfo', f.windows[0])
+  assert.equal(info.connectionIssue, 'usb-access')
+  const reported = f.windows[0].frames.filter(([name]) => name === 'nativeMirrorState').at(-1)[1]
+  assert.equal(reported.connectionIssue, 'usb-access')
+  assert.ok(!JSON.stringify(reported).includes('private detail'))
+  await f.nativeMirrors.start(target())
+  assert.equal(f.nativeMirrors.list()[0].state, 'running')
+  assert.equal((await f.invoke('nativeMirrorInfo', f.windows[0])).connectionIssue, undefined)
+  await f.nativeMirrors.dispose()
+})
+
+test('only Android USB access or busy failures receive the USB issue classification', async () => {
+  for (const [platform, message, issue] of [
+    ['android', 'LIBUSB_ERROR_BUSY', 'usb-access'],
+    ['android', 'Android connection timed out', undefined],
+    ['ios', 'LIBUSB_ERROR_ACCESS', undefined],
+  ]) {
+    const f = fixture()
+    f.Android.prototype.start = async () => { throw new Error(message) }
+    await f.nativeMirrors.start({ ...target(), platform })
+    await assert.rejects(f.invoke('nativeMirrorOpen', f.windows[0]))
+    assert.equal((await f.invoke('nativeMirrorInfo', f.windows[0])).connectionIssue, issue)
+    await f.nativeMirrors.dispose()
+  }
 })

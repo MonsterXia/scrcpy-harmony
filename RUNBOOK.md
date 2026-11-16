@@ -1,5 +1,9 @@
 # Scrcpy Plus 跨平台改造（2026-11-03）
 
+## Agent 自动化长任务（2026-11-16）
+
+状态：**Android/Harmony 核心真机及本机 Codex MCP 宿主已验收，剩余平台矩阵待补。** 真机验收源码 `1f48fbd`，分支 `codex/agent-automation`。安卓失败实测为 ADB 占用 USB，精确释放/手机授权后恢复，补明确双语提示；Codex实际发现35工具，两端PNG、Harmony XML、独占及GUI共享lease释放通过，并修复窗口销毁后的延迟保存/显示回调。全量应用1094pass/2skip、Licia各606/4、lint/fullbuild、安装包、Electron模拟通过，tsc既有诊断不变。已补专用HAP同版本覆盖/启动/停止；既存数据保留。见[安卓恢复与Codex验收](docs/maintenance/agent-automation-android-codex-2026-11-16.md)；此前[Harmony清理17轮回归](docs/maintenance/agent-automation-device-acceptance-2026-11-16.md)保留。当前只保留源码构建双端GUI投屏，MCP lease=0，日常版按授权关闭、未替换；目标USB留给Plus，不重新交回ADB。iOS暂缓；Windows、HAP首次/升级及清空卸载、物理旋转/完整断连与长期矩阵待补，当前聊天热加载单独未验证。入口：[spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[计划](docs/superpowers/plans/2026-11-16-agent-automation.md)、[维护状态](docs/maintenance/agent-automation.md)、[验收交接](docs/scrcpy-plus/automation/acceptance.md)。已创建 [PR #88](https://github.com/MonsterXia/scrcpy-harmony/pull/88)，独立审查三项问题均修复并复核，源码 `d687855`；全量1106pass/2skip、lint/build/包检查/Electron模拟通过。[最终门禁与合入状态](https://github.com/MonsterXia/scrcpy-harmony/pull/88#issuecomment-6910516962)及[交付记录](docs/maintenance/agent-automation-pr-2026-11-16.md)追踪最终门禁与合入。未发布或替换安装。
+
 ## 上游更新与标准分支交付（2026-11-05）
 
 用户明确授权：使用个人 GitHub 账号 zjkzjk，将当前多平台功能通过 PR 正常门禁合入 MonsterXia/scrcpy-harmony 的 master，不建立长期 Plus 分支。已保留本地成果并无冲突合入上游 c533636，包含截图隐藏与主窗口反馈样式修复。CI／手动 Build 补齐固定 SHA 的 Java/Android 和原生工具链；安卓编译改为跨平台 Java 参数文件。Mac arm64 完整源码后端与发行目录构建、965 项应用测试、Licia 两模式各 606 passing / 4 pending、lint/i18n 通过。上游 UI 探针首轮因旧预览接口不匹配失败，补齐 getDevices 后通知四场景和截图导航 24 场景通过。PR CI、审查和合入尚待远端结果，不绕过门禁；实时结果记录在 [PR #87 交付状态](https://github.com/MonsterXia/scrcpy-harmony/pull/87#issuecomment-6653565015)，包括最终 head、五项 CI、复审及合入 SHA。见 [同步证据](docs/scrcpy-plus/evidence/upstream-sync-2026-11-05/verification.json)。

@@ -1,14 +1,6 @@
+import type { DeviceOperationContext } from '../../../common/automation/deviceContext'
 import {
   IBundleInfo,
-  IpcCleanBundleCache,
-  IpcCleanBundleData,
-  IpcGetBundleInfos,
-  IpcGetBundles,
-  IpcGetTopBundle,
-  IpcInstallBundle,
-  IpcStartBundle,
-  IpcStopBundle,
-  IpcUninstallBundle,
 } from 'common/types'
 import { Client } from 'hdckit'
 import { handleEvent } from 'share/main/lib/util'
@@ -26,8 +18,8 @@ const logger = log('hdcBundle')
 
 let client: Client
 
-const getBundles: IpcGetBundles = async (connectKey, system = true) => {
-  const result = await shell(connectKey, 'bm dump -a')
+export const getBundles = async (connectKey: string, system = true, context?: DeviceOperationContext) => {
+  const result = await shell(connectKey, 'bm dump -a', context)
   const bundles = map(trim(result).split('\n').slice(1), (line) => trim(line))
 
   return system ? bundles : filter(bundles, (bundle) => !isSystemBundle(bundle))
@@ -64,7 +56,7 @@ function isSystemBundle(bundle: string) {
   return false
 }
 
-const getBundleInfos: IpcGetBundleInfos = async (connectKey, bundleNames) => {
+export const getBundleInfos = async (connectKey: string, bundleNames: string[], context?: DeviceOperationContext) => {
   const result: IBundleInfo[] = []
   // Probe the connected device, not the app's target API. Keep this scoped to
   // one request so reconnects and system updates cannot leave stale support.
@@ -74,7 +66,7 @@ const getBundleInfos: IpcGetBundleInfos = async (connectKey, bundleNames) => {
     try {
       // Keep transport, parsing and metadata tied to this bundle. The shared
       // batch shell framing cannot isolate transport failures or delimiter text.
-      const dump = (await shell(connectKey, `bm dump -n ${bundleName}`)).trim()
+      const dump = (await shell(connectKey, `bm dump -n ${bundleName}`, context)).trim()
       let json = dump
       if (!dump.startsWith('{')) {
         const newline = dump.indexOf('\n')
@@ -144,7 +136,7 @@ const getBundleInfos: IpcGetBundleInfos = async (connectKey, bundleNames) => {
         if (supportsLabel === undefined) {
           supportsLabel = false
           try {
-            const help = await shell(connectKey, 'bm dump -h')
+            const help = await shell(connectKey, 'bm dump -h', context)
             supportsLabel = /^\s*-l,\s*--label\b/m.test(help)
           } catch (error) {
             logger.warn('Failed to check bundle label support', connectKey, error)
@@ -153,7 +145,7 @@ const getBundleInfos: IpcGetBundleInfos = async (connectKey, bundleNames) => {
         if (supportsLabel) {
           try {
             const label = displayableLabel(
-              await shell(connectKey, `bm dump -n ${bundleName} -l`)
+              await shell(connectKey, `bm dump -n ${bundleName} -l`, context)
             )
             if (!label) {
               throw new Error('Empty, unresolved or invalid bundle label response')
@@ -166,7 +158,7 @@ const getBundleInfos: IpcGetBundleInfos = async (connectKey, bundleNames) => {
         }
       }
 
-      if (!bundleInfo.system && !startWith(bundleName, 'com.huawei')) {
+      if (!context && !bundleInfo.system && !startWith(bundleName, 'com.huawei')) {
         try {
           const onlineInfo = await getOnlineBundleInfo(bundleName)
           if (!localLabel && onlineInfo.name) {
@@ -206,9 +198,21 @@ function displayableLabel(value: unknown): string {
   return label
 }
 
-const installBundle: IpcInstallBundle = async (connectKey, hap) => {
-  const target = await client.getTarget(connectKey)
-  await target.install(hap)
+async function writeBundleShell(key: string, command: string, context?: DeviceOperationContext) {
+  if (!context) { await shell(key,command); return }
+  const output = await shell(key,`${command}; printf '\\nSCRCPY_APP_EXIT:%s\\n' "$?"`,context)
+  if (!/\nSCRCPY_APP_EXIT:0\r?\n?$/.test(output) || /^\s*(?:\[Fail\]|\[E\d{6}\]|error:|failed)/im.test(output)) throw new Error('Application operation success was not confirmed')
+}
+
+export const installBundle = async (connectKey: string, hap: string, context?: DeviceOperationContext) => {
+  if (context) {
+    if (context.deviceKey !== connectKey || !context.host) throw new Error('Device context mismatch')
+    const output = await context.host(['install','-r',hap])
+    if (!output.includes('install bundle successfully')) throw new Error('Installation success was not confirmed')
+  } else {
+    const target = await client.getTarget(connectKey)
+    await target.install(hap)
+  }
   try {
     sendAll('bundleInstalled', connectKey)
   } catch (error) {
@@ -217,32 +221,39 @@ const installBundle: IpcInstallBundle = async (connectKey, hap) => {
   }
 }
 
-const startBundle: IpcStartBundle = async (connectKey, bundleName, ability) => {
-  await shell(connectKey, `aa start -a ${ability} -b ${bundleName}`)
+export const startBundle = async (connectKey: string, bundleName: string, ability: string, context?: DeviceOperationContext) => {
+  await writeBundleShell(connectKey, `aa start -a '${ability.replace(/'/g, "'\"'\"'")}' -b '${bundleName.replace(/'/g, "'\"'\"'")}'`, context)
 }
 
-const stopBundle: IpcStopBundle = async (connectKey, bundleName) => {
-  await shell(connectKey, `aa force-stop ${bundleName}`)
+export const stopBundle = async (connectKey: string, bundleName: string, context?: DeviceOperationContext) => {
+  await writeBundleShell(connectKey, `aa force-stop ${bundleName}`, context)
 }
 
-const cleanBundleData: IpcCleanBundleData = async (connectKey, bundleName) => {
-  await shell(connectKey, `bm clean -n ${bundleName} -d`)
+export const cleanBundleData = async (connectKey: string, bundleName: string, context?: DeviceOperationContext) => {
+  await writeBundleShell(connectKey, `bm clean -n ${bundleName} -d`, context)
 }
 
-const cleanBundleCache: IpcCleanBundleCache = async (
-  connectKey,
-  bundleName
+export const cleanBundleCache = async (
+  connectKey: string,
+  bundleName: string,
+  context?: DeviceOperationContext
 ) => {
-  await shell(connectKey, `bm clean -n ${bundleName} -c`)
+  await writeBundleShell(connectKey, `bm clean -n ${bundleName} -c`, context)
 }
 
-const uninstallBundle: IpcUninstallBundle = async (connectKey, bundleName) => {
-  const target = await client.getTarget(connectKey)
-  await target.uninstall(bundleName)
+export const uninstallBundle = async (connectKey: string, bundleName: string, context?: DeviceOperationContext) => {
+  if (context) {
+    if (context.deviceKey !== connectKey || !context.host) throw new Error('Device context mismatch')
+    const output = await context.host(['uninstall',bundleName])
+    if (!output.includes('uninstall bundle successfully')) throw new Error('Uninstall success was not confirmed')
+  } else {
+    const target = await client.getTarget(connectKey)
+    await target.uninstall(bundleName)
+  }
 }
 
-const getTopBundle: IpcGetTopBundle = async (connectKey) => {
-  const abilityInfo = await shell(connectKey, 'aa dump -a')
+export const getTopBundle = async (connectKey: string, context?: DeviceOperationContext) => {
+  const abilityInfo = await shell(connectKey, 'aa dump -a', context)
   const lines = map(abilityInfo.split('\n'), (line) => trim(line))
 
   let name = ''

@@ -211,3 +211,21 @@ Canvas pointer 事件
 退出处理立即取消预热并调用 shutdownCaptures 撤销帧路由，等待两者全部结算后允许可选 HDC shutdown。共享 relaunch 使用 app.quit 参与清理，主窗口 before-quit 后不因投屏可见而隐藏阻断退出。控制 HDC 准备尚无统一总截止，因此退出最多等待 10 秒，超时记录清理未确认并 app.exit 真正终止进程，避免迟到任务继续部署；远端资源或外部 HDC 子进程可能遗留，不宣称清理成功。证据见 docs/maintenance/screencast-pr56-review.md。
 
 跨电脑终止前脚本使用设备 `flock` 串行化恢复，锁文件固定保留防止 inode 分裂；Harmony shell 以 stdin 继承锁（所有 read 使用 here-doc）。不支持 flock 或锁忙时跳过接管，已被其他恢复移除则不重复清理。原生客户端未参与该锁，连接与信号之间仍有短竞态。
+
+## Agent 自动化服务与 CLI
+
+`src/main/automation/profile.ts` 在主入口最先配置产品名和显式 profile，必须早于 store 和单实例锁。`src/main/index.ts` 在设备初始化后建立 `runtime.ts`/`service.ts`/`server.ts`，`lifecycle.ts` 负责启动中退出和正常关闭。GUI IPC 仍保持既有校验，自动化只通过已注册 schema 调用；已开放状态、发现、会话 lease、截图和输入。`controller.ts`/`sessions.ts` 共享 GUI 与自动化 owner；窗口通过注入的 hooks 保留 sender 检查，GUI 关窗若有 lease 则隐藏；实际销毁才释放。`frameBridge.ts` 仅向已注册当前 mainFrame 请求画布截图，renderer `AutomationFrameSource.ts` 记录真实呈现序号/时间，`frames.ts` 保留已导出引用与动作后屏障。Android/Harmony 输入进入同设备门禁，Harmony trusted API 绑定真实捕获 lease；不伪造 IPC event。`wire.ts` 的有界二进制响应由 CLI 原子落盘。`src/common/automation/` 为机器契约及能力，`src/cli/` 复用鉴权传输但不加载设备库。`script/build-cli.mjs` 生成独立客户端包，`script/build.mjs` 纳入该步骤。当前范围与定位见 [维护记录](../../../../docs/maintenance/agent-automation.md)。
+
+自动化 Harmony 工具通过 `DeviceOperationContext` 把目标和有限 shell/host 调用传给原 hdc/bundle/base 业务函数。查询不另写解析器，apps.info 仅读设备元数据；应用写操作核对退出/成功标记，不自动重试。`hdc/hostCommand.ts` 使用参数数组、显式 endpoint/target 和有界子进程清理；`automation/adapters/installSource.ts` 从验证过的文件描述符创建私有 HAP 暂存。GUI 未传 context 时保留原业务路径。
+
+`installSource.ts` 返回设备结果 value 与独立 cleanupConfirmed，清理异常不覆盖设备结果；harmonyTools 将确认安装和清理状态分别交付。`sessions.ts` 按 leaseId 保留释放记录至少五分钟，并在后台关闭未结束时拒绝新 owner/操作授权。GUI 遥控器键仍经过统一输入门禁，保留既有方向、确定及应用切换键码。
+
+`CaptureScope.signal` 在 dispose 时取消原生视频启动/升档，传入 `NativeVideo.start` 与 `connectNativeVideo`；取消首帧等待仍走 onEnd 和 owned 资源清理。首帧已成功时取消监听不得抢先销毁返回的 stream。`SCRCPY_PLUS_CAPTURE_TRACE=1` 可启用 close/队列、首帧、onEnd、资源回收的时间点日志，默认关闭，不包含设备标识、命令、画面或原始错误；单设备隔离复现便于对应阶段。`onEnd-ended` 仅表示等待结束，必须看到 cleanup/close confirmed 才能确认释放。
+
+自动化 Harmony 工具：`automation/adapters/harmonyTools.ts` 固定设备并注入 `DeviceOperationContext`；共享 hdc/{base,bundle,port,uitest,hilog} 业务接收显式 context。`hostCommand.ts` 管理单次 HDC 子进程，`layoutXml.ts` 有界 XML，`oneShotShell.ts` 退出标记与输出截断；日志/布局通过 blob 二进制响应交由客户端写文件。
+
+`src/mcp/index.ts` 是独立 Node stdio 适配器，共用 automation/protocol 注册表、CLI client/profile，经同profile服务调用。`script/build-cli.mjs` 同时打包CLI和MCP，包含SDK依赖及许可；不在Electron主进程启动MCP。
+
+自动化坐标校验延伸到派发点：AndroidMirror.input 的内部 expectedGeometry 由 nativeMirrors.inputBackend 绑定原截图尺寸，设备队列执行时再核对，释放不受新几何阻断；Harmony adapter 接受缩放但检查图像方向/比例，并在非释放触摸前有界读取实际尺寸。GUI IPC不接收expectedGeometry，自动化不伪造GUI sender。
+
+原生投屏失败的 `MirrorSession/NativeMirrorInfo.connectionIssue` 为固定分类，不承载原始异常：Android ACCESS/BUSY通过nativeMirrorState/info IPC给renderer双语提示；重试/恢复清除。USB仍由后端独占，不自动detach其他ADB。共享window.ts的延迟位置保存及ready兜底必须先核对窗口存活。真实Codex宿主探针为 `script/check-automation-codex.mjs`，其结果与SDK模拟测试分开。

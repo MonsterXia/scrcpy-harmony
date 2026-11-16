@@ -135,3 +135,13 @@ test('failed touch cleanup retains the lease and blocks another capture until re
   await h.startSession(replacement, 0.5, 2)
   assert.deepEqual(calls.slice(-3), ['touchUp', 'stopCaptureScreen', 'startCaptureScreen'])
 })
+test('all existing remote-control buttons retain bounded key transport and the automation gate',async()=>{
+ const calls=[];const h=screencastMain(undefined,{inputShell:async(_key,command)=>{calls.push(command);return '\nSH_INPUT_EXIT:0\n'}})
+ const keys=[18,17,16,2012,2014,2016,2015,2013,1,2,-1]
+ for(const key of keys)await h.systemKey('synthetic-target',key)
+ assert.equal(calls.length,keys.length)
+ for(let i=0;i<keys.length;i++)assert.ok(calls[i].startsWith(`uinput -K -d ${keys[i]} -u ${keys[i]};`))
+ for(const key of [NaN,2012.5,'2012;reboot',99999])assert.throws(()=>h.systemKey('synthetic-target',key),/Invalid/)
+ h.inputGate(async()=>{throw Error('Automation is operating this device')})
+ await assert.rejects(h.systemKey('synthetic-target',2012),/Automation/);assert.equal(calls.length,keys.length)
+})

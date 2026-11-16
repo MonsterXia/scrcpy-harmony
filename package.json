@@ -39,7 +39,11 @@
     "runtime": "install-electron",
     "check:plus-ui": "node script/check-plus-ui.mjs",
     "build:backends": "node script/build-platform-backends.mjs",
-    "build:tango": "node script/build-tango.mjs"
+    "build:tango": "node script/build-tango.mjs",
+    "build:cli": "node script/build-cli.mjs",
+    "cli": "node dist/cli/index.cjs",
+    "precli": "npm run --silent build:cli",
+    "check:automation-package": "node script/check-automation-package.mjs"
   },
   "repository": {
     "type": "git",
@@ -67,6 +71,8 @@
     "@babel/plugin-transform-parameters": "7.29.7",
     "@babel/plugin-transform-shorthand-properties": "7.29.7",
     "@babel/plugin-transform-template-literals": "7.29.7",
+    "@modelcontextprotocol/client": "2.4.0",
+    "@modelcontextprotocol/server": "2.4.0",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.3.4",

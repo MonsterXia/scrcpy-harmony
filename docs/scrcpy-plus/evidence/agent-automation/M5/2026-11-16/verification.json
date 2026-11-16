@@ -1,0 +1,66 @@
+{
+  "stage": "M5",
+  "status": "local-candidate",
+  "baseCommit": "11573e9",
+  "sourceState": "working diff recorded in containing commit",
+  "recordedAt": "2026-11-16T05:18:11.756969+00:00",
+  "sdk": {
+    "server": "2.4.0",
+    "client": "2.4.0",
+    "sources": [
+      "https://github.com/modelcontextprotocol/typescript-sdk",
+      "https://ts.sdk.modelcontextprotocol.io/v2/serving/stdio.html"
+    ]
+  },
+  "checks": [
+    {
+      "command": "node --test test/automation-mcp.test.cjs test/automation-cli.test.cjs",
+      "exitCode": 0,
+      "passed": 15
+    },
+    {
+      "command": "npm run build:cli",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run check:automation-package",
+      "exitCode": 0,
+      "tools": 35
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0
+    }
+  ],
+  "protocolModes": [
+    "2026-07-28 pinned",
+    "legacy default SDK negotiation"
+  ],
+  "skillValidation": {
+    "baseline": "Agent unable to determine ownership, coordinates, after-action/recovery and reverse semantics from help/schema alone",
+    "afterSkill": "Five scenarios answered correctly; command-help gap fixed RED→GREEN",
+    "standardPythonValidator": "not run successfully: PyYAML unavailable",
+    "alternative": "local js-yaml frontmatter parse, name/description checks passed"
+  },
+  "typescript": {
+    "wholeRepositoryClean": false,
+    "newMcpCliDiagnostics": []
+  },
+  "realDeviceOperations": false,
+  "codexHostConnected": false,
+  "pending": [
+    "full M6 regression/build/review",
+    "real device acceptance",
+    "Windows acceptance",
+    "actual Codex host calling tool"
+  ],
+  "logHashes": {
+    "m5-mcp-red.log": "790c9f1fdc190a65d30ca8a3452a6c934ae18f3c12d9cd69b6809e9ee83e9f1d",
+    "m5-mcp-help.log": "76a5ab146c06679649d98f0dd7e7a14f5643d8e4c7723437f76d93379dbf3ed0",
+    "m5-help-red.log": "749e331ac5444ae78f9a2d760939fa20bd1222482a11db876f54435b9c76fa41",
+    "m5-build-cli.log": "2c23b31c5e5e6c601110739f648bc0e0395a2f26deb6726f71f4c4ed1fa945d3",
+    "m5-package.log": "57fb26354d0bf096f41d89529e1456610a5792a32911b36b4cdf513ebed27c05",
+    "m5-types.log": "5d7663a0e3634c1b1e9d4ec55bef0834727f26afac4de06d9be435271b0f35b7",
+    "m5-lint-final.log": "95645ae3697e927ed3630e18f37d90670eba8b948aa3ced56360fc4bbf54c660"
+  }
+}

@@ -162,8 +162,9 @@ async function fixture(t, { wallClock = false, envPort, expectedPort = 8710 } = 
     'node:child_process': { spawn() { throw new Error('process forbidden') }, exec() { throw new Error('process forbidden') } },
   }
   for (const name of ['bundle', 'shell', 'port', 'uitest', 'hilog', 'webview']) imports[`./hdc/${name}`] = { init() {} }
+  imports['./hdc/uitest'].inputSystemKey = async (key, code) => { state.systemKey = { key, code } }
   await load('src/main/lib/hdc.ts', imports).init()
-  return { state, clients, peers, initOptions, server, overview: () => { sequence = 0; state.connectionStart = clients.length; return handlers.get('getOverview')(KEY) }, input: () => handlers.get('inputKey')(KEY, 3) }
+  return { state, clients, peers, initOptions, server, overview: () => { sequence = 0; state.connectionStart = clients.length; return handlers.get('getOverview')(KEY) }, input: () => handlers.get('inputKey')(KEY, 1) }
 }
 
 

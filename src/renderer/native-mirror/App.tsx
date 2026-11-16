@@ -1,16 +1,17 @@
+import { AutomationFrameSource } from '../lib/AutomationFrameSource'
 import { useEffect, useRef, useState } from 'react'
 import type { MirrorSession, NativeMirrorFrame, NativeMirrorInfo, NativeMirrorInput } from 'common/types'
 import { t } from 'common/util'
 import H264Decoder from '../screencast/lib/H264Decoder'
 import Style from './App.module.scss'
 
-function statusLabel(state: string) {
+function statusLabel(state: string, issue?: MirrorSession['connectionIssue']) {
   switch (state) {
     case 'authorizing': return t('plusAuthorizing')
     case 'waiting': return t('plusAirplayHint')
     case 'running': return t('plusNativeConnected')
     case 'disconnected': return t('plusNativeDisconnected')
-    case 'error': return t('plusNativeError')
+    case 'error': return t(issue === 'usb-access' ? 'plusAndroidUsbAccessError' : 'plusNativeError')
     default: return t('plusNativeStarting')
   }
 }
@@ -19,12 +20,14 @@ export default function App() {
   const [info, setInfo] = useState<NativeMirrorInfo>()
   const [status, setStatus] = useState<MirrorSession['state']>('starting')
   const [error, setError] = useState('')
+  const [connectionIssue, setConnectionIssue] = useState<MirrorSession['connectionIssue']>()
   const touching = useRef(false)
   const pointer = useRef<number | null>(null)
   const lastPoint = useRef({ x: 0, y: 0 })
   const android = info?.target.platform === 'android'
   const send = (input: NativeMirrorInput) => { void main.nativeMirrorInput(input).catch(() => setError(t('plusNativeInputError'))) }
   useEffect(() => {
+    const frames = new AutomationFrameSource(main, () => canvas.current)
     let active = true, id: string | undefined
     let decoder: H264Decoder | undefined
     let hasFrame = false, lastFit = ''
@@ -50,25 +53,29 @@ export default function App() {
           element.width = frame.displayWidth; element.height = frame.displayHeight
         }
         hasFrame = true; fitCanvas()
-        element.getContext('2d')?.drawImage(frame, 0, 0)
+        const context = element.getContext('2d')
+        if (context) { context.drawImage(frame, 0, 0); frames.presented() }
       } finally { frame.close() }
-    }, error => { console.error('Native video decode failed', error); if (active) setError(t('plusNativeDecodeError')) })
+    }, error => { console.error('Native video decode failed', error); if (active) { frames.reset('error'); setError(t('plusNativeDecodeError')) } })
     const unsubscribeFrame = main.on('nativeMirrorFrame', (packet: NativeMirrorFrame) => {
       if (!active || packet.sessionId !== id) return
       try {
-        if (packet.reset || !decoder) { decoder?.destroy(); decoder = createDecoder() }
+        if (packet.reset || !decoder) { frames.reset(); decoder?.destroy(); decoder = createDecoder() }
         if (packet.configuration) decoder.push(packet.configuration, { config: true, timestamp: packet.timestamp })
         decoder.push(packet.data, { timestamp: packet.timestamp, config: packet.config, keyFrame: packet.keyFrame })
       } finally { void main.nativeMirrorAck(packet.sequence).catch(() => {}) }
     })
     const unsubscribeState = main.on('nativeMirrorState', (session: MirrorSession) => {
-      if (active && session.id === id) setStatus(session.state)
+      if (active && session.id === id) {
+        setStatus(session.state); setConnectionIssue(session.connectionIssue)
+        if (session.state === 'error' || session.state === 'disconnected' || session.state === 'starting') frames.reset(session.state)
+      }
     })
     void (async () => {
       try {
         const value = await main.nativeMirrorInfo()
         if (!active) return
-        id = value.id; setInfo(value); setStatus(value.state)
+        id = value.id; setInfo(value); setStatus(value.state); setConnectionIssue(value.connectionIssue)
         if (value.target.platform === 'android') preload.setTitle(value.target.name)
         await main.nativeMirrorOpen()
       } catch { if (active) setStatus('error') }
@@ -81,7 +88,7 @@ export default function App() {
     }
     window.addEventListener('blur', release)
     return () => {
-      active = false; release(); decoder?.destroy(); unsubscribeFrame(); unsubscribeState()
+      active = false; frames.dispose(); release(); decoder?.destroy(); unsubscribeFrame(); unsubscribeState()
       observer?.disconnect()
       window.removeEventListener('blur', release)
     }
@@ -105,7 +112,7 @@ export default function App() {
     send({ type: 'touch', action: 'up', ...lastPoint.current })
   }
   return <main className={`${Style.page} ${android ? Style.android : ''}`}>
-    {(!android || status !== 'running' || error) && <header><strong>{info?.target.name || t('screencast')}</strong><span>{statusLabel(status)}</span></header>}
+    {(!android || status !== 'running' || error) && <header><strong>{info?.target.name || t('screencast')}</strong><span>{statusLabel(status, connectionIssue)}</span></header>}
     {error && <p className={Style.error} role="alert">{error}</p>}
     {(status === 'error' || status === 'disconnected') && <button type="button" onClick={() => {
       setError(''); setStatus('starting'); void main.nativeMirrorOpen().catch(() => setStatus('error'))

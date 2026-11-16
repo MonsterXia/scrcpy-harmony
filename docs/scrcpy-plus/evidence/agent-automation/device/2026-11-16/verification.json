@@ -1,0 +1,333 @@
+{
+  "date": "2026-11-16",
+  "sourceCommit": "0eed41ce0d4624b03df99b5c89a2ebd8c54ca463",
+  "baselineCommit": "71637b3",
+  "version": "1.0.5-dev.1",
+  "apiVersion": 1,
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.22.3"
+  },
+  "sourceIdentityNote": "Private cycle script hardcodes source=71637b3 (base commit). Use sourceVariant below; first 13 cycles and input/ports/ownership ran before final ready-abort guard, final 4 cycles ran the committed source. Original logs retained unchanged.",
+  "harmonyCleanup": {
+    "issue": "AUTO-BUG-011",
+    "cleanupBudgetMs": 5000,
+    "baselineTraceRelativeMs": {
+      "close.request": 0,
+      "close.queue-enter": 0,
+      "native.first-frame-wait": 2112,
+      "native.start-failed": 7113,
+      "native.onEnd-begin": 7113,
+      "native.onEnd-ended": 7172,
+      "native.cleanup-begin": 7172,
+      "native.cleanup-confirmed": 7663,
+      "close.confirmed": 7708
+    },
+    "baselineRelease": "OUTCOME_UNKNOWN; same lease later stopped",
+    "postFixCycles": [
+      {
+        "artifact": "fixed-static.json",
+        "sourceVariant": "initial cancellation fix before ready guard",
+        "startedAt": "2026-11-16T06:31:28.842Z",
+        "count": 10,
+        "allFirstReleaseStopped": true,
+        "releaseElapsedMs": [
+          747,
+          783,
+          534,
+          806,
+          489,
+          807,
+          510,
+          842,
+          532,
+          845
+        ]
+      },
+      {
+        "artifact": "fixed-promotion.json",
+        "sourceVariant": "initial cancellation fix before ready guard; 8000 ms dwell",
+        "startedAt": "2026-11-16T06:33:01.978Z",
+        "count": 3,
+        "allFirstReleaseStopped": true,
+        "releaseElapsedMs": [
+          875,
+          130,
+          114
+        ]
+      },
+      {
+        "artifact": "final-build-cycles.json",
+        "sourceVariant": "final source 0eed41ce0d4624b03df99b5c89a2ebd8c54ca463",
+        "startedAt": "2026-11-16T06:46:46.371Z",
+        "count": 4,
+        "allFirstReleaseStopped": true,
+        "releaseElapsedMs": [
+          884,
+          887,
+          552,
+          930
+        ]
+      }
+    ]
+  },
+  "input": {
+    "mode": "REAL DEVICES via product CLI",
+    "sourceVariant": "initial cancellation fix before ready guard",
+    "actions": [
+      {
+        "platform": "android",
+        "action": "settings-ok",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": null,
+        "note": "Initial action artifact predates settled capture helper; settings confirmed by separate later read-only screenshot."
+      },
+      {
+        "platform": "android",
+        "action": "swipe",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      },
+      {
+        "platform": "android",
+        "action": "search",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      },
+      {
+        "platform": "android",
+        "action": "text",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      },
+      {
+        "platform": "android",
+        "action": "clear",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      },
+      {
+        "platform": "android",
+        "action": "finish-home",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      },
+      {
+        "platform": "harmony",
+        "action": "settings-native",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      },
+      {
+        "platform": "harmony",
+        "action": "swipe-native",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      },
+      {
+        "platform": "harmony",
+        "action": "search",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      },
+      {
+        "platform": "harmony",
+        "action": "text",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      },
+      {
+        "platform": "harmony",
+        "action": "clear",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      },
+      {
+        "platform": "harmony",
+        "action": "finish-home",
+        "commandOk": true,
+        "afterActionCaptureOk": true,
+        "settledCaptureOk": true
+      }
+    ],
+    "visuallyConfirmed": [
+      "settings navigation",
+      "swipe displacement",
+      "UTF-8 synthetic text in search on both devices",
+      "search fields cleared"
+    ],
+    "clipboard": "Device clipboard overwritten by text injection; original contents not read or restored.",
+    "notTested": [
+      "dedicated scroll command",
+      "physical 180 degree rotation"
+    ]
+  },
+  "ports": [
+    {
+      "direction": "forward",
+      "add": true,
+      "listed": true,
+      "remove": true,
+      "absentAfter": true,
+      "unrelatedRulesRetained": true,
+      "trafficTested": false
+    },
+    {
+      "direction": "reverse",
+      "add": true,
+      "listed": true,
+      "remove": true,
+      "absentAfter": true,
+      "unrelatedRulesRetained": true,
+      "trafficTested": false
+    }
+  ],
+  "ownership": {
+    "sameBackend": true,
+    "differentLease": true,
+    "firstRelease": true,
+    "peerCapture": {
+      "ok": true,
+      "stale": false
+    },
+    "peerRelease": true,
+    "androidUnaffected": true,
+    "androidCapture": {
+      "ok": true,
+      "stale": false
+    },
+    "androidRelease": true,
+    "remainingLeases": 0,
+    "peerRemainingLeases": 0
+  },
+  "ios": {
+    "status": "deferred-by-user",
+    "receiverLeaseReleased": true,
+    "airplayAccepted": false
+  },
+  "checks": {
+    "npm test": {
+      "exitCode": 0,
+      "application": {
+        "total": 1091,
+        "pass": 1089,
+        "skip": 2
+      },
+      "liciaEachMode": {
+        "pass": 606,
+        "pending": 4
+      }
+    },
+    "npm run lint": {
+      "exitCode": 0
+    },
+    "npm run build": {
+      "exitCode": 0
+    },
+    "npx tsc --noEmit --ignoreDeprecations 6.0": {
+      "exitCode": 2,
+      "baselineDiagnosticsUnchangedIgnoringSourceLineAndColumn": true
+    },
+    "node script/check-automation-electron.mjs": {
+      "exitCode": 0,
+      "result": {
+        "deviceMode": "SIMULATED ONLY",
+        "realElectron": true,
+        "host": "darwin",
+        "arch": "arm64",
+        "checks": {
+          "status": true,
+          "sharedBackend": true,
+          "independentLeases": true,
+          "realCanvasPng": true,
+          "inputObservationBarrier": true,
+          "guiCloseRetainsRenderer": true,
+          "hiddenCapture": true,
+          "lastOwnerCleanup": true,
+          "discoveryCleanup": true
+        },
+        "frame": {
+          "width": 240,
+          "height": 100,
+          "beforeSequence": 2,
+          "afterSequence": 4
+        }
+      }
+    },
+    "npm run check:automation-package": {
+      "exitCode": 0,
+      "tools": 35
+    },
+    "documentation": {
+      "localMarkdownLinks": "passed",
+      "codeFences": "passed",
+      "gitDiffCheck": "passed"
+    }
+  },
+  "independentReview": {
+    "confirmedFindings": 1,
+    "issue": "AUTO-BUG-012",
+    "severity": "P2",
+    "resolution": "ready guard; real HTTP2 RED then GREEN; full suite passed",
+    "secondIndependentReview": false
+  },
+  "cleanup": {
+    "leasesRemaining": 0,
+    "peerLeasesRemaining": 0,
+    "testAppExit": {
+      "code": 0,
+      "signal": null,
+      "at": "2026-11-16T06:48:00.180Z"
+    },
+    "discoveryRemoved": true,
+    "adbTargetReattached": true,
+    "dailyInstalledAppReopened": true,
+    "installedAppReplaced": false
+  },
+  "pending": [
+    "Windows lifecycle/ACL/paths",
+    "dedicated Harmony test HAP writes",
+    "physical rotation and broader disconnect matrix",
+    "actual Codex host MCP integration",
+    "iOS deferred by user"
+  ],
+  "privateArtifactHashes": {
+    "cancel-red-corrected.log": "afbdade99655de4c82ae290ab3efe9bac32350289d52b2710f446ae481b573ad",
+    "cancel-green.log": "014e903ffb47648760115786e1218eac68fe137c66f9b0730eeae5a662714c42",
+    "preabort-red.log": "397c981b604b2496cd35b368e4e6e8631fe831b96ba07e5937bd98bff17e4c2a",
+    "cancel-final-green.log": "52b57326476e42f929ee9f4bb6049318edd177365e78828376e383c865207f6f",
+    "frame-abort-red.log": "14e89fe6584c9a1607b5e413ea72e743332307bf48198f9ce9a7d948432dc780",
+    "frame-abort-green.log": "e34776b38ffc6af88a419cce775defcb4b0e5a31da93f2d26b2246759f7b3b21",
+    "final-test.log": "d17602c5e50c5986dafff0c32e1652ed6daba76a5feaa8faf890293a748ee666",
+    "final-lint.log": "95645ae3697e927ed3630e18f37d90670eba8b948aa3ced56360fc4bbf54c660",
+    "final-build.log": "32daa569e6262f925abe7390b1730fb598d720f9c660ad830e065d6ebe91f2ac",
+    "final-types.log": "f57971181871a4bfbffb3cac28b9f6924b120395e11c7728d7c11907342664e0",
+    "final-electron.log": "3b08cc40d245fe06a9b641faca844ca54015c3d3b9dd019244ff8f64868f609a",
+    "final-package.log": "57fb26354d0bf096f41d89529e1456610a5792a32911b36b4cdf513ebed27c05",
+    "trace-before-app.log": "8de07c4f591118033b4654f84b1fb901df016d59934efdea9ceada029e8baa35",
+    "fix-before-review-app.log": "9c66127a1fd138893e299d03a5eb334f531ee9348c513ccfde14eba9b71eb5ec",
+    "app.log": "e9af5ad715d63d4106714df668b1433377024baf5d48f03d0478e124986d82f9",
+    "fixed-static.json": "53d7aacacf574baa0c512aaf21f9be764c0b8c09a7e0d306524305ced5b39be5",
+    "fixed-promotion.json": "23108f29f26c63ae5b7faa1fe9ad79c2e6b560554d9eda9d139f9283fad59dcf",
+    "final-build-cycles.json": "f2e83b3e6aef9a7092937bf0624267f0114770947c459ce6fb763b850294525f",
+    "ownership.json": "78fb4dc03e0e1a8d033d22b24bed052c891f35d358efb13418cbb76085a2961d",
+    "ports-private.json": "9c4c2e971dd97e88e682e559bfe5c7749899b1eb885f1edc10ec7724ab70d924",
+    "adb-restore.json": "69b6f67df132f514332c200d862798103bfd2e4fc5463dea12a1531e95fadffc",
+    "exit.json": "9e071f272d9451080f774308a2f45cf162fe45568c110dd36cb58458b0ddf6ae",
+    "power-confirmed.json": "cd4a826fac84a50650a1beee4abaab2d5583f02d16442dba75e2a52c7e0a5f5b",
+    "power-release-retry.json": "23406f227172be0b27919b8c9901bbe42fdb240f8b046166ddb3ce99ac52d4de"
+  },
+  "privacy": "Raw screenshots, device identifiers, request/session/lease/frame tokens and profiles are local ignored artifacts, not copied here."
+}

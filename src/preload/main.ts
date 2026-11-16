@@ -1,3 +1,4 @@
+import type { FrameResponse, FrameState } from 'common/automation/frames'
 import {
   IpcNativeMirrorInfo,
   IpcNativeMirrorOpen,
@@ -60,6 +61,8 @@ import mainObj from 'share/preload/main'
 import { invoke } from 'share/preload/util'
 
 export default Object.assign(mainObj, {
+  automationFrameState: invoke<(state: FrameState) => Promise<void>>('automationFrameState'),
+  automationFrameResult: invoke<(requestId: string, result: FrameResponse) => Promise<void>>('automationFrameResult'),
   nativeMirrorInfo: invoke<IpcNativeMirrorInfo>('nativeMirrorInfo'),
   nativeMirrorOpen: invoke<IpcNativeMirrorOpen>('nativeMirrorOpen'),
   nativeMirrorInput: invoke<IpcNativeMirrorInput>('nativeMirrorInput'),

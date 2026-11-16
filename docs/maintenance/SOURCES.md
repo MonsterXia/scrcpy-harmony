@@ -1,5 +1,13 @@
 # 维护来源记录
 
+2026-11-16 用户进一步要求“按照项目规范提起pr，审核没问题且CI通过后合入”。本轮授权整分支通过正常 PR 门禁交付，见 [PR #88](https://github.com/MonsterXia/scrcpy-harmony/pull/88) 与[交付记录](agent-automation-pr-2026-11-16.md)；不扩大为发布或安装替换。
+
+2026-11-16 用户进一步要求“独立审查修改内容，如果有问题请修改”。新上下文审查 `fb476c6..aa3bf70`，六项确认问题（含旧Minor及主代理补充）已修复并本地验证，源码 `2e70424`；范围、失败复现及验证见[独立审查记录](agent-automation-review-2026-11-16.md)。未扩展到发布或安装替换。
+
+## 2026-11-16 Agent 自动化长任务
+
+来源为本轮用户需求：工具后续供 Codex 等使用；要求制定长任务持续推进，只确认大致方向，并将 spec 放入仓库便于定位和修复。已检查基线 `fb476c6` 的设备、会话、窗口输入、截图及构建入口；设计与现状严格区分。推荐方案、范围、验收与执行者默认决策见 [SP-AUTO-001](../superpowers/specs/2026-11-16-agent-automation-design.md)，执行入口见[阶段计划](../superpowers/plans/2026-11-16-agent-automation.md)及[维护记录](agent-automation.md)。随后用户明确确认方向并授权持续实现、测试、修复及文档更新；没有将历史任务的发布授权或历史投屏验证当成本任务授权/证据。
+
 2026-11-04 用户进一步授权上述两项 UI 修复提交 PR、独立审查与 CI/门禁通过后合入，明确“不做新版本发布，完成后本地安装替换现有的”。交付沿用 `1.0.5-dev.1` 版本号，本地构建不冒充新公开发行；状态与审查证据见[交付记录](ui-polish-delivery.md)及 [PR #86](https://github.com/MonsterXia/scrcpy-harmony/pull/86)。
 
 2026-11-04 用户提供重复“Devices refreshed”提示截图，指出弹出反馈仍使用旧样式。确认主窗口反馈 CSS Module 的纯副作用导入在生产构建中被移除，修复加载方式并沿用已认可的轻量桌面方向完善通知。主窗口范围、实际构建截图和未安装边界见[专项记录](main-feedback.md)；投屏/升级窗口不加入新的样式作用域。
@@ -223,3 +231,11 @@
 [PR #72](https://github.com/MonsterXia/scrcpy-harmony/pull/72) 合入复审补充：确认 `fport ls` 同时返回 Forward/Reverse 后，修复合法 Reverse 清单导致恢复拒绝的问题；五个新增故障/成功分支有修复前失败及修复后通过证据。复审 finding 已关闭，最终 CI 和合入状态见 PR，先前本机安装哈希维持其原验收范围。
 
 2026-11-03 连续实施结果：UI-1～6源码、串行阶段审查、整分支审查及三项P2单轮修复复核完成。最终运行源码d717ece应用886/886、Licia两模式各606/4、lint/i18n及完整build通过；本地1.0.5-dev.0 arm64 DMG复制签名启动通过。交付入口为[草稿PR #81](https://github.com/MonsterXia/scrcpy-harmony/pull/81)及[验证记录](v1.0.5-ui-validation.json)；远端和人工验收以各自证据为准，未合入或发布。
+
+2026-11-16 Agent 自动化：用户授权连续实施共享服务/CLI/MCP，最终本地候选源码4c37ba6，见[维护记录](agent-automation.md)、[需求与验收交接](../scrcpy-plus/automation/acceptance.md)。真实Harmony只读工具和截图证据与模拟Electron/MCP证据分开；完整真机/Windows不标记验收完成。
+
+2026-11-16 Agent 自动化真机续验：源码 `0eed41c`，来源为用户已连接并静置的Android/Harmony、产品CLI和隔离Electron。清理超时实测根因、同lease恢复、17轮修复后清理（最终构建4轮）、双端输入/双owner/端口规则生命周期，以及独立审查竞态修复见[专项报告](agent-automation-device-acceptance-2026-11-16.md)和[脱敏证据](../scrcpy-plus/evidence/agent-automation/device/2026-11-16/verification.json)。iOS按用户要求暂缓，旧阶段失败记录不覆盖。
+
+2026-11-16 安卓失败与Codex续验：来源为用户失败截图、本机USB claim探针、现有ADB目标状态、用户授权反馈与真实Codex app-server；源码 `1f48fbd`。35工具、双端PNG/XML、租约与GUI共享、现场销毁窗口回调修复及失败记录见[专项报告](agent-automation-android-codex-2026-11-16.md)和[脱敏证据](../scrcpy-plus/evidence/agent-automation/codex/2026-11-16/verification.json)。用户进一步授权开发中关闭日常安装版；最终保留源码构建双端投屏，未替换安装。
+
+同轮HAP补查沿[历史签名包哈希](hap-install.md)在桌面找到1.0.0/1.0.1；手机已有1.0.1，补产品CLI同版本覆盖/启动/停止，保留既存数据；证据并入本轮Codex专项，首次/升级/破坏性矩阵未冒充通过。
