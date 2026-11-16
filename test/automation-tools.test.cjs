@@ -24,3 +24,10 @@ test('shared base query uses the explicit bounded transport and rejects a differ
  const rows=await base.getProcesses('h',context);assert.equal(rows[0].pid,'1');assert.equal(rows[0].args,'app --flag');assert.equal(commands.length,1)
  await assert.rejects(base.shell('other','read',context),/mismatch/)
 })
+test('application writes do not retry and distinguish validation from unconfirmed dispatch',async()=>{
+ const {createHarmonyToolHandlers}=load('src/main/automation/adapters/harmonyTools.ts');let writes=0
+ const deps={discover:async()=>({targets:[{key:'h',platform:'harmony',state:'ready'}],errors:[]}),shell:async()=>'',host:async()=>{writes++;throw Error('lost acknowledgement')},overview:async()=>({}),appsList:async()=>[],appsInfo:async()=>[],appsTop:async()=>({}),processes:async()=>[],writeApp:async(_action,_key,_p,c)=>c.host(['write'])}
+ const handlers=createHarmonyToolHandlers(deps)
+ await assert.rejects(handlers['apps.start']({device:'h',bundle:'good',ability:'Bad;cmd'},ctx()),{code:'INVALID_ARGUMENT',outcome:'not-started'})
+ await assert.rejects(handlers['apps.uninstall']({device:'h',bundle:'good'},ctx()),{code:'OUTCOME_UNKNOWN',outcome:'unknown'});assert.equal(writes,1)
+})

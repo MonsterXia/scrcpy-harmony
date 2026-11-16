@@ -21,5 +21,11 @@
   "apps.list": "List installed Harmony bundles; optionally omit system bundles.",
   "apps.info": "Read one Harmony application from device metadata without online enrichment.",
   "apps.top": "Read the foreground non-system Harmony application.",
-  "processes.list": "Read the Harmony process snapshot with bounded device transport."
+  "processes.list": "Read the Harmony process snapshot with bounded device transport.",
+  "apps.start": "Start an explicit Harmony bundle and ability.",
+  "apps.stop": "Force stop an explicit Harmony application.",
+  "apps.install": "Install or replace a Harmony application from an absolute local HAP file (maximum 512 MiB).",
+  "apps.uninstall": "Uninstall an explicit Harmony bundle, removing its data. Never retried automatically.",
+  "apps.clear-data": "Delete the selected Harmony application data. Never retried automatically.",
+  "apps.clear-cache": "Delete the selected Harmony application cache. Never retried automatically."
 }

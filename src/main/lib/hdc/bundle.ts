@@ -1,12 +1,6 @@
 import type { DeviceOperationContext } from '../../../common/automation/deviceContext'
 import {
   IBundleInfo,
-  IpcCleanBundleCache,
-  IpcCleanBundleData,
-  IpcInstallBundle,
-  IpcStartBundle,
-  IpcStopBundle,
-  IpcUninstallBundle,
 } from 'common/types'
 import { Client } from 'hdckit'
 import { handleEvent } from 'share/main/lib/util'
@@ -204,9 +198,21 @@ function displayableLabel(value: unknown): string {
   return label
 }
 
-const installBundle: IpcInstallBundle = async (connectKey, hap) => {
-  const target = await client.getTarget(connectKey)
-  await target.install(hap)
+async function writeBundleShell(key: string, command: string, context?: DeviceOperationContext) {
+  if (!context) { await shell(key,command); return }
+  const output = await shell(key,`${command}; printf '\\nSCRCPY_APP_EXIT:%s\\n' "$?"`,context)
+  if (!/\nSCRCPY_APP_EXIT:0\r?\n?$/.test(output) || /^\s*(?:\[Fail\]|\[E\d{6}\]|error:|failed)/im.test(output)) throw new Error('Application operation success was not confirmed')
+}
+
+export const installBundle = async (connectKey: string, hap: string, context?: DeviceOperationContext) => {
+  if (context) {
+    if (context.deviceKey !== connectKey || !context.host) throw new Error('Device context mismatch')
+    const output = await context.host(['install','-r',hap])
+    if (!output.includes('install bundle successfully')) throw new Error('Installation success was not confirmed')
+  } else {
+    const target = await client.getTarget(connectKey)
+    await target.install(hap)
+  }
   try {
     sendAll('bundleInstalled', connectKey)
   } catch (error) {
@@ -215,28 +221,35 @@ const installBundle: IpcInstallBundle = async (connectKey, hap) => {
   }
 }
 
-const startBundle: IpcStartBundle = async (connectKey, bundleName, ability) => {
-  await shell(connectKey, `aa start -a ${ability} -b ${bundleName}`)
+export const startBundle = async (connectKey: string, bundleName: string, ability: string, context?: DeviceOperationContext) => {
+  await writeBundleShell(connectKey, `aa start -a ${ability} -b ${bundleName}`, context)
 }
 
-const stopBundle: IpcStopBundle = async (connectKey, bundleName) => {
-  await shell(connectKey, `aa force-stop ${bundleName}`)
+export const stopBundle = async (connectKey: string, bundleName: string, context?: DeviceOperationContext) => {
+  await writeBundleShell(connectKey, `aa force-stop ${bundleName}`, context)
 }
 
-const cleanBundleData: IpcCleanBundleData = async (connectKey, bundleName) => {
-  await shell(connectKey, `bm clean -n ${bundleName} -d`)
+export const cleanBundleData = async (connectKey: string, bundleName: string, context?: DeviceOperationContext) => {
+  await writeBundleShell(connectKey, `bm clean -n ${bundleName} -d`, context)
 }
 
-const cleanBundleCache: IpcCleanBundleCache = async (
-  connectKey,
-  bundleName
+export const cleanBundleCache = async (
+  connectKey: string,
+  bundleName: string,
+  context?: DeviceOperationContext
 ) => {
-  await shell(connectKey, `bm clean -n ${bundleName} -c`)
+  await writeBundleShell(connectKey, `bm clean -n ${bundleName} -c`, context)
 }
 
-const uninstallBundle: IpcUninstallBundle = async (connectKey, bundleName) => {
-  const target = await client.getTarget(connectKey)
-  await target.uninstall(bundleName)
+export const uninstallBundle = async (connectKey: string, bundleName: string, context?: DeviceOperationContext) => {
+  if (context) {
+    if (context.deviceKey !== connectKey || !context.host) throw new Error('Device context mismatch')
+    const output = await context.host(['uninstall',bundleName])
+    if (!output.includes('uninstall bundle successfully')) throw new Error('Uninstall success was not confirmed')
+  } else {
+    const target = await client.getTarget(connectKey)
+    await target.uninstall(bundleName)
+  }
 }
 
 export const getTopBundle = async (connectKey: string, context?: DeviceOperationContext) => {

@@ -52,6 +52,12 @@ export const operations: Record<string, OperationSchema> = {
   'apps.info': { description: descriptions['apps.info'], readOnly: true, parameters: { device: identity, bundle: { type: 'string', minLength: 1, maxLength: 255 } }, required: ['device','bundle'] },
   'apps.top': { description: descriptions['apps.top'], readOnly: true, parameters: { device: identity }, required: ['device'] },
   'processes.list': { description: descriptions['processes.list'], readOnly: true, parameters: { device: identity }, required: ['device'] },
+  'apps.start': { description: descriptions['apps.start'], readOnly: false, parameters: { device: identity, bundle: { type: 'string', minLength: 1, maxLength: 255 }, ability: { type: 'string', minLength: 1, maxLength: 255 } }, required: ['device','bundle','ability'] },
+  'apps.stop': { description: descriptions['apps.stop'], readOnly: false, parameters: { device: identity, bundle: { type: 'string', minLength: 1, maxLength: 255 } }, required: ['device','bundle'] },
+  'apps.uninstall': { description: descriptions['apps.uninstall'], readOnly: false, parameters: { device: identity, bundle: { type: 'string', minLength: 1, maxLength: 255 } }, required: ['device','bundle'] },
+  'apps.clear-data': { description: descriptions['apps.clear-data'], readOnly: false, parameters: { device: identity, bundle: { type: 'string', minLength: 1, maxLength: 255 } }, required: ['device','bundle'] },
+  'apps.clear-cache': { description: descriptions['apps.clear-cache'], readOnly: false, parameters: { device: identity, bundle: { type: 'string', minLength: 1, maxLength: 255 } }, required: ['device','bundle'] },
+  'apps.install': { description: descriptions['apps.install'], readOnly: false, timeoutMs: 120000, parameters: { device: identity, path: { type: 'string', minLength: 1, maxLength: 4096 } }, required: ['device','path'] },
 }
 export interface AutomationRequest {
   apiVersion: 1; requestId: string; clientId: string; operation: string

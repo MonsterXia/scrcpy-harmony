@@ -128,6 +128,7 @@ function readDeviceShell(key: string, command: string, timeoutMs: number, contex
   }
   return runFiniteShell(key, command, { ...HDC_ENDPOINT, timeoutMs })
 }
+export function automationHostEndpoint() { return { bin: client.options.bin || 'hdc', ...HDC_ENDPOINT } }
 export function automationShell(key: string, command: string, context: { deadline: number; signal: AbortSignal }) {
   return runFiniteShell(key, command, { ...HDC_ENDPOINT, timeoutMs: Math.max(1,context.deadline-Date.now()), signal: context.signal })
 }

@@ -1,7 +1,9 @@
+import { runHostCommand } from '../lib/hdc/hostCommand'
+import { withInstallationSource } from './adapters/installSource'
 import { createHarmonyToolHandlers } from './adapters/harmonyTools'
-import { automationShell, getOverview } from '../lib/hdc'
+import { automationHostEndpoint, automationShell, getOverview } from '../lib/hdc'
 import { getProcesses } from '../lib/hdc/base'
-import { getBundles, getBundleInfos, getTopBundle } from '../lib/hdc/bundle'
+import { getBundles, getBundleInfos, getTopBundle, startBundle, stopBundle, installBundle, uninstallBundle, cleanBundleData, cleanBundleCache } from '../lib/hdc/bundle'
 import { registerSessionOperations } from './sessionOperations'
 import { ipcMain } from 'electron'
 import { AutomationController } from './controller'
@@ -52,7 +54,17 @@ export function createAutomationRuntime(instanceId: string, version: string) {
   const service = createAutomationService({ instanceId,version,discover:getDevices,
     running: key => controller.sessions.list().some(session => session.deviceKey === key && session.state === 'running') })
   registerSessionOperations(service, controller)
-  const tools = createHarmonyToolHandlers({ discover: getDevices, shell: automationShell, overview: getOverview, appsList: getBundles, appsInfo: getBundleInfos, appsTop: getTopBundle, processes: getProcesses })
+  const tools = createHarmonyToolHandlers({ discover: getDevices, shell: automationShell, host: (key,args,context) => runHostCommand(automationHostEndpoint(),key,args,context), writeApp: async(action,key,p,context) => {
+    switch(action) {
+      case 'start': return startBundle(key,p.bundle as string,p.ability as string,context)
+      case 'stop': return stopBundle(key,p.bundle as string,context)
+      case 'clear-data': return cleanBundleData(key,p.bundle as string,context)
+      case 'clear-cache': return cleanBundleCache(key,p.bundle as string,context)
+      case 'uninstall': return uninstallBundle(key,p.bundle as string,context)
+      case 'install': return withInstallationSource(p.path as string,context,file=>installBundle(key,file,context))
+      default: throw new AutomationFault('UNSUPPORTED','Unknown application operation')
+    }
+  }, overview: getOverview, appsList: getBundles, appsInfo: getBundleInfos, appsTop: getTopBundle, processes: getProcesses })
   for (const [name, handler] of Object.entries(tools)) service.register(name, handler)
   return { ...service, controller }
 }

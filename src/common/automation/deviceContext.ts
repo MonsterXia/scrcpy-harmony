@@ -4,4 +4,5 @@ import type { AutomationContext } from './protocol'
 export interface DeviceOperationContext extends AutomationContext {
   deviceKey: string
   shell(command: string): Promise<string>
+  host?(args: string[]): Promise<string>
 }

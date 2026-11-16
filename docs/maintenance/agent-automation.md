@@ -20,7 +20,7 @@
 | M1 | 契约、能力、鉴权本地服务 | 本机完成 | 协议/传输/生命周期专项、真实 Electron 服务验证；Windows 待验收 |
 | M2 | CLI、启动诊断、可分发客户端 | 本机完成 | 子进程/并发启动、tarball 安装、发现链路；Windows 待验收 |
 | M3 | 会话、截图、输入闭环 | 本机候选，真机 pending | 应用 1044 passed / 2 skipped；lint、三部分构建通过；真实 Electron 模拟闭环通过；Android USB claim 失败，未获得真机截图/输入证据 |
-| M4 | 现有设备工具覆盖 | M4-A 查询本机完成；其余继续 | 已登记逐操作矩阵；概览/应用查询/进程通过 167 项相关回归及 55 项最终查询/协议专项、lint、主进程/CLI 构建；真机 pending |
+| M4 | 现有设备工具覆盖 | M4-A/B 查询及应用读写本机完成；其余继续 | 已登记逐操作矩阵；概览/应用查询/进程通过 167 项相关回归及 55 项最终查询/协议专项、lint、主进程/CLI 构建；真机 pending |
 | M5 | Agent skill、MCP | 未开始 | 无宿主接入证据 |
 | M6 | 全量回归、跨平台验收与交付 | 未开始 | 不沿用历史投屏证据冒充自动化验收 |
 
@@ -106,3 +106,9 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 共享 `DeviceOperationContext` 显式固定 deviceKey、deadline 和 AbortSignal；`base.shell` 在有 context 时使用该请求的有限传输，GUI 原有调用保持原路径。getOverview/getBundles/getBundleInfos/getTopBundle/getProcesses 复用现有解析实现。自动化应用详情不发起线上商店请求。
 
 [逐操作登记](../scrcpy-plus/automation/harmony-tools.md)，[本批证据](../scrcpy-plus/evidence/agent-automation/M4/2026-11-16-query/verification.json)。下一步 M4-B 应用写操作/安装的参数边界、结果确认、取消与不重试，再做布局/日志/端口/shell。M4 整阶段尚未完成。
+
+## M4-B 应用写操作批次
+
+已开放 apps start/stop/install/uninstall/clear-data/clear-cache。共享 bundle 业务接收显式 DeviceOperationContext；应用名/ability 校验、shell 退出标记和 HDC 安装/卸载成功消息均需通过。新增 hostCommand 仅管理本次子进程、固定 HDC endpoint/target、限制输出并传播取消；installSource 校验并私有暂存 HAP。
+
+[结构化证据](../scrcpy-plus/evidence/agent-automation/M4/2026-11-16-app-writes/verification.json)：62 项应用/协议专项、140 项自动化与概览回归、lint、主进程/CLI 构建通过。真实 Harmony 应用读写和 Windows 取消尚未验收；没有操作真实用户应用。下一步 M4-C/D 有限日志、布局导出、端口和一次性 shell。

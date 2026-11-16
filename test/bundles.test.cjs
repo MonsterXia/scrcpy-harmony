@@ -408,3 +408,18 @@ test('automation metadata shares the parser but never queries online enrichment 
  assert.equal(infos[0].bundleName,'good');assert.equal(infos[0].label,'good')
  assert.equal(f.lookups.length,0);assert.equal(f.commands.length,0);assert.equal(commands[0],'bm dump -n good')
 })
+test('automation application writes confirm shell exit markers and host installer messages',async()=>{
+ const f=await loadBundles({}),commands=[],host=[]
+ const context={clientId:'test',deviceKey:'DEVICE_TEST',deadline:Date.now()+1000,signal:new AbortController().signal,
+  shell:async command=>{commands.push(command);return 'operation successful\nSCRCPY_APP_EXIT:0\n'},host:async args=>{host.push(args);return args[0]==='install'?'install bundle successfully':'uninstall bundle successfully'}}
+ await f.api.startBundle('DEVICE_TEST','com.example.test','EntryAbility',context)
+ await f.api.stopBundle('DEVICE_TEST','com.example.test',context)
+ await f.api.cleanBundleData('DEVICE_TEST','com.example.test',context)
+ await f.api.cleanBundleCache('DEVICE_TEST','com.example.test',context)
+ await f.api.installBundle('DEVICE_TEST','/tmp/a file.hap',context)
+ await f.api.uninstallBundle('DEVICE_TEST','com.example.test',context)
+ assert.equal(commands.length,4);assert.match(commands[0],/aa start -a EntryAbility -b com.example.test/)
+ assert.deepEqual(host.map(args=>Array.from(args)),[['install','-r','/tmp/a file.hap'],['uninstall','com.example.test']]);assert.equal(f.commands.length,0)
+ await assert.rejects(f.api.stopBundle('DEVICE_TEST','com.example.test',{...context,shell:async()=> 'error: denied\nSCRCPY_APP_EXIT:0\n'}),/confirm/)
+ await assert.rejects(f.api.installBundle('DEVICE_TEST','/tmp/a.hap',{...context,host:async()=> 'operation failed'}),/confirm/)
+})

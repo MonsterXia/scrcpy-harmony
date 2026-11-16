@@ -215,3 +215,5 @@ Canvas pointer 事件
 ## Agent 自动化服务与 CLI
 
 `src/main/automation/profile.ts` 在主入口最先配置产品名和显式 profile，必须早于 store 和单实例锁。`src/main/index.ts` 在设备初始化后建立 `runtime.ts`/`service.ts`/`server.ts`，`lifecycle.ts` 负责启动中退出和正常关闭。GUI IPC 仍保持既有校验，自动化只通过已注册 schema 调用；已开放状态、发现、会话 lease、截图和输入。`controller.ts`/`sessions.ts` 共享 GUI 与自动化 owner；窗口通过注入的 hooks 保留 sender 检查，GUI 关窗若有 lease 则隐藏；实际销毁才释放。`frameBridge.ts` 仅向已注册当前 mainFrame 请求画布截图，renderer `AutomationFrameSource.ts` 记录真实呈现序号/时间，`frames.ts` 保留已导出引用与动作后屏障。Android/Harmony 输入进入同设备门禁，Harmony trusted API 绑定真实捕获 lease；不伪造 IPC event。`wire.ts` 的有界二进制响应由 CLI 原子落盘。`src/common/automation/` 为机器契约及能力，`src/cli/` 复用鉴权传输但不加载设备库。`script/build-cli.mjs` 生成独立客户端包，`script/build.mjs` 纳入该步骤。当前范围与定位见 [维护记录](../../../../docs/maintenance/agent-automation.md)。
+
+自动化 Harmony 工具通过 `DeviceOperationContext` 把目标和有限 shell/host 调用传给原 hdc/bundle/base 业务函数。查询不另写解析器，apps.info 仅读设备元数据；应用写操作核对退出/成功标记，不自动重试。`hdc/hostCommand.ts` 使用参数数组、显式 endpoint/target 和有界子进程清理；`automation/adapters/installSource.ts` 从验证过的文件描述符创建私有 HAP 暂存。GUI 未传 context 时保留原业务路径。

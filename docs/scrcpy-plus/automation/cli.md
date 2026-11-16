@@ -77,3 +77,20 @@ scrcpy-plus sessions stop --session "$SID" --lease "$LEASE" --client agent-a --j
 | `processes list` | 无 | 进程快照 |
 
 使用 `--json --timeout-ms <期限>`；取消/截止会关闭有界设备查询，不自动重试。完整工具覆盖与尚未开放的写操作见[逐操作登记](harmony-tools.md)。
+
+## Harmony 应用写操作
+
+以下命令均要求 `--device <Harmony key>`。`--bundle` 仅接受合法应用标识，启动的 ability 必须明确指定。不会自动重试。
+
+| 命令 | 额外参数 | 副作用 |
+| --- | --- | --- |
+| `apps start` | `--bundle <名称> --ability <名称>` | 启动指定 ability |
+| `apps stop` | `--bundle <名称>` | 强制停止应用 |
+| `apps install` | `--path <绝对HAP路径>` | 安装或替换应用，默认 120 秒 |
+| `apps uninstall` | `--bundle <名称>` | 卸载并删除应用数据 |
+| `apps clear-data` | `--bundle <名称>` | 删除应用数据 |
+| `apps clear-cache` | `--bundle <名称>` | 删除应用缓存 |
+
+安装文件须为 4 字节至 512MiB 的普通 .hap/.HAP 文件并具有 ZIP 文件头；这不替代设备安装器对包完整性/签名的校验。服务从已打开的文件描述符暂存为私有 package.hap，参数数组调用同一个配置的 HDC 服务器，不将主机路径拼入 shell。完成或失败后清理暂存文件。
+
+超时/取消会终止本次创建的 HDC 客户端进程，不停止其他程序或共享 HDC 服务器。设备端可能已经执行，outcome=unknown 时先查询实际状态，不能据此推断回滚。成功结果 `{completed:true}` 表示命令返回已确认的完成标记，不代表安装后的业务流程成功。

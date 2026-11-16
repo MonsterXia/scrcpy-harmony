@@ -1,0 +1,53 @@
+{
+  "batch": "M4-B application writes",
+  "status": "local-verification-complete-real-Harmony-pending",
+  "baseCommit": "1a2e4d0",
+  "operations": [
+    "apps.start",
+    "apps.stop",
+    "apps.install",
+    "apps.uninstall",
+    "apps.clear-data",
+    "apps.clear-cache"
+  ],
+  "tests": {
+    "writeAndBundleProtocol": {
+      "passed": 62
+    },
+    "automationAndOverviewRegression": {
+      "passed": 140
+    }
+  },
+  "lint": true,
+  "mainBuild": true,
+  "cliBuild": true,
+  "typescript": {
+    "newModuleDiagnostics": [],
+    "wholeRepositoryClean": false,
+    "existingTouchedDiagnostic": "base.ts unknown -> string unchanged from M2"
+  },
+  "behavior": [
+    "device and ability identifiers validated before dispatch",
+    "shell exit marker and native install/uninstall acknowledgement checked",
+    "HAP absolute path regular file 4bytes..512MiB ZIP header staged privately from open descriptor",
+    "host arguments array with explicit server and target; no host shell",
+    "owned child process terminated on cancellation/deadline; no automatic write retries",
+    "stdout 1MiB and stderr64KiB limits",
+    "temporary staged HAP removed on success/failure"
+  ],
+  "realDeviceWritesPerformed": false,
+  "pending": [
+    "real Harmony temporary test application acceptance",
+    "Windows process cancellation",
+    "layout/logs/ports/shell",
+    "MCP/M6"
+  ],
+  "logHashes": {
+    "m4-write-tests.log": "b95144adf3fe2df388652b8d7ee1fd9482d5ad72f1cd182e6c0a2ef689910399",
+    "m4-write-regression.log": "9faa61e2e48bbc480124a68d1cebdc985ae905fd8f8d5f2ecea882f66ba1326f",
+    "m4-write-lint-final.log": "95645ae3697e927ed3630e18f37d90670eba8b948aa3ced56360fc4bbf54c660",
+    "m4-write-build.log": "38db90778958e2abfa2a9a9e1cb939ac2ed88279306fb36eb43fef7d96c85912",
+    "m4-write-cli.log": "2c23b31c5e5e6c601110739f648bc0e0395a2f26deb6726f71f4c4ed1fa945d3",
+    "m4-write-types.log": "0b446c3d6fb01b37d691a75bf18f4f15d55ed82e9c79091ac289b9036eb3c1b2"
+  }
+}
