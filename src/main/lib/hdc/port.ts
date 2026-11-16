@@ -84,12 +84,12 @@ function portHost(key: string,args: string[],context: DeviceOperationContext) {
   return context.host(args)
 }
 function readMappings(output: string,key: string,reverse: boolean) {
-  if (output.includes('Empty')) return []
+  if (output.trim() === '[Empty]') return []
   const mappings: {local:string;remote:string}[]=[]
   for (const line of output.split('\n').filter(line=>line.trim())) {
     const parts=line.trim().split(/\s+/)
-    if (parts.length<4 || !/Forward|Reverse/.test(parts[3])) throw new Error('Invalid port listing')
-    if (parts[0]!==key || !line.includes(reverse?'Reverse':'Forward')) continue
+    if (parts.length!==4 || !/^\[(Forward|Reverse)\]$/.test(parts[3])) throw new Error('Invalid port listing')
+    if (parts[0]!==key || parts[3] !== (reverse?'[Reverse]':'[Forward]')) continue
     mappings.push({local:parts[reverse?2:1],remote:parts[reverse?1:2]})
   }
   return mappings

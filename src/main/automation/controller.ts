@@ -34,9 +34,9 @@ export class AutomationController {
     const id = this.sessions.register(target, { close, hide: () => window.hide(), show: () => { window.show(); window.focus() } }, gui)
     this.sources.set(id, source)
     const state = (value: string) => {
-      if (!['starting','authorizing','waiting','error','disconnected'].includes(value)) return
+      if (!['starting','authorizing','waiting','error','disconnected','stopping'].includes(value)) return
       this.frames.invalidate(id)
-      this.sessions.setState(id, value as 'starting' | 'authorizing' | 'waiting' | 'error' | 'disconnected')
+      this.sessions.setState(id, value as 'starting' | 'authorizing' | 'waiting' | 'error' | 'disconnected' | 'stopping')
       // Abort existing actions on backend reset/disconnect. A new presentation
       // permits a fresh queue only after the old generation has been invalidated.
       this.queue.discard(target.key)

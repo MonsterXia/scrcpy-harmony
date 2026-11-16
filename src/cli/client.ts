@@ -49,6 +49,10 @@ export async function callAutomation(value: AutomationRequest, options: ClientOp
   return new Promise((resolve, reject) => {
     let sent = false, settled = false
     const uncertain = () => sent && !operations[parsed.operation].readOnly
+    const invalidResponse = (error: unknown) => {
+      const fault = error instanceof AutomationFault ? error : new AutomationFault('INTERNAL', 'Malformed service response')
+      return uncertain() ? new AutomationFault(fault.code, fault.message, 'unknown', false) : fault
+    }
     const finish = (error?: unknown, result?: AutomationResult) => {
       if (settled) return
       settled = true; clearTimeout(timer); options.signal.removeEventListener('abort', onAbort)
@@ -64,14 +68,14 @@ export async function callAutomation(value: AutomationRequest, options: ClientOp
       const chunks: Buffer[] = []; let size = 0
       response.on('data', (chunk: Buffer) => {
         size += chunk.length
-        if (size > maximum) { finish(new AutomationFault('INTERNAL', 'Service response exceeds its size limit')); response.destroy(); req.destroy() }
+        if (size > maximum) { finish(invalidResponse(new AutomationFault('INTERNAL', 'Service response exceeds its size limit'))); response.destroy(); req.destroy() }
         else chunks.push(chunk)
       })
       response.on('aborted', () => finish(new AutomationFault(uncertain() ? 'OUTCOME_UNKNOWN' : 'UNAVAILABLE', 'Service response interrupted', uncertain() ? 'unknown' : 'not-started')))
       response.on('error', () => finish(new AutomationFault('UNAVAILABLE', 'Service response stream failed', uncertain() ? 'unknown' : 'not-started')))
       response.on('end', () => {
         try { finish(undefined, validateResult(decodeResult(Buffer.concat(chunks), contentType), parsed.requestId)) }
-        catch (error) { finish(error instanceof AutomationFault ? error : new AutomationFault('INTERNAL', 'Malformed service response')) }
+        catch (error) { finish(invalidResponse(error)) }
       })
     })
     const onAbort = () => { finish(new AutomationFault('CANCELLED', 'Operation cancelled', uncertain() ? 'unknown' : 'not-started')); req.destroy() }

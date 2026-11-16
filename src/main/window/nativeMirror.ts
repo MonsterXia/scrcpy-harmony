@@ -126,6 +126,7 @@ class NativeMirrors {
     if (reason === 'gui' && session.automation?.closeRequested()) return Promise.resolve()
     if (session.stopping) return session.stopping
     const wasReady = session.ready
+    session.automation?.state('stopping')
     session.info.state = 'stopping'; session.ready = false; session.gate.reset()
     session.stopping = (async () => {
       await session.backend?.close()

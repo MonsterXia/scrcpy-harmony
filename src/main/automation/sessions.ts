@@ -52,7 +52,7 @@ export class AutomationSessions {
   }
   claimGui(id: string) {
     const entry = this.entry(id)
-    if (entry.info.state === 'stopped' || entry.stopping || entry.cleanup) throw new AutomationFault('UNAVAILABLE', 'Session is stopping or stopped')
+    if (['stopping','stopped'].includes(entry.info.state) || entry.stopping || entry.cleanup) throw new AutomationFault('UNAVAILABLE', 'Session is stopping or stopped')
     entry.gui = true; entry.controls.show()
   }
   releaseGui(id: string) {
@@ -86,7 +86,7 @@ export class AutomationSessions {
         this.claimants.delete(target.key)
         const id = this.devices.get(target.key)
         const entry = id && this.entries.get(id)
-        if (entry && !entry.gui && !this.hasLeases(id)) await this.closeEntry(entry).catch(() => {})
+        if (entry && entry.info.state !== 'stopping' && !entry.gui && !this.hasLeases(id)) await this.closeEntry(entry).catch(() => {})
       }
     }
   }
@@ -106,7 +106,7 @@ export class AutomationSessions {
     if (!id) throw new AutomationFault('UNAVAILABLE', 'Backend did not register a session')
     const entry = this.entry(id)
     checkContext(context)
-    if (entry.stopping || entry.cleanup) throw new AutomationFault('BUSY', 'Session cleanup is in progress')
+    if (['stopping','stopped'].includes(entry.info.state) || entry.stopping || entry.cleanup) throw new AutomationFault('BUSY', 'Session cleanup is in progress')
     let lease = entry.leases.get(context.clientId)
     if (!lease?.active) { lease = { leaseId: randomUUID(), clientId: context.clientId, active: true }; entry.leases.set(context.clientId, lease) }
     return { ...entry.info, leaseId: lease.leaseId, created }
