@@ -1,3 +1,4 @@
+import { AutomationFrameSource } from '../lib/AutomationFrameSource'
 import { useEffect, useRef, useState } from 'react'
 import type { MirrorSession, NativeMirrorFrame, NativeMirrorInfo, NativeMirrorInput } from 'common/types'
 import { t } from 'common/util'
@@ -25,6 +26,7 @@ export default function App() {
   const android = info?.target.platform === 'android'
   const send = (input: NativeMirrorInput) => { void main.nativeMirrorInput(input).catch(() => setError(t('plusNativeInputError'))) }
   useEffect(() => {
+    const frames = new AutomationFrameSource(main, () => canvas.current)
     let active = true, id: string | undefined
     let decoder: H264Decoder | undefined
     let hasFrame = false, lastFit = ''
@@ -50,19 +52,23 @@ export default function App() {
           element.width = frame.displayWidth; element.height = frame.displayHeight
         }
         hasFrame = true; fitCanvas()
-        element.getContext('2d')?.drawImage(frame, 0, 0)
+        const context = element.getContext('2d')
+        if (context) { context.drawImage(frame, 0, 0); frames.presented() }
       } finally { frame.close() }
-    }, error => { console.error('Native video decode failed', error); if (active) setError(t('plusNativeDecodeError')) })
+    }, error => { console.error('Native video decode failed', error); if (active) { frames.reset('error'); setError(t('plusNativeDecodeError')) } })
     const unsubscribeFrame = main.on('nativeMirrorFrame', (packet: NativeMirrorFrame) => {
       if (!active || packet.sessionId !== id) return
       try {
-        if (packet.reset || !decoder) { decoder?.destroy(); decoder = createDecoder() }
+        if (packet.reset || !decoder) { frames.reset(); decoder?.destroy(); decoder = createDecoder() }
         if (packet.configuration) decoder.push(packet.configuration, { config: true, timestamp: packet.timestamp })
         decoder.push(packet.data, { timestamp: packet.timestamp, config: packet.config, keyFrame: packet.keyFrame })
       } finally { void main.nativeMirrorAck(packet.sequence).catch(() => {}) }
     })
     const unsubscribeState = main.on('nativeMirrorState', (session: MirrorSession) => {
-      if (active && session.id === id) setStatus(session.state)
+      if (active && session.id === id) {
+        setStatus(session.state)
+        if (session.state === 'error' || session.state === 'disconnected' || session.state === 'starting') frames.reset(session.state)
+      }
     })
     void (async () => {
       try {
@@ -81,7 +87,7 @@ export default function App() {
     }
     window.addEventListener('blur', release)
     return () => {
-      active = false; release(); decoder?.destroy(); unsubscribeFrame(); unsubscribeState()
+      active = false; frames.dispose(); release(); decoder?.destroy(); unsubscribeFrame(); unsubscribeState()
       observer?.disconnect()
       window.removeEventListener('blur', release)
     }

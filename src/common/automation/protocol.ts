@@ -24,12 +24,29 @@ export interface OperationSchema {
   parameters: Record<string, ParameterSchema>
   required: readonly string[]
 }
+const identity: ParameterSchema = { type: 'string', minLength: 1, maxLength: 256 }
+const position: ParameterSchema = { type: 'number', minimum: 0, maximum: 16384 }
+const session = { session: identity }
+const pointer = { ...session, frame: identity, x: position, y: position }
 export const operations: Record<string, OperationSchema> = {
   'service.status': { description: descriptions['service.status'], readOnly: true, parameters: {}, required: [] },
   'doctor': { description: descriptions['doctor'], readOnly: true, parameters: {}, required: [] },
   'schema': { description: descriptions['schema'], readOnly: true, parameters: {}, required: [] },
   'devices.list': { description: descriptions['devices.list'], readOnly: false, parameters: {}, required: [] },
   'devices.capabilities': { description: descriptions['devices.capabilities'], readOnly: false, parameters: { device: { type: 'string', minLength: 1, maxLength: 1024 } }, required: ['device'] },
+  'sessions.start': { description: descriptions['sessions.start'], readOnly: false, parameters: { device: { type: 'string', minLength: 1, maxLength: 1024 } }, required: ['device'] },
+  'sessions.list': { description: descriptions['sessions.list'], readOnly: true, parameters: {}, required: [] },
+  'sessions.get': { description: descriptions['sessions.get'], readOnly: true, parameters: session, required: ['session'] },
+  'sessions.wait': { description: descriptions['sessions.wait'], readOnly: true, parameters: { ...session, state: { type: 'string', enum: ['starting','authorizing','waiting','running','disconnected','error','stopping','stopped'] } }, required: ['session'] },
+  'sessions.leases': { description: descriptions['sessions.leases'], readOnly: true, parameters: {}, required: [] },
+  'sessions.release': { description: descriptions['sessions.release'], readOnly: false, parameters: { lease: identity }, required: ['lease'] },
+  'sessions.stop': { description: descriptions['sessions.stop'], readOnly: false, parameters: { ...session, lease: identity }, required: ['session','lease'] },
+  'screen.capture': { description: descriptions['screen.capture'], readOnly: true, parameters: { ...session, maxAgeMs: { type: 'integer', minimum: 0, maximum: 600000 }, allowStale: { type: 'boolean' }, afterAction: identity }, required: ['session'] },
+  'input.tap': { description: descriptions['input.tap'], readOnly: false, parameters: pointer, required: ['session','frame','x','y'] },
+  'input.swipe': { description: descriptions['input.swipe'], readOnly: false, parameters: { ...pointer, toX: position, toY: position, durationMs: { type: 'integer', minimum: 1, maximum: 10000 } }, required: ['session','frame','x','y','toX','toY','durationMs'] },
+  'input.scroll': { description: descriptions['input.scroll'], readOnly: false, parameters: { ...pointer, dx: { type: 'number', minimum: -1, maximum: 1 }, dy: { type: 'number', minimum: -1, maximum: 1 } }, required: ['session','frame','x','y','dx','dy'] },
+  'input.text': { description: descriptions['input.text'], readOnly: false, parameters: { ...session, text: { type: 'string', maxLength: 16384 } }, required: ['session','text'] },
+  'input.key': { description: descriptions['input.key'], readOnly: false, parameters: { ...session, key: { type: 'string', enum: ['home','back','enter','backspace','tab','up','down','left','right','power','volume-up','volume-down'] } }, required: ['session','key'] },
 }
 export interface AutomationRequest {
   apiVersion: 1; requestId: string; clientId: string; operation: string

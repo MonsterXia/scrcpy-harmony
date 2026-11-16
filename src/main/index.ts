@@ -11,7 +11,7 @@ import log from 'share/common/log'
 import 'share/main'
 import { randomUUID } from 'node:crypto'
 import { getUserDataPath } from 'share/main/lib/util'
-import { createAutomationService } from './automation/service'
+import { createAutomationRuntime } from './automation/runtime'
 import { startAutomationServer } from './automation/server'
 import { attachAutomationLifecycle } from './automation/lifecycle'
 
@@ -25,9 +25,9 @@ app.on('ready', () => {
   terminal.init()
   hdc.init()
   devices.init()
+  const instanceId = randomUUID()
+  const service = createAutomationRuntime(instanceId, app.getVersion())
   attachAutomationLifecycle(app, () => {
-    const instanceId = randomUUID()
-    const service = createAutomationService({ instanceId, version: app.getVersion(), discover: devices.getDevices })
     return startAutomationServer({ profilePath: getUserDataPath(''), instanceId, recoverStaleLock: true, dispatch: service.dispatch })
   }, code => logger.error(code))
   screencastPreparation.init()

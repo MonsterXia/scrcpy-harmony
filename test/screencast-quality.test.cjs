@@ -22,11 +22,14 @@ async function load(saved) {
         constructor() { clients++; ready() }
         start() { starts++ }
       }
+      if (id === '../lib/AutomationFrameSource') return require('./helpers/load-automation.cjs')('src/renderer/lib/AutomationFrameSource.ts')
       if (id === 'mobx') return require('mobx')
       throw Error(id)
     },
     main: {
-      on() {},
+      on() { return () => {} },
+      automationFrameState: async () => {},
+      automationFrameResult: async () => {},
       getScreencastStore: async key => key === 'scale' ? saved : false,
       getScreencastTarget: async () => ({ key: 'synthetic' }),
       setScreencastStore: (...args) => writes.push(args),

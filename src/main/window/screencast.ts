@@ -1,3 +1,4 @@
+import type { AutomationWindowHooks, AutomationWindowObserver } from '../automation/windowHooks'
 import { BrowserWindow, ipcMain, screen } from 'electron'
 import * as window from 'share/main/lib/window'
 import { getScreencastStore } from '../lib/store'
@@ -5,11 +6,13 @@ import once from 'licia/once'
 import { handleEvent } from 'share/main/lib/util'
 import { IpcGetStore, IpcSetStore } from 'share/common/types'
 import type { ITarget, MirrorSession } from 'common/types'
-import { registerCaptureWindow } from '../lib/hdc/captureSessions'
+import { registerCaptureWindow, closeCaptureWindow } from '../lib/hdc/captureSessions'
 
 const store = getScreencastStore()
 
-const windows = new Map<string, { win: BrowserWindow; target: ITarget }>()
+let automationHooks: AutomationWindowHooks | undefined
+export function setAutomationHooks(hooks: AutomationWindowHooks) { automationHooks = hooks }
+const windows = new Map<string, { win: BrowserWindow; target: ITarget; automation?: AutomationWindowObserver }>()
 export function isCaptureWindow(win: unknown) { return [...windows.values()].some(entry => entry.win === win) }
 export function hasWindows() { return windows.size > 0 }
 export function getWindows() { return [...windows.values()].map(entry => entry.win).filter(win => !win.isDestroyed()) }
@@ -19,9 +22,9 @@ export function listSessions(): MirrorSession[] {
   return [...windows.values()].map(({ win, target }) => ({ id: `harmony:${win.id}`,
     deviceKey: target.key, name: target.name, platform: 'harmony', state: 'running' }))
 }
-export function closeSession(id: string) {
+export function closeSession(id: string, force = false) {
   for (const { win } of windows.values()) {
-    if (id === `harmony:${win.id}`) { win.close(); return true }
+    if (id === `harmony:${win.id}`) { if (force) win.destroy(); else win.close(); return true }
   }
   return false
 }
@@ -31,10 +34,13 @@ function senderWindow(event: Electron.IpcMainInvokeEvent) {
   return entry
 }
 
-export function showWin(target: ITarget) {
+export function showWin(target: ITarget, gui = true) {
   const existing = windows.get(target.key)
   if (existing) {
-    existing.win.focus()
+    if (gui) {
+      if (existing.automation) existing.automation.guiOpened()
+      else existing.win.focus()
+    }
     return
   }
 
@@ -47,11 +53,16 @@ export function showWin(target: ITarget) {
     width: 500,
     height: 640,
   })
-  windows.set(target.key, { win, target: { ...target } })
+  const automation = automationHooks?.({ target: { ...target, platform: 'harmony' }, window: win, gui, close: async () => { await closeCaptureWindow(win.webContents); win.destroy() } })
+  windows.set(target.key, { win, target: { ...target }, automation })
   const releaseCapture = registerCaptureWindow(win.webContents)
   // BrowserWindow closed may precede webContents destroyed. Detach locally
   // before destroy on close, with closed as the direct-destroy fallback.
-  win.on('close', releaseCapture)
+  win.on('close', event => {
+    if (automation?.closeRequested()) { event.preventDefault(); return }
+    releaseCapture()
+    win.destroy()
+  })
   win.on('closed', releaseCapture)
 
   // The shared factory may restore bounds from a larger display. Constrain
@@ -68,21 +79,21 @@ export function showWin(target: ITarget) {
     height,
   })
 
-  win.on('close', () => {
-    win?.destroy()
-  })
 
   // destroy() can bypass close; release the singleton on actual destruction.
   win.on('closed', () => {
+    const restoreMain = automation?.closed() ?? true
     windows.delete(target.key)
     const mainWin = window.getWin('main')
-    if (mainWin) {
+    if (mainWin && restoreMain) {
       mainWin.show()
     }
   })
 
   window.loadPage(win, { page: 'screencast' })
 }
+
+export function dispose() { for (const { win } of windows.values()) win.destroy() }
 
 export function closeWin() {
   for (const { win } of windows.values()) win.close()

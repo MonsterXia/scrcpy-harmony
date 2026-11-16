@@ -237,7 +237,7 @@ function getPropValue(key: string, str: string) {
 }
 
 const inputKey: IpcInputKey = async function (connectKey, keyCode) {
-  await shell(connectKey, `uinput -K -d ${keyCode} -u ${keyCode}`)
+  await uitest.inputSystemKey(connectKey, keyCode)
 }
 
 const screencap: IpcScreencap = async function (connectKey) {

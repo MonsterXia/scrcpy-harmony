@@ -2,7 +2,7 @@
 
 ## Agent 自动化长任务（2026-11-16）
 
-状态：**方向已确认，M1/M2 本机验证完成；CLI 已提供服务与发现命令，M3—M6 继续实施。** 用户要求只确认大方向，后续自主推进并保留可定位/可恢复的文档。推荐共享控制服务 → CLI 设备观察/操作闭环 → 现有设备工具 → MCP。入口为 [spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[实施计划](docs/superpowers/plans/2026-11-16-agent-automation.md)和[状态/证据/故障定位](docs/maintenance/agent-automation.md)。本轮 26 项自动化专项、应用 991 passed / 2 skipped、Licia 两模式、lint、主进程/CLI 构建和客户端 tarball 安装通过；真实 Electron 服务握手、设备发现、退出清理通过。Windows、真机截图/输入、MCP 尚未验收；下一步 M3 会话与观察/输入闭环，不重复确认细节。
+状态：**方向已确认，M1/M2 本机验证完成；CLI 已提供服务与发现命令，M3—M6 继续实施。** 用户要求只确认大方向，后续自主推进并保留可定位/可恢复的文档。推荐共享控制服务 → CLI 设备观察/操作闭环 → 现有设备工具 → MCP。入口为 [spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[实施计划](docs/superpowers/plans/2026-11-16-agent-automation.md)和[状态/证据/故障定位](docs/maintenance/agent-automation.md)。本轮 26 项自动化专项、应用 991 passed / 2 skipped、Licia 两模式、lint、主进程/CLI 构建和客户端 tarball 安装通过；真实 Electron 服务握手、设备发现、退出清理通过。Windows、真机截图/输入、MCP 尚未验收；M3 已实现并通过应用 1044 passed / 2 skipped、lint、三部分构建与真实 Electron 模拟闭环；Android USB claim 返回 LIBUSB_ERROR_ACCESS，真机截图/输入及 Windows 验收 pending。下一步 M4 工具矩阵与共享业务适配，不重复确认细节。
 
 ## 上游更新与标准分支交付（2026-11-05）
 

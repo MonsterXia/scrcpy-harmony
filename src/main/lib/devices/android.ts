@@ -224,8 +224,8 @@ export class AndroidMirror {
       if (message.type === 'text') {
         await controller.setClipboard({ sequence: 0n, paste: true, content: message.text })
       } else if (message.type === 'key') {
-        await controller.injectKeyCode({ action: 0, keyCode: message.keyCode as AndroidKeyCode, repeat: 0, metaState: 0 })
-        await controller.injectKeyCode({ action: 1, keyCode: message.keyCode as AndroidKeyCode, repeat: 0, metaState: 0 })
+        try { await controller.injectKeyCode({ action: 0, keyCode: message.keyCode as AndroidKeyCode, repeat: 0, metaState: 0 }) }
+        finally { await controller.injectKeyCode({ action: 1, keyCode: message.keyCode as AndroidKeyCode, repeat: 0, metaState: 0 }) }
       } else {
         if (!this.width || !this.height) throw new Error('Android screen size unavailable')
         const point = { pointerX: Math.min(this.width - 1, Math.round(message.x * this.width)),

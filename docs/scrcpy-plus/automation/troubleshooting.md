@@ -15,3 +15,14 @@
 | Windows ACL 失败 | 服务不会降级为开放权限；保存错误码和系统版本，待 Windows 专项复核 | discovery.ts；Windows 验收 pending |
 
 当前测试与构建命令：`node --test test/automation-*.test.cjs`、`npm run build:cli`、`npm run build:main`、`npm test`、`npm run lint`。全仓 TypeScript 目前存在继承诊断；不能将 Vite 成功当作严格类型检查全部通过。
+
+## M3 会话与图像
+
+- `sessions wait` 返回 UNAVAILABLE：先 get 查看 error/disconnected；窗口存在不等于有帧。当前 Android 实机尝试出现 LIBUSB_ERROR_ACCESS，需解决 USB 访问后再验收；不要自动终止其他占用设备的程序。
+- 响应丢失：使用原 `--client` 的 sessions leases 恢复 lease，再 release。
+- 坐标引用失败：重新 capture，使用新 frameId。物理同尺寸180°方向检测尚未验收。
+- after-action 超时：未收到严格更新的呈现帧；不代表动作没发生，不要盲目重发写操作。
+- GUI 关窗后窗口未销毁：仍有 CLI lease 时属于预期，release 最后 owner 后才关闭。
+- OUTCOME_UNKNOWN 或释放失败：保留原 lease 重试清理；不会自动重复输入。
+
+真实 Electron 模拟验收脚本为 `script/check-automation-electron.mjs`；它不连接真实设备，产物明确标注 SIMULATED。

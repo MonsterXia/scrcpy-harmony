@@ -16,7 +16,8 @@ test('overview routes memory and screen through finite transport and retains mem
   assert.equal(f.initOptions[0].port, 8710)
   assert.deepEqual(f.state.requests, [READY, 'shell param get', READY, INFO, READY, KERNEL, READY, MEMORY, READY, SCREEN])
   await f.input()
-  assert.deepEqual(f.state.requests.slice(-2), [READY, 'shell uinput -K -d 3 -u 3'])
+  assert.equal(f.state.systemKey.code, 1)
+  assert.equal(f.clients.length, 10)
   assert.equal(f.clients.filter((s) => s.kind === 'finite').length, 10)
 })
 

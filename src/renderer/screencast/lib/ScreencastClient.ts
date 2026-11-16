@@ -1,3 +1,4 @@
+import type { AutomationFrameSource } from '../../lib/AutomationFrameSource'
 import types from 'licia/types'
 import noop from 'licia/noop'
 import Readiness from 'licia/Readiness'
@@ -50,7 +51,7 @@ export default class ScreencastClient {
   private state: CaptureState = 'loading'
   private stateListeners = new Set<(state: CaptureState) => void>()
   private startAttempts = 0
-  constructor(connectKey: string) {
+  constructor(connectKey: string, private frames?: AutomationFrameSource) {
     this.connectKey = connectKey
     this.ready = this.readiness.ready('captureScreen')
 
@@ -65,6 +66,7 @@ export default class ScreencastClient {
   private setState(state: CaptureState) {
     if (state === this.state) return
     this.state = state
+    if (state === 'failed') this.frames?.reset('error')
     for (const listener of this.stateListeners) listener(state)
   }
   start(automatic = false) {
@@ -73,6 +75,7 @@ export default class ScreencastClient {
     }
     if (!automatic) this.startAttempts = 0
     this.startAttempts++
+    this.frames?.reset()
     this.setState('loading')
     const generation = ++this.generation
     this.startSettled = false
@@ -137,6 +140,7 @@ export default class ScreencastClient {
   destroy(): void {
     if (this.destroyed) return
     this.destroyed = true
+    this.frames?.dispose()
     this.stateListeners.clear()
     if (this.promotion?.timer) clearTimeout(this.promotion.timer)
     this.promotion = undefined
@@ -361,6 +365,8 @@ export default class ScreencastClient {
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.drawImage(img, 0, 0)
+    if (this.renderedCodec && this.renderedCodec !== codec) this.frames?.reset()
+    this.frames?.presented()
     this.renderedCodec = codec
     this.renderedFrames++
     this.frameReceived = true

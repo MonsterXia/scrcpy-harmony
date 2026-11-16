@@ -167,3 +167,14 @@ test('startup cleanup failure still publishes an error and allows a later reconn
   assert.equal(manager.list()[0].state, 'running')
   await manager.dispose()
 })
+test('automation attachment shares the native window and can retain it on GUI close',async()=>{
+ const f=fixture();const events=[];let attachment
+ f.nativeMirrors.setAutomationHooks(value=>{attachment=value;return {state:s=>events.push(s),closed:()=>events.push('closed'),closeRequested:()=>true,guiOpened:()=>events.push('gui'),input:(_phase,operation)=>{events.push('input');return operation()}}})
+ await f.nativeMirrors.start(target(),false)
+ assert.equal(attachment.gui,false);assert.equal(attachment.target.key,'android:a')
+ await f.invoke('nativeMirrorOpen',f.windows[0]);assert.ok(events.includes('connected'))
+ await f.invoke('nativeMirrorInput',f.windows[0],{type:'key',keyCode:4});assert.ok(events.includes('input'))
+ let prevented=false;f.windows[0].emit('close',{preventDefault(){prevented=true}});assert.equal(prevented,true)
+ await f.nativeMirrors.start(target());assert.ok(events.includes('gui'));assert.equal(f.windows.length,1)
+ await attachment.close();assert.ok(events.includes('closed'))
+})

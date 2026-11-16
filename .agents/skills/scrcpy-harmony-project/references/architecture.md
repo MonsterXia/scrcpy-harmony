@@ -214,4 +214,4 @@ Canvas pointer 事件
 
 ## Agent 自动化服务与 CLI
 
-`src/main/automation/profile.ts` 在主入口最先配置产品名和显式 profile，必须早于 store 和单实例锁。`src/main/index.ts` 在设备初始化后建立 `service.ts`/`server.ts`，`lifecycle.ts` 负责启动中退出和正常关闭。GUI IPC 仍保持既有校验，自动化只通过已注册 schema 调用；当前已开放状态与设备发现，会话和输入仍在实施。`src/common/automation/` 为机器契约及能力，`src/cli/` 复用鉴权传输但不加载设备库。`script/build-cli.mjs` 生成独立客户端包，`script/build.mjs` 纳入该步骤。当前范围与定位见 [维护记录](../../../../docs/maintenance/agent-automation.md)。
+`src/main/automation/profile.ts` 在主入口最先配置产品名和显式 profile，必须早于 store 和单实例锁。`src/main/index.ts` 在设备初始化后建立 `runtime.ts`/`service.ts`/`server.ts`，`lifecycle.ts` 负责启动中退出和正常关闭。GUI IPC 仍保持既有校验，自动化只通过已注册 schema 调用；已开放状态、发现、会话 lease、截图和输入。`controller.ts`/`sessions.ts` 共享 GUI 与自动化 owner；窗口通过注入的 hooks 保留 sender 检查，GUI 关窗若有 lease 则隐藏；实际销毁才释放。`frameBridge.ts` 仅向已注册当前 mainFrame 请求画布截图，renderer `AutomationFrameSource.ts` 记录真实呈现序号/时间，`frames.ts` 保留已导出引用与动作后屏障。Android/Harmony 输入进入同设备门禁，Harmony trusted API 绑定真实捕获 lease；不伪造 IPC event。`wire.ts` 的有界二进制响应由 CLI 原子落盘。`src/common/automation/` 为机器契约及能力，`src/cli/` 复用鉴权传输但不加载设备库。`script/build-cli.mjs` 生成独立客户端包，`script/build.mjs` 纳入该步骤。当前范围与定位见 [维护记录](../../../../docs/maintenance/agent-automation.md)。

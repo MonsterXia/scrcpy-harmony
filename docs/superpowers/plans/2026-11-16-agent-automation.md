@@ -10,7 +10,7 @@
 
 **Spec:** [SP-AUTO-001](../specs/2026-11-16-agent-automation-design.md)
 
-**Status:** M0 已完成，用户已确认方向；M1/M2 本机验证完成，M3—M6 待执行。连续执行 M3；具体阶段状态以[维护记录](../../maintenance/agent-automation.md)为准。
+**Status:** M0 已完成，用户已确认方向；M1/M2 本机验证完成，M3 实现/模拟闭环通过但真机/Windows pending，M4—M6 待执行。连续执行 M4；具体阶段状态以[维护记录](../../maintenance/agent-automation.md)为准。
 
 ## Global Constraints
 
@@ -93,21 +93,24 @@
 
 ## M3：会话、截图与输入闭环（AUTO-03/04/05/07/10）
 
-**Create:** `src/main/automation/{sessions,frames,input}.ts`、`src/main/automation/adapters/{android,harmony,ios}.ts`、`test/automation-{sessions,frames,input}.test.cjs`、`script/check-automation-electron.mjs`。
+**Create:** `src/main/automation/{sessions,frames,input,controller,runtime,sessionOperations,frameBridge,windowHooks}.ts`、`src/common/automation/{frames,wire}.ts`、`src/renderer/lib/AutomationFrameSource.ts`、`src/cli/files.ts`、`src/main/automation/adapters/{android,harmony}.ts`（iOS 在 controller 中显式 view-only）、`test/automation-{sessions,frames,input}.test.cjs`、`script/check-automation-electron.mjs`。
 
 **Modify:** `src/main/window/{nativeMirror,screencast}.ts`、`src/main/lib/hdc/{captureSessions,screencastInput}.ts`、`src/renderer/native-mirror/App.tsx`、`src/renderer/screencast/lib/ScreencastClient.ts`、`src/preload/` 对应桥接、协议与 CLI 命令注册。
 
 **Interfaces:** `startSession(deviceKey, context): Promise<{sessionId,leaseId,state,created}>`；`releaseSession(sessionId,leaseId,context): Promise<AutomationResult>`；`captureFrame(sessionId,options,context): Promise<CapturedFrame>`；`performInput(sessionId,action,context): Promise<AutomationResult>`。在 protocol 定义参数类型，CapturedFrame 含 spec 元数据及受限二进制；文件输出由 CLI 写入。平台适配器实现统一生命周期和输入接口，保留平台不同的就绪条件。
 
-- [ ] 写 sessions 回归：鸿蒙窗口存在但无首帧不是 running；重复 start 复用后端；两 lease + GUI owner 隔离；非法释放拒绝；旧实例会话失效；停止 tombstone；断连/取消/异常清理；start 响应丢失后通过持久 clientId 查询并释放 lease。
-- [ ] 运行 `node --test test/automation-sessions.test.cjs` 确认失败，抽取会话业务和 lease 管理；GUI 接入同一生命周期，保留 IPC owner 检查；实现 client profile、sessions leases/release。仍有 CLI lease 时关窗只隐藏并释放 GUI owner，重开显示同 renderer；最后 owner 释放才销毁，显式退出清理全部。
-- [ ] 写 frames 回归：无帧、默认超过 2000ms、renderer 崩溃、32 MiB 上限失败；allow-stale 显式标记；frameId/时间/尺寸真实；输出文件默认不覆盖、失败不留下伪成功文件；after-action 不返回旧序号、静止时超时且不能用 allow-stale 绕过；高帧率不淘汰最近 16 个已导出截图引用。
-- [ ] 运行 `node --test test/automation-frames.test.cjs` 确认失败，建立专用截图桥接、二进制读取和原子文件输出。
-- [ ] 写 input 回归：截图像素→实际设备坐标；过期帧或旋转 revision 拒绝；每设备完整手势串行；两个设备互不阻塞；取消/断连发出释放；未确认释放禁止后续动作；iOS 控制退出 3。
-- [ ] 运行 `node --test test/automation-input.test.cjs` 确认失败，实现 tap/swipe/scroll/text/key 及 CLI；成功输入签发 60 秒有效的 observationToken，接入截图 after-action；文本从 stdin/file 读取选项避免敏感文字出现在进程参数中。
-- [ ] 重跑上述专项与现有 `plus-devices`、`capture-sessions`、`screencast-input-main` 等受影响回归，执行三部分构建。
+- [x] 写 sessions 回归：鸿蒙窗口存在但无首帧不是 running；重复 start 复用后端；两 lease + GUI owner 隔离；非法释放拒绝；旧实例会话失效；停止 tombstone；断连/取消/异常清理；start 响应丢失后通过持久 clientId 查询并释放 lease。
+- [x] 运行 `node --test test/automation-sessions.test.cjs` 确认失败，抽取会话业务和 lease 管理；GUI 接入同一生命周期，保留 IPC owner 检查；实现 client profile、sessions leases/release。仍有 CLI lease 时关窗只隐藏并释放 GUI owner，重开显示同 renderer；最后 owner 释放才销毁，显式退出清理全部。
+- [x] 写 frames 回归：无帧、默认超过 2000ms、renderer 崩溃、32 MiB 上限失败；allow-stale 显式标记；frameId/时间/尺寸真实；输出文件默认不覆盖、失败不留下伪成功文件；after-action 不返回旧序号、静止时超时且不能用 allow-stale 绕过；高帧率不淘汰最近 16 个已导出截图引用。
+- [x] 运行 `node --test test/automation-frames.test.cjs` 确认失败，建立专用截图桥接、二进制读取和原子文件输出。
+- [x] 写 input 回归：截图像素→实际设备坐标；过期帧或旋转 revision 拒绝；每设备完整手势串行；两个设备互不阻塞；取消/断连发出释放；未确认释放禁止后续动作；iOS 控制退出 3。
+- [x] 运行 `node --test test/automation-input.test.cjs` 确认失败，实现 tap/swipe/scroll/text/key 及 CLI；成功输入签发 60 秒有效的 observationToken，接入截图 after-action；文本从 stdin/file 读取选项避免敏感文字出现在进程参数中。
+- [x] 重跑上述专项与现有 `plus-devices`、`capture-sessions`、`screencast-input-main` 等受影响回归，执行三部分构建。
 - [ ] 使用真实 Electron + 明确标注的模拟设备验证完整 CLI 流程、owner 隔离和关窗恢复；随后对可用 Android/Harmony 真机做截图→安全测试页面输入→截图闭环，iOS 验证等待/接收/不支持控制。缺设备只记录 pending，继续 M4。
-- [ ] 更新 CLI/协议/集成说明/架构参考和证据，提交 `feat: complete device observation and input workflow`。
+- [x] 更新 CLI/协议/集成说明/架构参考和证据，提交 `feat: complete device observation and input workflow`。
+
+
+M3 真机验收保留未勾选：模拟 Electron 部分已通过；Android USB claim 失败，Harmony/iOS 实接收及 Windows 尚未验证。不会据此标记总任务完成。
 
 ## M4：现有设备工具覆盖（AUTO-06/07/08）
 

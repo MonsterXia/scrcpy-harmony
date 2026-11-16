@@ -54,3 +54,9 @@ test('unexpected backend errors are sanitized and error exit codes remain machin
   assert.equal(JSON.stringify(result).includes('private-device-secret'), false)
   for (const [code, expected] of [['INVALID_ARGUMENT',2], ['VERSION_MISMATCH',2], ['UNSUPPORTED',3], ['NOT_FOUND',4], ['UNAVAILABLE',4], ['BUSY',4], ['UNAUTHORIZED',5], ['TIMEOUT',6], ['OUTCOME_UNKNOWN',7], ['INTERNAL',7], ['CANCELLED',130]]) assert.equal(exitCode({ ok: false, error: { code } }), expected)
 })
+test('session and observation contracts require explicit identities and bounded gestures',()=>{
+ const {parseRequest,publicSchema}=load('src/common/automation/protocol.ts')
+ assert.ok(publicSchema().operations['sessions.start'])
+ for(const [operation,params] of [['sessions.stop',{session:'s'}],['input.tap',{session:'s',x:1,y:2}],['input.swipe',{session:'s',frame:'f',x:1,y:2,toX:3,toY:4,durationMs:10001}],['screen.capture',{session:'s',maxAgeMs:-1}]])assert.throws(()=>parseRequest(request({operation,params})),{code:'INVALID_ARGUMENT'})
+ assert.equal(parseRequest(request({operation:'input.tap',params:{session:'s',frame:'f',x:1,y:2}})).params.frame,'f')
+})

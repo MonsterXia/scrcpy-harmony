@@ -235,3 +235,10 @@ test('libusb physical port identity separates devices without serial descriptors
  f.devices[0].raw.device={busNumber:1,deviceAddress:2,portNumbers:[1,2]};f.devices[1].raw.device={busNumber:1,deviceAddress:3,portNumbers:[1,3]}
  const devices=await f.discoverAndroid();assert.notEqual(devices[0].key,devices[1].key)
 })
+test('Android key injection attempts key-up even when key-down acknowledgement fails',async t=>{
+ const f=androidFixture(directory(t));const backend=new f.AndroidMirror({key:'android:a',connectionId:'a'})
+ await backend.start(()=>{},()=>{});const actions=[]
+ f.clients[0].controller.injectKeyCode=async value=>{actions.push(value.action);if(value.action===0)throw Error('lost down response')}
+ await assert.rejects(backend.input({type:'key',keyCode:66}),/lost down response/)
+ assert.deepEqual(actions,[0,1]);await backend.close()
+})

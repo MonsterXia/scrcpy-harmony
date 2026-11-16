@@ -1,3 +1,4 @@
+import { encodeResult } from '../../common/automation/wire'
 import { createServer } from 'node:http'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { randomUUID } from 'node:crypto'
@@ -28,8 +29,9 @@ export async function startAutomationServer(options: ServerOptions) {
   server.keepAliveTimeout = 1000
   function send(response: ServerResponse, status: number, result: AutomationResult) {
     if (response.destroyed || response.writableEnded) return
-    response.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', connection: 'close' })
-    response.end(JSON.stringify(result))
+    const encoded = encodeResult(result)
+    response.writeHead(status, { 'content-type': encoded.type, 'content-length': encoded.body.length, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', connection: 'close' })
+    response.end(encoded.body)
   }
   async function handle(request: IncomingMessage, response: ServerResponse) {
     let requestId = 'invalid-request', timer: ReturnType<typeof setTimeout> | undefined

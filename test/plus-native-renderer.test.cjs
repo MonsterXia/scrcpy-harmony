@@ -4,7 +4,10 @@ const { setup, load, React } = require('./helpers/workspace-renderer.cjs')
 const createRoot = setup(), { act } = React
 async function fixture(t, platform = 'android') {
   const listeners = new Map(), inputs = [], acks = [], decoded = [], outputs = [], fits = []
+  const frameStates = []
   const main = {
+    automationFrameState: async state => frameStates.push(state),
+    automationFrameResult: async () => {},
     on: (name, fn) => { listeners.set(name, fn); return () => listeners.delete(name) },
     nativeMirrorInfo: async () => ({ id: 'owned-session', target: { platform, name: 'Phone' }, state: 'starting' }),
     nativeMirrorOpen: async () => {}, nativeMirrorInput: async input => inputs.push(input),
@@ -19,7 +22,7 @@ async function fixture(t, platform = 'android') {
   await act(async () => root.render(React.createElement(App)))
   t.after(async () => { await act(async () => root.unmount()); host.remove() })
   await act(async () => listeners.get('nativeMirrorState')({ id: 'owned-session', state: 'running' }))
-  return { host, listeners, inputs, acks, decoded, outputs, fits }
+  return { host, listeners, inputs, acks, decoded, outputs, fits, frameStates }
 }
 test('decoded dimensions fit the window once and again on screen rotation', async t => {
   const f = await fixture(t), canvas = f.host.querySelector('canvas')
@@ -32,6 +35,7 @@ test('decoded dimensions fit the window once and again on screen rotation', asyn
   }
   assert.deepEqual(f.fits, [[1080, 2340, 180, 16], [2340, 1080, 180, 16]])
   assert.equal(closed, 3)
+  assert.deepEqual(f.frameStates.filter(s=>s.state==='presented').map(s=>[s.metadata.width,s.metadata.height]),[[1080,2340],[2340,1080]])
 })
 function pointer(canvas, type, x, y, pointerId = 1) {
   const event = new window.Event(type, { bubbles: true, cancelable: true })

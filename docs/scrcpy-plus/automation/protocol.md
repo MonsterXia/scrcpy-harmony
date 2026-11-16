@@ -23,7 +23,7 @@ POSIX 目录 0700、凭据文件 0600，拒绝符号链接目录和非当前用�
 成功：`{apiVersion:1,requestId,ok:true,data:...}`。
 失败：`{apiVersion:1,requestId,ok:false,error:{code,message,retryable,outcome}}`。
 
-`outcome` 为 not-started/completed/unknown；无对应确认时不能把 timeout/cancelled 当作已回滚。意外后端异常转换为通用错误，不回传原始堆栈、设备日志或密钥。普通结果上限 1 MiB；后续截图使用单独二进制契约。
+`outcome` 为 not-started/completed/unknown；无对应确认时不能把 timeout/cancelled 当作已回滚。意外后端异常转换为通用错误，不回传原始堆栈、设备日志或密钥。普通结果上限 1 MiB；截图成功响应使用下述二进制契约。
 
 服务在收到完整请求后启动剩余期限；CLI 从命令开始计时并扣除准备耗时。连接断开、截止或退出会传播 AbortSignal。旧后端若不支持取消，不因此谎报设备操作已撤销。requestId 仅关联诊断，不提供持久去重。
 
@@ -37,3 +37,13 @@ POSIX 目录 0700、凭据文件 0600，拒绝符号链接目录和非当前用�
 - 客户端/参数/输出：`src/cli/`。
 
 协议不兼容的更改必须调整版本；兼容新增操作同步 schema、CLI 参考、能力矩阵和对应测试。
+
+## 截图与会话契约
+
+`screen.capture` 成功的 Content-Type 为 `application/vnd.scrcpy-plus.frame`。正文为 4 字节大端无符号 envelope 长度、UTF-8 JSON 成功 envelope（data.frame）和原始 PNG；JSON ≤1MiB，PNG ≤32MiB。失败仍为 JSON。主机输出路径只由 CLI 处理，服务不接收 output 参数。
+
+`data.frame` 包含 sessionId、frameId、sequence、generation、capturedAt、clock=host、width、height、displayRevision、rotation、mimeType=image/png 和 stale。capturedAt 为画布呈现时间；rotation 是导出位图的额外变换，当前正向解码画布为 0，不能据此推断手机物理方向。最后 16 份已导出引用最多保留 60 秒。
+
+会话入口：`runtime.ts` / `sessionOperations.ts` / `controller.ts`；租约：`sessions.ts`；帧验证和引用：`frameBridge.ts` / `frames.ts`；平台输入：`adapters/{android,harmony}.ts`。专用 preload 的 automationFrameRequest/Result/State 只接受已注册窗口、当前 mainFrame 和匹配请求 ID，不开放任意 renderer 执行。
+
+停止最多等待 5 秒确认；超时返回 OUTCOME_UNKNOWN，保留清理义务及 lease，后续 release 加入同一关闭过程。输入队列按设备串行，取消时仍独立尝试最多 5 秒的触点释放；无法确认则隔离该代际。输入成功只签发新观察屏障，不证明设备业务动作成功。

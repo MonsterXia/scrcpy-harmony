@@ -1,6 +1,6 @@
 # Scrcpy Plus 自动化接口
 
-当前为开发分支能力，协议 v1。已实现应用内本地服务、CLI 服务启动/状态/诊断、设备发现与能力查询；会话、截图、输入、鸿蒙工具及 MCP 按[实施计划](../../superpowers/plans/2026-11-16-agent-automation.md)继续开发，不能把 spec 中的目标命令当作当前可用命令。
+当前为开发分支能力，协议 v1。已实现应用内本地服务、CLI 服务启动/状态/诊断、设备发现、会话 lease、画布截图和 Android/Harmony 输入。M3 已通过真实 Electron 模拟闭环，真机/Windows 验收仍 pending；鸿蒙设备工具及 MCP 按[实施计划](../../superpowers/plans/2026-11-16-agent-automation.md)继续开发，不能把 spec 中的目标命令当作当前可用命令。
 
 ## 开发运行
 

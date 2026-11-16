@@ -157,3 +157,10 @@ MCP 作为本地 stdio 适配器复用客户端和 schema。至少暴露设备�
 - 自动化目录有独立 server.lock；死进程锁仅由已取得 Electron 单实例锁的启动流程回收，身份不明则拒绝。
 - 协议描述以独立 descriptions.json 保存稳定英文机器文本，GUI 国际化检查不放宽。
 - M1/M2 Windows 权限/进程验证仍 pending；本机全仓严格类型检查仍不通过，不降低总验收标准。
+
+## M3 实现澄清与待验证边界（2026-11-16）
+
+- 图片传输使用 `application/vnd.scrcpy-plus.frame`：4 字节大端 envelope 长度，随后 UTF-8 JSON envelope 和原始 PNG。客户端负责文件输出，服务不接收主机输出路径。JSON ≤1 MiB，PNG ≤32 MiB。
+- `rotation` 当前表示导出位图需要额外旋转的角度；解码画布已正向呈现，当前为 0。物理方向只能在平台提供可验证信息时声明；尺寸或解码代际变化会使 frame 引用失效。同尺寸 180° 物理旋转的检测仍待验证，不计为 AUTO-05 已验收。
+- Harmony 没有 wheel primitive，`input scroll` 显式转换为 250 ms、端点限制在画布内的滑动；正 dx/dy 表示手指右/下移动，幅度为对应画布尺寸的 delta/2。Android 使用原生滚轮控制。
+- 以上为 M3 实现中记录，未替代真实 Electron/设备/平台验收门禁。

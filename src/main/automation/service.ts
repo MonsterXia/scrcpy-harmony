@@ -3,14 +3,14 @@ import { AutomationFault, checkContext, failure, parseRequest, publicSchema, suc
 import type { AutomationContext, AutomationRequest, AutomationResult } from '../../common/automation/protocol'
 import { deviceCapabilities } from '../../common/automation/capabilities'
 
-export interface ServiceOptions { instanceId: string; version: string; discover(): Promise<DeviceDiscovery> }
+export interface ServiceOptions { instanceId: string; version: string; running?(key: string): boolean; discover(): Promise<DeviceDiscovery> }
 export type OperationHandler = (params: Record<string, unknown>, context: AutomationContext) => Promise<unknown>
 export function createAutomationService(options: ServiceOptions) {
   const handlers = new Map<string, OperationHandler>()
   const status = () => ({ instanceId: options.instanceId, version: options.version, apiVersion: 1, pid: process.pid })
   const discover = async () => {
     const result = await options.discover()
-    return { devices: result.targets.map(target => ({ ...target, capabilities: deviceCapabilities(target, new Set(handlers.keys())) })),
+    return { devices: result.targets.map(target => ({ ...target, capabilities: deviceCapabilities(target, new Set(handlers.keys()), options.running?.(target.key)) })),
       errors: result.errors.map(platform => ({ platform, code: 'DISCOVERY_FAILED' })) }
   }
   handlers.set('service.status', async () => status())

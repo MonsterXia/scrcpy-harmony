@@ -215,6 +215,10 @@ exports.screencastMain = function (
     return id
   }
   return {
+    systemKey: (key,code) => load('../../src/main/lib/hdc/uitest.ts').inputSystemKey(key,code),
+    closeCapture: win => load('../../src/main/lib/hdc/captureSessions.ts').closeCaptureWindow(win.webContents),
+    trustedInput: (win, key, operation) => load('../../src/main/lib/hdc/captureSessions.ts').withTrustedCaptureInput(win.webContents, key, operation),
+    inputGate: gate => load('../../src/main/lib/hdc/captureSessions.ts').setCaptureInputGate(gate),
     prepare: (valid = () => true, key = 'synthetic-target') => load('../../src/main/lib/hdc/captureSessions.ts').prepareCapture(key, 0.5, valid, async () => drivers.get(key)),
     cancelPreparation: (key = 'synthetic-target') => load('../../src/main/lib/hdc/captureSessions.ts').cancelCapturePreparation(key),
     shutdown: () => load('../../src/main/lib/hdc/captureSessions.ts').shutdownCaptures(),

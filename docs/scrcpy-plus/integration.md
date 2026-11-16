@@ -124,4 +124,4 @@ Windows AirPlay 模块采用 MinGW 延迟导入库与宿主解析钩子，将 No
 
 ## Agent 自动化入口（开发中）
 
-`src/main/automation/` 在持有设备的 Electron 进程提供 loopback 鉴权服务；`src/cli/` 为独立 Node 客户端，不连接 USB。当前服务状态、诊断、设备发现和能力查询已实现，会话/截图/输入及 MCP 仍按阶段推进。`npm run build:cli` 输出 `dist/cli`；完整 build 同时生成客户端包。显式 `SCRCPY_PLUS_PROFILE` 在单实例锁和 store 初始化前生效。协议、使用方法与验证边界见[自动化指南](automation/README.md)和[维护记录](../maintenance/agent-automation.md)。
+`src/main/automation/` 在持有设备的 Electron 进程提供 loopback 鉴权服务；`src/cli/` 为独立 Node 客户端，不连接 USB。当前服务状态、诊断、发现、会话 lease、画布截图与 Android/Harmony 输入已实现，真实 Electron 模拟闭环通过；真实设备/Windows 验收仍 pending，设备工具和 MCP 继续按阶段推进。`npm run build:cli` 输出 `dist/cli`；完整 build 同时生成客户端包。显式 `SCRCPY_PLUS_PROFILE` 在单实例锁和 store 初始化前生效。协议、使用方法与验证边界见[自动化指南](automation/README.md)和[维护记录](../maintenance/agent-automation.md)。

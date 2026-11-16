@@ -1,3 +1,4 @@
+import { decodeResult, FRAME_CONTENT_TYPE, MAX_WIRE_BYTES } from '../common/automation/wire'
 import { request as httpRequest } from 'node:http'
 import { randomUUID } from 'node:crypto'
 import * as fs from 'node:fs/promises'
@@ -58,16 +59,18 @@ export async function callAutomation(value: AutomationRequest, options: ClientOp
       authorization: `Bearer ${discovery.token}`, 'x-scrcpy-instance': discovery.instanceId,
     } }, response => {
       if (response.statusCode === 403) { response.resume(); finish(new AutomationFault('UNAUTHORIZED', 'Local service authorization failed')); return }
+      const contentType = response.headers['content-type'] || ''
+      const maximum = contentType === FRAME_CONTENT_TYPE ? MAX_WIRE_BYTES : MAX_REQUEST_BYTES
       const chunks: Buffer[] = []; let size = 0
       response.on('data', (chunk: Buffer) => {
         size += chunk.length
-        if (size > MAX_REQUEST_BYTES) { finish(new AutomationFault('INTERNAL', 'Service response exceeds 1 MiB')); response.destroy(); req.destroy() }
+        if (size > maximum) { finish(new AutomationFault('INTERNAL', 'Service response exceeds its size limit')); response.destroy(); req.destroy() }
         else chunks.push(chunk)
       })
       response.on('aborted', () => finish(new AutomationFault(uncertain() ? 'OUTCOME_UNKNOWN' : 'UNAVAILABLE', 'Service response interrupted', uncertain() ? 'unknown' : 'not-started')))
       response.on('error', () => finish(new AutomationFault('UNAVAILABLE', 'Service response stream failed', uncertain() ? 'unknown' : 'not-started')))
       response.on('end', () => {
-        try { finish(undefined, validateResult(JSON.parse(Buffer.concat(chunks).toString('utf8')), parsed.requestId)) }
+        try { finish(undefined, validateResult(decodeResult(Buffer.concat(chunks), contentType), parsed.requestId)) }
         catch (error) { finish(error instanceof AutomationFault ? error : new AutomationFault('INTERNAL', 'Malformed service response')) }
       })
     })

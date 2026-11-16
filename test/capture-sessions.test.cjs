@@ -787,3 +787,31 @@ test('foreground capture recovers orphans when reusing a cached background drive
   assert.deepEqual(events, ['recover', 'start'])
   await h.stop()
 })
+test('trusted automation input binds to a registered device lease without impersonating IPC',async()=>{
+ const h=screencastMain();h.show();await h.start();let observed
+ await h.trustedInput(h.windows[0],'synthetic-target',async(key,signal,lease)=>{observed={key,signal,lease}})
+ assert.equal(observed.key,'synthetic-target');assert.equal(observed.lease.driver,h.driver)
+ assert.throws(()=>h.trustedInput(h.windows[0],'other',async()=>{}),/active/)
+ assert.throws(()=>h.trustedInput({webContents:{}},'synthetic-target',async()=>{}),/registered/)
+ await h.invoke('touchDown',['synthetic-target',1,1])
+ await assert.rejects(h.trustedInput(h.windows[0],'synthetic-target',async()=>{}),/gesture/)
+ await h.invoke('touchUp',['synthetic-target',1,1]);await h.stop()
+})
+test('GUI capture input passes the same arbitration gate while release retains queue priority',async()=>{
+ const h=screencastMain();h.show();await h.start();const phases=[]
+ h.inputGate(async(key,phase,operation)=>{assert.equal(key,'synthetic-target');phases.push(phase);return operation()})
+ await h.invoke('touchDown',['synthetic-target',1,1]);await h.invoke('touchUp',['synthetic-target',1,1])
+ assert.deepEqual(phases,['down','up']);await h.stop()
+})
+test('automation close waits for actual cleanup and can retry an unconfirmed detached lease',async()=>{
+ const h=screencastMain();h.show();await h.start();let attempts=0
+ h.driver.stopCaptureScreen=async()=>{if(++attempts===1)throw Error('lost stop response')}
+ await assert.rejects(h.closeCapture(h.windows[0]),/lost stop response/)
+ await h.closeCapture(h.windows[0]);assert.equal(attempts,2)
+})
+test('toolbar system keys cannot bypass the automation input gate',async()=>{
+ const h=screencastMain();let received
+ h.inputGate(async(key,phase)=>{received={key,phase};throw Error('busy')})
+ await assert.rejects(h.systemKey('synthetic-target',1),/busy/)
+ assert.deepEqual(received,{key:'synthetic-target',phase:undefined})
+})

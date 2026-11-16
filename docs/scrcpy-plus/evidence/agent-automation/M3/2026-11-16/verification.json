@@ -1,0 +1,115 @@
+{
+  "milestone": "M3",
+  "status": "implementation-and-local-verification-complete-device-platform-acceptance-pending",
+  "baseCommit": "f1605ce",
+  "host": "darwin-arm64",
+  "checks": {
+    "npm test": {
+      "passed": true,
+      "application": {
+        "total": 1046,
+        "passed": 1044,
+        "skipped": 2
+      },
+      "licia": {
+        "default": {
+          "passed": 606,
+          "pending": 4
+        },
+        "fallback": {
+          "passed": 606,
+          "pending": 4
+        }
+      }
+    },
+    "npm run lint": {
+      "passed": true
+    },
+    "npm run build:main": {
+      "passed": true
+    },
+    "npm run build:preload": {
+      "passed": true
+    },
+    "npm run build:renderer": {
+      "passed": true
+    },
+    "node script/build-cli.mjs": {
+      "passed": true
+    },
+    "tsc": {
+      "passed": false,
+      "reason": "existing TS6 configuration deprecations and repository diagnostics; compatibility run has no diagnostics in new automation/CLI modules; uitest.ts line55 existed at M2"
+    }
+  },
+  "electronSimulated": {
+    "deviceMode": "SIMULATED ONLY",
+    "realElectron": true,
+    "host": "darwin",
+    "arch": "arm64",
+    "checks": {
+      "status": true,
+      "sharedBackend": true,
+      "independentLeases": true,
+      "realCanvasPng": true,
+      "inputObservationBarrier": true,
+      "guiCloseRetainsRenderer": true,
+      "hiddenCapture": true,
+      "lastOwnerCleanup": true,
+      "discoveryCleanup": true
+    },
+    "frame": {
+      "width": 240,
+      "height": 100,
+      "beforeSequence": 2,
+      "afterSequence": 5
+    }
+  },
+  "realApplication": {
+    "kind": "real-application-real-device-observation",
+    "host": "darwin",
+    "arch": "arm64",
+    "inputSent": false,
+    "status": true,
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "providerErrors": [],
+    "androidWait": "UNAVAILABLE",
+    "androidRelease": "stopped",
+    "gracefulExit": true,
+    "discoveryRemoved": true,
+    "androidFailure": "LIBUSB_ERROR_ACCESS while claiming the USB interface",
+    "screenshotAccepted": false,
+    "inputAccepted": false
+  },
+  "fixes": [
+    "bounded unconfirmed input with release attempt",
+    "GUI failed press permits release but quarantines further input",
+    "full input queue does not retain rejected GUI gesture",
+    "new generation waits for old gesture cleanup",
+    "Android key-up attempted after failed key-down",
+    "Harmony explicit stop waits for cleanup and permits retry",
+    "renderer crash invalidates observations and closes backend",
+    "session cleanup budget preserves in-flight teardown",
+    "destroyed BrowserWindow no longer dereferenced in close callback"
+  ],
+  "pending": [
+    "Android real screenshots and safe input (USB claim failed)",
+    "Harmony real capture/input (no device detected)",
+    "iOS real AirPlay reception and no-control verification",
+    "Windows service/ACL/CLI lifecycle",
+    "same-size physical180-degree rotation detection",
+    "M4-M6 and whole-branch review"
+  ],
+  "logHashes": {
+    "m3-acceptance-test.log": "6c24bf51fb33470f17dc2f17b146e296b7f65c6c2e41695746ae3ecb0710ee36",
+    "m3-acceptance-lint.log": "95645ae3697e927ed3630e18f37d90670eba8b948aa3ced56360fc4bbf54c660",
+    "m3-build-main-final.log": "93c9121887562847e5a368ea2e11a7645355afc03e75547c3c9ab02bea5a3195",
+    "m3-build-preload.log": "808ec772ce0227aa044f8a834b4b439b607a4a95d87aa87442ddf32a1622381e",
+    "m3-build-renderer.log": "eb38cc80369334ec6b736002a929f75ee29ed0aad2d93ccf954b492f2fa5f15e",
+    "m3-types-final.log": "60adcd294147287a2eb009072f3b41c9fe2ad1169601cbc5e2a21df412435a96",
+    "m3-electron-final.log": "75ec4ae7d2a3139ea96682cac2eba22b1cfeaf77b44ab8c4c684268f8202760b"
+  }
+}

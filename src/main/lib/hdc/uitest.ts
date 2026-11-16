@@ -8,8 +8,8 @@ import {
 import { getTargetStore, setTargetStore } from './base'
 import { getUserDataPath, handleEvent, resolveResources } from 'share/main/lib/util'
 import { CaptureUiDriver } from './captureDriver'
-import { initCaptureIpc, prepareCapture, withCaptureInput, withCaptureTouch } from './captureSessions'
-import { sendScreencastInput, validateScreencastInput } from './screencastInput'
+import { gateCaptureInput, initCaptureIpc, prepareCapture, withCaptureInput, withCaptureTouch } from './captureSessions'
+import { sendScreencastInput, sendScreencastSystemKey, validateScreencastInput } from './screencastInput'
 export { cancelCapturePreparation, shutdownCaptures } from './captureSessions'
 import { NativeVideo } from './nativeVideo'
 import { ControlRecovery } from './controlRecovery'
@@ -99,6 +99,11 @@ function toHierarchyXml(json: any) {
 const getDisplaySize: IpcGetDisplaySize = async function (connectKey) {
   const uiDriver = await getUiDriver(connectKey)
   return uiDriver.getDisplaySize()
+}
+
+export function captureInputEndpoint() { return { host: client.options.host, port: client.options.port } }
+export function inputSystemKey(key: string, code: number) {
+  return gateCaptureInput(key, undefined, () => sendScreencastSystemKey(key, code, client.options))
 }
 
 export function init(c: Client) {

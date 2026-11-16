@@ -6,7 +6,7 @@ const { fixture, outcome, bounded, frame, READY, PARAM, INFO, KERNEL, MEMORY, SC
 const commands = [PARAM, INFO, KERNEL]
 const fields = ['params', 'info', 'kernel']
 
-test('overview uses five finite reads, preserves fields and leaves key input on legacy transport', async (t) => {
+test('overview uses five finite reads, preserves fields and routes key input through the shared input gate', async (t) => {
   const f = await fixture(t, { envPort: '18710', expectedPort: 18710 })
   f.state.params += 'const.product.brand = Synthetic brand\nconst.product.model = Test model\n'
   const result = await f.overview()
@@ -24,8 +24,8 @@ test('overview uses five finite reads, preserves fields and leaves key input on 
   assert.equal(f.clients.length, 10)
   assert.ok(f.clients.every((s) => s.kind === 'finite' && s.closed))
   await f.input()
-  assert.deepEqual(f.state.requests.slice(-2), [READY, 'shell uinput -K -d 3 -u 3'])
-  assert.ok(f.clients.slice(10).every((s) => s.kind === 'legacy'))
+  assert.equal(f.state.systemKey.code, 1)
+  assert.equal(f.clients.length, 10, 'overview must not open a second legacy shell for key input')
 })
 
 for (const [index, command] of commands.entries()) {

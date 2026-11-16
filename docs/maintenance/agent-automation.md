@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-**M1/M2 已实现并完成本机验证，继续 M3 会话/截图/输入。** 当前 CLI 仅开放服务与设备发现，MCP 尚未实现。源码检查基线 `fb476c6`，工作区开始时干净。
+**M1/M2 本机验证完成，M3 实现及本机模拟验证完成，真机/平台验收 pending；继续 M4。** 已实现会话 lease、真实画布截图、二进制传输、CLI 文件输出及 Android/Harmony 输入适配；已完成真实 Electron 模拟闭环，真机未验收，MCP 尚未实现。源码检查基线 `fb476c6`，工作区开始时干净。
 
 - [Spec：SP-AUTO-001](../superpowers/specs/2026-11-16-agent-automation-design.md)
 - [连续实施计划](../superpowers/plans/2026-11-16-agent-automation.md)
@@ -19,7 +19,7 @@
 | M0 | spec、计划、定位入口、独立文档审查 | 完成 | 独立审查 4 项边界已纳入；链接/需求追踪检查通过；用户已确认 |
 | M1 | 契约、能力、鉴权本地服务 | 本机完成 | 协议/传输/生命周期专项、真实 Electron 服务验证；Windows 待验收 |
 | M2 | CLI、启动诊断、可分发客户端 | 本机完成 | 子进程/并发启动、tarball 安装、发现链路；Windows 待验收 |
-| M3 | 会话、截图、输入闭环 | 未开始 | 真机/平台现场状态尚未检查 |
+| M3 | 会话、截图、输入闭环 | 本机候选，真机 pending | 应用 1044 passed / 2 skipped；lint、三部分构建通过；真实 Electron 模拟闭环通过；Android USB claim 失败，未获得真机截图/输入证据 |
 | M4 | 现有设备工具覆盖 | 未开始 | 需要逐操作登记矩阵 |
 | M5 | Agent skill、MCP | 未开始 | 无宿主接入证据 |
 | M6 | 全量回归、跨平台验收与交付 | 未开始 | 不沿用历史投屏证据冒充自动化验收 |
@@ -27,14 +27,14 @@
 ## 恢复与下一步
 
 1. 阅读本页和 spec，再核对 `git status --short` 与当前 commit；保留用户改动。
-2. 方向已确认，不重复询问；M1/M2 本机完成，从 M3 的会话所有权、真实就绪和帧引用测试继续。
+2. 方向已确认，不重复询问；M1/M2 本机完成，从 M4 的逐操作矩阵及共享设备查询业务继续；M3 外部环境验证仍保留。
 3. 每阶段同步本页、计划 checkbox、证据和 RUNBOOK；已有 M1/M2 测试不要重新实现。
 4. 真机或系统缺席时先推进契约、测试、文档和其他可做阶段，保留 pending；不把环境缺席视作已验收。
 5. 若出现方向变更，先更新 spec 的决策及需求映射，再调整计划；普通修复不改变需求编号。
 
 ## 问题定位索引
 
-以下自动化模块为规划路径，创建前以“现有入口”排查；不可把规划路径误当已存在代码。
+M1—M3 的下列入口已创建；M4/M5 入口仍为规划路径。
 
 | 症状 | 需求 | 规划入口 | 现有入口 |
 | --- | --- | --- | --- |
@@ -82,3 +82,21 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 ## 方向确认记录
 
 2026-11-16 用户明确回复：“按此方向推进，持续完成后续实现、测试和修复，不用再确认细节，记得同步更新 spec、进度和验证记录。”随后回复 continue。方向与连续实施均已授权。
+
+## M3 集成检查点（尚未验收）
+
+- 新入口：`controller.ts` 统一会话/截图/输入，`runtime.ts` 连接真实窗口与平台适配器；`frameBridge.ts` 验证 sender/mainFrame/requestId，renderer `AutomationFrameSource.ts` 仅导出已绘制的 video canvas。
+- `wire.ts` 使用 4 字节大端 JSON 长度 + JSON envelope + PNG 的有界响应；图像上限 32 MiB，JSON 上限 1 MiB。CLI 原子写入，默认不覆盖；`input text --text-file/--text-stdin` 避免内容出现在参数中。
+- GUI 与自动化共享设备输入门禁；Harmony trusted API 使用真实注册窗口/lease，不构造 IPC sender。GUI toolbar 按键也走门禁。Harmony 最后 lease 释放等待实际捕获停止，失败保留重试义务。
+- 已修复：挂起的按下请求阻碍释放、GUI 按下失败后无法抬起、队列满残留触摸预约、旧代际清理与新动作交错、Android key-down 失败漏 key-up。
+- 待验证：完整回归修正后的结果、三部分构建、Electron 模拟闭环、真实设备截图/输入、Windows；物理 180° 旋转识别尚无验证，不能把 bitmap rotation=0 当作设备物理方向。
+
+## M3 最新验证结果
+
+[结构化证据](../scrcpy-plus/evidence/agent-automation/M3/2026-11-16/verification.json)。完整应用回归 1046 项：1044 passed、2 skipped；Licia 两模式各 606 passed/4 pending；lint、主进程/preload/renderer/CLI 构建通过。新增模块类型诊断为空，但整个仓库 tsc 仍受既有配置及代码诊断影响。
+
+真实 Electron + **明确模拟设备**：真实 Canvas PNG、输入后新帧屏障、双客户端 lease、GUI 隐藏仍可截图、最后 owner 释放与 discovery 清理均通过。可复跑 `node script/check-automation-electron.mjs <空的证据目录>`（先 build:cli）。
+
+真实应用发现 Android/iOS receiver，未发现 Harmony。Android 打开后端返回 `LIBUSB_ERROR_ACCESS`，没有发送输入、没有取得截图；lease 释放、正常退出、discovery 删除均通过。不能将模拟图视为真机验收。运行中发现的销毁窗口引用错误已补 RED→GREEN 测试，重新运行不再出现。
+
+下一步 M4：逐项列出 overview/apps/processes/layout/logs/ports/shell 的现有入口、参数、取消能力和验收；先实现查询与有界传输，再逐批接入写操作。M5 MCP/M6 仍未完成。
