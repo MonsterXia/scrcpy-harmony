@@ -16,14 +16,14 @@ export class AutomationFrameSource {
   constructor(private port: FramePort, private canvas: () => HTMLCanvasElement | null, private now = Date.now) {
     this.unsubscribe = port.on('automationFrameRequest', request => this.respond(request))
   }
-  presented() {
+  presented(rotation = 0) {
     const canvas = this.canvas()
     if (this.disposed || !canvas || !canvas.width || !canvas.height) return
     const previous = this.latest
-    // Rotation describes the exported bitmap's coordinate system, which is
-    // already oriented by the decoder (no additional rotation is applied).
-    this.latest = { sequence: ++this.sequence, capturedAt: this.now(), width: canvas.width, height: canvas.height, rotation: 0, generation: this.generation }
-    if (!previous || previous.width !== canvas.width || previous.height !== canvas.height) this.report({ state: 'presented', metadata: this.latest })
+    // Bitmap is already oriented. Device rotation also invalidates old input
+    // references when an iPhone turns 180 degrees without changing dimensions.
+    this.latest = { sequence: ++this.sequence, capturedAt: this.now(), width: canvas.width, height: canvas.height, rotation, generation: this.generation }
+    if (!previous || previous.width !== canvas.width || previous.height !== canvas.height || previous.rotation !== rotation) this.report({ state: 'presented', metadata: this.latest })
   }
   reset(state: 'starting' | 'error' | 'disconnected' = 'starting') {
     this.generation++; this.latest = undefined

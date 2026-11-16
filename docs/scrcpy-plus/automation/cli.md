@@ -47,7 +47,7 @@ JSON 模式 stdout 只有一个结果对象；人类输出失败信息写 stderr
 
 截图可选 `--max-age-ms <0..600000>`（默认 2000）、`--allow-stale` 和 `--after-action <observationToken>`。after-action 必须取得动作后更晚的呈现序号，静止/断流会超时，allow-stale 不能绕过。token 和截图坐标引用最多有效 60 秒；尺寸或解码代际改变后须重新截图。frameId 不能证明控件位置或业务成功，需要观察新图。
 
-Harmony scroll 使用 250ms 滑动，端点限制在画布内；正 dx/dy 为手指右/下移动，位移为画布尺寸的 delta/2。GUI 手势与自动化动作不会交错；BUSY 时等 GUI 手势结束。未确认释放会阻止后续输入，应释放会话并重新启动。iOS 为接收画面模式，不支持输入。
+Harmony scroll 使用 250ms 滑动，端点限制在画布内；正 dx/dy 为手指右/下移动，位移为画布尺寸的 delta/2。GUI 手势与自动化动作不会交错；BUSY 时等 GUI 手势结束。未确认释放会阻止后续输入，应释放会话并重新启动。iOS AirPlay 不支持输入；USB WDA 支持截图、完整手势及有限按键，需先按 [iOS USB 配置](../ios-usb-wda.md) 签名启动 Runner。USB WDA 写入结果不明时隔离后续输入，不自动重试。
 
 ```sh
 scrcpy-plus sessions start --device '<key>' --client agent-a --json

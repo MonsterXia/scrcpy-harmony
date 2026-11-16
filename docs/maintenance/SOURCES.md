@@ -1,5 +1,7 @@
 # 维护来源记录
 
+2026-11-16 用户要求 iOS USB WDA/ReplayKit 与概览按项目规范独立审查、提 PR，并在审查和 CI 通过后合入。已修复审查问题并完成本地回归，最终门禁和交付记录见 [iOS PR 交付](ios-pr-2026-11-16.md)。签名后真机控制验收仍待办。
+
 2026-11-16 用户要求“为什么切换语言需要重启？，请做即时切换”。本地实现、构建及真实 Electron 双语运行验证见[即时语言切换](instant-language.md)，初轮设备和投屏为模拟 IPC；用户随后明确授权更新本机安装，已备份旧应用及配置、替换 Plus 并启动设置页供试用。未公开发布。
 
 2026-11-16 用户进一步要求“按照项目规范提起pr，审核没问题且CI通过后合入”。本轮授权整分支通过正常 PR 门禁交付，见 [PR #88](https://github.com/MonsterXia/scrcpy-harmony/pull/88) 与[交付记录](agent-automation-pr-2026-11-16.md)；不扩大为发布或安装替换。
@@ -245,3 +247,9 @@
 - 2026-11-16：多端投屏统一深浅样式、概览整合 Android/Harmony 选择与五秒闪烁修复，见 [维护记录](mirror-workspace.md)。
 
 2026-11-16 用户追加授权按项目规范提 PR，并在审查、CI 通过后合入；本轮即时语言切换、多端投屏和概览统一由 [PR #89](https://github.com/MonsterXia/scrcpy-harmony/pull/89) 交付，审查修复及最终门禁见 [维护记录](mirror-workspace.md#pr-交付)与 [PR 持续状态](https://github.com/MonsterXia/scrcpy-harmony/pull/89#issuecomment-6912315624)。未公开发行。
+
+- 2026-11-16：用户授权 WDA + ReplayKit iOS USB 接入，并明确先完成代码/自动验证。固定 [droidrun/WebDriverAgent 8ce9d6f](https://github.com/droidrun/WebDriverAgent/tree/8ce9d6f528e6f6c01bc0fa903b33555842d43571)，归档哈希/许可证见 `vendor/ios-wda`；[专项记录](ios-usb-wda.md)区分未签名编译、模拟自动验证与待办真机验收。方案参考 [mobilerun](https://github.com/droidrun/mobilerun)，实现未使用闭源 mobilerun-ios 二进制。
+
+- 2026-11-16：用户优先要求在概览选择 iPhone 并读取信息；USB lockdown 与正式 Electron IPC 真机读取结果、双语 UI 和回归见 [iPhone 概览维护记录](ios-overview.md)。无需 WDA，未将此验收扩展为截图/控制成功。
+
+- 2026-11-16 用户追加授权更新已安装应用并打开 iPhone 概览：完整构建/打包、备份、签名和安装后启动校验，以及真实安装版界面观察见 [安装记录](ios-overview.md#用户授权更新安装版) 和 [安装证据](../scrcpy-plus/evidence/ios-overview-2026-11-16/local-install.json)。

@@ -49,7 +49,7 @@ try {
         { key: 'android:a', name: 'Pixel 9', platform: 'android', state: 'ready' },
         { key: 'android:b', name: 'Pixel 9', platform: 'android', state: 'unauthorized' },
         { key: 'android:c', name: 'Offline', platform: 'android', state: 'offline' },
-        { key: 'ios:01234567-1234567890abcdef', name: 'iPhone Fixture', platform: 'ios', state: 'ready' },
+        { key: 'ios:01234567-1234567890abcdef', name: 'iPhone Fixture', platform: 'ios', state: 'ready', transport: 'usb' },
         { key: 'ios:airplay-receiver', name: 'AirPlay', platform: 'ios', transport: 'receiver', state: 'waiting' },
       ]
       targets.push(
@@ -64,7 +64,7 @@ try {
       ipcMain.handle('getDevices', () => { globalThis.__plusDiscoveryReads++; return { targets, errors: [] } })
       ipcMain.handle('showScreencast', (_, key) => {
         const target = targets.find(target => target.key === key)
-        if (!sessions.some(item => item.deviceKey === key)) sessions.push({ id: key, deviceKey: key, name: target.name, platform: target.platform, state: target.platform === 'ios' ? 'waiting' : 'running' })
+        if (!sessions.some(item => item.deviceKey === key)) sessions.push({ id: key, deviceKey: key, name: target.name, platform: target.platform, state: target.transport === 'receiver' ? 'waiting' : 'running' })
       })
       ipcMain.handle('getMirrorSessions', () => sessions)
       ipcMain.handle('getMirrorLayout', () => layout)
@@ -74,6 +74,7 @@ try {
       ipcMain.handle('getDeviceOverview', (_, key) => {
         globalThis.__plusOverviewReads.push(key)
         const target = targets.find(target => target.key === key)
+        if (target.platform === 'ios') return {name:target.name,brand:'Apple',model:'iPhone18,1',osVersion:'iOS 27.2.1',buildVersion:'24B156',hardwareModel:'V53AP',abi:'arm64e',udid:'01234567-1234567890abcdef',serialNum:'',modelNumber:''}
         return { name: target.name, brand: target.platform === 'android' ? 'Google' : 'HUAWEI', model: target.name,
           osVersion: target.platform === 'android' ? 'Android 16 (API 36)' : '', processor: 'ARM', abi: 'arm64-v8a', memTotal: 8589934592, physicalResolution: '1080x2400', serialNum: 'fixture', kernelVersion: '6.1' }
       })
@@ -82,7 +83,7 @@ try {
     const page = await application.firstWindow(); page.setDefaultTimeout(15000)
     const errors = []; page.on('pageerror', error => errors.push(error.message))
     await page.locator('[data-workspace]').waitFor()
-    await page.waitForFunction(() => document.querySelectorAll('[data-device-row]').length === 4 && document.querySelectorAll('[data-session-row]').length === 2)
+    await page.waitForFunction(() => document.querySelectorAll('[data-device-row]').length === 5 && document.querySelectorAll('[data-session-row]').length === 2)
     const feature = page.locator('[data-navigation="devices"]')
     assert.equal(await feature.locator('svg').count(), 1)
     assert.equal(await page.locator('nav [data-navigation]').count(), 8)
@@ -109,14 +110,14 @@ try {
     await page.locator('[data-device-row="android:a"] input').check()
     await page.locator('[data-device-row="harmony:a"] input').check()
     await page.screenshot({ path: path.join(directory, `${language}-unavailable-devices.png`) })
-    // Match the approved two-available/two-running reference for visual comparison.
+    // Match the three-available/two-running layout including USB iOS for visual comparison.
     await application.evaluate(({ BrowserWindow }) => {
       const targets = globalThis.__plusTargets
       globalThis.__plusUnavailable = targets.filter(t => t.state === 'unauthorized' || t.state === 'offline')
       for (let i = targets.length - 1; i >= 0; i--) if (globalThis.__plusUnavailable.includes(targets[i])) targets.splice(i, 1)
       for (const win of BrowserWindow.getAllWindows()) win.webContents.send('changeTarget')
     })
-    await page.waitForFunction(() => document.querySelectorAll('[data-device-row]').length === 2)
+    await page.waitForFunction(() => document.querySelectorAll('[data-device-row]').length === 3)
     // Themes must use identical geometry, including after responsive reflow.
     for (const width of [960, 1280]) {
       await application.evaluate(({ BrowserWindow }, width) => BrowserWindow.getAllWindows()[0].setSize(width, 850), width)
@@ -140,7 +141,7 @@ try {
       globalThis.__plusTargets.push(...globalThis.__plusUnavailable)
       for (const win of BrowserWindow.getAllWindows()) win.webContents.send('changeTarget')
     })
-    await page.waitForFunction(() => document.querySelectorAll('[data-device-row]').length === 4)
+    await page.waitForFunction(() => document.querySelectorAll('[data-device-row]').length === 5)
     await page.locator('[data-action="start-selected"]').click()
     await page.waitForFunction(() => document.querySelectorAll('[data-session-row]').length === 4)
     await page.locator('[data-session-row="android:a"] [data-action="focus"]').click()
@@ -162,7 +163,7 @@ try {
     await page.locator('#workspace-device').selectOption('android:a')
     await page.waitForFunction(() => document.querySelector('[data-overview-field="ohosVersion"]')?.textContent === 'Android 16 (API 36)')
     assert.equal(await page.locator('[data-navigation="shell"]').isDisabled(), true)
-    assert.equal(await page.locator('#workspace-device option').count(), 6)
+    assert.equal(await page.locator('#workspace-device option').count(), 7)
     const readCount = await application.evaluate(() => globalThis.__plusOverviewReads.length)
     await page.evaluate(() => { window.__overviewField = document.querySelector('[data-overview-field="name"]') })
     for (let index = 0; index < 3; index++) {
@@ -185,6 +186,15 @@ try {
       await page.evaluate(theme => main.setSettingsStore('theme', theme), theme)
         await page.waitForFunction(theme => document.querySelector('[data-workspace]').dataset.theme === theme, theme)
       await page.screenshot({ path: path.join(directory, `${language}-overview-android-${theme}.png`) })
+    }
+    await page.locator('#workspace-device').selectOption('ios:01234567-1234567890abcdef')
+    await page.waitForFunction(() => document.querySelector('[data-overview-field="ohosVersion"]')?.textContent === 'iOS 27.2.1')
+    assert.equal(await page.locator('[data-navigation="shell"]').isDisabled(),true)
+    assert.equal(await page.locator('[data-overview-field="hardwareModel"]').innerText(),'V53AP')
+    for (const theme of ['light','dark']) {
+      await page.evaluate(theme=>main.setSettingsStore('theme',theme),theme)
+      await page.waitForFunction(theme=>document.querySelector('[data-workspace]').dataset.theme===theme,theme)
+      await page.screenshot({path:path.join(directory,`${language}-overview-ios-${theme}.png`)})
     }
     await page.locator('#workspace-device').selectOption('harmony:a')
     await page.waitForFunction(() => document.querySelector('[data-overview-field="name"]')?.textContent === 'HUAWEI Mate 80')
@@ -229,7 +239,7 @@ try {
     assert.deepEqual(errors, [])
     report.cases.push({ language, liveLanguageCases, sidebarCases,
       batchSelection: true, focusWithoutRestart: true, layoutScopeAllSessions: true, stopIsolation: true,
-      iosReceiverSeparated: true, overviewPlatforms: ['android', 'harmony'], repeatedDiscoveryPreservesOverview: true,
+      iosReceiverSeparated: true, overviewPlatforms: ['android', 'harmony', 'ios'], repeatedDiscoveryPreservesOverview: true,
       sameGeometryInBothThemes: true, runtime: await application.evaluate(() => process.versions.electron), passed: true })
     await application.close(); application = undefined
   }

@@ -2,27 +2,27 @@ const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const { setup, load, React } = require('./helpers/workspace-renderer.cjs')
 const createRoot = setup(), { act } = React
-async function fixture(t, platform = 'android') {
+async function fixture(t, platform = 'android', transport) {
   const listeners = new Map(), inputs = [], acks = [], decoded = [], outputs = [], fits = []
-  const frameStates = []
+  const frameStates = [], decoderErrors = [], videos = []
   const main = {
     automationFrameState: async state => frameStates.push(state),
     automationFrameResult: async () => {},
     on: (name, fn) => { listeners.set(name, fn); return () => listeners.delete(name) },
-    nativeMirrorInfo: async () => ({ id: 'owned-session', target: { platform, name: 'Phone' }, state: 'starting' }),
-    nativeMirrorOpen: async () => {}, nativeMirrorInput: async input => inputs.push(input),
+    nativeMirrorInfo: async () => ({ id: 'owned-session', target: { platform, transport, name: 'Phone' }, state: 'starting' }),
+    nativeMirrorOpen: async () => {}, nativeMirrorVideo: async enabled => videos.push(enabled), nativeMirrorInput: async input => inputs.push(input),
     nativeMirrorAck: async sequence => acks.push(sequence),
     nativeMirrorFit: async (...args) => fits.push(args),
   }
   const App = load('src/renderer/native-mirror/App.tsx', {
     'common/util': { t: key => key },
-    '../screencast/lib/H264Decoder': class { constructor(output) { outputs.push(output) } push(...args) { decoded.push(args) } destroy() {} },
+    '../screencast/lib/H264Decoder': class { constructor(output, error) { outputs.push(output); decoderErrors.push(error) } push(...args) { decoded.push(args) } destroy() {} },
   }, { main, preload: { setTitle() {} } }).default
   const host = document.body.appendChild(document.createElement('div')), root = createRoot(host)
   await act(async () => root.render(React.createElement(App)))
   t.after(async () => { await act(async () => root.unmount()); host.remove() })
   await act(async () => listeners.get('nativeMirrorState')({ id: 'owned-session', state: 'running' }))
-  return { host, listeners, inputs, acks, decoded, outputs, fits, frameStates }
+  return { host, listeners, inputs, acks, decoded, outputs, fits, frameStates, decoderErrors, videos }
 }
 test('decoded dimensions fit the window once and again on screen rotation', async t => {
   const f = await fixture(t), canvas = f.host.querySelector('canvas')
@@ -69,4 +69,29 @@ test('iOS screen exposes no Android controls or input form', async t => {
   assert.equal(f.host.querySelector('canvas').tabIndex, -1)
   await act(async () => pointer(f.host.querySelector('canvas'), 'pointerdown', 50, 100))
   assert.equal(f.inputs.length, 0)
+})
+
+test('USB iOS accepts taps but pointer cancellation sends cancel rather than committing the gesture', async t => {
+  const f = await fixture(t, 'ios', 'usb'), canvas = f.host.querySelector('canvas')
+  canvas.setPointerCapture = () => {}
+  canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 100, height: 200 })
+  await act(async () => pointer(canvas, 'pointerdown', 50, 100))
+  assert.equal(f.inputs.length, 0)
+  await act(async () => pointer(canvas, 'pointercancel', 50, 100))
+  f.inputs.length = 0
+  canvas.getContext = () => ({ drawImage() {} })
+  await act(async () => f.listeners.get('nativeMirrorFrame')({ sessionId:'owned-session',sequence:1,timestamp:0,data:new Uint8Array([1]),rotation:0 }))
+  await act(async () => f.outputs[0]({displayWidth:390,displayHeight:844,close(){}}))
+  await act(async () => pointer(canvas, 'pointerdown', 50, 100))
+  assert.equal(f.inputs[0]?.action, 'down')
+  assert.deepEqual(JSON.parse(JSON.stringify(f.inputs[0].display)), {width:390,height:844,rotation:0})
+  await act(async () => pointer(canvas, 'pointercancel', 50, 100))
+  assert.equal(f.inputs[1].action, 'cancel')
+})
+
+test('USB iOS video decoder failure requests screenshot fallback', async t => {
+  const f=await fixture(t,'ios','usb')
+  await act(async()=>f.listeners.get('nativeMirrorFrame')({sessionId:'owned-session',sequence:1,timestamp:0,data:new Uint8Array([1])}))
+  await act(async()=>f.decoderErrors[0](Error('unsupported video')))
+  assert.deepEqual(f.videos,[false])
 })

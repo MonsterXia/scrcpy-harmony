@@ -6,9 +6,9 @@ dev.1 合入商店空响应按应用缓存（避免后续图标被全局冷却�
 
 ## 功能入口
 
-左侧顶部「多端投屏」保留独立入口，窄侧栏显示图标，展开侧栏显示名称。页面按“可用设备 → 勾选批量启动 → 正在投屏”组织；iOS 是单独的 AirPlay 接收器。明暗主题共用布局，仅改变语义颜色。
+左侧顶部「多端投屏」保留独立入口，窄侧栏显示图标，展开侧栏显示名称。页面按“可用设备 → 勾选批量启动 → 正在投屏”组织；USB iOS 可作为独立设备启动，AirPlay 仍为单独接收器。明暗主题共用布局，仅改变语义颜色。
 
-侧栏不再单独提供设备选择器，选择器移入「概览」顶部，支持 Android 和 HarmonyOS。`overviewTarget` 持久化概览选择；选中鸿蒙时同步原 `target`（供 HDC 工具使用），选中安卓不会把安卓 key 传给 HDC。安卓概览显示设备信息、启动投屏，其他鸿蒙专用工具入口禁用；恢复旧页面或程序选择受限页面时回到概览。iOS USB 发现项不进入概览。旧 `mirrorTarget` 配置仍兼容保留，投屏页批量选择使用本页稳定 key 集合，不读写工具选择，也不因选择变化停止已有会话。
+侧栏不再单独提供设备选择器，选择器移入「概览」顶部，支持 Android、HarmonyOS 和 USB iPhone。`overviewTarget` 持久化概览选择；选中鸿蒙时同步原 `target`（供 HDC 工具使用），选中安卓不会把安卓 key 传给 HDC。安卓与 USB iOS 概览显示设备信息、启动投屏，其他鸿蒙专用工具入口禁用；恢复旧页面或程序选择受限页面时回到概览。USB iPhone 概览通过 usbmux/lockdown 读取公开设备信息，无需 WDA 或开发者模式；AirPlay 接收器不进入选择器，iOS 不启用鸿蒙工具。旧 `mirrorTarget` 配置仍兼容保留，投屏页批量选择使用本页稳定 key 集合，不读写工具选择，也不因选择变化停止已有会话。
 
 概览只在设备 key/平台/连接状态改变时重置，五秒设备轮询产生同一设备的新对象不会清空内容或重读。`getDeviceOverview(key)` 根据当前发现的平台分派：鸿蒙复用原有限 HDC 读取，安卓执行固定只读 `getprop`、`uname -r`、`wm size`、`cat /proc/meminfo`。安卓有活动投屏时复用其 ADB 连接；无投屏时临时连接，读取后释放；停止中的连接完成清理后才允许临时连接。每条 shell 读取有超时与输出上限，超时仅取消该 shell，不关闭共享投屏连接。
 
@@ -20,13 +20,14 @@ dev.1 合入商店空响应按应用缓存（避免后续图标被全局冷却�
 | --- | --- | --- | --- |
 | Android | 本地 Tango TypeScript ADB/scrcpy 协议源码 + USB 库 + 从源码编译的 scrcpy 3.3.3 手机端服务 | 直接枚举 USB ADB 接口 | 应用内 H.264 画面、点击/拖动/滚动、系统键、键盘和文字粘贴 |
 | Harmony | 保留原 HDC/uitestkit 与原生视频/JPEG 实现 | 原 HDC 监听 | 保留原投屏和输入能力；窗口绑定独立设备 |
-| iOS | UxPlay 接收核心、libplist/PlayFair/llhttp/mDNS 源码编译的 Node-API 模块 | 应用直接实现 usbmux/lockdown 查询；无线手机发起 AirPlay 后连接接收器 | 应用内 H.264 画面，暂不反向控制 |
+| iOS USB | 直接 usbmux + 固定源码 WDA/ReplayKit Runner | UDID 绑定的 USB 发现与连接 | PNG 截图、点击/手势/文字、可选 H.264；代码和自动验证完成，真机待验收 |
+| iOS AirPlay | UxPlay/libplist/PlayFair/llhttp/mDNS 源码 Node-API 模块 | 手机发起 AirPlay 连接 | H.264 画面，不支持控制 |
 
 Android/iOS 的运行代码不启动 adb、scrcpy、UxPlay、idevice_id 或 ideviceinfo 可执行文件，也不查找它们的路径。原“工具路径”设置已移除。安卓通过 USB 协议在手机端启动自带采集服务，不启动电脑端 scrcpy 程序。
 
 USB 库是应用的生产依赖，当前固定 `usb@2.19.1` 的 libusb 后端。安卓读写端点设置一秒超时，读取空闲超时继续等待；清理按成功 claim 的接口记录释放，断连后不再读取配置描述符，并始终尝试关闭原生句柄。已有失败／断连窗口再次启动时会重试后端。2026-11-05 已验证三星实际拔插后无需重启应用即可恢复，鸿蒙继续运行且双端合并出图；见 [恢复证据](evidence/samsung-usb-reconnect-2026-11-05/verification.json)。
 
-iOS 原生模块在进程内 Node worker 中加载，原生线程停止不会阻塞 Electron 主线程；mDNS 服务发现也内建于模块，不依赖单独的 Bonjour/GStreamer/UxPlay 程序。OpenSSL、libplist 等静态链接进模块。本机 `otool -L` 显示仅依赖系统 libc++/libSystem。
+AirPlay 原生模块在进程内 Node worker 中加载，原生线程停止不会阻塞 Electron 主线程；mDNS 服务发现也内建于模块，不依赖单独的 Bonjour/GStreamer/UxPlay 程序。OpenSSL、libplist 等静态链接进模块。本机 `otool -L` 显示仅依赖系统 libc++/libSystem。
 
 iOS 的 USB 信息查询使用系统 Apple USB 服务：macOS 的 `/var/run/usbmuxd`，Windows 的本机 27015 端口。Windows 仍需 Apple 设备驱动/服务，安卓需可用的 USB 驱动。这属于操作系统访问条件，应用不安装或替换系统驱动。
 
@@ -65,7 +66,7 @@ npm start
 
 ## 使用与能力边界
 
-在可用设备列表勾选 Android／HarmonyOS 设备后点击「启动所选」，或使用行内单台启动。已存在的会话只显示在正在投屏区；失败/断开的会话可重试，单台失败不丢失其他启动结果。关闭一台不会停止其他会话。iPhone 在单独的 iOS 无线投屏区开启接收器后，从手机「屏幕镜像」选择 Scrcpy Plus；未收到连接时明确显示等待。
+在可用设备列表勾选 Android／HarmonyOS／USB iOS 设备后点击「启动所选」，或使用行内单台启动。已存在的会话只显示在正在投屏区；失败/断开的会话可重试，单台失败不丢失其他启动结果。关闭一台不会停止其他会话。iPhone 在单独的 iOS 无线投屏区开启接收器后，从手机「屏幕镜像」选择 Scrcpy Plus；未收到连接时明确显示等待。
 
 「独立窗口／并排／合并」直接调用 `applyMirrorLayout`，作用于全部实际活动窗口，与勾选待启动设备无关。后端保留带 key 过滤的接口兼容调用方，但本页不发送过滤范围。`getMirrorLayout` 读取合并窗口是否存在及上次排列后的窗口几何；窗口移动、数量变化或关闭合并窗口后不会继续显示失效的排列状态。「打开窗口」通过 `focusMirror(key)` 恢复/聚焦已有窗口；属于合并视图的设备聚焦合并窗口，不重新启动后端。实现为 `devices/Devices.tsx`、`main/window/mirrorLayout.ts`。
 
@@ -85,7 +86,7 @@ npm start
 
 iPhone 与电脑处于同一局域网，在“控制中心 → 屏幕镜像”（两个重叠矩形图标）中选择“Scrcpy Plus”。音乐卡片的 AirPlay 列表只切换音频输出，不会发送手机屏幕。接收器已启动、手机已连接、手机已断开分别显示；不是只根据进程存活判断连接状态。当前允许一个活动 iOS 接收器/视频流。2026-11-05 已完成真实 iPhone H.264 出图验证，画面 498×1080，用户确认正常；与安卓会话同时运行，见 [live.json](evidence/ios-airplay-2026-11-05/live.json)。
 
-“iOS 无线投屏接收器”是操作入口，不代表已发现一台 iPhone。USB UDID 和 AirPlay 客户端身份没有可靠绑定时，应用不将传入画面自动认作所选 USB 手机。暂不支持 iOS USB 视频采集、反向控制、从电脑自动发起镜像、音频播放或 DRM 视频。
+“iOS 无线投屏接收器”是操作入口，不代表已发现一台 iPhone。USB UDID 和 AirPlay 客户端身份没有可靠绑定时，应用不将传入画面自动认作所选 USB 手机。此 AirPlay 路径不支持反向控制、从电脑自动发起镜像、音频播放或 DRM 视频。USB 路径新增 WDA + ReplayKit，使用步骤与未验收范围见 [iOS USB 接入](ios-usb-wda.md)。
 
 ## 代码入口
 
@@ -94,11 +95,13 @@ iPhone 与电脑处于同一局域网，在“控制中心 → 屏幕镜像”�
 - `vendor/airplay/`：UxPlay/libplist 原始源码、各自许可证和上游提交号。
 - `native/airplay/`：Node-API 桥接、CMake 构建和 OpenSSL 许可证。
 - `src/main/lib/devices/android.ts`：USB 发现、ADB 身份/认证、部署内置服务、视频及输入控制。
-- `src/main/lib/devices/ios-usbmux.ts`：分帧 usbmux/lockdown 协议、超时、设备信息和待信任状态。
+- `src/main/lib/devices/ios-usbmux.ts`：分帧 usbmux/lockdown 协议、超时、设备信息、待信任状态及按 UDID 连接端口。
+- `src/main/lib/devices/ios{,-wda,-video}.ts`：WDA 会话、PNG/输入、HTTP USB 传输、ReplayKit H.264 分帧及自有 capture 清理。
+- `script/ios-wda.mjs` / `vendor/ios-wda/manifest.json`：固定源码获取、校验、Xcode 构建和专用 Runner 启动。
 - `src/main/lib/devices/airplay.ts`、`airplay-worker.ts`：进程内 worker、接收器生命周期和有界帧队列。
 - `src/main/lib/devices/media.ts`：每窗口最多两张未确认帧；丢帧或编码参数变化后等待关键帧并恢复配置。
 - `src/main/window/nativeMirror.ts`：按设备绑定窗口、独立启动/停止、校验 IPC sender/mainFrame、输入与帧确认路由。
-- `src/renderer/native-mirror/`：应用内画面、状态、鼠标/键盘/文字控件；iOS 不展示安卓输入控件。
+- `src/renderer/native-mirror/`：应用内画面、状态、鼠标/键盘/文字控件；USB iOS 支持输入与 `nativeMirrorVideo` 开关，AirPlay 只读；PNG/H.264 共用帧流。
 - 原鸿蒙 `window/screencast.ts` 和 `hdc/captureSessions.ts` 保留独立窗口/owner 管理。
 
 已删除外部工具启动、查找和路径设置代码。应用名及配置目录与上游独立，未配置 Plus 独立发行源前不检查/发布上游更新。
@@ -133,3 +136,7 @@ Windows AirPlay 模块采用 MinGW 延迟导入库与宿主解析钩子，将 No
 `src/main/automation/` 在持有设备的 Electron 进程提供 loopback 鉴权服务；`src/cli/` 为独立 Node 客户端，不连接 USB。当前服务状态、诊断、发现、会话 lease、画布截图与 Android/Harmony 输入已实现，真实 Electron 模拟闭环通过；Android/Harmony核心点击/滑动/文字闭环已通过，本机Codex app-server实际35工具/双端PNG/Harmony XML/租约验收通过；Windows及剩余物理矩阵pending。Harmony同版本HAP覆盖/启动/停止也已补真机证据；首次/升级/清空卸载保留待验收。现有Harmony工具和MCP已完成本地候选，见[验收交接](automation/acceptance.md)。`npm run build:cli` 输出 `dist/cli`；完整 build 同时生成客户端包。显式 `SCRCPY_PLUS_PROFILE` 在单实例锁和 store 初始化前生效。协议、使用方法与验证边界见[自动化指南](automation/README.md)和[维护记录](../maintenance/agent-automation.md)。
 
 自动化最新验证源码 `1f48fbd`：应用1094pass/2skip、Licia各606/4、lint/fullbuild/包检查/Electron模拟通过；实际Codex app-server及双真机结果见[续验记录](../maintenance/agent-automation-android-codex-2026-11-16.md)。tsc既有诊断保留，iOS按用户要求暂缓；这些结果不回写上方历史集成阶段计数。
+
+2026-11-16 新增 iOS USB WDA + ReplayKit 代码接入与自动验收；取代上方历史阶段的“iOS 暂缓”范围，未取得真机证据。见[专项维护记录](../maintenance/ios-usb-wda.md)。
+
+2026-11-16 追加 USB iPhone 概览：已在真实 Electron 与连接的 iPhone 上验证设备选择和信息读取，详见[专项记录](../maintenance/ios-overview.md)。这不代表 WDA 截图/点击已通过真机验收。

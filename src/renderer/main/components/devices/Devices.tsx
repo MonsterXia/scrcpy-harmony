@@ -7,7 +7,7 @@ import Style from './Devices.module.scss'
 
 const receiverKey = 'ios:airplay-receiver'
 const retryable = (session: MirrorSession) => ['error', 'disconnected'].includes(session.state)
-const ready = (device: ITarget) => device.platform !== 'ios' && device.state === 'ready'
+const ready = (device: ITarget) => device.transport !== 'receiver' && device.state === 'ready'
 const platformName = (platform?: string) => platform === 'android' ? 'Android' : platform === 'ios' ? 'iOS' : 'HarmonyOS'
 function sessionStatus(state: MirrorSession['state']) {
   switch (state) {
@@ -38,12 +38,12 @@ export default observer(function Devices() {
   const [layout, setLayout] = useState<MirrorLayout>('independent')
   const alive = useRef(false), operation = useRef(false), revision = useRef(0)
   const activePanel = store.panel === 'devices'
-  const available = store.targets.filter(device => device.platform !== 'ios' && !sessions.some(session => session.deviceKey === device.key))
+  const available = store.targets.filter(device => device.transport !== 'receiver' && !sessions.some(session => session.deviceKey === device.key))
   const selectable = available.filter(ready).map(device => device.key)
   const selection = selected.filter(key => selectable.includes(key))
   const selectionScope = JSON.stringify(selectable)
-  const receiver = sessions.find(session => session.platform === 'ios')
-  const deviceSessions = sessions.filter(session => session.platform !== 'ios')
+  const receiver = sessions.find(session => session.deviceKey === receiverKey)
+  const deviceSessions = sessions.filter(session => session.deviceKey !== receiverKey)
 
   useEffect(() => {
     alive.current = true

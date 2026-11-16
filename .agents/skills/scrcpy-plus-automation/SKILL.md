@@ -13,7 +13,7 @@ Run `scrcpy-plus doctor --json`, then `devices list --json` and `devices capabil
 
 Call `sessions start --device KEY --json` even if the GUI already mirrors it: this obtains your lease on the shared backend. Record sessionId and leaseId. `sessions wait --session SESSION --state running --json` waits for actual frame presentation. An existing window is not proof of running video.
 
-`ios:airplay-receiver` is a waiting receiver, not a connected iPhone. Start it and have the user select Scrcpy Plus from iOS Screen Mirroring. Wait for running; iOS is view-only. Capabilities distinguish supported from currently available. Never substitute Harmony tools for unsupported Android/iOS operations.
+`ios:airplay-receiver` is a waiting receiver, not a connected iPhone. Start it and have the user select Scrcpy Plus from iOS Screen Mirroring. Wait for running; AirPlay is view-only. USB iOS uses a separate `ios:<UDID>` target and requires an explicitly prepared, signed WDA Runner for screenshots and control; see `docs/scrcpy-plus/ios-usb-wda.md`. Device discovery or overview metadata does not prove WDA is ready. Capabilities distinguish supported from currently available. Never substitute Harmony tools for unsupported Android/iOS operations.
 
 ## Observe → act → observe
 

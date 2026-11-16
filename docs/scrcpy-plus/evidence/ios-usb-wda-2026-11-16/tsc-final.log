@@ -1,0 +1,69 @@
+src/main/lib/devices/android.ts(42,35): error TS2304: Cannot find name 'USBDevice'.
+src/main/lib/devices/android.ts(46,42): error TS2304: Cannot find name 'USBDevice'.
+src/main/lib/devices/android.ts(51,113): error TS2304: Cannot find name 'USBInTransferResult'.
+src/main/lib/devices/android.ts(57,33): error TS2304: Cannot find name 'USBDevice'.
+src/main/lib/hdc/base.ts(58,60): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+src/main/lib/hdc/captureDriver.ts(143,33): error TS2322: Type 'true' is not assignable to type 'false'.
+src/main/lib/hdc/nativeVideo.ts(315,68): error TS2339: Property 'path' does not exist on type 'never'.
+src/main/lib/hdc/nativeVideo.ts(318,36): error TS2339: Property 'sha256' does not exist on type 'never'.
+src/main/lib/hdc/nativeVideo.ts(364,53): error TS2339: Property 'file' does not exist on type 'never'.
+src/main/lib/hdc/nativeVideo.ts(368,80): error TS2339: Property 'file' does not exist on type 'never'.
+src/main/lib/hdc/nativeVideo.ts(374,24): error TS2339: Property 'file' does not exist on type 'never'.
+src/main/lib/hdc/nativeVideoResources.ts(40,17): error TS2345: Argument of type '{ path: string; file: string; size: number; sha256: string; }' is not assignable to parameter of type 'never'.
+src/main/lib/hdc/nativeVideoResources.ts(42,41): error TS2339: Property 'file' does not exist on type 'never'.
+src/main/lib/hdc/nativeVideoResources.ts(42,72): error TS2339: Property 'file' does not exist on type 'never'.
+src/main/lib/hdc/parameters.ts(1,10): error TS2614: Module '"hdckit"' has no exported member 'Target'. Did you mean to use 'import Target from "hdckit"' instead?
+src/main/lib/hdc/port.ts(14,14): error TS18046: 'forward' is of type 'unknown'.
+src/main/lib/hdc/port.ts(15,15): error TS18046: 'forward' is of type 'unknown'.
+src/main/lib/hdc/port.ts(51,14): error TS18046: 'reverse' is of type 'unknown'.
+src/main/lib/hdc/port.ts(52,15): error TS18046: 'reverse' is of type 'unknown'.
+src/main/lib/hdc/uitest.ts(55,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/renderer/main.tsx(9,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-toolbar/css'.
+src/renderer/main.tsx(10,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-tab/css'.
+src/renderer/main.tsx(11,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-notification/css'.
+src/renderer/main.tsx(12,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-modal/css'.
+src/renderer/main.tsx(13,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-image-viewer/css'.
+src/renderer/main.tsx(14,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-setting/css'.
+src/renderer/main.tsx(15,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-icon-list/css'.
+src/renderer/main.tsx(16,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-data-grid/css'.
+src/renderer/main.tsx(17,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-command-palette/css'.
+src/renderer/main.tsx(18,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-dom-viewer/css'.
+src/renderer/main.tsx(19,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-logcat/css'.
+src/renderer/main.tsx(20,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-virtual-list/css'.
+src/renderer/main.tsx(21,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-split-pane/css'.
+src/renderer/main.tsx(22,8): error TS2882: Cannot find module or type declarations for side-effect import of 'luna-performance-monitor/css'.
+src/renderer/main/components/application/Application.tsx(422,28): error TS2339: Property 'data' does not exist on type 'DataGridNode | DataGridNode[]'.
+  Property 'data' does not exist on type 'DataGridNode[]'.
+src/renderer/main/components/application/Application.tsx(422,58): error TS2339: Property 'container' does not exist on type 'DataGridNode | DataGridNode[]'.
+  Property 'container' does not exist on type 'DataGridNode[]'.
+src/renderer/main/components/application/Application.tsx(425,32): error TS2339: Property 'data' does not exist on type 'DataGridNode | DataGridNode[]'.
+  Property 'data' does not exist on type 'DataGridNode[]'.
+src/renderer/main/components/application/Application.tsx(431,36): error TS2339: Property 'data' does not exist on type 'DataGridNode | DataGridNode[]'.
+  Property 'data' does not exist on type 'DataGridNode[]'.
+src/renderer/main/components/overview/PortMappingModal.tsx(91,33): error TS2341: Property 'nodes' is private and only accessible within class 'DataGrid'.
+src/renderer/main/components/overview/PortMappingModal.tsx(261,42): error TS2341: Property 'nodes' is private and only accessible within class 'DataGrid'.
+src/renderer/main/components/overview/PortMappingModal.tsx(266,31): error TS2341: Property 'selectSingle' is private and only accessible within class 'DataGrid'.
+src/renderer/main/components/overview/PortMappingModal.tsx(272,52): error TS2339: Property 'data' does not exist on type 'DataGridNode | DataGridNode[]'.
+  Property 'data' does not exist on type 'DataGridNode[]'.
+src/renderer/main/components/webview/Webview.tsx(62,51): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/renderer/main/components/webview/Webview.tsx(65,36): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/renderer/main/components/webview/Webview.tsx(230,34): error TS2341: Property 'selectSingle' is private and only accessible within class 'DataGrid'.
+src/renderer/main/components/webview/Webview.tsx(242,36): error TS2341: Property 'selectSingle' is private and only accessible within class 'DataGrid'.
+src/renderer/main/components/webview/Webview.tsx(251,48): error TS2339: Property 'data' does not exist on type 'DataGridNode | DataGridNode[]'.
+  Property 'data' does not exist on type 'DataGridNode[]'.
+src/renderer/screencast/lib/ScreencastClient.ts(320,28): error TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'ArrayBufferView<ArrayBuffer>'.
+    Types of property 'buffer' are incompatible.
+      Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+        Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength
+src/share/renderer/components/FilePreview.tsx(4,23): error TS2307: Cannot find module 'luna-file-list' or its corresponding type declarations.
+src/share/renderer/components/FilePreview.tsx(8,29): error TS2307: Cannot find module 'luna-video-player/react' or its corresponding type declarations.
+src/share/renderer/components/FilePreview.tsx(9,29): error TS2307: Cannot find module 'luna-music-player/react' or its corresponding type declarations.
+src/share/renderer/components/FilePreview.tsx(10,28): error TS2307: Cannot find module 'luna-text-viewer/react' or its corresponding type declarations.
+src/share/renderer/components/FilePreview.tsx(11,33): error TS2307: Cannot find module 'luna-music-visualizer/react' or its corresponding type declarations.
+src/share/renderer/process/components/ProcessMananger.tsx(82,47): error TS2339: Property 'data' does not exist on type 'DataGridNode | DataGridNode[]'.
+  Property 'data' does not exist on type 'DataGridNode[]'.
+src/share/renderer/video/App.tsx(2,29): error TS2307: Cannot find module 'luna-video-player/react' or its corresponding type declarations.

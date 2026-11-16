@@ -1,0 +1,83 @@
+{
+  "date": "2026-11-16",
+  "branch": "codex/ios-usb-wda",
+  "baseline": "62a7e28727a8feb20848ba340af492516a444c5a",
+  "scope": "Code and automated verification. User requested no signing or device setup in this stage.",
+  "tests": {
+    "command": "node --test --test-concurrency=4 test/*.test.cjs",
+    "pass": 1147,
+    "skip": 2,
+    "fail": 0
+  },
+  "licia": {
+    "normal": {
+      "pass": 606,
+      "pending": 4
+    },
+    "fallback": {
+      "pass": 606,
+      "pending": 4
+    }
+  },
+  "lint": true,
+  "i18n": true,
+  "builds": {
+    "main": true,
+    "preload": true,
+    "renderer": true
+  },
+  "typescript": {
+    "diagnostics": 55,
+    "matchesBaselineByteForByte": true,
+    "command": "npx tsc --noEmit --ignoreDeprecations 6.0"
+  },
+  "wda": {
+    "commit": "8ce9d6f528e6f6c01bc0fa903b33555842d43571",
+    "archiveSha256": "66e1e8b3bbc8c1bbf5d7a0a62627fed8d2a9987447efd5bd7f26a9f87a4ba64f",
+    "xcode": "26.6 (17F113)",
+    "command": "npm run ios:wda -- build --unsigned",
+    "result": "TEST BUILD SUCCEEDED",
+    "targets": [
+      "WebDriverAgentRunner",
+      "WebDriverAgentBroadcast"
+    ],
+    "upstreamCompilerAndAnalyzerWarnings": true,
+    "signed": false
+  },
+  "electron": {
+    "version": "45.0.0",
+    "deviceIPC": "SIMULATED",
+    "pngDecode": true,
+    "h264WebCodecs": true,
+    "pngFallback": true,
+    "rotationMetadata": true,
+    "locales": [
+      "en-US",
+      "zh-CN"
+    ],
+    "workspaceUI": true,
+    "decoderFailureFallbackRegression": true
+  },
+  "review": {
+    "importantFindings": 4,
+    "fixedAndRechecked": 4,
+    "remainingImportant": 0,
+    "finalLifecycleFocusedTests": 17
+  },
+  "physicalAcceptance": {
+    "performed": false,
+    "signingIdentityConfigured": false,
+    "connectedIPhone": false,
+    "pending": [
+      "signed installation and Runner startup",
+      "USB screenshot and real tap",
+      "ReplayKit consent and continuous video",
+      "rotation, lock, disconnect/reconnect, multi-device isolation",
+      "Windows and GUI/MCP concurrency"
+    ]
+  },
+  "deployment": {
+    "installedApplicationUpdated": false,
+    "published": false
+  }
+}

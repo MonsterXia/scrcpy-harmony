@@ -1,4 +1,6 @@
 export interface NativeFrame {
+  format?: 'png'
+  rotation?: number
   data: Uint8Array
   timestamp: number
   config?: boolean
@@ -28,6 +30,12 @@ export class FrameGate {
   private pps?: Uint8Array
   private waitingForKey = true
   push(frame: NativeFrame) {
+    if (frame.format === 'png') {
+      if (frame.data.byteLength > 32 * 1024 * 1024 || this.pending.size >= 2) return undefined
+      this.waitingForKey = true
+      const sequence = ++this.sequence; this.pending.add(sequence)
+      return { ...frame, sequence }
+    }
     if (frame.data.byteLength > 8 * 1024 * 1024) return undefined
     const units = h264Units(frame.data)
     for (const unit of units) {

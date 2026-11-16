@@ -181,3 +181,15 @@ test('overview selects both platforms, keeps Harmony tool target and prevents st
   const request = f.store.refreshTargets(); f.requests[1].resolve(devices); await request
   assert.equal(f.store.overviewTarget.key, 'a')
 })
+
+test('USB iPhone overview selection survives restore and polling without changing the Harmony target',async()=>{
+  const iphone={key:'ios:phone',platform:'ios',transport:'usb',state:'ready'}
+  const f=await fixture({initialize:false,saved:{panel:'shell',overviewTarget:iphone,target:{key:'h',platform:'harmony'}}})
+  const devices=[{key:'h',platform:'harmony'},iphone,{key:'ios:airplay-receiver',platform:'ios',transport:'receiver'}]
+  f.requests[0].resolve(devices);await tick()
+  assert.equal(f.store.overviewTarget.key,iphone.key);assert.equal(f.store.panel,'overview');assert.equal(f.store.target.key,'h')
+  f.store.selectPanel('application');assert.equal(f.store.panel,'overview')
+  f.store.selectOverviewTarget('ios:airplay-receiver');assert.equal(f.store.overviewTarget.key,iphone.key)
+  const request=f.store.refreshTargets();f.requests[1].resolve(devices.map(d=>({...d})));await request
+  assert.equal(f.store.overviewTarget.key,iphone.key)
+})

@@ -6,3 +6,4 @@
 .canvas { min-height: 0; width: 100%; flex: 1; object-fit: contain; background: #080808; touch-action: none; outline-offset: -2px; }
 .error { color: #f99; font-size: 12px; }
 .android { padding: 0; gap: 0; }
+.iosControls { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; flex-shrink: 0; font-size: 12px; span { flex: 1 1 100%; } }

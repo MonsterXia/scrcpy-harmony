@@ -203,3 +203,9 @@ M0-3 的 `.github/workflows/update-acceptance.yml` 是固定版本的实际更�
 商店探针使用 `script/lib/live-probe-lifecycle.mjs` 管理验证截止和资源归属：超时后不再推进验证，等待晚到资源后逆序清理；应用关闭必须确认子进程退出，强杀或清理失败均不能报告通过。120 秒为验证阶段预算，总运行时间还包括有限的启动等待与清理。最终报告在清理后写入，`test/live-probe-lifecycle.test.cjs` 覆盖这些失败边界。
 
 macOS 无证书开发包可运行 `npm run pack -- --no-publish --adhoc-sign`，显式重建包签名；CI 使用该参数，Build 仅在未配置 CSC_LINK 时使用。`check-macos-install.mjs` 对从 DMG 复制的应用执行 deep/strict codesign 验证，失败阻止打包验收。它仍不代表 Developer ID、公证或 Gatekeeper 放行。
+
+### iOS USB 开发验证
+
+`npm run ios:wda -- build --unsigned` 从 `vendor/ios-wda/manifest.json` 固定来源编译 WDA 和 ReplayKit 扩展；无需签名但不能用于真机安装。显式 `run --udid ... --team ...` 才签名启动，保持专用 Runner 运行。脚本用局部 `DEVELOPER_DIR`，不修改 xcode-select。`node script/check-ios-ui.mjs [证据目录]` 使用真实 Electron、生产 React/PNG/WebCodecs 与模拟设备 IPC 验证双语界面；不能替代真机。详见 [iOS USB 文档](../../../../docs/scrcpy-plus/ios-usb-wda.md)。
+
+桌面 `build` 重建生成的 `dist/build`，排除 `build/ios-wda` 源码及签名缓存，避免复用旧发行目录时携带本地 Runner/签名产物。WDA 始终按独立准备流程安装到手机。

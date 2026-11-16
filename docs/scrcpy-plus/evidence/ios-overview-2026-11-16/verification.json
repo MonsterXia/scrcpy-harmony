@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-16",
+  "scope": "USB iPhone overview only; WDA screenshot/input remains unverified on device",
+  "tests": {
+    "pass": 1152,
+    "skip": 2,
+    "fail": 0,
+    "command": "node --test --test-concurrency=4 test/*.test.cjs"
+  },
+  "focusedTests": 38,
+  "lint": true,
+  "builds": [
+    "main",
+    "preload",
+    "renderer"
+  ],
+  "typescript": {
+    "existingDiagnostics": 55,
+    "matchesPriorBaseline": true
+  },
+  "electron": {
+    "simulatedIPC": {
+      "locales": [
+        "en-US",
+        "zh-CN"
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "iosOverview": true,
+      "otherPlatformsRegression": true
+    },
+    "realUSBAndProductionIPC": {
+      "passed": true,
+      "modelIdentifier": "iPhone18,1",
+      "osVersion": "iOS 27.2.1",
+      "buildVersion": "24B156",
+      "hardwareModel": "V53AP",
+      "cpuArchitecture": "arm64e",
+      "udidMatchesSelectedDevice": true,
+      "harmonyToolsDisabled": true,
+      "serialProvided": false,
+      "modelNumberProvided": false
+    }
+  },
+  "installedAppUpdated": false,
+  "signingOrDeveloperModeChanged": false
+}

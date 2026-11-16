@@ -113,6 +113,18 @@ test('distribution build rejects missing or corrupted native video resources', (
   assert.equal(fs.existsSync(path.join(f.root, 'dist/package.json')), false)
 })
 
+test('distribution excludes WDA source and signing cache, including stale output', t => {
+  const f = fixture(t)
+  for (const dir of ['build/ios-wda', 'dist/build/ios-wda']) {
+    fs.mkdirSync(path.join(f.root, dir), { recursive: true })
+    fs.writeFileSync(path.join(f.root, dir, 'signing-fixture'), 'local signing cache')
+  }
+  const result = f.run()
+  assert.equal(result.status, 0, result.stderr)
+  assert.equal(fs.existsSync(path.join(f.root, 'dist/build/ios-wda')), false)
+  assert.equal(fs.readFileSync(path.join(f.root, 'build/ios-wda/signing-fixture'), 'utf8'), 'local signing cache')
+})
+
 test('a failed build stops before packaging incomplete output', (t) => {
   const f = fixture(t)
   const result = f.run('build:preload')

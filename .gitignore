@@ -16,3 +16,4 @@ vendor/tango/*/esm/**/*.js
 vendor/tango/*/esm/**/*.js.map
 
 build/android-server/
+build/ios-wda/

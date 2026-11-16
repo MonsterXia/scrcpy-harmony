@@ -1,5 +1,21 @@
 # Scrcpy Plus 跨平台改造（2026-11-03）
 
+## iOS PR 交付（2026-11-16）
+
+用户授权独立审查、PR 和 CI 通过后合入。新上下文审查确认的清理丢响应、媒体端口监听两项问题已修复并复核，另排除桌面包中的 WDA 缓存。最终应用 1156 pass / 2 skip，Licia 两模式各 606/4，lint/i18n 通过；独立审查 98/98，无遗留问题。Xcode 27.2 许可阻止补丁后 Runner 编译，签名和控制真机验收仍待办。门禁与最终交付见[PR 记录](docs/maintenance/ios-pr-2026-11-16.md)。
+
+## USB iPhone 概览（2026-11-16）
+
+状态：**实现、自动回归及真机信息读取完成。** 概览选择器新增 USB iPhone，排除 AirPlay；使用系统 usbmux/lockdown 读取公开信息，无需 WDA 签名或开发者模式，未知字段不猜测。选择持久化/轮询保留，iOS 禁用鸿蒙工具。真实 Electron + 当前连接 iPhone 已验证选择、iOS 版本/构建/型号/架构显示；未执行 WDA 截图或点击，未更改设备开发者模式。应用测试 1152 pass / 2 skip，三项构建、lint/i18n 通过；TypeScript 与既有 55 项诊断一致。见 [维护记录](docs/maintenance/ios-overview.md)。用户随后授权更新安装版：完整构建/arm64 打包、签名及安装后 smoke 通过，旧应用与配置已备份；已打开 `/Applications/Scrcpy Plus.app` 并选中真实 iPhone 概览，保留供用户查看。下一步仍是 WDA 签名与开发者模式配置。
+
+
+## iOS USB WDA + ReplayKit（2026-11-16）
+
+状态：**代码与自动验证完成，签名和真机验收待办。** 按用户确认先交付代码：独立 USB iPhone 会话、PNG 截图、点击/手势/文字、可选 ReplayKit H.264。AirPlay 仍只读。应用 1147 pass / 2 skip，Licia 两模式各 606 pass / 4 pending，lint、三项应用构建、WDA+扩展未签名构建通过；TypeScript 55 项既有诊断无新增。真实 Electron 验证使用模拟设备 IPC，未声称真机已跑通。独立审查四项问题已修复并复核。
+
+使用与准备见 [iOS USB 文档](docs/scrcpy-plus/ios-usb-wda.md)，状态、失败记录及下一步见 [维护记录](docs/maintenance/ios-usb-wda.md)，[证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-16/verification.json)。下一步待签名账户与真机就绪后，依次验证截图/点击、连续视频、旋转与拔插。未更新安装版。
+
+
 ## 多端投屏交互重设计（2026-11-16）
 
 状态：**源码实现、自动回归、Electron 模拟界面及本机安装更新完成。** 按用户批准的第二轮第一张实现分组设备列表/勾选批量启动，深浅模式共用布局、仅颜色不同；已有会话独立排列/打开/停止，iOS 单列接收器。追加把侧栏设备选择器移入概览，支持 Android/Harmony；按平台限制鸿蒙工具，安卓元数据复用投屏连接或临时只读连接。修复五秒发现轮询将同设备新对象误判为切换而清空概览的闪烁，保持真正切换/断连与异步过期保护。

@@ -1,0 +1,8 @@
+    /bin/sh -c /var/folders/ms/n2sp2yy17l3b_gk8snb8sz5w0000gn/T/SchemeScriptAction-QOFMW7.sh
+
+** TEST BUILD SUCCEEDED **
+
+
+The following commands produced analyzer issues:
+	AnalyzeShallow /Users/eason/Desktop/Code/scrcpy-harmony/build/ios-wda/WebDriverAgent-8ce9d6f528e6f6c01bc0fa903b33555842d43571/WebDriverAgentBroadcast/FBExtSessionPipeline.m normal arm64 (in target 'WebDriverAgentBroadcast' from project 'WebDriverAgent')
+(1 command with analyzer issues)
