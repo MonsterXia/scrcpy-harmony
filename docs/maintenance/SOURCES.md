@@ -233,3 +233,7 @@
 2026-11-16 Agent 自动化：用户授权连续实施共享服务/CLI/MCP，最终本地候选源码4c37ba6，见[维护记录](agent-automation.md)、[需求与验收交接](../scrcpy-plus/automation/acceptance.md)。真实Harmony只读工具和截图证据与模拟Electron/MCP证据分开；完整真机/Windows不标记验收完成。
 
 2026-11-16 Agent 自动化真机续验：源码 `0eed41c`，来源为用户已连接并静置的Android/Harmony、产品CLI和隔离Electron。清理超时实测根因、同lease恢复、17轮修复后清理（最终构建4轮）、双端输入/双owner/端口规则生命周期，以及独立审查竞态修复见[专项报告](agent-automation-device-acceptance-2026-11-16.md)和[脱敏证据](../scrcpy-plus/evidence/agent-automation/device/2026-11-16/verification.json)。iOS按用户要求暂缓，旧阶段失败记录不覆盖。
+
+2026-11-16 安卓失败与Codex续验：来源为用户失败截图、本机USB claim探针、现有ADB目标状态、用户授权反馈与真实Codex app-server；源码 `1f48fbd`。35工具、双端PNG/XML、租约与GUI共享、现场销毁窗口回调修复及失败记录见[专项报告](agent-automation-android-codex-2026-11-16.md)和[脱敏证据](../scrcpy-plus/evidence/agent-automation/codex/2026-11-16/verification.json)。用户进一步授权开发中关闭日常安装版；最终保留源码构建双端投屏，未替换安装。
+
+同轮HAP补查沿[历史签名包哈希](hap-install.md)在桌面找到1.0.0/1.0.1；手机已有1.0.1，补产品CLI同版本覆盖/启动/停止，保留既存数据；证据并入本轮Codex专项，首次/升级/破坏性矩阵未冒充通过。

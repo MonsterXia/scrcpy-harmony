@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-**M1—M5 本地候选实现完成；M6 全量回归、构建和独立审查修复完成，完整真机/Windows矩阵仍未验收。** 共享服务、CLI、35个MCP工具及Agent skill已交付。最新修复源码 `0eed41c`，工作分支 `codex/agent-automation`；[验收与交接](../scrcpy-plus/automation/acceptance.md)包含全部需求映射、取舍及遗留事项。Android/Harmony 核心截图→点击/滑动/文字→新帧闭环已通过；Harmony 同类清理超时已复现修复，17轮修复后清理通过（最终构建4轮）。详见[真机验收与修复](agent-automation-device-acceptance-2026-11-16.md)，iOS按用户要求暂缓。
+**M1—M5 本地候选实现完成；M6 全量回归、构建和独立审查修复完成，完整真机/Windows矩阵仍未验收。** 共享服务、CLI、35个MCP工具及Agent skill已交付。最新修复源码 `1f48fbd`，工作分支 `codex/agent-automation`；[验收与交接](../scrcpy-plus/automation/acceptance.md)包含全部需求映射、取舍及遗留事项。Android/Harmony 核心截图→点击/滑动/文字→新帧闭环已通过；Harmony 同类清理超时已复现修复，17轮修复后清理通过（最终构建4轮）。此前[真机验收与修复](agent-automation-device-acceptance-2026-11-16.md)保留；最新[安卓恢复与Codex宿主验收](agent-automation-android-codex-2026-11-16.md)已补实际MCP双端截图/资源/租约闭环，iOS按用户要求暂缓。
 
 - [Spec：SP-AUTO-001](../superpowers/specs/2026-11-16-agent-automation-design.md)
 - [连续实施计划](../superpowers/plans/2026-11-16-agent-automation.md)
@@ -20,14 +20,14 @@
 | M1 | 契约、能力、鉴权本地服务 | 本机完成 | 协议/传输/生命周期专项、真实 Electron 服务验证；Windows 待验收 |
 | M2 | CLI、启动诊断、可分发客户端 | 本机完成 | 子进程/并发启动、tarball 安装、发现链路；Windows 待验收 |
 | M3 | 会话、截图、输入闭环 | 本机候选，真机部分验证 | Electron模拟及Android/Harmony核心输入真机闭环通过；双owner/跨设备隔离通过；iOS暂缓、物理旋转/完整断连pending |
-| M4 | 现有设备工具覆盖 | 四批本机候选完成；真机部分验证 | Harmony只读工具通过；forward/reverse规则增删真机通过；专用HAP应用写入pending |
-| M5 | Agent skill、MCP | 本机候选完成 | 官方 SDK 2.4.0、真实 stdio 客户端、安装包通过；Codex 宿主 pending |
-| M6 | 全量回归、跨平台验收与交付 | 本地候选交付；全矩阵待验收 | 1089pass/2skip，Licia各606/4，lint/fullbuild、安装包、Electron通过；清理超时与独立审查首帧竞态已修复 |
+| M4 | 现有设备工具覆盖 | 四批本机候选完成；真机部分验证 | Harmony只读工具通过；forward/reverse规则增删真机通过；HAP同版本覆盖/启动/停止真机通过；首次/升级/清空卸载pending |
+| M5 | Agent skill、MCP | 本机候选完成 | SDK2.4.0、安装包、真实Codex app-server35工具/双端PNG/XML/lease通过；当前聊天热加载未验证 |
+| M6 | 全量回归、跨平台验收与交付 | 本地候选交付；全矩阵待验收 | 1094pass/2skip，Licia各606/4，lint/fullbuild、安装包、Electron通过；USB提示和销毁窗口延迟回调已修复 |
 
 ## 恢复与下一步
 
 1. 阅读本页和 spec，再核对 `git status --short` 与当前 commit；保留用户改动。
-2. 方向已确认，不重复询问；不重复实现M1—M5，从交接页未测矩阵继续：专用HAP、物理旋转/完整断连、Windows、实际Codex宿主；iOS依用户决定暂缓。上轮Minor已修复，最新结果见[独立审查修复记录](agent-automation-review-2026-11-16.md)。
+2. 方向已确认，不重复询问；不重复实现M1—M5，从交接页未测矩阵继续：HAP首次/升级/清空卸载、物理旋转/完整断连、Windows；实际Codex宿主已通过，当前聊天热加载未验证，iOS依用户决定暂缓。上轮Minor已修复，最新结果见[独立审查修复记录](agent-automation-review-2026-11-16.md)。
 3. 每阶段同步本页、计划 checkbox、证据和 RUNBOOK；已有 M1/M2 测试不要重新实现。
 4. 真机或系统缺席时先推进契约、测试、文档和其他可做阶段，保留 pending；不把环境缺席视作已验收。
 5. 若出现方向变更，先更新 spec 的决策及需求映射，再调整计划；普通修复不改变需求编号。
@@ -163,3 +163,15 @@ AUTO-BUG-004（已修复）：--app-arg 无法传 -- 开头参数；保留明确
 - 修复后17轮计划清理均一次成功，其中最终源码4轮；两端真实输入、新帧观察、owner隔离与临时端口规则清理通过。输入会覆盖手机剪贴板，原内容未读取/恢复。
 - 最终应用1089pass/2skip；Licia各606pass/4pending；lint/fullbuild、Electron模拟9项、CLI安装/MCP35工具通过。tsc退出2，忽略行列偏移后基线诊断不变。
 - 测试lease为0、正常退出、discovery删除；目标ADB恢复，原安装应用已重开。iOS用户暂缓，Windows/专用HAP/物理旋转与完整断连/Codex宿主保留pending。
+
+## 安卓恢复与 Codex 宿主续验（最新）
+
+源码 `1f48fbd`，[专项报告](agent-automation-android-codex-2026-11-16.md)与[脱敏证据](../scrcpy-plus/evidence/agent-automation/codex/2026-11-16/verification.json)。
+
+- AUTO-BUG-013：安卓USB失败实测为已有ADB占用；精确detach及用户授权后恢复。产品新增USB ACCESS/BUSY固定分类和双语提示，2项回归RED→GREEN；不自动夺取其他工具接口。
+- AUTO-BUG-014：真实MCP释放捕获窗口后延迟位置保存访问已销毁对象；保存和显示兜底均加存活检查，2个失败分支及活窗口行为回归通过。
+- Codex本机已注册scrcpy-plus；实际app-server发现35工具，schema/在线状态/真实查询/非法输入错误/Android和Harmony PNG/Harmony XML通过。独占lease释放stopped；GUI共享lease释放后窗口仍running；最终MCP lease=0。
+- 1094pass/2skip、Licia各606/4、lint/fullbuild、安装包、Electron模拟9项通过，tsc既有诊断不变。真实手机画面只保留在私有忽略目录。
+- 用户明确允许开发中关闭日常安装版，现已退出；源码构建双端GUI保留运行，ADB目标保持释放，避免再次冲突。未替换安装或推送。
+- HAP已追溯到桌面，哈希匹配；现有1.0.1同版本覆盖（cleanupConfirmed=true）、启动、前台确认、停止通过，前后应用集合一致。既存测试包数据未清理。
+- iOS暂缓；Windows、HAP首次/升级/清空卸载、物理旋转/更广断连/长期矩阵待补。当前已有聊天工具热加载未验证，与实际app-server宿主通过分开记录。

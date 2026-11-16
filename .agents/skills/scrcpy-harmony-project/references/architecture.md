@@ -227,3 +227,5 @@ Canvas pointer 事件
 `src/mcp/index.ts` 是独立 Node stdio 适配器，共用 automation/protocol 注册表、CLI client/profile，经同profile服务调用。`script/build-cli.mjs` 同时打包CLI和MCP，包含SDK依赖及许可；不在Electron主进程启动MCP。
 
 自动化坐标校验延伸到派发点：AndroidMirror.input 的内部 expectedGeometry 由 nativeMirrors.inputBackend 绑定原截图尺寸，设备队列执行时再核对，释放不受新几何阻断；Harmony adapter 接受缩放但检查图像方向/比例，并在非释放触摸前有界读取实际尺寸。GUI IPC不接收expectedGeometry，自动化不伪造GUI sender。
+
+原生投屏失败的 `MirrorSession/NativeMirrorInfo.connectionIssue` 为固定分类，不承载原始异常：Android ACCESS/BUSY通过nativeMirrorState/info IPC给renderer双语提示；重试/恢复清除。USB仍由后端独占，不自动detach其他ADB。共享window.ts的延迟位置保存及ready兜底必须先核对窗口存活。真实Codex宿主探针为 `script/check-automation-codex.mjs`，其结果与SDK模拟测试分开。

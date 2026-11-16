@@ -9,8 +9,8 @@
 | AUTO-06 | `apps info` | hdc/bundle.ts getBundleInfos | 已实现；本机专项通过；自动化仅读设备元数据 |
 | AUTO-06 | `apps top` | hdc/bundle.ts getTopBundle | 已实现；本机专项通过 |
 | AUTO-06 | `processes list` | hdc/base.ts getProcesses | 已实现；本机专项通过 |
-| AUTO-06/07 | `apps start/stop` | hdc/bundle.ts startBundle/stopBundle | 已实现；名称校验、exit marker 确认，本机专项通过 |
-| AUTO-06/07 | `apps install` | hdc/bundle.ts installBundle | 已实现；绝对 HAP、512MiB 上限、私有暂存、取消/不确定结果专项通过 |
+| AUTO-06/07 | `apps start/stop` | hdc/bundle.ts startBundle/stopBundle | 已实现；名称校验、exit marker确认；专用HAP真实启动/前台确认/停止通过 |
+| AUTO-06/07 | `apps install` | hdc/bundle.ts installBundle | 已实现；绝对HAP、512MiB上限、私有暂存/取消专项；既有1.0.1同版本覆盖真机通过（cleanupConfirmed=true） |
 | AUTO-06/07 | `apps uninstall/clear-data/clear-cache` | hdc/bundle.ts 对应函数 | 已实现；确认结果，不自动重试；真机 pending |
 | AUTO-06 | `layout dump` | hdc/uitest.ts dumpWindowHierarchy | 已实现；有界 XML、等待取消专项通过 |
 | AUTO-06/07 | `logs capture` | hdc/hilog.ts captureHilog / hostCommand | 已实现；有限时长/大小、独立 reader 专项通过 |
@@ -37,3 +37,5 @@ M4-C/D：`layout dump --output <file>` 输出最多 1 MiB 的 XML；属性转义
 `shell run --command <script>` 或 `--command-file <file>` / `--command-stdin` 运行一次设备 shell。脚本最多 65536 个字符，文件/stdin 最多 64KiB UTF-8；`--max-bytes` 为 1—131072，默认 128KiB。返回 `{output,exitCode,truncated}`；CLI 退出 0 表示取得结果，设备脚本失败要检查 `data.exitCode`。超时/断连时不能推断设备副作用已撤销，不自动重发。
 
 本批证据：[日志/布局/端口/shell](../evidence/agent-automation/M4/2026-11-16-artifacts/verification.json)。该批当时仅本机与模拟HDC；M6补充实际Harmony有限日志/布局/端口列表/只读shell通过，后续端口规则增删与双端核心交互已通过；专用HAP应用写入及更广矩阵仍pending。
+
+后续[Codex/安卓续验](../../maintenance/agent-automation-android-codex-2026-11-16.md)在本机找到历史专用HAP并核对哈希。手机已有测试包1.0.1，产品CLI同版本覆盖、启动、apps top确认、停止及前后包集合检查通过；没有执行首次安装、版本升级、清空或卸载，没有检查应用数据内容，旧阶段的pending按此逐项更新。

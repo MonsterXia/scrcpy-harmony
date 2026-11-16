@@ -169,3 +169,13 @@ M6 本地候选交付见[验收与交接](../../scrcpy-plus/automation/acceptanc
 - [x] 13轮初版取消修复+4轮最终构建真机清理均一次成功；两端设置页点击/滑动/文字→观察、双owner/跨设备隔离与Harmony端口规则增删通过。
 - [x] 释放任务lease、恢复目标ADB、正常退出测试应用并重开原安装应用；更新spec/进度/[报告](../../maintenance/agent-automation-device-acceptance-2026-11-16.md)/脱敏证据。
 - [ ] 专用HAP应用写入、物理旋转/完整断连矩阵、Windows、实际Codex宿主；iOS按用户要求暂缓，不列为本轮继续操作事项。
+
+## 安卓恢复与 Codex 实际宿主（2026-11-16，源码 1f48fbd）
+
+- [x] 复现安卓USB ACCESS，精确detach现有ADB目标，用户授权后原安装版画面恢复；补双语固定原因与重试清除回归。
+- [x] 注册本机Codex MCP，使用实际app-server和ephemeral context调用35工具中的schema/查询/错误/两端PNG/Harmony XML/lease，不启动模型回合或新持久聊天。
+- [x] 保留外部Harmony owner拒绝、ADB重新接管失败；协调释放后最终独占及GUI共享两组双真机通过。
+- [x] 修复现场发现的销毁窗口延迟回调，RED→GREEN；最终应用1094pass/2skip、Licia各606/4、lint/build/包检查/Electron模拟通过，tsc基线不变。
+- [x] 用户授权关闭日常安装版后，最终只保留源码构建双端GUI，MCP lease=0；同步spec/进度/[报告](../../maintenance/agent-automation-android-codex-2026-11-16.md)/证据。
+- [x] 从历史记录追溯桌面签名HAP并匹配哈希；手机既有1.0.1，同版本覆盖/启动/前台确认/停止通过，包集合一致，保留已有数据。
+- [ ] Windows、HAP首次/升级/清空卸载、物理旋转/更广断连/长期矩阵；当前聊天热加载未验证，iOS继续暂缓。此前“实际Codex宿主pending”由本节更新，不据此勾选全平台总验收。

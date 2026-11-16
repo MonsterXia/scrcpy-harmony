@@ -2,7 +2,7 @@
 
 ## Agent 自动化长任务（2026-11-16）
 
-状态：**本地候选与 Android/Harmony 核心真机闭环通过，完整平台矩阵待验收。** 最新源码 `0eed41c`、分支 `codex/agent-automation`。Harmony 清理超时已复现并修复：关闭会话取消原生启动/首帧等待，5 秒预算不变；独立审查另发现并修复首帧取消竞态。修复后 17 轮清理一次成功（含最终构建 4 轮，0.55–0.93 秒），双端点击/滑动/文字、双 owner 隔离、Harmony 端口规则增删通过。全量应用 1089pass/2skip、Licia各606/4、lint/fullbuild、安装包、真实Electron模拟闭环通过；tsc既有诊断不变。见[本轮真机与修复记录](docs/maintenance/agent-automation-device-acceptance-2026-11-16.md)。iOS按用户要求暂缓；Windows、专用HAP写入、物理旋转/完整断连矩阵及Codex宿主待验收。入口：[spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[计划](docs/superpowers/plans/2026-11-16-agent-automation.md)、[状态/故障定位](docs/maintenance/agent-automation.md)、[验收交接](docs/scrcpy-plus/automation/acceptance.md)。用户已授权自主推进细节；测试lease释放、ADB恢复、原日常应用重新打开，未发布、远端合入或替换安装。
+状态：**Android/Harmony 核心真机及本机 Codex MCP 宿主已验收，剩余平台矩阵待补。** 最新源码 `1f48fbd`，分支 `codex/agent-automation`。安卓失败实测为 ADB 占用 USB，精确释放/手机授权后恢复，补明确双语提示；Codex实际发现35工具，两端PNG、Harmony XML、独占及GUI共享lease释放通过，并修复窗口销毁后的延迟保存/显示回调。全量应用1094pass/2skip、Licia各606/4、lint/fullbuild、安装包、Electron模拟通过，tsc既有诊断不变。已补专用HAP同版本覆盖/启动/停止；既存数据保留。见[安卓恢复与Codex验收](docs/maintenance/agent-automation-android-codex-2026-11-16.md)；此前[Harmony清理17轮回归](docs/maintenance/agent-automation-device-acceptance-2026-11-16.md)保留。当前只保留源码构建双端GUI投屏，MCP lease=0，日常版按授权关闭、未替换；目标USB留给Plus，不重新交回ADB。iOS暂缓；Windows、HAP首次/升级及清空卸载、物理旋转/完整断连与长期矩阵待补，当前聊天热加载单独未验证。入口：[spec](docs/superpowers/specs/2026-11-16-agent-automation-design.md)、[计划](docs/superpowers/plans/2026-11-16-agent-automation.md)、[维护状态](docs/maintenance/agent-automation.md)、[验收交接](docs/scrcpy-plus/automation/acceptance.md)。未推送、发布或远端合入。
 
 ## 上游更新与标准分支交付（2026-11-05）
 

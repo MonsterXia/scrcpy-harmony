@@ -34,3 +34,7 @@ Android LIBUSB_ERROR_ACCESS 也可能是其他 ADB server 已持有 USB 接口�
 输入返回 outcome=unknown 时先观察，不重放文字或手势。旋转后的新后端尺寸与旧截图不匹配时输入会失败，重新截图后再选择坐标；Android 在实际设备输入队列检查，Harmony 检查显示方向/比例并在非释放触摸前重新读取尺寸。Harmony 的尺寸读取与触摸 API 不提供设备侧原子快照，同尺寸物理180°仍待验收。
 
 恢复边界：已释放 lease 至少保留五分钟，同客户端重获后重复释放旧 ID 不影响新 lease；过期后使用 sessions leases 查询当前归属。关闭仍在途时拒绝新 owner，原 lease 可重试清理。安装若结果 unknown，先 apps info 确认；已确认安装的本地清理失败现在单独返回 cleanupConfirmed:false，不据此重新安装。AUTO-FOLLOWUP-001/002 已修复，完整问题及回归见[独立审查记录](../../maintenance/agent-automation-review-2026-11-16.md)。
+
+安卓ACCESS/BUSY现在通过固定USB访问原因显示双语提示；ACCESS也可能是权限拒绝，不能仅凭代码断言占用者。ADB与Plus原生USB不能同时占有该接口。若恢复用户使用Plus，不要在结束时又attach回ADB；后续重连/其他工具可能重新接管，须重新核对目标。实例与MCP应使用同一profile；多个桌面应用同时投屏还可能触发Harmony外部owner保护。最新[安卓恢复/Codex宿主记录](../../maintenance/agent-automation-android-codex-2026-11-16.md)保留两种冲突及恢复证据。
+
+释放后出现 `Object has been destroyed` 且堆栈指向窗口防抖保存时，核对共享window.ts是否包含延迟位置保存和ready显示前的isDestroyed检查（AUTO-BUG-014）；正常视频清理成功不等于所有迟到窗口回调均安全。

@@ -1,7 +1,7 @@
 # Scrcpy Plus Agent 自动化接口 Spec
 
 - 编号：SP-AUTO-001；协议目标：v1；日期：2026-11-16（Asia/Shanghai）。
-- 状态：2026-11-16 用户已确认方向，M1—M5 本机候选实现完成，M6 全量回归/构建/独立审查修复完成；真机/Windows矩阵保留pending，本文完整契约尚未全项验收。
+- 状态：2026-11-16 用户已确认方向，M1—M5 本机候选实现完成，M6 全量回归/构建/独立审查修复完成；Android/Harmony核心真机及本机Codex app-server宿主已通过，剩余真机/Windows矩阵保留pending，本文完整契约尚未全项验收。
 - 源码检查基线：`fb476c6`，设计盘点开始时工作区干净；后续实现和实际运行证据见维护记录，不沿用设计时的静态结论。
 - [实施计划](../plans/2026-11-16-agent-automation.md) · [进度、证据与故障记录](../../maintenance/agent-automation.md) · [项目集成说明](../../scrcpy-plus/integration.md)。
 
@@ -186,3 +186,15 @@ M6 实施补充：截图几何校验需延伸到实际派发点，不能只比�
 用户提供三台已连接手机并授权优先排查 Harmony 清理超时。本轮复现同类超时并定位为未取消的原生启动/升档首帧等待，修复与证据见[真机记录](../../maintenance/agent-automation-device-acceptance-2026-11-16.md)。Android/Harmony 的真实输入、新帧、双设备/双客户端归属和 Harmony 临时端口写入按该记录逐项验收，不代替物理旋转、断连、长期运行或其他固件。
 
 用户随后明确“跳过ios部分测试，后续路线可能变化”：iOS 本轮验收暂缓，接收会话已释放；不标记实际 AirPlay 已通过，也不据此删除原有 view-only 限制。临时 HAP 应用写入、Windows、物理180°与实际 Codex 宿主仍保留待验收。
+
+## 安卓 USB 占用与 Codex 宿主续验（2026-11-16）
+
+用户报告日常安卓投屏失败，本机复现为已有 ADB 持有接口、claimInterface 返回 LIBUSB_ERROR_ACCESS。明确目标 detach 后需手机授权，日常安装版实际画面恢复。直接 USB 后端仍独占接口，不新增隐式关闭 ADB server、批量 detach 或自动接管其他工具的行为。主进程对已确认的 Android USB ACCESS/BUSY 错误传递固定 connectionIssue=usb-access；renderer 显示中英文可操作提示，重试/恢复清除旧原因，其他故障保持通用错误，不把权限拒绝一概断言为 ADB 占用。
+
+Codex 宿主验收使用本机 Codex app-server 的实际 MCP 发现/调用，不用 SDK 客户端替代宿主。允许创建仅用于协议验收的 ephemeral context，不启动模型回合、不创建持久侧栏任务。先验证工具发现、离线 schema、服务缺席错误，再配置明确的本机应用 profile 和执行真实服务/设备调用。宿主版本与当前会话是否热加载分开记录，iOS 继续暂缓。
+
+宿主真机续验额外发现窗口销毁后位置保存的防抖回调仍访问 BrowserWindow。共享窗口层的延迟保存和 ready-to-show 兜底回调都必须先检查 isDestroyed；正常窗口的首次显示及位置保存不变。该生命周期修复独立于 USB 访问与 MCP 协议，需分别保留失败回归及最终宿主清理日志。
+
+本节最终结果：源码 `1f48fbd`，Codex实际宿主查询、双端PNG、Harmony XML、独占/GUI共享lease释放通过；当前聊天热加载不作已验证声明。详见[续验报告](../../maintenance/agent-automation-android-codex-2026-11-16.md)。本节更新此前“Codex宿主待验收”状态，Windows/专用HAP/物理旋转与更广矩阵继续待补。
+
+同轮补充HAP：按历史用户测试包哈希核验本机文件，手机已有1.0.1。已通过同版本覆盖、启动/前台确认/停止，保留既存数据；首次安装/升级与清空/卸载继续待验收，不以测试包名称推断可删除现有数据。
