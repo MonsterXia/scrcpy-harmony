@@ -1,0 +1,7 @@
+{
+  "service.status": "Inspect the connected service instance and protocol version.",
+  "doctor": "Inspect service readiness without opening new device connections.",
+  "schema": "Read supported operation contracts.",
+  "devices.list": "Refresh devices; disconnected mirror sessions may be cleaned up.",
+  "devices.capabilities": "Refresh and inspect capabilities of one explicit device."
+}

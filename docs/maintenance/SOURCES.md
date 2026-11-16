@@ -2,7 +2,7 @@
 
 ## 2026-11-16 Agent 自动化长任务
 
-来源为本轮用户需求：工具后续供 Codex 等使用；要求制定长任务持续推进，只确认大致方向，并将 spec 放入仓库便于定位和修复。已检查基线 `fb476c6` 的设备、会话、窗口输入、截图及构建入口；设计与现状严格区分。推荐方案、范围、验收与执行者默认决策见 [SP-AUTO-001](../superpowers/specs/2026-11-16-agent-automation-design.md)，执行入口见[阶段计划](../superpowers/plans/2026-11-16-agent-automation.md)及[维护记录](agent-automation.md)。方向尚待用户确认；没有将历史任务的发布授权或历史投屏验证当成本任务授权/证据。
+来源为本轮用户需求：工具后续供 Codex 等使用；要求制定长任务持续推进，只确认大致方向，并将 spec 放入仓库便于定位和修复。已检查基线 `fb476c6` 的设备、会话、窗口输入、截图及构建入口；设计与现状严格区分。推荐方案、范围、验收与执行者默认决策见 [SP-AUTO-001](../superpowers/specs/2026-11-16-agent-automation-design.md)，执行入口见[阶段计划](../superpowers/plans/2026-11-16-agent-automation.md)及[维护记录](agent-automation.md)。随后用户明确确认方向并授权持续实现、测试、修复及文档更新；没有将历史任务的发布授权或历史投屏验证当成本任务授权/证据。
 
 2026-11-04 用户进一步授权上述两项 UI 修复提交 PR、独立审查与 CI/门禁通过后合入，明确“不做新版本发布，完成后本地安装替换现有的”。交付沿用 `1.0.5-dev.1` 版本号，本地构建不冒充新公开发行；状态与审查证据见[交付记录](ui-polish-delivery.md)及 [PR #86](https://github.com/MonsterXia/scrcpy-harmony/pull/86)。
 

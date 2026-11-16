@@ -10,7 +10,7 @@
 
 **Spec:** [SP-AUTO-001](../specs/2026-11-16-agent-automation-design.md)
 
-**Status:** M0 文档及独立审查完成，方向待确认；M1—M6 未开始。用户确认大方向后执行 M1；具体阶段状态以[维护记录](../../maintenance/agent-automation.md)为准。
+**Status:** M0 已完成，用户已确认方向；M1/M2 本机验证完成，M3—M6 待执行。连续执行 M3；具体阶段状态以[维护记录](../../maintenance/agent-automation.md)为准。
 
 ## Global Constraints
 
@@ -60,7 +60,7 @@
 - [x] 完成源码盘点、spec、阶段计划和维护入口，所有实现状态保持未开始。
 - [x] 按 brainstorming builder check 独立审查 spec，普通技术问题自行补齐。
 - [x] 检查相对链接、路径和 `git diff --check`；记录文档验证范围。
-- [ ] 只确认“共享服务 + CLI 优先 + 核心闭环 + 设备工具 + MCP”一次大方向，收到后更新状态并进入 M1。
+- [x] 只确认“共享服务 + CLI 优先 + 核心闭环 + 设备工具 + MCP”一次大方向，收到后更新状态并进入 M1。
 
 ## M1：契约、能力和本地服务（AUTO-01/02/07）
 
@@ -70,12 +70,12 @@
 
 **Interfaces:** protocol 定义 `AutomationRequest`、`AutomationResult`、`AutomationContext`（clientId、deadline、AbortSignal）、`AutomationDevice` 和各操作 discriminated union，字段遵守 spec。导出 `dispatch(request: AutomationRequest, context: AutomationContext): Promise<AutomationResult>`。服务模块导出 `startAutomationServer(options): Promise<{ endpoint: string; close(): Promise<void> }>`，options 类型在 server 同文件导出，持有 profilePath、instanceId 和 dispatch。能力定义以同一 schema 驱动服务校验和文档。
 
-- [ ] 写 protocol 测试：未知操作、NaN/越界/冲突参数失败；成功/错误互斥；错误到退出码映射；supported 与 available 分离；单平台发现失败不抹除其他设备。
-- [ ] 运行 `node --test test/automation-protocol.test.cjs`，确认测试因缺失目标行为失败。
-- [ ] 实现类型/运行时校验、结构化发现结果及操作注册表，不开放任意 IPC 调用。
-- [ ] 写真实 loopback server 测试：无 token/错误 token/Origin/Host 被拒绝；超大请求中止；过期 discovery 不被信任；绑定非 loopback 被拒绝；启动失败清理；退出后 endpoint 不可用。
-- [ ] 运行 `node --test test/automation-server.test.cjs` 确认失败，然后实现 server/auth/discovery 和应用启停接线。
-- [ ] 重跑两项测试及 `npm run build:main`；产出协议文档、能力清单初稿及证据，提交 `feat: add automation service contract and local transport`。
+- [x] 写 protocol 测试：未知操作、NaN/越界/冲突参数失败；成功/错误互斥；错误到退出码映射；supported 与 available 分离；单平台发现失败不抹除其他设备。
+- [x] 运行 `node --test test/automation-protocol.test.cjs`，确认测试因缺失目标行为失败。
+- [x] 实现类型/运行时校验、结构化发现结果及操作注册表，不开放任意 IPC 调用。
+- [x] 写真实 loopback server 测试：无 token/错误 token/Origin/Host 被拒绝；超大请求中止；过期 discovery 不被信任；绑定非 loopback 被拒绝；启动失败清理；退出后 endpoint 不可用。
+- [x] 运行 `node --test test/automation-server.test.cjs` 确认失败，然后实现 server/auth/discovery 和应用启停接线。
+- [x] 重跑两项测试及 `npm run build:main`；产出协议文档、能力清单初稿及证据，提交 `feat: add automation service contract and local transport`。
 
 ## M2：CLI 入口与可分发客户端（AUTO-01/02/07/08）
 
@@ -85,11 +85,11 @@
 
 **Interfaces:** `runCli(argv: string[], io: CliIo): Promise<number>`，CliIo 包含 stdout/stderr 写入和可取消 signal；`callAutomation(request: AutomationRequest, options: ClientOptions): Promise<AutomationResult>`，ClientOptions 包含 profilePath、deadline、signal。客户端不 import Electron/native USB；构建生成独立 Node bin 与其 package.json。
 
-- [ ] 写 CLI 子进程测试：`--help`/`schema --json` 离线可用；非法参数退出 2；服务缺失退出 4；stdout JSON 可解析且 stderr 日志不混入；协议冲突退出 2。
-- [ ] 运行 `node --test test/automation-cli.test.cjs` 确认失败；实现 parser、输出和 client，覆盖 profile 参数及显式应用路径。
-- [ ] 实现 `service start/status`、`doctor`、`devices list/capabilities`；service start 复用已有实例并等待实际握手，不依赖 inspector。
-- [ ] 补真实子进程测试：带空格/Unicode 的应用路径；超时退出 6；Ctrl+C 退出 130；响应丢失不重发写操作；同 profile 同时启动只产生一个服务。
-- [ ] 构建 CLI，在临时目录安装生成包并执行 help/schema/doctor；记录无 Node 前提、开发运行和本地包安装命令。重跑定向测试，提交 `feat: expose automation CLI and diagnostics`。
+- [x] 写 CLI 子进程测试：`--help`/`schema --json` 离线可用；非法参数退出 2；服务缺失退出 4；stdout JSON 可解析且 stderr 日志不混入；协议冲突退出 2。
+- [x] 运行 `node --test test/automation-cli.test.cjs` 确认失败；实现 parser、输出和 client，覆盖 profile 参数及显式应用路径。
+- [x] 实现 `service start/status`、`doctor`、`devices list/capabilities`；service start 复用已有实例并等待实际握手，不依赖 inspector。
+- [x] 补真实子进程测试：带空格/Unicode 的应用路径；超时退出 6；Ctrl+C 退出 130；响应丢失不重发写操作；同 profile 同时启动只产生一个服务。
+- [x] 构建 CLI，在临时目录安装生成包并执行 help/schema/doctor；记录无 Node 前提、开发运行和本地包安装命令。重跑定向测试，提交 `feat: expose automation CLI and diagnostics`。
 
 ## M3：会话、截图与输入闭环（AUTO-03/04/05/07/10）
 

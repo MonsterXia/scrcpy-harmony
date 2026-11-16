@@ -1,0 +1,161 @@
+{
+  "recordedAt": "2026-11-16T11:57:31.734524+08:00",
+  "source": {
+    "baseCommit": "329273b0f31be4c476f441d689b8d3baf84cfb62",
+    "workingTree": "uncommitted M1/M2 implementation",
+    "sourceDigest": "cdfc604e158ae1f553b90b9016fbcf252c3520d7a26a4fc575ce97de1269eeb3",
+    "digestFiles": [
+      "package.json",
+      "script/build-cli.mjs",
+      "script/build.mjs",
+      "src/cli/client.ts",
+      "src/cli/index.ts",
+      "src/cli/output.ts",
+      "src/cli/start.ts",
+      "src/common/automation/capabilities.ts",
+      "src/common/automation/descriptions.json",
+      "src/common/automation/protocol.ts",
+      "src/main/automation/auth.ts",
+      "src/main/automation/discovery.ts",
+      "src/main/automation/lifecycle.ts",
+      "src/main/automation/profile.ts",
+      "src/main/automation/server.ts",
+      "src/main/automation/service.ts",
+      "src/main/index.ts",
+      "src/share/main/lib/util.ts",
+      "test/automation-cli-package.test.cjs",
+      "test/automation-cli.test.cjs",
+      "test/automation-lifecycle.test.cjs",
+      "test/automation-profile.test.cjs",
+      "test/automation-protocol.test.cjs",
+      "test/automation-server.test.cjs",
+      "test/helpers/load-automation.cjs"
+    ]
+  },
+  "host": {
+    "platform": "Darwin",
+    "arch": "arm64",
+    "node": "v22.22.3"
+  },
+  "versions": {
+    "app": "1.0.5-dev.1",
+    "protocol": 1
+  },
+  "checks": [
+    {
+      "command": "npm test (baseline before implementation)",
+      "exitCode": 0,
+      "app": {
+        "total": 967,
+        "passed": 965,
+        "skipped": 2
+      },
+      "liciaEach": {
+        "passed": 606,
+        "pending": 4
+      }
+    },
+    {
+      "command": "node --test test/automation-protocol.test.cjs (first run)",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 4,
+      "expected": "new modules missing"
+    },
+    {
+      "command": "node --test test/automation-server.test.cjs (first run)",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 6,
+      "expected": "server implementation missing"
+    },
+    {
+      "command": "npm test (first integration run)",
+      "exitCode": 1,
+      "failed": 1,
+      "test": "project translation catalogs and source usage stay consistent",
+      "resolution": "machine protocol descriptions moved to dedicated JSON; GUI checker remains unchanged"
+    },
+    {
+      "command": "node --test test/automation-cli.test.cjs (first edge-case run)",
+      "exitCode": 1,
+      "failed": 3,
+      "resolution": "403 maps to unauthorized; help cannot bypass validation; app-arg preserves option arguments"
+    },
+    {
+      "command": "node --test test/automation-*.test.cjs",
+      "exitCode": 0,
+      "passed": 26
+    },
+    {
+      "command": "npm test (M1/M2 integration)",
+      "exitCode": 0,
+      "app": {
+        "total": 993,
+        "passed": 991,
+        "skipped": 2
+      },
+      "liciaEach": {
+        "passed": 606,
+        "pending": 4
+      }
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build:main",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build:cli",
+      "exitCode": 0
+    },
+    {
+      "command": "npm pack ./dist/cli; npm install local tgz in temporary prefix; installed CLI schema --json",
+      "exitCode": 0,
+      "operations": 5
+    },
+    {
+      "command": "node --test test/automation-cli.test.cjs (concurrent startup)",
+      "exitCode": 0,
+      "passed": 9
+    },
+    {
+      "command": "tsc --noEmit",
+      "exitCode": 2,
+      "result": "blocked by existing config deprecations"
+    },
+    {
+      "command": "tsc --noEmit --ignoreDeprecations 6.0",
+      "exitCode": 2,
+      "result": "repository-wide errors remain; no diagnostics in new automation or CLI modules; not a clean full typecheck"
+    }
+  ],
+  "electron": {
+    "host": "darwin",
+    "arch": "arm64",
+    "node": "v22.22.3",
+    "kind": "real-electron-service",
+    "passed": true,
+    "protocol": 1,
+    "appVersion": "1.0.5-dev.1",
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "providerErrors": [],
+    "status": true,
+    "discovery": true,
+    "gracefulExit": true,
+    "discoveryRemoved": true
+  },
+  "notVerified": [
+    "Windows ACL, CLI and process lifecycle",
+    "new session/lease, screenshot and input operations (M3 not implemented)",
+    "Harmony live automation (no Harmony in this discovery)",
+    "MCP host integration",
+    "full product packaging or installation replacement"
+  ]
+}

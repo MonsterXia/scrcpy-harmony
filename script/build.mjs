@@ -32,6 +32,7 @@ await validatePlatformBackends('resources')
 runNpm('run', 'build:main')
 runNpm('run', 'build:preload')
 runNpm('run', 'build:renderer')
+runNpm('run', 'build:cli')
 
 await fs.copy('build', 'dist/build', { filter: file => !['native-airplay', 'android-server'].includes(path.relative('build', file).split(path.sep)[0]) })
 await fs.copy('resources/android', 'dist/resources/android')

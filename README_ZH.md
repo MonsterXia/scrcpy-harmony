@@ -2,6 +2,8 @@
 
 基于 Scrcpy Harmony 改造的安卓、鸿蒙与 iOS 投屏工作台。当前开发版的配置、能力边界与验证状态见[集成说明](docs/scrcpy-plus/integration.md)。安卓 USB/ADB 与 iOS AirPlay 已改为源码库集成，并在应用内显示；开发构建条件与未验收范围见集成说明。以下内容为继承的鸿蒙项目文档与历史发行信息。
 
+开发分支自动化：已新增本地服务与独立 Node CLI，提供服务状态和设备发现。支持的命令和限制见[自动化指南](docs/scrcpy-plus/automation/README.md)；会话、输入和 MCP 仍在开发。
+
 ---
 
 # Scrcpy Harmony

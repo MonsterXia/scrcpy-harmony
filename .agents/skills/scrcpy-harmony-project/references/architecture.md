@@ -211,3 +211,7 @@ Canvas pointer 事件
 退出处理立即取消预热并调用 shutdownCaptures 撤销帧路由，等待两者全部结算后允许可选 HDC shutdown。共享 relaunch 使用 app.quit 参与清理，主窗口 before-quit 后不因投屏可见而隐藏阻断退出。控制 HDC 准备尚无统一总截止，因此退出最多等待 10 秒，超时记录清理未确认并 app.exit 真正终止进程，避免迟到任务继续部署；远端资源或外部 HDC 子进程可能遗留，不宣称清理成功。证据见 docs/maintenance/screencast-pr56-review.md。
 
 跨电脑终止前脚本使用设备 `flock` 串行化恢复，锁文件固定保留防止 inode 分裂；Harmony shell 以 stdin 继承锁（所有 read 使用 here-doc）。不支持 flock 或锁忙时跳过接管，已被其他恢复移除则不重复清理。原生客户端未参与该锁，连接与信号之间仍有短竞态。
+
+## Agent 自动化服务与 CLI
+
+`src/main/automation/profile.ts` 在主入口最先配置产品名和显式 profile，必须早于 store 和单实例锁。`src/main/index.ts` 在设备初始化后建立 `service.ts`/`server.ts`，`lifecycle.ts` 负责启动中退出和正常关闭。GUI IPC 仍保持既有校验，自动化只通过已注册 schema 调用；当前已开放状态与设备发现，会话和输入仍在实施。`src/common/automation/` 为机器契约及能力，`src/cli/` 复用鉴权传输但不加载设备库。`script/build-cli.mjs` 生成独立客户端包，`script/build.mjs` 纳入该步骤。当前范围与定位见 [维护记录](../../../../docs/maintenance/agent-automation.md)。

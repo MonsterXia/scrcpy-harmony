@@ -40,7 +40,7 @@ export function resolveResources(p) {
 }
 
 export function getUserDataPath(p: string) {
-  if (isDev()) {
+  if (isDev() && !process.env.SCRCPY_PLUS_PROFILE) {
     return path.resolve(app.getPath('appData'), pkg.productName, p)
   }
 
