@@ -1,0 +1,104 @@
+{
+  "date": "2026-11-17",
+  "device": {
+    "model": "iPhone 13",
+    "os": "26.4.2",
+    "transport": "USB",
+    "developerMode": true
+  },
+  "toolchain": "Xcode 27.2 (27B52)",
+  "wdaCommit": "8ce9d6f528e6f6c01bc0fa903b33555842d43571",
+  "signedInstall": "passed",
+  "startup": {
+    "initialFailure": "Device rejected launch; user observed unable to verify / internet required. Profile PPQCheck=true.",
+    "resolution": "After user connected iPhone to internet, xcodebuild test started WDA on loopback port 8100. No manual trust entry was present."
+  },
+  "verification": [
+    {
+      "check": "WDA PNG screenshot through product CLI",
+      "result": "passed",
+      "dimensions": [
+        1170,
+        2532
+      ]
+    },
+    {
+      "check": "ReplayKit H264 decoded screenshot through product CLI",
+      "result": "passed",
+      "dimensions": [
+        780,
+        1688
+      ]
+    },
+    {
+      "check": "Home key",
+      "result": "passed",
+      "visibleResult": "Returned to home screen; checked settled screenshot."
+    },
+    {
+      "check": "Tap in video mode",
+      "result": "passed",
+      "position": [
+        120,
+        790
+      ],
+      "visibleResult": "Opened Utilities folder."
+    },
+    {
+      "check": "Tap in PNG mode",
+      "result": "passed",
+      "position": [
+        585,
+        1230
+      ],
+      "visibleResult": "Opened Calculator from Utilities folder."
+    },
+    {
+      "check": "Video to screenshot to video switch",
+      "result": "passed"
+    },
+    {
+      "check": "Automation lease release",
+      "result": "passed",
+      "remainingOwnLeases": 0
+    },
+    {
+      "check": "Reopen through GUI after automation session stopped",
+      "result": "passed"
+    }
+  ],
+  "notes": [
+    "After-action returns a newer frame, but first frame can precede visible UI transition; settled screenshots were inspected.",
+    "An initial tap was not counted: phone screen had changed before fresh capture. Subsequent coordinate tests compared fresh content with inspected reference before dispatch.",
+    "Device screenshots remain private in local temporary storage; this evidence excludes identifiers, account information and screen contents."
+  ],
+  "pending": [
+    "long-duration video stability and measured latency",
+    "rotation and 180-degree orientation",
+    "lock/unlock and USB unplug/replug",
+    "multi-device isolation",
+    "Windows validation"
+  ],
+  "artifacts": [
+    {
+      "file": "wda-iphone13-before.png",
+      "sha256": "dae86d05a24ae786743bafec8711c2b81cacd18fd16ec9eb198da3176c55816b",
+      "storage": "local temporary only"
+    },
+    {
+      "file": "wda-iphone13-folder-settled.png",
+      "sha256": "2a94822937ad4dda73d6232aaeae54b95605e4326e3120b714391bcbe423a84e",
+      "storage": "local temporary only"
+    },
+    {
+      "file": "wda-iphone13-calculator-before.png",
+      "sha256": "873d5c382ed8caae5aa67baa5f93fc04288bfbc290f2e7d20f5fa7bd51c3ebee",
+      "storage": "local temporary only"
+    },
+    {
+      "file": "wda-iphone13-calculator-settled.png",
+      "sha256": "628172c4a6a5abe20c355068aae29d4008cc4aeb6ca5a5e786e2e52411b3b579",
+      "storage": "local temporary only"
+    }
+  ]
+}

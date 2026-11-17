@@ -1,0 +1,42 @@
+--- a/WebDriverAgentLib/Commands/FBSessionCommands.m
++++ b/WebDriverAgentLib/Commands/FBSessionCommands.m
+@@ -89,6 +89,15 @@
+ 
+ + (id<FBResponsePayload>)handleCreateSession:(FBRouteRequest *)request
+ {
++  // Scrcpy Plus: /session runs on the serial automation funnel. Reject an
++  // existing owner here, atomically with creation; a prior /status is not a lock.
++  NSString *expectedRunner = request.arguments[@"scrcpyPlusRunnerId"];
++  if (nil != expectedRunner && ![expectedRunner isEqual:[self scrcpyPlusRunnerId]]) {
++    return FBResponseWithObject(@{@"scrcpyPlusRunnerChanged" : @YES});
++  }
++  if (nil != [FBSession activeSession]) {
++    return FBResponseWithObject(@{@"scrcpyPlusSessionBusy" : @YES});
++  }
+   [FBSession killActiveSessionAndWaitForTeardown];
+ 
+   NSDictionary<NSString *, id> *capabilities;
+@@ -168,6 +177,14 @@
+   return FBResponseWithOK();
+ }
+ 
+++ (NSString *)scrcpyPlusRunnerId
++{
++  static NSString *identifier;
++  static dispatch_once_t onceToken;
++  dispatch_once(&onceToken, ^{ identifier = NSUUID.UUID.UUIDString; });
++  return identifier;
++}
++
+ + (id<FBResponsePayload>)handleGetStatus:(FBRouteRequest *)request
+ {
+   // For updatedWDABundleId capability by Appium
+@@ -199,6 +216,8 @@
+   return FBResponseWithObject(
+     @{
+       @"ready" : @YES,
++      @"scrcpyPlusProtocolVersion" : @1,
++      @"scrcpyPlusRunnerId" : [self scrcpyPlusRunnerId],
+       @"message" : @"WebDriverAgent is ready to accept commands",
+       @"state" : @"success",
+       @"os" :

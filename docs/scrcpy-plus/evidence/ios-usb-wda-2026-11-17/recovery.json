@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-17",
+  "observedFailure": "USB device remained connected and WDA process alive, but a production WdaClient GET /status failed with write EPIPE. Restarting the dedicated runner restored GET /status. Exact runner/transport cause remains unproven.",
+  "clientDefects": [
+    "A single failed observation permanently stopped polling.",
+    "Cleanup of a session already lost after runner restart could block reconnect.",
+    "Connection error header occupied layout height above a stale frame and reused initial setup instructions."
+  ],
+  "fixes": [
+    "Retry failed observation up to three consecutive failures without recreating sessions or replaying input.",
+    "On failed DELETE, release the old session only when status confirms ready and the owned session is no longer active; preserve failure for unreachable/same session.",
+    "Use an overlay for interactive connection states, dim stale frames, distinguish interruption after successful rendering, clear decode warnings after a good frame."
+  ],
+  "verification": {
+    "red": "Two regression tests failed before production fixes.",
+    "focused": {
+      "pass": 35,
+      "fail": 0
+    },
+    "fullApplication": {
+      "pass": 1157,
+      "skip": 2,
+      "fail": 0
+    },
+    "lintI18n": "passed",
+    "mainBuild": "passed",
+    "rendererBuild": "passed",
+    "electronUi": "Both locales: error/recovery keeps canvas dimensions, stale frame dimming, PNG/H264 and controls passed; device IPC simulated.",
+    "physical": "Restarted dedicated WDA and development app; USB PNG frames advanced 71 to 81, Home returned to SpringBoard, no top header. GUI remains running after own lease release."
+  },
+  "remaining": [
+    "Exact cause of original WDA transport failure",
+    "Long-term stability and full disconnect/restart matrix"
+  ]
+}

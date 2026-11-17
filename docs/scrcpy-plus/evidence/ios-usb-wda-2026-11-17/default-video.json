@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-17",
+  "scope": "USB iOS defaults to ReplayKit video in every new mirror window",
+  "behavior": [
+    "First PNG establishes geometry; video starts automatically through the shared device queue",
+    "Manual screenshot selection persists within the same window across USB and explicit reconnect",
+    "Video startup failure preserves PNG only after successful owned capture cleanup and fresh screenshot",
+    "Startup toolbar disables duplicate actions and displays starting status"
+  ],
+  "validation": {
+    "regressionBefore": {
+      "pass": 20,
+      "fail": 4
+    },
+    "focusedTests": {
+      "pass": 54,
+      "fail": 0
+    },
+    "applicationTests": {
+      "pass": 1180,
+      "skip": 2,
+      "fail": 0
+    },
+    "lintAndI18n": "passed",
+    "mainBuild": "passed",
+    "rendererBuild": "passed",
+    "physical": {
+      "method": "Fresh production app session started via CLI, without an attached browser debugger during window creation; no video toggle invoked",
+      "state": "running",
+      "videoMode": "video",
+      "decodedWidth": 780,
+      "decodedHeight": 1688,
+      "sequence": 241,
+      "stale": false,
+      "guiKeptOpen": true,
+      "verificationLeaseReleased": true
+    },
+    "electronUI": "passed: English/Chinese, light/dark, startup controls disabled, PNG/H264 and mode toggles; simulated device IPC"
+  },
+  "limits": [
+    "Initial windows created while a browser debugger was attached lacked VideoDecoder and fell back to PNG; restarting and creating the window without that debugger attachment produced working video. The debugger-specific cause is not established.",
+    "This run does not repeat the physical USB unplug/replug matrix; mode retention is covered by automated tests."
+  ],
+  "installedAppReplaced": false
+}

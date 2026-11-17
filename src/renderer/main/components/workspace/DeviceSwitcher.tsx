@@ -6,7 +6,7 @@ import store from '../../store'
 import Style from '../overview/Overview.module.scss'
 
 export default observer(function DeviceSwitcher() {
-  const targets = store.targets.filter(target => target.platform !== 'ios')
+  const targets = store.targets.filter(target => target.platform !== 'ios' || target.transport === 'usb')
   const [refreshing, setRefreshing] = useState(false)
   const refreshingRef = useRef(false), active = useRef(true)
   useEffect(() => { active.current = true; return () => { active.current = false } }, [])
@@ -25,7 +25,7 @@ export default observer(function DeviceSwitcher() {
       onChange={event => store.selectOverviewTarget(event.target.value)}>
       {!targets.length && <option value="">{t('targetNotConnected')}</option>}
       {targets.map(target => <option key={target.key} value={target.key}>
-        {`${target.platform === 'android' ? 'Android' : 'HarmonyOS'} · ${target.name} (${target.key})`}
+        {`${target.platform === 'ios' ? 'iOS' : target.platform === 'android' ? 'Android' : 'HarmonyOS'} · ${target.name} (${target.key})`}
       </option>)}
     </select>
     <button type="button" className={Style.button} data-action="refresh-devices" disabled={!store.ready || refreshing} onClick={refresh}>

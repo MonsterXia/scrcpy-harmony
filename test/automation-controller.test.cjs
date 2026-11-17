@@ -66,3 +66,13 @@ test('opening an automation mirror claims GUI ownership without revealing a merg
  await f.controller.sessions.terminate(lease.sessionId)
  assert.equal(win.destroyed,true)
 })
+
+test('transport recovery waits for a fresh presentation and never revives a stopped session',async()=>{
+ const f=fixture(),a=await f.controller.start(target.key,ctx()),win=f.windows[0]
+ f.present(win);win.hook.state('disconnected');win.hook.state('connected')
+ assert.equal(f.controller.sessions.get(a.sessionId).state,'starting')
+ f.present(win,2);assert.equal(f.controller.sessions.get(a.sessionId).state,'running')
+ win.hook.state('stopping');win.hook.state('connected');f.present(win,3)
+ assert.equal(f.controller.sessions.get(a.sessionId).state,'stopping')
+ await f.controller.sessions.release(a.sessionId,a.leaseId,ctx())
+})

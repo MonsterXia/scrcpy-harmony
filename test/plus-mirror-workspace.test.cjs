@@ -11,7 +11,7 @@ test('device selection, partial failure, focus, retry and layout have independen
     { key: 'a', name: 'Android', platform: 'android', state: 'ready', transport: 'usb' },
     { key: 'h', name: 'Harmony', platform: 'harmony', state: 'ready', transport: 'usb' },
     { key: 'locked', name: 'Locked', platform: 'android', state: 'unauthorized' },
-    { key: 'iphone', name: 'iPhone', platform: 'ios', state: 'ready' },
+    { key: 'iphone', name: 'iPhone', platform: 'ios', state: 'ready', transport: 'usb' },
     { key: 'ios:airplay-receiver', name: 'AirPlay', platform: 'ios', transport: 'receiver', state: 'waiting' },
   ]
   const store = observable({ targets, target: { key: 'h' }, discoveryErrors: [], panel: 'devices', refreshTargets: async () => {} })
@@ -37,8 +37,9 @@ test('device selection, partial failure, focus, retry and layout have independen
   const click = async s => { assert.ok(query(s), s); await act(async () => { query(s).click(); await tick() }) }
   try {
     await act(async () => { root.render(React.createElement(Devices)); await tick() })
-    assert.equal(container.querySelectorAll('[data-device-row]').length, 3)
+    assert.equal(container.querySelectorAll('[data-device-row]').length, 4)
     assert.equal(query('[data-device-row="locked"] input').disabled, true)
+    assert.equal(query('[data-device-row="iphone"] input').disabled, false)
     assert.equal(query('[data-action="start-selected"]').disabled, true)
     await click('[data-device-row="a"] input')
     await click('[data-device-row="h"] input')

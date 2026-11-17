@@ -125,16 +125,16 @@ test('multi-device mirroring has a dedicated icon entry and preserves all Harmon
   assert.deepEqual(f.selected.slice(-8), ids)
 })
 
-test('overview picker supports Android and Harmony, excludes iOS, and sidebar has no duplicate selector', async t => {
+test('overview picker supports USB iOS, excludes AirPlay, and disables unsupported sidebar tools', async t => {
   const f = await fixture(t, true)
   await act(async () => runInAction(() => {
-    f.store.targets = [{key:'h',platform:'harmony',name:'Harmony'}, {key:'a',platform:'android',name:'Android'}, {key:'i',platform:'ios',name:'iPhone'}]
+    f.store.targets = [{key:'h',platform:'harmony',name:'Harmony'}, {key:'a',platform:'android',name:'Android'}, {key:'i',platform:'ios',transport:'usb',name:'iPhone'}, {key:'airplay',platform:'ios',transport:'receiver',name:'AirPlay'}]
     f.store.overviewTarget = f.store.targets[0]
   }))
-  assert.deepEqual([...f.host.querySelector('#workspace-device').options].map(option => option.value), ['h', 'a'])
+  assert.deepEqual([...f.host.querySelector('#workspace-device').options].map(option => option.value), ['h', 'a', 'i'])
   const nav = await fixture(t)
   assert.equal(nav.host.querySelector('#workspace-device'), null)
-  await act(async () => runInAction(() => { nav.store.overviewTarget = {key:'a',platform:'android'} }))
+  await act(async () => runInAction(() => { nav.store.overviewTarget = {key:'i',platform:'ios',transport:'usb'} }))
   assert.equal(nav.host.querySelector('[data-navigation="overview"]').disabled, false)
   assert.equal(nav.host.querySelector('[data-navigation="shell"]').disabled, true)
 })

@@ -60,3 +60,12 @@ test('session and observation contracts require explicit identities and bounded 
  for(const [operation,params] of [['sessions.stop',{session:'s'}],['input.tap',{session:'s',x:1,y:2}],['input.swipe',{session:'s',frame:'f',x:1,y:2,toX:3,toY:4,durationMs:10001}],['screen.capture',{session:'s',maxAgeMs:-1}]])assert.throws(()=>parseRequest(request({operation,params})),{code:'INVALID_ARGUMENT'})
  assert.equal(parseRequest(request({operation:'input.tap',params:{session:'s',frame:'f',x:1,y:2}})).params.frame,'f')
 })
+
+test('USB iOS input capabilities are available only in a running device session', () => {
+ const { deviceCapabilities } = load('src/common/automation/capabilities.ts')
+ const target = {key:'ios:01234567',platform:'ios',transport:'usb',state:'ready'}
+ const operations = new Set(['input.tap','input.swipe','input.text','input.key'])
+ assert.equal(deviceCapabilities(target,operations,false)['input.tap'].supported,true)
+ assert.equal(deviceCapabilities(target,operations,false)['input.tap'].available,false)
+ assert.equal(deviceCapabilities(target,operations,true)['input.tap'].available,true)
+})

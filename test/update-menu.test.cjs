@@ -13,6 +13,7 @@ function fixture(saved = {}, translations) {
   vm.runInNewContext(transformSync(fs.readFileSync('src/main/lib/menu.ts', 'utf8'), { loader: 'ts', format: 'cjs' }).code, {
     module, exports: module.exports,
     require(id) {
+      if (id.endsWith('package.json')) return require('../package.json')
       if (id === 'electron') return {
         Menu: { getApplicationMenu: () => ({ getMenuItemById: id => menu.flatMap(section => section.submenu).find(item => item.id === id) }), buildFromTemplate: template => template, setApplicationMenu: value => { menu = value } },
         app: { name: 'Scrcpy Harmony' }, shell: {},
@@ -38,7 +39,7 @@ function fixture(saved = {}, translations) {
   })
   module.exports.init()
   snapshots.length = 0
-  return { snapshots, saved, external: (key,value) => { saved[key]=value;listeners.forEach(fn=>fn(key,value)) }, rebuild: () => module.exports.init(), beta: () => menu[0].submenu.find(item => item.id === 'beta-update'), click: () => menu[0].submenu[1].click(menu[0].submenu[1]), finish, fail }
+  return { check: () => menu[0].submenu[1], snapshots, saved, external: (key,value) => { saved[key]=value;listeners.forEach(fn=>fn(key,value)) }, rebuild: () => module.exports.init(), beta: () => menu[0].submenu.find(item => item.id === 'beta-update'), click: () => menu[0].submenu[1].click(menu[0].submenu[1]), finish, fail }
 }
 
 for (const rejected of [false, true]) {
@@ -99,4 +100,10 @@ for (const [locale, off, on] of [
 
 test('settings-page Beta changes update the same menu without resetting an in-flight update check',async()=>{
  const f=fixture();const checking=f.click();f.external('betaUpdate',true);assert.equal(f.beta().checked,true);assert.equal(f.beta().label,'betaUpdateOn');assert.deepEqual(f.snapshots.at(-1),{label:'checkingForUpdates',enabled:false});f.finish();await checking
+})
+
+test('release migration enables both update menu entries', () => {
+  const f = fixture()
+  assert.notEqual(f.check().enabled, false)
+  assert.notEqual(f.beta().enabled, false)
 })

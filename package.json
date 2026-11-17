@@ -19,7 +19,7 @@
     "build:renderer": "vite build",
     "build": "node script/build.mjs",
     "pack": "zx script/pack.mjs",
-    "start": "electron ./dist/main/index.js --inspect=9229",
+    "start": "electron . --inspect=9229",
     "lint": "eslint \"src/**/*.{ts,tsx}\" && npm run check:i18n",
     "check:i18n": "node script/check-i18n.mjs",
     "init": "npm run resources",
@@ -43,11 +43,17 @@
     "build:cli": "node script/build-cli.mjs",
     "cli": "node dist/cli/index.cjs",
     "precli": "npm run --silent build:cli",
-    "check:automation-package": "node script/check-automation-package.mjs"
+    "check:automation-package": "node script/check-automation-package.mjs",
+    "ios:wda": "node script/ios-wda.mjs"
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "MonsterXia",
+    "repo": "scrcpy-plus"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MonsterXia/scrcpy-harmony.git"
+    "url": "git+https://github.com/MonsterXia/scrcpy-plus.git"
   },
   "keywords": [
     "hdc",
@@ -59,9 +65,9 @@
   ],
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/MonsterXia/scrcpy-harmony/issues"
+    "url": "https://github.com/MonsterXia/scrcpy-plus/issues"
   },
-  "homepage": "https://github.com/MonsterXia/scrcpy-harmony#readme",
+  "homepage": "https://github.com/MonsterXia/scrcpy-plus#readme",
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.779.0",
     "@babel/core": "7.29.7",

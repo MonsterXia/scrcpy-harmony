@@ -17,8 +17,8 @@
 以下命令适用于 PowerShell 或 macOS 终端，每条成功后再继续：
 
 ```text
-git clone https://github.com/MonsterXia/scrcpy-harmony.git
-cd scrcpy-harmony
+git clone https://github.com/MonsterXia/scrcpy-plus.git
+cd scrcpy-plus
 git rev-parse HEAD
 node --version
 npm --version

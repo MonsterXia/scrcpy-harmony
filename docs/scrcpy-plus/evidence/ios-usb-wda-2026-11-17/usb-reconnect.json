@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-17",
+  "rootCauses": [
+    "USB removal ended the Xcode test connection; WDA became ready again with no previous session. The desktop remained blocked stopping a capture through its invalid old session route (HTTP 404).",
+    "Discovery treated an absent USB iPhone like a permanently stopped mirror instead of preserving it for reconnection.",
+    "Automation ignored connected after disconnected, and renderer input flow could stay blocked after automatic recovery."
+  ],
+  "changes": [
+    "Confirm an owned capture is absent using read-only status and standalone capture lookup before accepting failed stop cleanup; preserve ownership if unconfirmed and never stop global broadcast.",
+    "Preserve USB iPhone windows and leases while absent; successful discovery reconnects only the same ready device key with one recovery operation at a time.",
+    "Recreate session only after owned cleanup completes; restore prior video mode through the shared input queue; no replay of previous input.",
+    "Require a new renderer presentation after transport recovery; reset failed local GUI input flow."
+  ],
+  "validation": {
+    "redBeforeFix": 4,
+    "focusedTests": 80,
+    "applicationSuite": {
+      "pass": 1173,
+      "skip": 2,
+      "fail": 0
+    },
+    "finalVideoQueueIntegrationTests": 27,
+    "lintAndI18n": "passed",
+    "buildMain": "passed",
+    "buildRenderer": "passed",
+    "diffCheck": "passed"
+  },
+  "physical": {
+    "model": "iPhone 13",
+    "cycles": 1,
+    "userPhysicallyUnpluggedAndReplugged": true,
+    "usbAbsentConfirmedInLog": true,
+    "manualRetryClicked": false,
+    "wdaRestartedDuringCycle": false,
+    "windowPreserved": true,
+    "automaticVideoRestoration": "ReplayKit video mode confirmed in toolbar; fresh image visible",
+    "inputRestored": "GUI opened Utilities then Calculator; digit tap changed 6 to 61",
+    "nativeMirrorInputErrors": 0,
+    "automationSessionStateAfterReplug": "running",
+    "newAutomationLeases": 0,
+    "leftRunning": true,
+    "installedDailyAppReplaced": false
+  },
+  "limitations": [
+    "One actual unplug/replug cycle verified; repeated rapid cycles, lock screen and multiple physical iPhones remain to be exercised.",
+    "WDA must be running/reachable; the desktop does not sign or launch a stopped Runner automatically.",
+    "Final video restoration was routed through the existing shared input queue after the physical run and covered by 27 targeted tests."
+  ]
+}

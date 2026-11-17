@@ -9,7 +9,7 @@ function load(file, deps = {}, globals = {}) {
   const module = { exports: {} }
   vm.runInNewContext(transformSync(fs.readFileSync(file, 'utf8'), { loader: 'ts', format: 'cjs' }).code, {
     module, exports: module.exports, process, URL, setTimeout, clearTimeout, ...globals,
-    require: id => Object.hasOwn(deps, id) ? deps[id] : require(id),
+    require: id => Object.hasOwn(deps, id) ? deps[id] : id.endsWith('package.json') ? require('../package.json') : require(id),
   })
   return module.exports
 }

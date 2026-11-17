@@ -66,11 +66,11 @@ class Store extends BaseStore {
   }
   selectOverviewTarget = (target: string | ITarget | null) => {
     const selected = isStr(target) ? find(this.targets, ({ key }) => key === target) : target
-    if (selected === undefined || selected?.platform === 'ios') return
+    if (selected === undefined || (selected?.platform === 'ios' && selected.transport !== 'usb')) return
     this.overviewTarget = selected
     setMainStore('overviewTarget', selected)
     if (selected && (!selected.platform || selected.platform === 'harmony')) this.selectTarget(selected)
-    if (selected?.platform === 'android') this.selectPanel(this.panel)
+    if (selected?.platform === 'android' || selected?.platform === 'ios') this.selectPanel(this.panel)
   }
   selectMirrorTarget = (target: string | ITarget | null) => {
     const selected = isStr(target) ? find(this.targets, ({ key }) => key === target) : target
@@ -80,7 +80,7 @@ class Store extends BaseStore {
   }
   selectPanel(panel: string) {
     const next = normalizePanel(panel)
-    this.panel = this.overviewTarget?.platform === 'android' && !['overview', 'devices', 'settings'].includes(next) ? 'overview' : next
+    this.panel = ['android', 'ios'].includes(this.overviewTarget?.platform || '') && !['overview', 'devices', 'settings'].includes(next) ? 'overview' : next
     setMainStore('panel', this.panel)
   }
   refreshTargets = async () => {
@@ -113,7 +113,7 @@ class Store extends BaseStore {
     else if (this.target || harmonyTargets.length) this.selectTarget(harmonyTargets[0] || null)
     if (mirror) runInAction(() => { this.mirrorTarget = mirror })
     else if (this.mirrorTarget || targets.length) this.selectMirrorTarget(targets[0] || null)
-    const overviewTargets = targets.filter(target => target.platform !== 'ios')
+    const overviewTargets = targets.filter(target => target.platform !== 'ios' || target.transport === 'usb')
     const overview = overviewTargets.find(target => target.key === this.overviewTarget?.key)
     if (overview) runInAction(() => { this.overviewTarget = overview })
     else if (this.overviewTarget || overviewTargets.length) this.selectOverviewTarget(overviewTargets[0] || null)
@@ -132,7 +132,7 @@ class Store extends BaseStore {
       // Migrate an older shared Android/iOS selection to the mirroring scope.
       this.target = target && (!target.platform || target.platform === 'harmony') ? target : null
       this.mirrorTarget = mirrorTarget || target || null
-      this.overviewTarget = overviewTarget?.platform !== 'ios' ? overviewTarget || this.target : this.target
+      this.overviewTarget = overviewTarget?.platform !== 'ios' || overviewTarget.transport === 'usb' ? overviewTarget || this.target : this.target
     })
     if (!mirrorTarget && target) this.selectMirrorTarget(target)
     if (target?.platform && target.platform !== 'harmony') setMainStore('target', null)

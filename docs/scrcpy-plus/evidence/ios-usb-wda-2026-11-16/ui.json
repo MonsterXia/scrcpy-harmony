@@ -1,0 +1,23 @@
+{
+  "scope": "Real Electron production React renderer; simulated device IPC, no physical iPhone",
+  "cases": [
+    {
+      "locale": "en-US",
+      "png": true,
+      "tapMetadata": true,
+      "home": true,
+      "videoToggle": true
+    },
+    {
+      "locale": "zh-CN",
+      "png": true,
+      "tapMetadata": true,
+      "home": true,
+      "videoToggle": true
+    }
+  ],
+  "h264WebCodecs": true,
+  "pngFallback": true,
+  "rotationMetadata": true,
+  "errors": []
+}

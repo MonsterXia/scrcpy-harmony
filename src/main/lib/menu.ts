@@ -1,3 +1,4 @@
+import pkg from '../../../package.json'
 import { Menu, MenuItemConstructorOptions, app, shell } from 'electron'
 import type { BaseWindow, MenuItem } from 'electron'
 import * as window from 'share/main/lib/window'
@@ -47,7 +48,6 @@ function getTemplate(): MenuItemConstructorOptions[] {
       },
       {
         label: `${t('checkUpdate')}...`,
-        enabled: false,
         async click(item: MenuItem) {
           const label = item.label
           item.enabled = false
@@ -64,7 +64,6 @@ function getTemplate(): MenuItemConstructorOptions[] {
       },
       {
         id: 'beta-update',
-        enabled: false,
         label: t(betaUpdate ? 'betaUpdateOn' : 'betaUpdateOff'),
         type: 'checkbox' as const,
         checked: betaUpdate,
@@ -140,7 +139,7 @@ function getTemplate(): MenuItemConstructorOptions[] {
       {
         label: t('reportIssue'),
         click() {
-          shell.openExternal('https://github.com/MonsterXia/scrcpy-harmony/issues')
+          shell.openExternal(pkg.bugs.url)
         },
       },
       {

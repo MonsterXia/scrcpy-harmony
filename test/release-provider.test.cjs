@@ -7,14 +7,14 @@ const { AppUpdater } = require('electron-updater/out/AppUpdater')
 
 function loadPageParser() {
   const module = { exports: {} }
-  vm.runInNewContext(transformSync(fs.readFileSync('src/main/lib/releasePage.ts', 'utf8'), { loader: 'ts', format: 'cjs' }).code, { module, exports: module.exports, require, URL })
+  vm.runInNewContext(transformSync(fs.readFileSync('src/main/lib/releasePage.ts', 'utf8'), { loader: 'ts', format: 'cjs' }).code, { module, exports: module.exports, require: id => id.endsWith('package.json') ? require('../package.json') : require(id), URL })
   return module.exports
 }
 
 function fixture({ releases = [], beta = false, platform = 'darwin', channel = 'latest', pages, metadataVersion, requestError, current = '1.0.3', hanging = false, clock = {}, rateLimited = false, htmlPages = [], hangingPath } = {}) {
   const module = { exports: {} }
   vm.runInNewContext(transformSync(fs.readFileSync('src/main/lib/ReleaseProvider.ts', 'utf8'), { loader: 'ts', format: 'cjs' }).code, {
-    module, exports: module.exports, require: id => id === './releasePage' ? loadPageParser() : require(id), URL, setTimeout, clearTimeout, ...clock,
+    module, exports: module.exports, require: id => id === './releasePage' ? loadPageParser() : id.endsWith('package.json') ? require('../package.json') : require(id), URL, setTimeout, clearTimeout, ...clock,
   })
   const updater = new AppUpdater(undefined, { version: current, isPackaged: false })
   updater.channel = channel
@@ -70,7 +70,7 @@ for (const [platform, channel, filename] of [['win32', 'latest', 'latest.yml'], 
     const f = fixture({ beta: true, platform, channel, releases: [release('v1.0.4-dev.0', true)] })
     const info = await f.provider.getLatestVersion()
     assert.equal(info.tag, 'v1.0.4-dev.0')
-    assert.equal(f.requests.at(-1).path, `/MonsterXia/scrcpy-harmony/releases/download/v1.0.4-dev.0/${filename}`)
+    assert.equal(f.requests.at(-1).path, `/MonsterXia/scrcpy-plus/releases/download/v1.0.4-dev.0/${filename}`)
     assert.equal(f.requests.filter(o => o.hostname === 'github.com').length, 1, 'no beta/dev channel fallback')
   })
 }
@@ -159,7 +159,7 @@ test('cancelling before AppUpdater enters the provider prevents any network requ
 
 
 test('REST quota failure falls back to public release headers without changing version selection', async () => {
-  const card = (tag, label) => `<section data-release-anchor="release-${tag}"><div data-turbo-frame="repo-content-turbo-frame"><span><a class="Link--primary" href="/MonsterXia/scrcpy-harmony/releases/tag/${tag}">${tag}</a></span><span><span class="Label">${label}</span></span></div></section>`
+  const card = (tag, label) => `<section data-release-anchor="release-${tag}"><div data-turbo-frame="repo-content-turbo-frame"><span><a class="Link--primary" href="/MonsterXia/scrcpy-plus/releases/tag/${tag}">${tag}</a></span><span><span class="Label">${label}</span></span></div></section>`
   const html = `<html><body>${card('v1.0.4-dev.0', 'Pre-release')}${card('v1.0.3', 'Latest')}</body></html>`
   const f = fixture({ rateLimited: true, htmlPages: [html] })
   assert.equal((await f.provider.getLatestVersion()).version, '1.0.3')
@@ -170,9 +170,9 @@ test('REST quota failure falls back to public release headers without changing v
 
 
 function fallbackPages() {
-  const card = (tag, label) => `<section data-release-anchor="release-${tag}"><div data-turbo-frame="repo-content-turbo-frame"><span><a class="Link--primary" href="/MonsterXia/scrcpy-harmony/releases/tag/${tag}">${tag}</a></span><span><span class="Label">${label}</span></span></div></section>`
+  const card = (tag, label) => `<section data-release-anchor="release-${tag}"><div data-turbo-frame="repo-content-turbo-frame"><span><a class="Link--primary" href="/MonsterXia/scrcpy-plus/releases/tag/${tag}">${tag}</a></span><span><span class="Label">${label}</span></span></div></section>`
   return [
-    `<html>${card('v1.0.3','Latest')}<div class="pagination" aria-label="Release list pagination"><a class="next_page" href="/MonsterXia/scrcpy-harmony/releases?page=2">Next</a></div></html>`,
+    `<html>${card('v1.0.3','Latest')}<div class="pagination" aria-label="Release list pagination"><a class="next_page" href="/MonsterXia/scrcpy-plus/releases?page=2">Next</a></div></html>`,
     `<html>${card('v2.0.0-rc.1','Pre-release')}<div class="pagination" aria-label="Release list pagination"><span class="next_page disabled" aria-disabled="true">Next</span></div></html>`,
   ]
 }

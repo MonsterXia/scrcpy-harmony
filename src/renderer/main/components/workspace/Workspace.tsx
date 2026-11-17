@@ -77,8 +77,8 @@ export default observer(function Workspace({
                   aria-current={store.panel === item.id ? 'page' : undefined}
                   aria-controls={`panel-${item.id}`}
                   aria-label={item.label}
-                  disabled={item.id !== 'overview' && store.overviewTarget?.platform === 'android'}
-                  title={item.id !== 'overview' && store.overviewTarget?.platform === 'android' ? t('plusHarmonyToolsOnly') : item.label}
+                  disabled={item.id !== 'overview' && ['android', 'ios'].includes(store.overviewTarget?.platform || '')}
+                  title={item.id !== 'overview' && ['android', 'ios'].includes(store.overviewTarget?.platform || '') ? t('plusHarmonyToolsOnly') : item.label}
                   onClick={() => store.selectPanel(item.id)}
                 >
                   <span className={`icon-${item.icon}`} aria-hidden="true" />

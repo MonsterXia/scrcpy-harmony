@@ -4,7 +4,7 @@ const fs = require('node:fs')
 const vm = require('node:vm')
 const net = require('node:net')
 const { transformSync } = require('esbuild')
-async function fixture(t, malformed = false) {
+async function fixture(t, malformed = false, values = { DeviceName: 'iPhone Fixture' }) {
   const plist = await import('plist'), seen = [], sockets = new Set()
   const server = net.createServer(socket => {
     sockets.add(socket); socket.on('close', () => sockets.delete(socket)); socket.on('error', () => {})
@@ -23,7 +23,7 @@ async function fixture(t, malformed = false) {
         { DeviceID: 10, Properties: { SerialNumber: 'invalid' } },
       ] }
       else if (request.MessageType === 'Connect') { assert.equal(request.PortNumber, 32498); value = { Number: 0 } }
-      else { assert.equal(request.Key, 'DeviceName'); value = { Value: 'iPhone Fixture' } }
+      else { assert.equal(request.Request, 'GetValue'); value = values[request.Key] ? { Value: values[request.Key] } : { Error: 'MissingValue' } }
       const bytes = Buffer.from(plist.build(value)), prefix = Buffer.alloc(header)
       if (mux) { prefix.writeUInt32LE(bytes.length + header); prefix.writeUInt32LE(1,4); prefix.writeUInt32LE(8,8); prefix.writeUInt32LE(malformed ? 99 : 1,12) }
       else prefix.writeUInt32BE(bytes.length)
@@ -36,7 +36,7 @@ async function fixture(t, malformed = false) {
   t.after(async () => { for (const socket of sockets) socket.destroy(); await new Promise(resolve => server.close(resolve)) })
   const module = { exports: {} }
   vm.runInNewContext(transformSync(fs.readFileSync('src/main/lib/devices/ios-usbmux.ts', 'utf8'), { loader: 'ts', format: 'cjs' }).code,
-    { module, exports: module.exports, Buffer, process, setTimeout, clearTimeout,
+    { module, exports: module.exports, Buffer, process, setTimeout, clearTimeout, AbortSignal,
       require(id) {
         if (id === 'node:net') return { createConnection: () => net.connect(server.address().port, '127.0.0.1') }
         if (id === 'plist') return plist
@@ -61,4 +61,15 @@ test('device list validates serials and IDs before using them in another protoco
   const f = await fixture(t)
   assert.deepEqual(Array.from(f.muxDevices({ DeviceList: [{ DeviceID: -1, Properties: { SerialNumber: '01234567' } }, { DeviceID: 1, Properties: { SerialNumber: 'not-a-udid' } }] })), [])
   assert.throws(() => f.muxDevices({}), /device list/)
+})
+
+test('iOS overview reads an allowlist over lockdown and omits unavailable fields without WDA',async t=>{
+ const f=await fixture(t,false,{DeviceName:'iPhone Fixture',ProductVersion:'26.4',BuildVersion:'24A1',ProductType:'iPhone14,5',HardwareModel:'D17AP',CPUArchitecture:'arm64e'})
+ const result=await f.getIosOverview({key:'ios:01234567-1234567890abcdef',connectionId:'01234567-1234567890abcdef',platform:'ios',transport:'usb',name:'USB iPhone'})
+ assert.equal(result.osVersion,'iOS 26.4');assert.equal(result.model,'iPhone14,5');assert.equal(result.abi,'arm64e');assert.equal(result.serialNum,undefined)
+ assert.deepEqual(f.seen.filter(x=>x.Request).map(x=>x.Key),['DeviceName','ProductVersion','BuildVersion','ProductType','HardwareModel','CPUArchitecture','SerialNumber'])
+ assert.equal(f.seen.filter(x=>x.MessageType==='Connect').length,1)
+ const count=f.seen.length
+ await assert.rejects(f.getIosOverview({key:'ios:airplay-receiver',platform:'ios',transport:'receiver'}),/Invalid/)
+ assert.equal(f.seen.length,count)
 })

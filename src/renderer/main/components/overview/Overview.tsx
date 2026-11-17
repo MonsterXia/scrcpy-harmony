@@ -26,6 +26,7 @@ export default observer(function Overview({
   const readSession = useRef<{ active: boolean; pending: boolean } | null>(null)
   const target = store.overviewTarget
   const android = target?.platform === 'android'
+  const ios = target?.platform === 'ios'
   const ready = !!target && (!target.state || target.state === 'ready')
   const identity = target ? `${target.platform || 'harmony'}:${target.key}:${target.state || 'ready'}` : ''
 
@@ -139,7 +140,7 @@ export default observer(function Overview({
         <>
           <section className={Style.hero}>
             <div className={Style.phone} aria-hidden="true">
-              <span className={android ? 'icon-phone' : 'icon-ohos'} />
+              <span className={android || ios ? 'icon-phone' : 'icon-ohos'} />
             </div>
             <div className={Style.identity}>
               <p className={Style.eyebrow}>{t('workspaceCurrentDevice')}</p>
@@ -148,14 +149,14 @@ export default observer(function Overview({
                 {[overview.brand, overview.model].filter(Boolean).join(' · ') ||
                   t('unknown')}
               </p>
-              <span className={Style.status}>{t(ready ? 'workspaceConnected' : target.state === 'unauthorized' ? 'plusDebugAuthorizationHint' : target.state === 'offline' ? 'plusOfflineHint' : 'plusMetadataHint')}</span>
+              <span className={Style.status}>{t(ready ? 'workspaceConnected' : target.state === 'unauthorized' ? ios ? 'plusIosTrustHint' : 'plusDebugAuthorizationHint' : target.state === 'offline' ? 'plusOfflineHint' : 'plusMetadataHint')}</span>
             </div>
             <button
               type="button"
               className={Style.button}
               data-action="refresh"
               aria-label={t('refresh')}
-              disabled={isLoading}
+              disabled={isLoading || !ready}
               onClick={() => {
                 void refresh()
               }}
@@ -190,21 +191,20 @@ export default observer(function Overview({
               <div className={Style.infoGrid}>
                 <div className={Style.infoBlock}>
                   <h3>
-                    <span className={android ? 'icon-phone' : 'icon-ohos'} aria-hidden="true" />
+                    <span className={android || ios ? 'icon-phone' : 'icon-ohos'} aria-hidden="true" />
                     {t('workspaceSystem')}
                   </h3>
                   {item(
                     t('plusOsVersion'),
-                    android ? overview.osVersion : target.ohosVersion
+                    android || ios ? overview.osVersion : target.ohosVersion
                       ? `OpenHarmony ${target.ohosVersion}${target.sdkVersion ? ` (API ${target.sdkVersion})` : ''}`
                       : undefined,
                     'ohosVersion',
                   )}
-                  {item(
-                    t('kernelVersion'),
-                    overview.kernelVersion,
-                    'kernelVersion',
-                  )}
+                  {ios ? <>
+                    {item(t('plusBuildVersion'), overview.buildVersion, 'buildVersion')}
+                    {item('UDID', overview.deviceId, 'deviceId')}
+                  </> : item(t('kernelVersion'), overview.kernelVersion, 'kernelVersion')}
                   {item(t('serialNum'), overview.serialNum, 'serialNum')}
                   {item(t('name'), overview.name, 'name')}
                 </div>
@@ -213,13 +213,14 @@ export default observer(function Overview({
                     <span className="icon-processor" aria-hidden="true" />
                     {t('workspaceHardware')}
                   </h3>
-                  {item(t('processor'), processor, 'processor')}
-                  {item(
-                    t('physicalResolution'),
-                    overview.physicalResolution,
-                    'physicalResolution',
-                  )}
-                  {item(t('memory'), memory, 'memory')}
+                  {ios ? <>
+                    {item(t('plusCpuArchitecture'), overview.abi, 'abi')}
+                    {item(t('plusHardwareModel'), overview.hardwareModel, 'hardwareModel')}
+                  </> : <>
+                    {item(t('processor'), processor, 'processor')}
+                    {item(t('physicalResolution'), overview.physicalResolution, 'physicalResolution')}
+                    {item(t('memory'), memory, 'memory')}
+                  </>}
                   {item(t('brand'), overview.brand, 'brand')}
                   {item(t('model'), overview.model, 'model')}
                 </div>
@@ -228,7 +229,7 @@ export default observer(function Overview({
           )}
         </>
       )}
-      {android ? <p className={Style.platformHint}>{t('plusAndroidOverviewHint')}</p> : <>
+      {android || ios ? <p className={Style.platformHint}>{t(ios ? 'plusIosOverviewHint' : 'plusAndroidOverviewHint')}</p> : <>
       <h2 className={Style.sectionTitle}>{t('workspaceDeviceTools')}</h2>
       <div className={Style.tools}>
         <button
