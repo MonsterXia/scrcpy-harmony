@@ -123,7 +123,7 @@ npm_config_registry=https://registry.npmjs.org npm_config_prefer_offline=true np
 npm start
 ```
 
-这里显式指定 registry 是为了覆盖本机失效的全局 npm 镜像；不修改用户的全局配置。Windows、Intel Mac 和旧系统的安装包留待本机真机验证后构建验收。
+这里显式指定 registry 是为了覆盖本机失效的全局 npm 镜像；不修改用户的全局配置。当前 Plus 只支持 Windows x64 与 macOS arm64，Intel Mac 不再作为构建和验收目标。Windows 和旧 macOS 系统的实际兼容性仍需对应验收。
 
 ## 源码后端的 CI 工具链
 

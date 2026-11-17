@@ -1,5 +1,7 @@
 # Scrcpy Plus
 
+Current Plus builds support Windows x64 and macOS Apple Silicon (arm64). Intel Macs are no longer supported; existing Intel release artifacts are historical.
+
 Scrcpy Plus is the continuation of this project, now hosted at `MonsterXia/scrcpy-plus`. Update checks and issue links use the new repository. Existing Harmony users should manually install Plus; no automatic settings migration is provided. Existing Plus settings and application identity remain unchanged. Release history is preserved; the inherited Harmony documentation below describes historical versions. See the [migration record](docs/maintenance/scrcpy-plus-rename.md).
 
 Android, HarmonyOS and iOS mirroring workbench, based on Scrcpy Harmony. See [integration status and setup](docs/scrcpy-plus/integration.md). Android USB/ADB and iOS AirPlay are integrated as source libraries and built-in app windows; developer build requirements and unverified device coverage are documented there. The upstream documentation below describes the original Harmony project.
@@ -16,7 +18,7 @@ This release includes Android/Harmony mirroring, iOS AirPlay, USB iPhone overvie
 
 **Moving from Harmony to Plus:** the apps have different installation and configuration identities. Keep the old Harmony installation and settings; Plus creates its own profile (`~/Library/Application Support/Scrcpy Plus` on macOS, `%APPDATA%\Scrcpy Plus` on Windows). Settings are not automatically migrated from Harmony. Existing Plus development installations keep their Plus profile. The updater opens the release page for manual installation; it does not install updates automatically.
 
-Choose the Windows x64 EXE or macOS arm64/x64 DMG for your computer. The optional `scrcpy-plus-cli-1.0.5-dev.2.tgz` contains both CLI and MCP clients and requires Node >=22.12 and the running desktop app. Signature and validation results are recorded per release; WDA signing products are not distributed in the desktop installer.
+Choose the Windows x64 EXE or macOS arm64 DMG for your computer. The optional `scrcpy-plus-cli-1.0.5-dev.2.tgz` contains both CLI and MCP clients and requires Node >=22.12 and the running desktop app. Signature and validation results are recorded per release; WDA signing products are not distributed in the desktop installer.
 
 ---
 
@@ -56,7 +58,6 @@ Visit [Releases](https://github.com/MonsterXia/scrcpy-plus/releases/latest) and 
 | --- | --- | --- |
 | Windows x64 | `win-x64.exe` | Run the installer and follow the prompts |
 | macOS Apple Silicon | `mac-arm64.dmg` | Open the disk image and drag the app into Applications |
-| macOS Intel | `mac-x64.dmg` | Open the disk image and drag the app into Applications |
 
 macOS requires **version 13 or later**. Linux installers are not currently available.
 

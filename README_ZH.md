@@ -1,5 +1,7 @@
 # Scrcpy Plus
 
+当前 Plus 构建支持 Windows x64 和 macOS Apple Silicon（arm64）。不再支持 Intel Mac；已有 Intel 安装包仅作为历史发行附件保留。
+
 Scrcpy Plus 作为本项目的正式延续，仓库已迁移至 `MonsterXia/scrcpy-plus`，检查更新与问题反馈使用新地址。已有 Harmony 用户请手动安装 Plus，不提供自动配置迁移；已有 Plus 的配置与应用标识保持不变。保留全部发行历史，下方继承的鸿蒙文档描述历史版本。详见[迁移记录](docs/maintenance/scrcpy-plus-rename.md)。
 
 基于 Scrcpy Harmony 改造的安卓、鸿蒙与 iOS 投屏工作台。当前开发版的配置、能力边界与验证状态见[集成说明](docs/scrcpy-plus/integration.md)。安卓 USB/ADB 与 iOS AirPlay 已改为源码库集成，并在应用内显示；开发构建条件与未验收范围见集成说明。以下内容为继承的鸿蒙项目文档与历史发行信息。
@@ -16,7 +18,7 @@ Scrcpy Plus 作为本项目的正式延续，仓库已迁移至 `MonsterXia/scrc
 
 **从 Harmony 切换到 Plus：** 两者安装和配置身份不同。保留原 Harmony 安装与设置；Plus 创建自己的配置目录（macOS 为 `~/Library/Application Support/Scrcpy Plus`，Windows 为 `%APPDATA%\Scrcpy Plus`），不会自动迁移 Harmony 设置。已有 Plus 开发版继续使用原 Plus 配置。更新器仅打开发行页供手动安装，不自动安装更新。
 
-按电脑选择 Windows x64 EXE 或 macOS arm64/x64 DMG。可选 `scrcpy-plus-cli-1.0.5-dev.2.tgz` 包含 CLI 和 MCP，需要 Node >=22.12 及正在运行的桌面应用。签名和验收结果按版本记录；桌面安装包不分发 WDA 签名产物。
+按电脑选择 Windows x64 EXE 或 macOS arm64 DMG。可选 `scrcpy-plus-cli-1.0.5-dev.2.tgz` 包含 CLI 和 MCP，需要 Node >=22.12 及正在运行的桌面应用。签名和验收结果按版本记录；桌面安装包不分发 WDA 签名产物。
 
 ---
 
@@ -56,7 +58,6 @@ Scrcpy Harmony 是面向鸿蒙设备的 HDC 图形化桌面工具，集成投屏
 | --- | --- | --- |
 | Windows x64 | `win-x64.exe` | 运行安装程序，按提示完成安装 |
 | macOS Apple Silicon | `mac-arm64.dmg` | 打开镜像，将应用拖入“应用程序”目录 |
-| macOS Intel | `mac-x64.dmg` | 打开镜像，将应用拖入“应用程序”目录 |
 
 macOS 需要 **13 或更新版本**。当前未提供 Linux 安装包。
 

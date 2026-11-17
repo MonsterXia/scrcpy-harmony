@@ -26,11 +26,11 @@ async function run({ version = '1.0.5-dev.2', available = false, expected = { st
   return { report, code: process.exitCode }
 }
 
-test('online verification accepts six scenarios matching explicit expectations', async () => {
+test('online verification accepts four supported-platform scenarios matching explicit expectations', async () => {
   const { report, code } = await run()
   assert.equal(code, 0)
   assert.equal(report.passed, true)
-  assert.equal(report.scenarios.length, 6)
+  assert.equal(report.scenarios.length, 4)
 })
 for (const [name, options] of [
   ['wrong version', { version: '1.0.5-dev.1' }],

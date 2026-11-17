@@ -35,3 +35,9 @@
 Sourcery 指出原线上脚本只记录版本、未断言选中结果。已改为必需显式提供 stable/prerelease 的 version 和 updateAvailable，并对三平台六场景分别断言。新增4项实际脚本测试证明正确预期通过、错版本/错可用性/缺预期均失败（先红3项，再绿4项）。独立复核无新增问题；修复后全量应用 1167 pass / 2 skip，Licia 两模式各606/4。[独立分支线上六场景](scrcpy-plus-rename/online-provider-dev2.json)按 [显式预期](scrcpy-plus-rename/expected-dev2.json)全部通过；当前 dev.2 对历史稳定版与同版本预发布均不提示升级。
 
 初轮仅修改历史 `update-acceptance.yml` 的下载地址触发了固定 Harmony 1.0.1/1.0.2 验收。[该次 mac-arm64 失败日志](https://github.com/MonsterXia/scrcpy-plus/actions/runs/44011194858/job/133798334791)显示 `check-packaged-update.mjs:93` 的旧 metadataUrl 请求断言失败，1.0.2 随后等待“无可用更新”提示超时。未将该结果记为通过，也未修改旧客户端或放宽断言。按用户明确不要求 Harmony 升级兼容的范围，撤回历史工作流的一行地址改动，最终 PR 保持该文件与 master 相同；历史测试仍保留，不改变五项必需 CI 或分支保护。
+
+## 后续支持范围：macOS 仅 ARM64
+
+用户在 PR 交付期间明确允许 Plus 不兼容 x86/x64 Mac，只需支持 arm64，并要求去除相应 CI。当前 CI 和手动 Build 均移除 `macos-15-intel`，保留 Windows x64 与 macOS arm64；README、构建说明及线上验证脚本同步为支持的平台。历史 Intel 安装包/证据和固定旧 Harmony 验收工作流保留原样，不宣称其为当前支持范围。
+
+新的必需检查为 `test`、`lint`、`windows-package`、`macos-package-arm64`，只移除已授权取消的 `macos-package-x64` 要求，保持 strict、管理员保护和其余检查不变。本节取代前文五项检查及未来三平台发行的计划。最终两平台矩阵经 YAML 解析核对，更新/打包/脚本定向41项通过；最终 CI 与合入以 PR #93 为准。

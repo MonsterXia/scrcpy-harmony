@@ -2,7 +2,7 @@
 
 ## 仓库改名与更新源迁移（2026-11-17）
 
-状态：GitHub 仓库已改为 `MonsterXia/scrcpy-plus`，本地 origin、更新源、发布目标与当前入口文档已同步。恢复更新及预发布菜单，保留 Plus 配置和应用标识；按用户要求不兼容旧 Harmony 自动更新/配置迁移。原工作区测试、完整构建、六组线上元数据及 Electron 双语更新/下载链接验收通过。已从最新 master 独立提取迁移变更，保留 1.0.5-dev.2；独立分支应用 1167 pass / 2 skip、Licia 两模式各 606/4、lint/i18n 通过，独立审查无阻断问题。交付及最终 CI/合入状态见 [PR #93](https://github.com/MonsterXia/scrcpy-plus/pull/93)；未发布或替换安装版。详情与下一步见 [迁移记录](docs/maintenance/scrcpy-plus-rename.md)。
+状态：GitHub 仓库已改为 `MonsterXia/scrcpy-plus`，本地 origin、更新源、发布目标与当前入口文档已同步。恢复更新及预发布菜单，保留 Plus 配置和应用标识；按用户要求不兼容旧 Harmony 自动更新/配置迁移。原工作区测试、完整构建、六组线上元数据及 Electron 双语更新/下载链接验收通过。已从最新 master 独立提取迁移变更，保留 1.0.5-dev.2；独立分支应用 1167 pass / 2 skip、Licia 两模式各 606/4、lint/i18n 通过，独立审查无阻断问题。按后续授权改为仅支持 macOS arm64（保留 Windows x64），移除 Intel Mac 构建和必需检查。交付及最终四项 CI/合入状态见 [PR #93](https://github.com/MonsterXia/scrcpy-plus/pull/93)；未发布或替换安装版。详情与下一步见 [迁移记录](docs/maintenance/scrcpy-plus-rename.md)。
 
 
 

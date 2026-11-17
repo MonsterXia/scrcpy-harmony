@@ -18,7 +18,7 @@ try {
   assert.ok(process.argv[2], 'Pass expected stable/prerelease versions and availability in expectations.json')
   const expectations = JSON.parse(await readFile(process.argv[2], 'utf8'))
   report.expectations = expectations
-  for (const [platform, channel] of [['win32', 'latest'], ['darwin', 'latest'], ['darwin', 'latest-x64']]) {
+  for (const [platform, channel] of [['win32', 'latest'], ['darwin', 'latest']]) {
     for (const beta of [false, true]) {
       const expected = expectations[beta ? 'prerelease' : 'stable']
       assert.equal(typeof expected?.version, 'string', 'Expected version is required')

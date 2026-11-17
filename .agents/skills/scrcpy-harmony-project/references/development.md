@@ -141,13 +141,13 @@ Windows 菜单状态回归：完整 build 后运行 `node script/check-beta-menu
 
 本机已有安装时可单独运行 `node script/smoke-app.mjs "C:/path/to/Scrcpy Harmony.exe"`，它使用临时用户配置并关闭自己启动的进程，不执行安装。macOS 可传入已安装应用的 `"/path/to/Scrcpy Harmony.app/Contents/MacOS/Scrcpy Harmony"` 路径。启动自动化依赖 Electron 的调试接口，不修改发行程序或模拟 IPC；它不替代真实设备投屏、签名/SmartScreen 和人工视觉验收。
 
-`macos-package-arm64` 和 `macos-package-x64` 使用标准 `macos-15` 与 `macos-15-intel` runner，分别在原生架构上完成依赖安装、资源下载、build 和 DMG 打包。两个任务固定相同系统版本，避免 latest 标签自动切换系统。`script/check-macos-install.mjs` 挂载 DMG，将 `.app` 复制到临时目录后卸载镜像，验证包内资源和可执行权限，再运行共享的启动检查。此检查校验实际架构，使用隔离用户配置并在退出后清理配置及 HDC 服务；只读仓库权限、不发布、不上传 artifact、不使用签名或公证 secrets。它不验证 Developer ID 签名、公证或从互联网下载后的 Gatekeeper 放行。
+`macos-package-arm64` 使用固定 `macos-15` ARM runner 完成依赖安装、资源下载、build 和 DMG 打包。当前 Plus 不支持 Intel Mac，不再运行 x64 macOS 构建。`script/check-macos-install.mjs` 挂载 DMG，将 `.app` 复制到临时目录后卸载镜像，验证包内资源和可执行权限，再运行共享的启动检查。此检查校验实际架构，使用隔离用户配置并在退出后清理配置及 HDC 服务；只读仓库权限、不发布、不上传 artifact、不使用签名或公证 secrets。它不验证 Developer ID 签名、公证或从互联网下载后的 Gatekeeper 放行。
 
-`script/pack.mjs` 配置 Windows NSIS exe 和 macOS dmg；读取 dist 内的包元数据及资源。`.github/workflows/build.yml` 是手动产物构建（workflow_dispatch），矩阵与 CI 对齐为 `windows-latest` x64、`macos-15` arm64、`macos-15-intel` x64，并核验 Node 实际架构。顺序为 checkout → npm ci（含本地依赖编译） → 下载资源（Windows 显式 Git Bash）→ build → pack --no-publish → 使用现有安装脚本验收实际安装包 → 记录签名和 SHA-256 → 上传 artifact。任一安装启动检查失败时不上传该平台 artifact。产物附带 `verification-win-x64.json` 或 `verification-mac-<arch>.txt`，记录源 SHA、运行链接、安装启动结果和系统签名检查；macOS 另外记录 Gatekeeper 与 stapler 退出码。信任检查失败如实记录，不把未签名包可启动等同于签名/公证通过。该 workflow 不创建 GitHub Release，真机及用户从互联网下载后的信任体验仍需单独验收。
+`script/pack.mjs` 配置 Windows NSIS exe 和 macOS dmg；读取 dist 内的包元数据及资源。`.github/workflows/build.yml` 是手动产物构建（workflow_dispatch），矩阵与 CI 对齐为 `windows-latest` x64、`macos-15` arm64，并核验 Node 实际架构。顺序为 checkout → npm ci（含本地依赖编译） → 下载资源（Windows 显式 Git Bash）→ build → pack --no-publish → 使用现有安装脚本验收实际安装包 → 记录签名和 SHA-256 → 上传 artifact。任一安装启动检查失败时不上传该平台 artifact。产物附带 `verification-win-x64.json` 或 `verification-mac-<arch>.txt`，记录源 SHA、运行链接、安装启动结果和系统签名检查；macOS 另外记录 Gatekeeper 与 stapler 退出码。信任检查失败如实记录，不把未签名包可启动等同于签名/公证通过。该 workflow 不创建 GitHub Release，真机及用户从互联网下载后的信任体验仍需单独验收。
 
 Electron 45 的 macOS 最低系统要求为 macOS 13；升级后需在目标平台验证安装包及设备功能，单测和 lint 不代表完整运行兼容性。
 
-运行时更新和打包目标共用 `package.json.publish` 的 `MonsterXia/scrcpy-plus` GitHub Releases 源。打包默认不上传，显式 `--publish` 才上传，`--no-publish` 优先禁止上传。Windows / macOS arm64 使用 `latest`，macOS x64 使用 `latest-x64`；手动构建 workflow 显式 `--no-publish`，仅上传安装包、YAML 更新元数据和 blockmap 为 artifact，不创建 Release。正式发布时需将各平台安装包及配套更新文件放入本仓库相应版本的 Release。electron-builder 的 GitHub 更新 YAML 使用安全文件名（例如 `Scrcpy-Plus-...`），可能不同于本地带空格的安装包名；上传前按 YAML 的 URL 命名安装包和配套 blockmap，保持字节不变，并核对 size、SHA-512 和远端 SHA-256。无 Release 时检查更新可能报错，不能回退到上游。
+运行时更新和打包目标共用 `package.json.publish` 的 `MonsterXia/scrcpy-plus` GitHub Releases 源。打包默认不上传，显式 `--publish` 才上传，`--no-publish` 优先禁止上传。Windows / macOS arm64 使用 `latest`；历史 macOS x64 元数据为 `latest-x64`，当前不再发布 Intel 构建；手动构建 workflow 显式 `--no-publish`，仅上传安装包、YAML 更新元数据和 blockmap 为 artifact，不创建 Release。正式发布时需将各平台安装包及配套更新文件放入本仓库相应版本的 Release。electron-builder 的 GitHub 更新 YAML 使用安全文件名（例如 `Scrcpy-Plus-...`），可能不同于本地带空格的安装包名；上传前按 YAML 的 URL 命名安装包和配套 blockmap，保持字节不变，并核对 size、SHA-512 和远端 SHA-256。无 Release 时检查更新可能报错，不能回退到上游。
 
 ## 实际打包应用的更新验收
 
@@ -212,4 +212,4 @@ macOS 无证书开发包可运行 `npm run pack -- --no-publish --adhoc-sign`，
 
 桌面 `build` 重建生成的 `dist/build`，排除 `build/ios-wda` 源码及签名缓存，避免复用旧发行目录时携带本地 Runner/签名产物。WDA 始终按独立准备流程安装到手机。
 
-线上更新只读验证：`node script/check-release-source.mjs <预期.json> [报告.json]` 使用生产 ReleaseProvider 查询 Windows、Mac ARM/Intel 的稳定与预发布元数据，不下载安装包；预期 JSON 必须显式提供 stable/prerelease 的 version 和 updateAvailable，发布变化后需重新确认这些预期，示例见 `docs/maintenance/scrcpy-plus-rename/expected-dev2.json`。Harmony 用户手动重装 Plus；不提供旧地址解析或旧配置迁移代码。仓库改名状态见 [迁移记录](../../../../docs/maintenance/scrcpy-plus-rename.md)。
+线上更新只读验证：`node script/check-release-source.mjs <预期.json> [报告.json]` 使用生产 ReleaseProvider 查询 Windows x64、Mac ARM 的稳定与预发布元数据，不下载安装包；预期 JSON 必须显式提供 stable/prerelease 的 version 和 updateAvailable，发布变化后需重新确认这些预期，示例见 `docs/maintenance/scrcpy-plus-rename/expected-dev2.json`。Harmony 用户手动重装 Plus；不提供旧地址解析或旧配置迁移代码。仓库改名状态见 [迁移记录](../../../../docs/maintenance/scrcpy-plus-rename.md)。

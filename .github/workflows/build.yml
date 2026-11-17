@@ -18,8 +18,6 @@ jobs:
             arch: x64
           - os: macos-15
             arch: arm64
-          - os: macos-15-intel
-            arch: x64
 
     env:
       EXPECTED_ARCH: ${{ matrix.arch }}
@@ -59,7 +57,7 @@ jobs:
           if [[ -z "${!name}" ]]; then unset "$name"; fi
         done
         pack_args=(--no-publish)
-        # Without a certificate, generate a valid ad-hoc bundle seal on both Macs.
+        # Without a certificate, generate a valid ad-hoc bundle seal on Apple Silicon Macs.
         if [[ "$RUNNER_OS" == "macOS" && -z "${CSC_LINK:-}" ]]; then
           pack_args+=(--adhoc-sign)
         fi
