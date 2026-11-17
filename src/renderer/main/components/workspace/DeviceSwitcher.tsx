@@ -25,7 +25,7 @@ export default observer(function DeviceSwitcher() {
       onChange={event => store.selectOverviewTarget(event.target.value)}>
       {!targets.length && <option value="">{t('targetNotConnected')}</option>}
       {targets.map(target => <option key={target.key} value={target.key}>
-        {`${target.platform === 'ios' ? 'iOS' : target.platform === 'android' ? 'Android' : 'HarmonyOS'} · ${target.name} (${target.key})`}
+        {`${target.platform === 'android' ? 'Android' : target.platform === 'ios' ? 'iOS' : 'HarmonyOS'} · ${target.name} (${target.key})`}
       </option>)}
     </select>
     <button type="button" className={Style.button} data-action="refresh-devices" disabled={!store.ready || refreshing} onClick={refresh}>

@@ -37,6 +37,7 @@ try {
   page.on('console', m=>{if(m.type()==='error') console.error(m.text())})
   page.on('pageerror', e => errors.push(e.message))
   await page.waitForFunction(()=>document.querySelector('canvas')?.tabIndex===0)
+  await page.evaluate(()=>document.body.classList.add('platform-mac'))
   const designCases=[]
   for(const locale of ['en-US','zh-CN']) for(const theme of ['light','dark']) for(const width of [280,460]) {
     const dictionary=JSON.parse(await fs.readFile(path.join(root,'src/common/langs',`${locale}.json`),'utf8'))
@@ -69,7 +70,11 @@ try {
     await page.getByRole('button',{name:dictionary.retry,exact:true}).click()
     await card.waitFor({state:'hidden'})
     const entry=await page.locator('[aria-controls="ios-mirror-tools"]').boundingBox()
-    assert.ok(entry.x>width-50,'Tools belong at the right of the titlebar')
+    assert.ok(entry.x>width-50,'macOS tools belong at the right of the titlebar')
+    await page.evaluate(()=>document.body.classList.remove('platform-mac'))
+    const windowsEntry=await page.locator('[aria-controls="ios-mirror-tools"]').boundingBox()
+    assert.ok(windowsEntry.x<50,'Windows tools must avoid the native controls on the right')
+    await page.evaluate(()=>document.body.classList.add('platform-mac'))
     designCases.push({locale,theme,width,setupDisclosure:true,canvasGeometryUnchanged:true,rightAlignedTools:true})
   }
   await page.setViewportSize({width:460,height:840})

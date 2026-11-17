@@ -3,6 +3,26 @@
 ## 仓库改名与更新源迁移（2026-11-17）
 
 状态：GitHub 仓库已改为 `MonsterXia/scrcpy-plus`，本地 origin、更新源、发布目标与当前入口文档已同步。恢复更新及预发布菜单，保留 Plus 配置和应用标识；按用户要求不兼容旧 Harmony 自动更新/配置迁移。测试、完整构建及六组线上元数据检查通过，Electron 双语更新与下载链接验收通过。源码未提交/推送，未发布或替换安装版；详情与下一步见 [迁移记录](docs/maintenance/scrcpy-plus-rename.md)。
+状态：GitHub 仓库已改为 `MonsterXia/scrcpy-plus`，本地 origin、更新源、发布目标与当前入口文档已同步。恢复更新及预发布菜单，保留 Plus 配置和应用标识；按用户要求不兼容旧 Harmony 自动更新/配置迁移。原工作区测试、完整构建、六组线上元数据及 Electron 双语更新/下载链接验收通过。已从最新 master 独立提取迁移变更，保留 1.0.5-dev.2；独立分支应用 1167 pass / 2 skip、Licia 两模式各 606/4、lint/i18n 通过，独立审查无阻断问题。按后续授权改为仅支持 macOS arm64（保留 Windows x64），移除 Intel Mac 构建和必需检查。交付及最终四项 CI/合入状态见 [PR #93](https://github.com/MonsterXia/scrcpy-plus/pull/93)；未发布或替换安装版。详情与下一步见 [迁移记录](docs/maintenance/scrcpy-plus-rename.md)。
+
+
+
+
+## 1.0.5-dev.2 发行执行（2026-11-17）
+
+**2026-11-17 09:19:33（UTC+8）已公开 dev.2 Pre-release，Latest 保持 1.0.4。** PR #91 经独立审查、五项 CI 全绿后正常合入；固定源 e26c06b 完成三平台 Build/安装启动、补丁 WDA 未签名编译、公开前 162 场景和 15 附件重下载校验。公开后三平台再验证 162 场景通过；本轮没有替换日常安装。来源、签名报告、失败记录和未验收真机范围见[发行记录](docs/releases/1.0.5-dev.2.md)。
+
+## 1.0.5-dev.2 发行规划（2026-11-16）
+
+PR #90 已经独立审查、五项 CI 全绿后正常合入 `b328246`；[最终证据](https://github.com/MonsterXia/scrcpy-harmony/pull/90#issuecomment-6916559409)。按用户要求完成[下一开发版计划](docs/superpowers/plans/2026-11-16-release-1.0.5-dev.2.md)，拟为 Scrcpy Plus `1.0.5-dev.2` Pre-release，稳定 Latest 保持1.0.4。计划覆盖更名后的独立配置、三平台同源安装与更新验证、CLI/MCP附件、15项附件重下载校验和公开复验。当前只完成规划，版本/tag/Release均未变；补丁后Runner编译、签名真机矩阵仍需按计划补验。
+
+## iOS PR 交付（2026-11-16）
+
+用户授权独立审查、PR 和 CI 通过后合入。新上下文审查确认的清理丢响应、媒体端口监听两项问题已修复并复核，另排除桌面包中的 WDA 缓存。最终应用 1156 pass / 2 skip，Licia 两模式各 606/4，lint/i18n 通过；独立审查 98/98，无遗留问题。Xcode 27.2 许可阻止补丁后 Runner 编译，签名和控制真机验收仍待办。门禁与最终交付见[PR 记录](docs/maintenance/ios-pr-2026-11-16.md)。
+
+## USB iPhone 概览（2026-11-16）
+
+状态：**实现、自动回归及真机信息读取完成。** 概览选择器新增 USB iPhone，排除 AirPlay；使用系统 usbmux/lockdown 读取公开信息，无需 WDA 签名或开发者模式，未知字段不猜测。选择持久化/轮询保留，iOS 禁用鸿蒙工具。真实 Electron + 当前连接 iPhone 已验证选择、iOS 版本/构建/型号/架构显示；未执行 WDA 截图或点击，未更改设备开发者模式。应用测试 1152 pass / 2 skip，三项构建、lint/i18n 通过；TypeScript 与既有 55 项诊断一致。见 [维护记录](docs/maintenance/ios-overview.md)。用户随后授权更新安装版：完整构建/arm64 打包、签名及安装后 smoke 通过，旧应用与配置已备份；已打开 `/Applications/Scrcpy Plus.app` 并选中真实 iPhone 概览，保留供用户查看。下一步仍是 WDA 签名与开发者模式配置。
 
 
 ## iOS USB WDA + ReplayKit（2026-11-16）
@@ -24,6 +44,9 @@ USB 拔插恢复已修复并完成一次用户真机拔插：旧视频 capture 4
 概览现支持 USB iPhone：设备选择与持久化、只读基本信息、开始投屏入口及鸿蒙工具隔离已接通。1176 pass / 2 skip、lint、构建和双语双主题 UI 通过；当前源码运行版已显示真实 iPhone 信息并验证刷新。[概览证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-17/overview.json)。
 
 使用与准备见 [iOS USB 文档](docs/scrcpy-plus/ios-usb-wda.md)，状态、失败记录及下一步见 [维护记录](docs/maintenance/ios-usb-wda.md)，[证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-16/verification.json)。首次启动的联网签名验证失败在手机联网后恢复；新增[真机证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-17/verification.json)。下一步验证长时间视频、旋转、锁屏与拔插。自动化租约已释放，GUI 开发版及 WDA 留给用户，未更新安装版。
+状态：**代码与自动验证完成，签名和真机验收待办。** 按用户确认先交付代码：独立 USB iPhone 会话、PNG 截图、点击/手势/文字、可选 ReplayKit H.264。AirPlay 仍只读。应用 1147 pass / 2 skip，Licia 两模式各 606 pass / 4 pending，lint、三项应用构建、WDA+扩展未签名构建通过；TypeScript 55 项既有诊断无新增。真实 Electron 验证使用模拟设备 IPC，未声称真机已跑通。独立审查四项问题已修复并复核。
+
+使用与准备见 [iOS USB 文档](docs/scrcpy-plus/ios-usb-wda.md)，状态、失败记录及下一步见 [维护记录](docs/maintenance/ios-usb-wda.md)，[证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-16/verification.json)。下一步待签名账户与真机就绪后，依次验证截图/点击、连续视频、旋转与拔插。未更新安装版。
 
 
 ## 多端投屏交互重设计（2026-11-16）

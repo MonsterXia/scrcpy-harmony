@@ -27,6 +27,7 @@ export default observer(function Overview({
   const target = store.overviewTarget
   const android = target?.platform === 'android'
   const ios = target?.platform === 'ios'
+  const nonHarmony = android || ios
   const ready = !!target && (!target.state || target.state === 'ready')
   const identity = target ? `${target.platform || 'harmony'}:${target.key}:${target.state || 'ready'}` : ''
 
@@ -140,7 +141,7 @@ export default observer(function Overview({
         <>
           <section className={Style.hero}>
             <div className={Style.phone} aria-hidden="true">
-              <span className={android || ios ? 'icon-phone' : 'icon-ohos'} />
+              <span className={nonHarmony ? 'icon-phone' : 'icon-ohos'} />
             </div>
             <div className={Style.identity}>
               <p className={Style.eyebrow}>{t('workspaceCurrentDevice')}</p>
@@ -191,36 +192,37 @@ export default observer(function Overview({
               <div className={Style.infoGrid}>
                 <div className={Style.infoBlock}>
                   <h3>
-                    <span className={android || ios ? 'icon-phone' : 'icon-ohos'} aria-hidden="true" />
+                    <span className={nonHarmony ? 'icon-phone' : 'icon-ohos'} aria-hidden="true" />
                     {t('workspaceSystem')}
                   </h3>
                   {item(
                     t('plusOsVersion'),
-                    android || ios ? overview.osVersion : target.ohosVersion
+                    nonHarmony ? overview.osVersion : target.ohosVersion
                       ? `OpenHarmony ${target.ohosVersion}${target.sdkVersion ? ` (API ${target.sdkVersion})` : ''}`
                       : undefined,
                     'ohosVersion',
                   )}
-                  {ios ? <>
-                    {item(t('plusBuildVersion'), overview.buildVersion, 'buildVersion')}
-                    {item('UDID', overview.deviceId, 'deviceId')}
-                  </> : item(t('kernelVersion'), overview.kernelVersion, 'kernelVersion')}
+                  {item(
+                    t(ios ? 'plusIosBuildVersion' : 'kernelVersion'),
+                    ios ? overview.buildVersion : overview.kernelVersion,
+                    ios ? 'buildVersion' : 'kernelVersion',
+                  )}
                   {item(t('serialNum'), overview.serialNum, 'serialNum')}
                   {item(t('name'), overview.name, 'name')}
+                  {ios && item('UDID', overview.udid, 'udid')}
                 </div>
                 <div className={Style.infoBlock}>
                   <h3>
                     <span className="icon-processor" aria-hidden="true" />
                     {t('workspaceHardware')}
                   </h3>
-                  {ios ? <>
-                    {item(t('plusCpuArchitecture'), overview.abi, 'abi')}
-                    {item(t('plusHardwareModel'), overview.hardwareModel, 'hardwareModel')}
-                  </> : <>
-                    {item(t('processor'), processor, 'processor')}
-                    {item(t('physicalResolution'), overview.physicalResolution, 'physicalResolution')}
-                    {item(t('memory'), memory, 'memory')}
-                  </>}
+                  {item(t(ios ? 'plusIosCpuArchitecture' : 'processor'), processor, 'processor')}
+                  {item(
+                    t(ios ? 'plusIosHardwareModel' : 'physicalResolution'),
+                    ios ? overview.hardwareModel : overview.physicalResolution,
+                    ios ? 'hardwareModel' : 'physicalResolution',
+                  )}
+                  {ios ? item(t('plusIosModelNumber'), overview.modelNumber, 'modelNumber') : item(t('memory'), memory, 'memory')}
                   {item(t('brand'), overview.brand, 'brand')}
                   {item(t('model'), overview.model, 'model')}
                 </div>
@@ -229,7 +231,7 @@ export default observer(function Overview({
           )}
         </>
       )}
-      {android || ios ? <p className={Style.platformHint}>{t(ios ? 'plusIosOverviewHint' : 'plusAndroidOverviewHint')}</p> : <>
+      {nonHarmony ? <p className={Style.platformHint}>{t(ios ? 'plusIosOverviewHint' : 'plusAndroidOverviewHint')}</p> : <>
       <h2 className={Style.sectionTitle}>{t('workspaceDeviceTools')}</h2>
       <div className={Style.tools}>
         <button

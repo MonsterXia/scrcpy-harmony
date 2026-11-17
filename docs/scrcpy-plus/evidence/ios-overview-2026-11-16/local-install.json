@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-16",
+  "version": "1.0.5-dev.1",
+  "arch": "arm64",
+  "sourceFilesVerified": 38,
+  "asarSha256": "77b393a6f1e17d9398702785d6834ceca21d6fdf230a58eaf4572b335a97a261",
+  "installedPath": "/Applications/Scrcpy Plus.app",
+  "signature": "ad-hoc; deep/strict verification passed",
+  "fullBuild": true,
+  "packageBuild": true,
+  "installedSmoke": true,
+  "profileFilesBackedUpAndVerified": 6,
+  "settingsPreserved": true,
+  "oldApplicationBackedUp": true,
+  "openedInstalledApplication": true,
+  "selectedUsbIPhoneInOverview": true,
+  "observedRealDeviceFields": [
+    "iOS 27.2.1",
+    "24B156",
+    "iPhone18,1",
+    "arm64e",
+    "V53AP"
+  ],
+  "observedMissingFields": [
+    "serial number",
+    "model number"
+  ],
+  "wdaDeviceAcceptance": false,
+  "developerModeChanged": false,
+  "published": false
+}

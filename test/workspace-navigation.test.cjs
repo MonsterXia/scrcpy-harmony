@@ -138,3 +138,14 @@ test('overview picker supports USB iOS, excludes AirPlay, and disables unsupport
   assert.equal(nav.host.querySelector('[data-navigation="overview"]').disabled, false)
   assert.equal(nav.host.querySelector('[data-navigation="shell"]').disabled, true)
 })
+
+test('overview picker includes USB iPhone but excludes AirPlay, and iOS disables Harmony tools',async t=>{
+  const f=await fixture(t,true)
+  await act(async()=>runInAction(()=>{f.store.targets=[{key:'ios:phone',name:'Phone',platform:'ios',transport:'usb'},{key:'ios:airplay-receiver',platform:'ios',transport:'receiver'}];f.store.overviewTarget=f.store.targets[0]}))
+  const options=[...f.host.querySelectorAll('option')]
+  assert.deepEqual(options.map(x=>x.value),['ios:phone']);assert.match(options[0].textContent,/iOS/)
+  const nav=await fixture(t)
+  await act(async()=>runInAction(()=>{nav.store.overviewTarget={key:'ios:phone',platform:'ios',transport:'usb'}}))
+  assert.equal(nav.host.querySelector('[data-navigation="shell"]').disabled,true)
+  assert.equal(nav.host.querySelector('[data-navigation="overview"]').disabled,false)
+})

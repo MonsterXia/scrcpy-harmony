@@ -60,6 +60,14 @@ async function run(command, args, env = process.env) {
     child.once('exit', code => { process.removeListener('SIGINT', interrupt); code === 0 ? resolve() : reject(Error(`${path.basename(command)} exited with ${code}`)) })
   })
 }
+export function patchSocketSource(text, patch) {
+  const hash = value => createHash('sha256').update(value).digest('hex')
+  if (hash(text) === patch.patchedSha256) return text
+  if (hash(text) !== patch.sha256 || text.split(patch.find).length !== 2) throw Error('WDA socket source does not match pinned patch')
+  const result = text.replace(patch.find, patch.replace)
+  if (hash(result) !== patch.patchedSha256) throw Error('WDA patched socket checksum mismatch')
+  return result
+}
 export async function applyOwnershipPatch(source, manifest) {
   const spec = manifest.sessionOwnershipPatch
   const target = path.join(source, spec.target)
@@ -88,6 +96,10 @@ async function prepareSource() {
   // The hash-pinned archive contains no mutable branch lookup or install script.
   try { await fs.access(path.join(source, 'WebDriverAgent.xcodeproj/project.pbxproj')) }
   catch { await run('tar', ['-xzf', archive, '-C', cache]) }
+  const socketFile = path.join(source, manifest.localPatch.file)
+  const original = await fs.readFile(socketFile, 'utf8')
+  const patched = patchSocketSource(original, manifest.localPatch)
+  if (patched !== original) await fs.writeFile(socketFile, patched)
   await applyOwnershipPatch(source, manifest)
   return { source, cache }
 }

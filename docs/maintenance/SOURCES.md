@@ -3,6 +3,19 @@
 2026-11-17 用户确认 Plus 是当前项目正式延续，要求直接将仓库改名为 `scrcpy-plus` 并同步更新路径、配置和验证；后续明确旧 Harmony 可手动重新安装，不保留多余兼容代码。远端改名已生效，源码、验证范围及交付边界见 [迁移记录](scrcpy-plus-rename.md)。
 
 
+2026-11-17 用户确认 Plus 是当前项目正式延续，要求直接将仓库改名为 `scrcpy-plus` 并同步更新路径、配置和验证；后续明确旧 Harmony 可手动重新安装，不保留多余兼容代码。后续授权本迁移独立提交/PR，审查及 CI 通过后合入，不混入 iOS 改动；交付期间明确 Plus 只需支持 arm64 Mac，可移除 Intel Mac CI。远端改名已生效，源码、验证范围及交付边界见 [迁移记录](scrcpy-plus-rename.md)。
+
+
+
+
+2026-11-17 09:19:33（UTC+8）按用户授权公开 Scrcpy Plus dev.2 Pre-release，PR #91 正常合入，最终源 e26c06b，Latest 保持1.0.4。公开前162场景与15附件重下载通过，公开后162场景也通过；没有替换本机应用，WDA签名真机与长期矩阵保留待办。[发行证据](../releases/1.0.5-dev.2.md)。
+
+2026-11-17 用户明确要求“按这个计划继续执行，完成独立审查和所有验收后发布 1.0.5-dev.2 开发版”。本轮发布授权、候选与最终证据见[发行记录](../releases/1.0.5-dev.2.md)。
+
+2026-11-16 用户接续要求“继续你之前的任务，PR合入后按照仓约定流程规划发布一个下一个开发版本”。PR #90 正常门禁合入 b328246 后建立 [1.0.5-dev.2 发行计划](../superpowers/plans/2026-11-16-release-1.0.5-dev.2.md)与[约束](../superpowers/specs/2026-11-16-release-1.0.5-dev.2.md)；本阶段交付规划，不将其记为已公开发行。
+
+2026-11-16 用户要求 iOS USB WDA/ReplayKit 与概览按项目规范独立审查、提 PR，并在审查和 CI 通过后合入。已修复审查问题并完成本地回归，最终门禁和交付记录见 [iOS PR 交付](ios-pr-2026-11-16.md)。签名后真机控制验收仍待办。
+
 2026-11-16 用户要求“为什么切换语言需要重启？，请做即时切换”。本地实现、构建及真实 Electron 双语运行验证见[即时语言切换](instant-language.md)，初轮设备和投屏为模拟 IPC；用户随后明确授权更新本机安装，已备份旧应用及配置、替换 Plus 并启动设置页供试用。未公开发布。
 
 2026-11-16 用户进一步要求“按照项目规范提起pr，审核没问题且CI通过后合入”。本轮授权整分支通过正常 PR 门禁交付，见 [PR #88](https://github.com/MonsterXia/scrcpy-harmony/pull/88) 与[交付记录](agent-automation-pr-2026-11-16.md)；不扩大为发布或安装替换。
@@ -254,3 +267,6 @@
 - 2026-11-17：按用户授权完成 iPhone 13 的 WDA 签名安装和 USB 截图/点击/Home、ReplayKit 基本播放及模式切换；首次联网验证规则参照 [Apple provisioning updates](https://developer.apple.com/help/account/provisioning-profiles/provisioning-profile-updates)，实际结果及剩余矩阵见 [iOS 维护记录](ios-usb-wda.md) 与[脱敏真机证据](../scrcpy-plus/evidence/ios-usb-wda-2026-11-17/verification.json)。
 
 2026-11-17 用户在全量独立审查后要求“修复”。本轮处理五项确认问题及验证中发现的相邻错误收口；设备端补丁、自动验证与真机证据见 [iOS 审查修复](ios-review-fixes-2026-11-17.md)。
+- 2026-11-16：用户优先要求在概览选择 iPhone 并读取信息；USB lockdown 与正式 Electron IPC 真机读取结果、双语 UI 和回归见 [iPhone 概览维护记录](ios-overview.md)。无需 WDA，未将此验收扩展为截图/控制成功。
+
+- 2026-11-16 用户追加授权更新已安装应用并打开 iPhone 概览：完整构建/打包、备份、签名和安装后启动校验，以及真实安装版界面观察见 [安装记录](ios-overview.md#用户授权更新安装版) 和 [安装证据](../scrcpy-plus/evidence/ios-overview-2026-11-16/local-install.json)。

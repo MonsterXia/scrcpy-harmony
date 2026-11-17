@@ -26,3 +26,9 @@
 最新桌面源码构建的实测结果见下方补充。原 WDA 长期连接自行中断的根因、多次快速拔插、锁屏/旋转及 Windows usbmux 仍未验收；本轮修复的是审查指出的生命周期和归属错误，不把单次通过当作长期稳定性结论。
 
 最新源码桌面版已沿用用户配置运行，默认 ReplayKit 视频输出 780×1688；显式重连后 running/video，截图 generation 从 5 增至 10，帧未过期。CLI 点击打开实用工具；重连后以真实 Chromium 鼠标事件点击 Canvas 打开计算器，观察截图确认成功。Android 概览再次读取到 M2007J1SC 和 Android 13 等信息。验证租约已释放，GUI 和专用 Runner 保持运行；本地运行日志没有新增输入/连接错误。设备屏幕、UDID 和原始运行日志不入库。[真机脱敏汇总](../scrcpy-plus/evidence/ios-usb-wda-2026-11-17/review-fix-device.json)。
+
+## PR 基线同步与复审
+
+提 PR 时发现远端已合入基础 iOS、dev.2 发行和仓库改名。合并 origin/master 后保留 dev.2 版本、Windows/macOS ARM 两平台范围和四项必需 CI；同时保留 WDA 媒体回环监听补丁与新增会话归属补丁，iPadOS/型号字段仍由固定白名单读取。独立复审发现 Windows 右上角入口会与系统窗口控制重叠，改为 macOS 右侧、Windows 左侧，并补双平台布局断言。
+
+上方真机记录来自同步主分支前的构建，仅验证会话归属补丁；不代表合并后的双补丁 Runner 已再次做真机验证。最终合并构建/CI 结果另行记录。

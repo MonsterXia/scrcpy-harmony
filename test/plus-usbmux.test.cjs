@@ -67,7 +67,7 @@ test('iOS overview reads an allowlist over lockdown and omits unavailable fields
  const f=await fixture(t,false,{DeviceName:'iPhone Fixture',ProductVersion:'26.4',BuildVersion:'24A1',ProductType:'iPhone14,5',HardwareModel:'D17AP',CPUArchitecture:'arm64e'})
  const result=await f.getIosOverview({key:'ios:01234567-1234567890abcdef',connectionId:'01234567-1234567890abcdef',platform:'ios',transport:'usb',name:'USB iPhone'})
  assert.equal(result.osVersion,'iOS 26.4');assert.equal(result.model,'iPhone14,5');assert.equal(result.abi,'arm64e');assert.equal(result.serialNum,undefined)
- assert.deepEqual(f.seen.filter(x=>x.Request).map(x=>x.Key),['DeviceName','ProductVersion','BuildVersion','ProductType','HardwareModel','CPUArchitecture','SerialNumber'])
+ assert.deepEqual(f.seen.filter(x=>x.Request).map(x=>x.Key),['DeviceName','ProductVersion','BuildVersion','ProductType','HardwareModel','CPUArchitecture','SerialNumber','DeviceClass','ModelNumber'])
  assert.equal(f.seen.filter(x=>x.MessageType==='Connect').length,1)
  const count=f.seen.length
  await assert.rejects(f.getIosOverview({key:'ios:airplay-receiver',platform:'ios',transport:'receiver'}),/Invalid/)

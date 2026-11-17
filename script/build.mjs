@@ -34,7 +34,13 @@ runNpm('run', 'build:preload')
 runNpm('run', 'build:renderer')
 runNpm('run', 'build:cli')
 
-await fs.copy('build', 'dist/build', { filter: file => !['native-airplay', 'android-server'].includes(path.relative('build', file).split(path.sep)[0]) })
+// Refresh generated assets so an earlier build cannot retain local WDA signing
+// products. WDA is prepared and installed separately, never shipped in desktop.
+const workspaceRoot = await fs.realpath(process.cwd())
+const distRoot = await fs.realpath('dist')
+if (!distRoot.startsWith(workspaceRoot + path.sep)) throw new Error('Build output escaped workspace')
+await fs.remove('dist/build')
+await fs.copy('build', 'dist/build', { filter: file => !['native-airplay', 'android-server', 'ios-wda'].includes(path.relative('build', file).split(path.sep)[0]) })
 await fs.copy('resources/android', 'dist/resources/android')
 await fs.copy('resources/airplay', 'dist/resources/airplay')
 await fs.copyFile('resources/platform-backends.json', 'dist/resources/platform-backends.json')
@@ -44,7 +50,6 @@ const nativeManifest = await fs.readJson('vendor/native-video/manifest.json')
 await validateNativeResources('resources/native-video', nativeManifest, path.resolve('vendor/native-video'))
 // Replace only this generated resource folder, and copy an exact allowlist.
 // Refuse output redirected outside this workspace before recursive removal.
-const workspaceRoot = await fs.realpath(process.cwd())
 const outputRoot = await fs.realpath('dist/resources')
 if (!outputRoot.startsWith(workspaceRoot + path.sep)) throw new Error('Native resource output escaped workspace')
 const nativeOutput = path.join(outputRoot, 'native-video')

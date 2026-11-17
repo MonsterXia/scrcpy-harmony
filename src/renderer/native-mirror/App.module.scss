@@ -73,7 +73,7 @@
   button { flex-shrink: 0; }
 }
 .toolEntry.toolEntry {
-  left: auto; right: 8px; width: 32px;
+  left: 8px; right: auto; width: 32px;
   :global(.platform-mac) & { left: auto; right: 8px; }
 }
 .toolToggle.toolToggle {
@@ -81,7 +81,10 @@
   svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
   &:hover svg, &[aria-expanded='true'] svg { opacity: 1; }
 }
-.toolPanel { width: min(320px, 100%); margin-left: auto; }
+.toolPanel {
+  width: min(320px, 100%);
+  :global(.platform-mac) & { margin-left: auto; }
+}
 .tools {
   display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 14px; font-size: 12px;
   button { min-height: 30px; border-radius: 7px; padding: 5px 10px; border-color: var(--mirror-line); background: var(--mirror-surface); }

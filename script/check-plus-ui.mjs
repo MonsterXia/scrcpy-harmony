@@ -74,7 +74,7 @@ try {
       ipcMain.handle('getDeviceOverview', (_, key) => {
         globalThis.__plusOverviewReads.push(key)
         const target = targets.find(target => target.key === key)
-        if (target.platform === 'ios') return {name:target.name,brand:'Apple',model:'iPhone14,5',osVersion:'iOS 26.4',buildVersion:'24E1',hardwareModel:'D17AP',abi:'arm64e',deviceId:'fixture-udid'}
+        if (target.platform === 'ios') return {name:target.name,brand:'Apple',model:'iPhone14,5',osVersion:'iOS 26.4',buildVersion:'24E1',hardwareModel:'D17AP',abi:'arm64e',udid:'fixture-udid'}
         return { name: target.name, brand: target.platform === 'android' ? 'Google' : 'HUAWEI', model: target.name,
           osVersion: target.platform === 'android' ? 'Android 16 (API 36)' : '', processor: 'ARM', abi: 'arm64-v8a', memTotal: 8589934592, physicalResolution: '1080x2400', serialNum: 'fixture', kernelVersion: '6.1' }
       })

@@ -177,3 +177,13 @@ for (const pending of [false, true]) {
     assert.ok(f.text().includes('manual'))
   })
 }
+
+test('iPhone overview renders iOS fields, hides Harmony tools and clears old device details',async t=>{
+  const f=await fixture(t)
+  await act(async()=>f.requests[0].resolve(details('harmony')))
+  await f.change({key:'ios:phone',name:'iPhone',platform:'ios',transport:'usb',state:'ready'})
+  await act(async()=>f.requests[1].resolve({name:'Phone',brand:'Apple',model:'iPhone18,1',osVersion:'iOS 27.2.1',buildVersion:'24B156',hardwareModel:'V53AP',abi:'arm64e',udid:'fixture-udid'}))
+  assert.ok(f.text().includes('iOS 27.2.1'));assert.ok(f.text().includes('24B156'));assert.ok(f.text().includes('V53AP'))
+  assert.equal(f.text().includes('harmony'),false);assert.equal(f.text().includes('workspaceDeviceTools'),false)
+  assert.equal(f.text().includes('plusIosOverviewHint'),true)
+})

@@ -1,12 +1,24 @@
 # Scrcpy Plus
 
+当前 Plus 构建支持 Windows x64 和 macOS Apple Silicon（arm64）。不再支持 Intel Mac；已有 Intel 安装包仅作为历史发行附件保留。
+
 Scrcpy Plus 作为本项目的正式延续，仓库已迁移至 `MonsterXia/scrcpy-plus`，检查更新与问题反馈使用新地址。已有 Harmony 用户请手动安装 Plus，不提供自动配置迁移；已有 Plus 的配置与应用标识保持不变。保留全部发行历史，下方继承的鸿蒙文档描述历史版本。详见[迁移记录](docs/maintenance/scrcpy-plus-rename.md)。
 
 基于 Scrcpy Harmony 改造的安卓、鸿蒙与 iOS 投屏工作台。当前开发版的配置、能力边界与验证状态见[集成说明](docs/scrcpy-plus/integration.md)。安卓 USB/ADB 与 iOS AirPlay 已改为源码库集成，并在应用内显示；开发构建条件与未验收范围见集成说明。以下内容为继承的鸿蒙项目文档与历史发行信息。
 
-开发分支新增 iOS USB WDA 截图/控制及可选 ReplayKit 连续视频，签名安装与真机验收尚未完成，见 [iOS USB 配置](docs/scrcpy-plus/ios-usb-wda.md)。
+开发分支提供 iOS USB WDA 截图/控制，默认启用 ReplayKit 连续视频；iPhone 13 的视频、输入及重连基本验证通过，长稳与跨平台验收仍待完成，见 [iOS USB 配置](docs/scrcpy-plus/ios-usb-wda.md)。
 
-开发版自动化已提供共享本地服务、独立 Node CLI 与 [MCP stdio](docs/scrcpy-plus/automation/mcp.md)，支持会话、截图、输入和现有 Harmony 工具。参见[使用指南](docs/scrcpy-plus/automation/README.md)与 [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md)。本机模拟流程通过，真机及 Windows 验收仍 pending。
+开发版自动化已提供共享本地服务、独立 Node CLI 与 [MCP stdio](docs/scrcpy-plus/automation/mcp.md)，支持会话、截图、输入和现有 Harmony 工具。参见[使用指南](docs/scrcpy-plus/automation/README.md)与 [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md)。本机模拟流程通过，真机自动化及 Windows 自动化端到端验收仍待完成。
+
+## 1.0.5-dev.2 开发预发布
+
+**[Scrcpy Plus 1.0.5-dev.2 已公开](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.2)。** 源码、附件校验和验收范围见[发行记录](docs/releases/1.0.5-dev.2.md)。稳定 Latest 保持 **Scrcpy Harmony 1.0.4**。
+
+本版本包含安卓/鸿蒙投屏、iOS AirPlay、USB iPhone 概览、统一设备工作区、即时语言切换，以及独立 Node CLI/MCP 客户端。USB WDA 截图/控制和 ReplayKit 视频为实验能力，需另行签名运行 Runner；真机控制/视频验收仍待完成。
+
+**从 Harmony 切换到 Plus：** 两者安装和配置身份不同。保留原 Harmony 安装与设置；Plus 创建自己的配置目录（macOS 为 `~/Library/Application Support/Scrcpy Plus`，Windows 为 `%APPDATA%\Scrcpy Plus`），不会自动迁移 Harmony 设置。已有 Plus 开发版继续使用原 Plus 配置。更新器仅打开发行页供手动安装，不自动安装更新。
+
+按电脑选择 Windows x64 EXE 或 macOS arm64 DMG。可选 `scrcpy-plus-cli-1.0.5-dev.2.tgz` 包含 CLI 和 MCP，需要 Node >=22.12 及正在运行的桌面应用。签名和验收结果按版本记录；桌面安装包不分发 WDA 签名产物。
 
 ---
 
@@ -46,7 +58,6 @@ Scrcpy Harmony 是面向鸿蒙设备的 HDC 图形化桌面工具，集成投屏
 | --- | --- | --- |
 | Windows x64 | `win-x64.exe` | 运行安装程序，按提示完成安装 |
 | macOS Apple Silicon | `mac-arm64.dmg` | 打开镜像，将应用拖入“应用程序”目录 |
-| macOS Intel | `mac-x64.dmg` | 打开镜像，将应用拖入“应用程序”目录 |
 
 macOS 需要 **13 或更新版本**。当前未提供 Linux 安装包。
 
@@ -56,7 +67,7 @@ macOS 需要 **13 或更新版本**。当前未提供 Linux 安装包。
 
 **[1.0.4 已作为正式 Latest 发布](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4)。** 三平台安装与直接升级/更新检查通过；签名限制和未补测真机范围继续在发布记录中明确列出。
 
-当前源码版本为已公开的 **1.0.5-dev.1** 开发预发布，保留 1.0.4 的功能，包括 H.264 投屏与 JPEG 回退、键盘/IME 和文本粘贴、HAP 拖入安装、空闲投屏残留的受限恢复、商店请求有限等待、中英文选择，以及清楚显示开启/关闭、文字对齐的 **Beta Update／接收预发布更新** 菜单。升级可选择[稳定版 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/latest)或[开发版 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1)；应用配置目录保持不变。Beta Update 位于应用菜单，默认关闭，发现开发预发布需开启；[发行证据与限制](docs/releases/1.0.5-dev.1.md)另行记录。
+以下为历史 Harmony **1.0.5-dev.1** 开发预发布说明，保留 1.0.4 的功能，包括 H.264 投屏与 JPEG 回退、键盘/IME 和文本粘贴、HAP 拖入安装、空闲投屏残留的受限恢复、商店请求有限等待、中英文选择，以及清楚显示开启/关闭、文字对齐的 **Beta Update／接收预发布更新** 菜单。升级可选择[稳定版 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/latest)或[开发版 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1)；应用配置目录保持不变。Beta Update 位于应用菜单，默认关闭，发现开发预发布需开启；[发行证据与限制](docs/releases/1.0.5-dev.1.md)另行记录。
 
 **1.0.3** 保留为依赖源码迁移前的恢复版本。从 ECHO 切换时需要重新配置设置，其独立配置目录不会自动迁移。设备兼容和待验收范围见发布记录；反馈问题时请附版本和提交号。
 

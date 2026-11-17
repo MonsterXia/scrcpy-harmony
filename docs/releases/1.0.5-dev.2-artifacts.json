@@ -1,0 +1,179 @@
+{
+  "artifactDigests": [
+    {
+      "digest": "sha256:19caee6c79abf6206e60beef5586a2c0bc10ade285eb1e9fc2bd61f0abd0bf83",
+      "id": 14288306800,
+      "name": "macos-15",
+      "size_in_bytes": 132062261
+    },
+    {
+      "digest": "sha256:e929f18e73e594eb2daf78df6aa86425cc3bd9e5c91bed597185805c73ca31e8",
+      "id": 14287198054,
+      "name": "macos-15-intel",
+      "size_in_bytes": 137920101
+    },
+    {
+      "digest": "sha256:87a72d9025365a6d7b168112f41d8b1c5c2bbb1b25dbc798bfd199f448c615ab",
+      "id": 14287692384,
+      "name": "windows-latest",
+      "size_in_bytes": 124145788
+    }
+  ],
+  "assets": [
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg",
+      "sha256": "cfdb5e50fb5b7ddda8210545a0f03195696859f5ebd6e4aa7b39b2aa13abeccb",
+      "size": 132008984
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg.blockmap",
+      "sha256": "3b51e10d4ab3721ea301d0dbeeac53df242f641678eaab57da0ef2e16b1765b5",
+      "size": 138783
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-mac-x64.dmg",
+      "sha256": "c54815f2f03c8a6837e30cfce362e226b5cb9d835e49adf38ea3462b2a7f709b",
+      "size": 138053163
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-mac-x64.dmg.blockmap",
+      "sha256": "55d77a78ca501ed178892175c8dae66ba2bae5778710250d0dba158fc2b0988d",
+      "size": 146548
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-win-x64.exe",
+      "sha256": "17a1e3a23879c51cb767eb00a0a8bd4bc5c24ce8aea8604fbaba338abe9b2a01",
+      "size": 124016238
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-win-x64.exe.blockmap",
+      "sha256": "b846a70348dbfca76526cc00901dcb319292d64aa4f6fceaf58db4861a2ee8e6",
+      "size": 131254
+    },
+    {
+      "name": "latest-mac.yml",
+      "sha256": "6cf2ce64bc11304c4c1a2ab7f5f72f61d784d54f39a770643468dab80929d219",
+      "size": 377
+    },
+    {
+      "name": "latest-x64-mac.yml",
+      "sha256": "a8135ae7737f026a4ff97775b324e48c0aa8febce594e238587e89dd9ee7d760",
+      "size": 373
+    },
+    {
+      "name": "latest.yml",
+      "sha256": "c324a9a85caaae39e60ee71f0f580cb30b3463c721fc67793d6ccc1556a48ac9",
+      "size": 373
+    },
+    {
+      "name": "scrcpy-plus-cli-1.0.5-dev.2.tgz",
+      "sha256": "a0d1eb03b93de29db5cd8b7592916edbd21357b0c9b1ec2b1fffb10b32560b46",
+      "size": 201410
+    },
+    {
+      "name": "verification-mac-arm64.txt",
+      "sha256": "82ee26d83897f198853bdd5fd92b71bfa14579acdad41345e217e0e5ad84b07e",
+      "size": 4873
+    },
+    {
+      "name": "verification-mac-x64.txt",
+      "sha256": "1c4659600ea68b2ea2f46ea1bca76a8cdeaae6af8d013d01c472bbc734b0c985",
+      "size": 4872
+    },
+    {
+      "name": "verification-win-x64.json",
+      "sha256": "cdf0f15cf1411ac1d9b5b79ee7772d24c6054949d3eb26c2a719e574c82c85ce",
+      "size": 386
+    }
+  ],
+  "buildRun": "https://github.com/MonsterXia/scrcpy-harmony/actions/runs/43990873027",
+  "ciRun": "https://github.com/MonsterXia/scrcpy-harmony/actions/runs/43990840301",
+  "ignoredArtifactFiles": [
+    {
+      "artifact": "macos-15",
+      "path": "1.0.5-dev.2/builder-debug.yml",
+      "reason": "electron-builder auxiliary configuration; excluded from release assets",
+      "sha256": "ccf506815c141d816ad48e79c946960f80f701eb545703791311d7a14b83dbac",
+      "size": 940
+    },
+    {
+      "artifact": "macos-15",
+      "path": "1.0.5-dev.2/mac-arm64/Scrcpy Plus.app/Contents/Resources/app-update.yml",
+      "reason": "electron-builder auxiliary configuration; excluded from release assets",
+      "sha256": "4bdb9f1ac18a54db02b5e88869ae4878a552df0062ae7724395ff387c204c687",
+      "size": 113
+    },
+    {
+      "artifact": "macos-15-intel",
+      "path": "1.0.5-dev.2/builder-debug.yml",
+      "reason": "electron-builder auxiliary configuration; excluded from release assets",
+      "sha256": "576f1d9a58ea103defcff7677efa77785374b9df0d8d0ba841dd15f62dd04d60",
+      "size": 938
+    },
+    {
+      "artifact": "macos-15-intel",
+      "path": "1.0.5-dev.2/mac/Scrcpy Plus.app/Contents/Resources/app-update.yml",
+      "reason": "electron-builder auxiliary configuration; excluded from release assets",
+      "sha256": "ca51ec72a75b6d35fd11637c6bd2f10cac3d87c913a2fab36bb59f47eb664f9a",
+      "size": 117
+    },
+    {
+      "artifact": "windows-latest",
+      "path": "1.0.5-dev.2/builder-debug.yml",
+      "reason": "electron-builder auxiliary configuration; excluded from release assets",
+      "sha256": "69d3934b4dbb05aed842dfcbf5f1519e25effc93b33bb9cb59854dee25429a2a",
+      "size": 7531
+    }
+  ],
+  "installationAndStartup": "passed on all three platforms",
+  "installers": [
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg",
+      "sha256": "cfdb5e50fb5b7ddda8210545a0f03195696859f5ebd6e4aa7b39b2aa13abeccb",
+      "size": 132008984
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-mac-x64.dmg",
+      "sha256": "c54815f2f03c8a6837e30cfce362e226b5cb9d835e49adf38ea3462b2a7f709b",
+      "size": 138053163
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-win-x64.exe",
+      "sha256": "17a1e3a23879c51cb767eb00a0a8bd4bc5c24ce8aea8604fbaba338abe9b2a01",
+      "size": 124016238
+    }
+  ],
+  "latest": false,
+  "preparationPr": 91,
+  "prerelease": true,
+  "scope": "CI and Build evidence; no additional device, manual visual, long-duration or cross-firmware acceptance is implied.",
+  "signatures": {
+    "mac-arm64": {
+      "codesignDetailsExit": 0,
+      "codesignVerifyExit": 0,
+      "details": [
+        "Signature=adhoc",
+        "TeamIdentifier=not set"
+      ],
+      "gatekeeperExit": 3,
+      "staplerExit": 65
+    },
+    "mac-x64": {
+      "codesignDetailsExit": 0,
+      "codesignVerifyExit": 0,
+      "details": [
+        "Signature=adhoc",
+        "TeamIdentifier=not set"
+      ],
+      "gatekeeperExit": 3,
+      "staplerExit": 65
+    },
+    "windows-x64": {
+      "authenticodeStatus": "NotSigned",
+      "signer": null
+    }
+  },
+  "signingNote": "macOS strict signature verification is required; Developer ID, notarization and OS trust are recorded separately. Installation/startup does not imply OS trust approval.",
+  "sourceCommit": "e26c06bf4846e91823ed76c788b71c7e10a4de0b",
+  "version": "1.0.5-dev.2"
+}

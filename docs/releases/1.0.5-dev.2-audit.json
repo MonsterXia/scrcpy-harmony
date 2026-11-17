@@ -1,0 +1,139 @@
+{
+  "assetDigests": {
+    "SHA256SUMS.txt": "9c84cefeeaab4082b221a8530b25bd1832000bc3ac8fc91371e96a41f5e76fda",
+    "Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg": "cfdb5e50fb5b7ddda8210545a0f03195696859f5ebd6e4aa7b39b2aa13abeccb",
+    "Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg.blockmap": "3b51e10d4ab3721ea301d0dbeeac53df242f641678eaab57da0ef2e16b1765b5",
+    "Scrcpy-Plus-1.0.5-dev.2-mac-x64.dmg": "c54815f2f03c8a6837e30cfce362e226b5cb9d835e49adf38ea3462b2a7f709b",
+    "Scrcpy-Plus-1.0.5-dev.2-mac-x64.dmg.blockmap": "55d77a78ca501ed178892175c8dae66ba2bae5778710250d0dba158fc2b0988d",
+    "Scrcpy-Plus-1.0.5-dev.2-win-x64.exe": "17a1e3a23879c51cb767eb00a0a8bd4bc5c24ce8aea8604fbaba338abe9b2a01",
+    "Scrcpy-Plus-1.0.5-dev.2-win-x64.exe.blockmap": "b846a70348dbfca76526cc00901dcb319292d64aa4f6fceaf58db4861a2ee8e6",
+    "latest-mac.yml": "6cf2ce64bc11304c4c1a2ab7f5f72f61d784d54f39a770643468dab80929d219",
+    "latest-x64-mac.yml": "a8135ae7737f026a4ff97775b324e48c0aa8febce594e238587e89dd9ee7d760",
+    "latest.yml": "c324a9a85caaae39e60ee71f0f580cb30b3463c721fc67793d6ccc1556a48ac9",
+    "release-validation.json": "1488d9c0386e41c49fd6ad89f9f0768b74d1476487d9f5e8fca4df2a7a3e11d9",
+    "scrcpy-plus-cli-1.0.5-dev.2.tgz": "a0d1eb03b93de29db5cd8b7592916edbd21357b0c9b1ec2b1fffb10b32560b46",
+    "verification-mac-arm64.txt": "82ee26d83897f198853bdd5fd92b71bfa14579acdad41345e217e0e5ad84b07e",
+    "verification-mac-x64.txt": "1c4659600ea68b2ea2f46ea1bca76a8cdeaae6af8d013d01c472bbc734b0c985",
+    "verification-win-x64.json": "cdf0f15cf1411ac1d9b5b79ee7772d24c6054949d3eb26c2a719e574c82c85ce"
+  },
+  "downloadedAssetsVerified": 15,
+  "identity": {
+    "acceptance_run": 43993509192,
+    "baseline_sha": "b3282465649a5c8ffb7fa8a07fc5f926582f7745",
+    "build_run": 43990873027,
+    "ci_run": 43990840301,
+    "operations_sha": "71ced32d07d19a621f5f99f57e2bc8639742fa56",
+    "preparation_pr": 91,
+    "release_name": "Scrcpy Plus 1.0.5-dev.2",
+    "repo": "MonsterXia/scrcpy-harmony",
+    "source_sha": "e26c06bf4846e91823ed76c788b71c7e10a4de0b",
+    "stable_tag": "v1.0.4",
+    "tag": "v1.0.5-dev.2",
+    "version": "1.0.5-dev.2"
+  },
+  "latest": "v1.0.4",
+  "published_at": "2026-11-17T01:19:33Z",
+  "release_id": 447881258,
+  "url": "https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.2",
+  "verifiedAt": "2026-11-17T01:19:32.920651+00:00",
+  "publicationRun": 43994283423,
+  "releaseState": {
+    "draft": false,
+    "prerelease": true,
+    "tag": "v1.0.5-dev.2"
+  },
+  "assets": [
+    {
+      "name": "SHA256SUMS.txt",
+      "sha256": "9c84cefeeaab4082b221a8530b25bd1832000bc3ac8fc91371e96a41f5e76fda",
+      "size": 1350
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg",
+      "sha256": "cfdb5e50fb5b7ddda8210545a0f03195696859f5ebd6e4aa7b39b2aa13abeccb",
+      "size": 132008984
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg.blockmap",
+      "sha256": "3b51e10d4ab3721ea301d0dbeeac53df242f641678eaab57da0ef2e16b1765b5",
+      "size": 138783
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-mac-x64.dmg",
+      "sha256": "c54815f2f03c8a6837e30cfce362e226b5cb9d835e49adf38ea3462b2a7f709b",
+      "size": 138053163
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-mac-x64.dmg.blockmap",
+      "sha256": "55d77a78ca501ed178892175c8dae66ba2bae5778710250d0dba158fc2b0988d",
+      "size": 146548
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-win-x64.exe",
+      "sha256": "17a1e3a23879c51cb767eb00a0a8bd4bc5c24ce8aea8604fbaba338abe9b2a01",
+      "size": 124016238
+    },
+    {
+      "name": "Scrcpy-Plus-1.0.5-dev.2-win-x64.exe.blockmap",
+      "sha256": "b846a70348dbfca76526cc00901dcb319292d64aa4f6fceaf58db4861a2ee8e6",
+      "size": 131254
+    },
+    {
+      "name": "latest-mac.yml",
+      "sha256": "6cf2ce64bc11304c4c1a2ab7f5f72f61d784d54f39a770643468dab80929d219",
+      "size": 377
+    },
+    {
+      "name": "latest-x64-mac.yml",
+      "sha256": "a8135ae7737f026a4ff97775b324e48c0aa8febce594e238587e89dd9ee7d760",
+      "size": 373
+    },
+    {
+      "name": "latest.yml",
+      "sha256": "c324a9a85caaae39e60ee71f0f580cb30b3463c721fc67793d6ccc1556a48ac9",
+      "size": 373
+    },
+    {
+      "name": "release-validation.json",
+      "sha256": "1488d9c0386e41c49fd6ad89f9f0768b74d1476487d9f5e8fca4df2a7a3e11d9",
+      "size": 6129
+    },
+    {
+      "name": "scrcpy-plus-cli-1.0.5-dev.2.tgz",
+      "sha256": "a0d1eb03b93de29db5cd8b7592916edbd21357b0c9b1ec2b1fffb10b32560b46",
+      "size": 201410
+    },
+    {
+      "name": "verification-mac-arm64.txt",
+      "sha256": "82ee26d83897f198853bdd5fd92b71bfa14579acdad41345e217e0e5ad84b07e",
+      "size": 4873
+    },
+    {
+      "name": "verification-mac-x64.txt",
+      "sha256": "1c4659600ea68b2ea2f46ea1bca76a8cdeaae6af8d013d01c472bbc734b0c985",
+      "size": 4872
+    },
+    {
+      "name": "verification-win-x64.json",
+      "sha256": "cdf0f15cf1411ac1d9b5b79ee7772d24c6054949d3eb26c2a719e574c82c85ce",
+      "size": 386
+    }
+  ],
+  "remoteAssetIds": {
+    "latest-mac.yml": 757124549,
+    "latest-x64-mac.yml": 757124649,
+    "latest.yml": 757124759,
+    "release-validation.json": 757124848,
+    "Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg": 757123054,
+    "Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg.blockmap": 757123384,
+    "Scrcpy-Plus-1.0.5-dev.2-mac-x64.dmg": 757123536,
+    "Scrcpy-Plus-1.0.5-dev.2-mac-x64.dmg.blockmap": 757123943,
+    "Scrcpy-Plus-1.0.5-dev.2-win-x64.exe": 757124085,
+    "Scrcpy-Plus-1.0.5-dev.2-win-x64.exe.blockmap": 757124444,
+    "scrcpy-plus-cli-1.0.5-dev.2.tgz": 757124981,
+    "SHA256SUMS.txt": 757122953,
+    "verification-mac-arm64.txt": 757125092,
+    "verification-mac-x64.txt": 757125165,
+    "verification-win-x64.json": 757125231
+  }
+}

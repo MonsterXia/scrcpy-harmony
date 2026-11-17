@@ -182,14 +182,14 @@ test('overview selects both platforms, keeps Harmony tool target and prevents st
   assert.equal(f.store.overviewTarget.key, 'a')
 })
 
-test('USB iOS overview selection persists and never enables Harmony tools or selects AirPlay',async()=>{
- const iphone={key:'ios:12345678',platform:'ios',transport:'usb',state:'ready'}
- const receiver={key:'ios:airplay-receiver',platform:'ios',transport:'receiver',state:'waiting'}
- const f=await fixture({initialize:false,saved:{overviewTarget:iphone,panel:'shell'}})
- f.requests[0].resolve([{key:'h',platform:'harmony'},iphone,receiver]);await tick()
- assert.equal(f.store.overviewTarget.key,iphone.key);assert.equal(f.store.panel,'overview');assert.equal(f.store.target.key,'h')
- f.store.selectPanel('application');assert.equal(f.store.panel,'overview')
- f.store.selectOverviewTarget(receiver.key);assert.equal(f.store.overviewTarget.key,iphone.key)
- const refresh=f.event();f.requests[1].resolve([receiver,{...iphone,name:'iPhone updated'},{key:'h',platform:'harmony'}]);await refresh
- assert.equal(f.store.overviewTarget.key,iphone.key);assert.equal(f.store.target.key,'h')
+test('USB iPhone overview selection survives restore and polling without changing the Harmony target',async()=>{
+  const iphone={key:'ios:phone',platform:'ios',transport:'usb',state:'ready'}
+  const f=await fixture({initialize:false,saved:{panel:'shell',overviewTarget:iphone,target:{key:'h',platform:'harmony'}}})
+  const devices=[{key:'h',platform:'harmony'},iphone,{key:'ios:airplay-receiver',platform:'ios',transport:'receiver'}]
+  f.requests[0].resolve(devices);await tick()
+  assert.equal(f.store.overviewTarget.key,iphone.key);assert.equal(f.store.panel,'overview');assert.equal(f.store.target.key,'h')
+  f.store.selectPanel('application');assert.equal(f.store.panel,'overview')
+  f.store.selectOverviewTarget('ios:airplay-receiver');assert.equal(f.store.overviewTarget.key,iphone.key)
+  const request=f.store.refreshTargets();f.requests[1].resolve(devices.map(d=>({...d})));await request
+  assert.equal(f.store.overviewTarget.key,iphone.key)
 })

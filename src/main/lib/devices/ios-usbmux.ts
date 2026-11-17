@@ -91,16 +91,16 @@ export async function getIosOverview(target: ITarget): Promise<Record<string, st
   try {
     // Read only the fields shown in Overview, without creating a WDA session or
     // requesting the device's complete property dictionary.
-    const result: Record<string, string> = { brand: 'Apple', deviceId: target.connectionId }
+    const result: Record<string, string> = { brand: 'Apple', udid: target.connectionId }
     const fields = { DeviceName: 'name', ProductVersion: 'osVersion', BuildVersion: 'buildVersion',
-      ProductType: 'model', HardwareModel: 'hardwareModel', CPUArchitecture: 'abi', SerialNumber: 'serialNum' }
+      ProductType: 'model', HardwareModel: 'hardwareModel', CPUArchitecture: 'abi', SerialNumber: 'serialNum', DeviceClass: 'deviceClass', ModelNumber: 'modelNumber' }
     for (const [key, field] of Object.entries(fields)) {
       const value = await lockdownValue(stream, key, signal)
       if (value) result[field] = value
     }
     if (!result.name && !result.osVersion && !result.model) throw new Error('iOS metadata unavailable; unlock and trust the computer')
     result.name ||= target.name
-    if (result.osVersion) result.osVersion = `iOS ${result.osVersion}`
+    if (result.osVersion) result.osVersion = `${result.deviceClass === 'iPad' ? 'iPadOS' : 'iOS'} ${result.osVersion}`
     return result
   } finally { stream.destroy() }
 }

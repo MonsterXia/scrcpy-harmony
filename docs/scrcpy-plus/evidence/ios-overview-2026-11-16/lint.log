@@ -1,0 +1,9 @@
+
+> scrcpy-plus@1.0.5-dev.1 lint
+> eslint "src/**/*.{ts,tsx}" && npm run check:i18n
+
+
+> scrcpy-plus@1.0.5-dev.1 check:i18n
+> node script/check-i18n.mjs
+
+i18n: catalogs, placeholders, translation keys and visible literals checked

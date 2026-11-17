@@ -2,7 +2,7 @@ import http from 'node:http'
 import { connectIos } from './ios-usbmux'
 
 const MAX_RESPONSE = 48 * 1024 * 1024
-export interface WdaResponse { value: any; sessionId?: string }
+export interface WdaResponse { value: any; sessionId?: string | null }
 export class WdaClient {
   constructor(readonly udid: string) {}
   // One USB socket per request. Neither HTTP redirects nor failed writes are retried.

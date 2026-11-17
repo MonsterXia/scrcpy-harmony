@@ -48,3 +48,18 @@ test('ownership patch is checksum-verified, reproducible and refuses unknown sou
   fs.writeFileSync(target,'unexpected edits');await assert.rejects(applyOwnershipPatch(temp,spec),/Unexpected WDA source/)
  }finally{fs.rmSync(temp,{recursive:true,force:true})}
 })
+
+test('WDA media loopback patch verifies original and patched source and rejects cache drift', async () => {
+  const { patchSocketSource } = await import('../script/ios-wda.mjs')
+  const manifest = JSON.parse(fs.readFileSync('vendor/ios-wda/manifest.json', 'utf8'))
+  assert.match(manifest.localPatch.replace, /_interface = @"127\.0\.0\.1";/)
+  assert.equal(manifest.localPatch.file, 'WebDriverAgentLib/Routing/FBTCPSocket.m')
+  const hash = s => require('node:crypto').createHash('sha256').update(s).digest('hex')
+  const original = `before\n${manifest.localPatch.find}\nafter`
+  const patched = original.replace(manifest.localPatch.find, manifest.localPatch.replace)
+  const patch = { ...manifest.localPatch, sha256: hash(original), patchedSha256: hash(patched) }
+  assert.equal(patchSocketSource(original, patch), patched)
+  assert.equal(patchSocketSource(patched, patch), patched)
+  assert.throws(() => patchSocketSource(original + 'changed', patch), /does not match/)
+  assert.throws(() => patchSocketSource(original, { ...patch, patchedSha256: hash('bad') }), /checksum mismatch/)
+})
