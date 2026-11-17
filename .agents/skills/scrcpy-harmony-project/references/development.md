@@ -133,7 +133,7 @@ Windows 菜单状态回归：完整 build 后运行 `node script/check-beta-menu
 
 ## 打包与 CI
 
-`.github/workflows/ci.yml` 对目标为 `master` 的所有 PR、master push 和手动触发运行独立的 `test`、`lint`、`windows-package`、`macos-package-arm64`、`macos-package-x64` 检查。`test`、`lint` 使用 Ubuntu、Node 22 和 `npm ci`，不下载 Electron 二进制或设备资源，也不需要初始化子模块。没有路径过滤，文档 PR 同样会产生检查结果；检查名用于 master 分支保护，重命名前需同步更新 GitHub 设置。
+`.github/workflows/ci.yml` 对目标为 `master` 的所有 PR、master push 和手动触发运行独立的 `test`、`lint`、`windows-package`、`macos-package-arm64` 检查。`test`、`lint` 使用 Ubuntu、Node 22 和 `npm ci`，不下载 Electron 二进制或设备资源，也不需要初始化子模块。没有路径过滤，文档 PR 同样会产生检查结果；检查名用于 master 分支保护，重命名前需同步更新 GitHub 设置。
 
 `windows-package` 使用标准 Windows runner 和 Node 22，执行 npm ci（含本地依赖编译） → 下载设备资源（显式指定 Git Bash）→ build → pack → 验证非空的 NSIS x64 安装包、应用程序、app.asar、HDC 和 uitestkit 文件 → 安装与启动检查。通过 `npm run pack -- --no-publish` 禁止发布，不使用签名 secrets，也不上传安装包 artifact；任务超时为 20 分钟。
 
@@ -151,7 +151,7 @@ Electron 45 的 macOS 最低系统要求为 macOS 13；升级后需在目标平�
 
 ## 实际打包应用的更新验收
 
-M0-3 的 `.github/workflows/update-acceptance.yml` 是固定版本的实际更新验收：在三个原生 runner 上从固定提交打包 1.0.1，下载并核对公开 1.0.2 安装包 SHA-256，再使用 `script/install-update-check.mjs` 安装两版。安装器包装只允许 GitHub 托管临时 runner，不能在开发机绕过限制。该 workflow 可手动运行，也在修改验收脚本/自身的 PR 上运行，不改变五项必需 CI 检查名称。
+M0-3 的 `.github/workflows/update-acceptance.yml` 是固定版本的实际更新验收：在三个原生 runner 上从固定提交打包 1.0.1，下载并核对公开 1.0.2 安装包 SHA-256，再使用 `script/install-update-check.mjs` 安装两版。安装器包装只允许 GitHub 托管临时 runner，不能在开发机绕过限制。该 workflow 可手动运行，也在修改验收脚本/自身的 PR 上运行，不改变四项必需 CI 检查名称。
 
 `script/check-packaged-update.mjs <已安装程序路径> <1.0.1或1.0.2> <证据目录>` 使用隔离配置启动真实 app.asar，通过实际菜单回调触发检查；记录 `electron-updater` 网络会话的请求、重定向和最终响应，检查真实 IPC 驱动的提示并截图。网络错误通过取消该会话请求注入，之后恢复网络再检查；不替换更新器结果或应用版本。确认有更新时包装 `shell.openExternal` 记录 URL 并调用原方法，验收操作系统是否接受 Releases 跳转；不声称检查了默认浏览器页面内容。报告包含安装包哈希、运行版本/架构、JSON 和应用日志，CDN 临时签名查询参数不写入网络记录。本验收固定目标为 v1.0.2；发布后续版本后须显式更新对照版本、预期提示和安装包哈希，不能将旧断言继续用于新 Release。
 

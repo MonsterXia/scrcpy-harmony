@@ -126,4 +126,4 @@ CI 的四项必需检查为 `test`、`lint`、`windows-package`、`macos-package
 
 ## 多平台源码后端
 
-完整 build 需要 JDK 17+、Android SDK Platform 35／Build Tools 35.0.0、CMake、Node 头文件与 OpenSSL 静态库；Windows 使用 UCRT64 GCC/MinGW Makefiles 并提供 NODE_LIBRARY。CI 与手动构建共用固定 SHA 的 platform-toolchain 复合动作准备这些依赖，五项原检查保持不变。详见[源码后端 CI](scrcpy-plus/integration.md#源码后端的-ci-工具链)。
+完整 build 需要 JDK 17+、Android SDK Platform 35／Build Tools 35.0.0、CMake、Node 头文件与 OpenSSL 静态库；Windows 使用 UCRT64 GCC/MinGW Makefiles 并提供 NODE_LIBRARY。CI 与手动构建共用固定 SHA 的 platform-toolchain 复合动作准备这些依赖，四项当前检查保持不变。详见[源码后端 CI](scrcpy-plus/integration.md#源码后端的-ci-工具链)。
