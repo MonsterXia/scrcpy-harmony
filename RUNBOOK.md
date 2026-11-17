@@ -866,3 +866,5 @@ USB 拔插恢复已修复并完成一次用户真机拔插：旧视频 capture 4
 - 2026-11-17：Android Studio 占用 USB 时复用本机 ADB；iOS USB 始终在线时恢复 WDA 会话的自动重连已通过真机故障注入。1189 pass / 2 skip，最终专项 56 pass。Runner 原始失效原因与长稳仍待观察，见 [维护记录](docs/maintenance/android-ios-connection-recovery-2026-11-17.md)。
 
 - 2026-11-17：独立审查五项 iOS 生命周期/资源归属问题已修复；设备端 WDA 增加原子会话保护并重新签名部署。应用 1202 pass / 2 skip，Licia 两模式各 606 pass / 4 pending；后续 renderer 状态同步专项 15 pass。真机并发创建隔离通过，长期断线根因与完整故障矩阵待验收。详见[修复记录](docs/maintenance/ios-review-fixes-2026-11-17.md)。
+
+- 2026-11-17：审查修复已整理为 [PR #94](https://github.com/MonsterXia/scrcpy-plus/pull/94)，同步最新 master 后保留 dev.2、四项必需 CI 和双 WDA 补丁。最终代码独立审查无剩余 P0–P2，应用 1211 pass / 2 skip，三部分构建及 WDA 未签名编译、双语 Electron 模拟验收通过；按用户授权待远端 CI/门禁通过后合入，结果以 PR 为准，长期设备矩阵继续待验收。

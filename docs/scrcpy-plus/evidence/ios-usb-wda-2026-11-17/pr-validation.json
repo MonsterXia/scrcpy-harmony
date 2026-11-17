@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-17",
+  "pullRequest": "https://github.com/MonsterXia/scrcpy-plus/pull/94",
+  "reviewedCodeCommit": "800c3eb862ef7424bff03cddece41f9fee8a5973",
+  "baseCommit": "47a2ce00c703a06603f618a45d252d37b5e6e319",
+  "applicationTests": {
+    "passed": 1211,
+    "skipped": 2,
+    "failed": 0,
+    "concurrency": 4
+  },
+  "lintAndI18n": true,
+  "builds": [
+    "main",
+    "preload",
+    "renderer",
+    "WDA arm64 unsigned with media loopback and session ownership patches"
+  ],
+  "electronSimulatedDevice": {
+    "iosBilingualLightDark": true,
+    "macRightWindowsLeftToolbar": true,
+    "pngAndH264": true,
+    "reconnectInput": true,
+    "workspaceBilingualOverview": true
+  },
+  "independentReviews": {
+    "iosTests": 73,
+    "frontendTests": 104,
+    "releaseTests": 67,
+    "remainingP0P1P2": 0
+  },
+  "limits": [
+    "Unsigned WDA build does not prove device deployment or runtime compatibility",
+    "Earlier physical-device evidence predates merge of the media-loopback patch",
+    "Remote CI and PR gate results are recorded on the PR"
+  ]
+}

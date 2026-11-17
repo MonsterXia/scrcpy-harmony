@@ -32,3 +32,5 @@
 提 PR 时发现远端已合入基础 iOS、dev.2 发行和仓库改名。合并 origin/master 后保留 dev.2 版本、Windows/macOS ARM 两平台范围和四项必需 CI；同时保留 WDA 媒体回环监听补丁与新增会话归属补丁，iPadOS/型号字段仍由固定白名单读取。独立复审发现 Windows 右上角入口会与系统窗口控制重叠，改为 macOS 右侧、Windows 左侧，并补双平台布局断言。
 
 上方真机记录来自同步主分支前的构建，仅验证会话归属补丁；不代表合并后的双补丁 Runner 已再次做真机验证。最终合并构建/CI 结果另行记录。
+
+最终代码提交 `800c3eb`：应用测试 **1211 pass / 2 skip / 0 fail**，lint/i18n、main/preload/renderer 构建及双补丁 WDA arm64 未签名编译通过。两套实际 Electron 模拟设备验收（iOS 投屏、跨平台概览）均通过；三位独立审查者最终未发现 P0–P2，相关测试分别 73/104/67 项通过。未签名编译不代表真机部署。详见[脱敏验证统计](../scrcpy-plus/evidence/ios-usb-wda-2026-11-17/pr-validation.json)；[PR #94](https://github.com/MonsterXia/scrcpy-plus/pull/94) 等待四项必需 CI、最新审查及会话解决门禁后合入，最终状态以 PR 为准。
