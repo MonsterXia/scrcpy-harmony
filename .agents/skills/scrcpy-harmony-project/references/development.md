@@ -48,7 +48,7 @@ npm run dev
 npm start
 ```
 
-`dev` 不负责启动 Electron；renderer 服务端口为 8080，Vite 配置关闭 HMR。`start` 加载 `dist/main/index.js` 并打开 9229 inspector。本地依赖成功重编译会触发 Vite 重启并更新依赖预打包；等待就绪后手动刷新 renderer。主进程、preload 或其依赖改动后需要重启 Electron 才能载入新的构建。不要在同一检出并行运行会重写生成目录的 build/test/dev。
+`dev` 不负责启动 Electron；renderer 服务端口为 8080，Vite 配置关闭 HMR。`start` 从根 package.json 入口加载 `dist/main/index.js` 并打开 9229 inspector，确保 Electron 和更新器读取产品版本，不能直接以 JS 文件启动更新验收。本地依赖成功重编译会触发 Vite 重启并更新依赖预打包；等待就绪后手动刷新 renderer。主进程、preload 或其依赖改动后需要重启 Electron 才能载入新的构建。不要在同一检出并行运行会重写生成目录的 build/test/dev。
 
 实际设备操作需要可用 HDC、已允许调试且可连接的鸿蒙设备；投屏/布局额外依赖匹配的 uitestkit 资源。HDC 默认使用内置资源；设置中的 `hdcPath` 可指定存在的可执行文件路径或字面值 `hdc`，后者依赖 PATH。选择逻辑在 `src/main/lib/hdc.ts`。
 
@@ -147,7 +147,7 @@ Windows 菜单状态回归：完整 build 后运行 `node script/check-beta-menu
 
 Electron 45 的 macOS 最低系统要求为 macOS 13；升级后需在目标平台验证安装包及设备功能，单测和 lint 不代表完整运行兼容性。
 
-打包更新元数据使用 `MonsterXia/scrcpy-harmony` 的 GitHub Releases 源。Windows / macOS arm64 使用 `latest`，macOS x64 使用 `latest-x64`；手动构建 workflow 显式 `--no-publish`，仅上传安装包、YAML 更新元数据和 blockmap 为 artifact，不创建 Release。正式发布时需将各平台安装包及配套更新文件放入本仓库相应版本的 Release。electron-builder 的 GitHub 更新 YAML 使用安全文件名（例如 `Scrcpy-Harmony-...`），可能不同于本地带空格的安装包名；上传前按 YAML 的 URL 命名安装包和配套 blockmap，保持字节不变，并核对 size、SHA-512 和远端 SHA-256。无 Release 时检查更新可能报错，不能回退到上游。
+运行时更新和打包目标共用 `package.json.publish` 的 `MonsterXia/scrcpy-plus` GitHub Releases 源。打包默认不上传，显式 `--publish` 才上传，`--no-publish` 优先禁止上传。Windows / macOS arm64 使用 `latest`，macOS x64 使用 `latest-x64`；手动构建 workflow 显式 `--no-publish`，仅上传安装包、YAML 更新元数据和 blockmap 为 artifact，不创建 Release。正式发布时需将各平台安装包及配套更新文件放入本仓库相应版本的 Release。electron-builder 的 GitHub 更新 YAML 使用安全文件名（例如 `Scrcpy-Plus-...`），可能不同于本地带空格的安装包名；上传前按 YAML 的 URL 命名安装包和配套 blockmap，保持字节不变，并核对 size、SHA-512 和远端 SHA-256。无 Release 时检查更新可能报错，不能回退到上游。
 
 ## 实际打包应用的更新验收
 
@@ -211,3 +211,5 @@ macOS 无证书开发包可运行 `npm run pack -- --no-publish --adhoc-sign`，
 `npm run ios:wda -- build --unsigned` 从 `vendor/ios-wda/manifest.json` 固定来源编译 WDA 和 ReplayKit 扩展；无需签名但不能用于真机安装。显式 `run --udid ... --team ...` 才签名启动，保持专用 Runner 运行。脚本用局部 `DEVELOPER_DIR`，不修改 xcode-select。`node script/check-ios-ui.mjs [证据目录]` 使用真实 Electron、生产 React/PNG/WebCodecs 与模拟设备 IPC 验证双语界面；不能替代真机。详见 [iOS USB 文档](../../../../docs/scrcpy-plus/ios-usb-wda.md)。
 
 桌面 `build` 重建生成的 `dist/build`，排除 `build/ios-wda` 源码及签名缓存，避免复用旧发行目录时携带本地 Runner/签名产物。WDA 始终按独立准备流程安装到手机。
+
+线上更新只读验证：`node script/check-release-source.mjs [报告.json]` 使用生产 ReleaseProvider 查询 Windows、Mac ARM/Intel 的稳定与预发布元数据，不下载安装包。Harmony 用户手动重装 Plus；不提供旧地址解析或旧配置迁移代码。仓库改名状态见 [迁移记录](../../../../docs/maintenance/scrcpy-plus-rename.md)。

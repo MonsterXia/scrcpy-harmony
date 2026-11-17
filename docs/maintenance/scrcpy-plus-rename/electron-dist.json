@@ -1,0 +1,41 @@
+{
+  "scenarios": [
+    {
+      "language": "en-US",
+      "menu": {
+        "check": "Checking for updates…",
+        "beta": "Beta Update: On",
+        "name": "Scrcpy Plus",
+        "version": "1.0.5-dev.1"
+      },
+      "state": {
+        "status": "available",
+        "productName": "Scrcpy Plus",
+        "currentVersion": "1.0.5-dev.1",
+        "latestVersion": "1.0.5-dev.2"
+      },
+      "opened": [
+        "https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.2"
+      ]
+    },
+    {
+      "language": "zh-CN",
+      "menu": {
+        "check": "正在检查更新…",
+        "beta": "接收预发布更新：已开启",
+        "name": "Scrcpy Plus",
+        "version": "1.0.5-dev.1"
+      },
+      "state": {
+        "status": "available",
+        "productName": "Scrcpy Plus",
+        "currentVersion": "1.0.5-dev.1",
+        "latestVersion": "1.0.5-dev.2"
+      },
+      "opened": [
+        "https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.2"
+      ]
+    }
+  ],
+  "passed": true
+}

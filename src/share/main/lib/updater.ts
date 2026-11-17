@@ -96,10 +96,10 @@ export function checkUpdate() {
 }
 
 export function init() {
-  autoUpdater.setFeedURL(`https://release.liriliri.io/${pkg.name}/`)
-  autoUpdater.channel = `${pkg.productName}-latest`
+  autoUpdater.setFeedURL({ ...pkg.publish, provider: 'github' })
+  autoUpdater.channel = 'latest'
   if (isMac && process.arch !== 'arm64') {
-    autoUpdater.channel = `${pkg.productName}-latest-x64`
+    autoUpdater.channel = 'latest-x64'
   }
   // The request Promise owns presentation, including cancellation. Listening
   // prevents EventEmitter's error throw without displaying duplicate/late UI.

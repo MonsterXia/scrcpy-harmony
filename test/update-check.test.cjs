@@ -98,7 +98,7 @@ test('only the available action opens the exact selected release', async () => {
   assert.deepEqual(f.opened, [])
   resolve(result(true)); await flush()
   await f.action('openRelease'); await task
-  assert.deepEqual(f.opened, ['https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-rc.1'])
+  assert.deepEqual(f.opened, ['https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-rc.1'])
 })
 
 

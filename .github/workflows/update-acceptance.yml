@@ -82,7 +82,7 @@ jobs:
           ASSET: Scrcpy-Harmony-1.0.2-${{ matrix.platform }}-${{ matrix.arch }}.${{ matrix.extension }}
         run: |
           mkdir -p release/update-acceptance
-          curl --fail --location --retry 3 --output "release/update-acceptance/$ASSET" "https://github.com/MonsterXia/scrcpy-harmony/releases/download/v1.0.2/$ASSET"
+          curl --fail --location --retry 3 --output "release/update-acceptance/$ASSET" "https://github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.2/$ASSET"
       - name: Check available update, network error and recovery in 1.0.1
         env:
           INSTALLER: previous/release/1.0.1/Scrcpy Harmony-1.0.1-${{ matrix.platform }}-${{ matrix.arch }}.${{ matrix.extension }}
