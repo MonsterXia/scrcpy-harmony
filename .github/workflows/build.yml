@@ -1,148 +1,54 @@
-name: Build
-
+name: Dev.2 release operations
 on:
   workflow_dispatch:
-
+    inputs:
+      acceptance_run:
+        description: Successful preflight run on this exact operations commit
+        required: true
+        type: string
+      resume_run:
+        description: Prior operations run to restore fixed release ID after interruption
+        required: false
+        type: string
 permissions:
-  contents: read
-
+  contents: write
+  actions: read
+concurrency:
+  group: scrcpy-plus-v1.0.5-dev.2-publication
+  cancel-in-progress: false
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            arch: x64
-          - os: macos-15
-            arch: arm64
-          - os: macos-15-intel
-            arch: x64
-
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
     env:
-      EXPECTED_ARCH: ${{ matrix.arch }}
-
+      GH_TOKEN: ${{ github.token }}
+      DEV2_OPERATIONS_SHA: ${{ github.sha }}
+      DEV2_ACCEPTANCE_RUN: ${{ inputs.acceptance_run }}
+      DEV2_RESUME_RUN: ${{ inputs.resume_run }}
     steps:
-    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      with:
-        persist-credentials: false
-    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-      with:
-        node-version: '22'
-        cache: npm
-    - name: Verify runner architecture
-      run: node -e "require('node:assert/strict').equal(process.arch, process.env.EXPECTED_ARCH)"
-    - name: Install dependencies
-      run: npm ci --no-audit --no-fund
-    - name: Download Windows device resources
-      if: runner.os == 'Windows'
-      run: npx --no-install zx --shell "C:/Program Files/Git/bin/bash.exe" script/resources.mjs
-    - name: Download macOS device resources
-      if: runner.os == 'macOS'
-      run: npm run init
-    - name: Prepare source backend toolchain
-      uses: ./.github/actions/platform-toolchain
-    - name: Build distribution
-      run: npm run build
-    - name: Verify patched iOS Runner compiles without signing
-      if: runner.os == 'macOS' && matrix.arch == 'arm64'
-      shell: bash
-      run: npm run ios:wda -- build --unsigned --xcode "$(xcode-select -p)"
-    - name: Package installer
-      shell: bash
-      run: |
-        # GitHub expands absent secrets to empty strings. electron-builder treats
-        # an empty CSC_LINK as a certificate path, so omit unset credentials.
-        for name in APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID CSC_LINK CSC_KEY_PASSWORD; do
-          if [[ -z "${!name}" ]]; then unset "$name"; fi
-        done
-        pack_args=(--no-publish)
-        # Without a certificate, generate a valid ad-hoc bundle seal on both Macs.
-        if [[ "$RUNNER_OS" == "macOS" && -z "${CSC_LINK:-}" ]]; then
-          pack_args+=(--adhoc-sign)
-        fi
-        npm run pack -- "${pack_args[@]}"
-      env:
-        APPLE_ID: ${{ secrets.APPLE_ID }}
-        APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        CSC_LINK: ${{ secrets.CSC_LINK }}
-        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-    - name: Verify and package standalone CLI and MCP client
-      if: runner.os == 'macOS' && matrix.arch == 'arm64'
-      shell: bash
-      run: |
-        npm run check:automation-package
-        version=$(node -p 'require("./package.json").version')
-        mkdir -p "release/$version"
-        npm pack ./dist/cli --pack-destination "release/$version"
-        test -s "release/$version/scrcpy-plus-cli-$version.tgz"
-    - name: Install and smoke test Windows release artifact
-      if: runner.os == 'Windows'
-      timeout-minutes: 5
-      run: ./script/check-windows-install.ps1
-    - name: Install and smoke test macOS release artifact
-      if: runner.os == 'macOS'
-      timeout-minutes: 5
-      run: node script/check-macos-install.mjs
-    - name: Record Windows signature and hash
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        $pkg = Get-Content package.json -Raw | ConvertFrom-Json
-        $release = Join-Path release $pkg.version
-        $installer = Join-Path $release "$($pkg.productName)-$($pkg.version)-win-x64.exe"
-        $signature = Get-AuthenticodeSignature -LiteralPath $installer
-        @{
-          sourceCommit = $env:GITHUB_SHA
-          runUrl = "https://github.com/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
-          installer = Split-Path $installer -Leaf
-          sha256 = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
-          authenticodeStatus = [string]$signature.Status
-          signer = $signature.SignerCertificate.Subject
-          installationAndStartup = 'passed'
-        } | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $release 'verification-win-x64.json')
-    - name: Record macOS signature, Gatekeeper and hash
-      if: runner.os == 'macOS'
-      shell: bash
-      run: |
-        version=$(node -p 'require("./package.json").version')
-        product=$(node -p 'require("./package.json").productName')
-        release="$PWD/release/$version"
-        dmg="$release/$product-$version-mac-$EXPECTED_ARCH.dmg"
-        mount=$(mktemp -d "$RUNNER_TEMP/release-inspection.XXXXXX")
-        hdiutil attach -readonly -nobrowse -mountpoint "$mount" "$dmg"
-        trap 'hdiutil detach "$mount"' EXIT
-        app="$mount/$product.app"
-        {
-          echo "sourceCommit=$GITHUB_SHA"
-          echo "runUrl=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          echo 'installationAndStartup=passed'
-          shasum -a 256 "$dmg"
-          # Trust-policy failures are reported, not mislabelled as smoke failures.
-          set +e
-          codesign -dvvv --entitlements :- "$app" 2>&1
-          echo "codesignDetailsExit=$?"
-          codesign --verify --deep --strict --verbose=2 "$app" 2>&1
-          echo "codesignVerifyExit=$?"
-          spctl --assess --type execute --verbose=4 "$app" 2>&1
-          echo "gatekeeperExit=$?"
-          xcrun stapler validate "$app" 2>&1
-          echo "staplerExit=$?"
-          set -e
-        } > "$release/verification-mac-$EXPECTED_ARCH.txt"
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.os }}
-        if-no-files-found: error
-        path: |
-          release/**/*.dmg
-          release/**/*.exe
-          release/**/*.yml
-          release/**/*.blockmap
-          release/**/*.tgz
-          release/**/verification-*.json
-          release/**/verification-*.txt
-          !release/**/win-unpacked/
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify operation safety
+        run: |
+          python -B -m unittest discover -s script/dev-release -p 'test_*.py'
+          node --test script/dev-release/test-*.cjs
+      - name: Prepare, verify all uploaded bytes and publish fixed prerelease
+        timeout-minutes: 30
+        run: python -B script/dev-release/operate.py
+      - name: Preserve audit and fixed release state
+        if: ${{ always() }}
+        timeout-minutes: 5
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev2-publication-audit
+          if-no-files-found: warn
+          path: |
+            release/dev2-1.0.5-audit/*.json
+            release/dev2-1.0.5-audit/verified-assets/release-validation.json
+            release/dev2-1.0.5-audit/verified-assets/SHA256SUMS.txt

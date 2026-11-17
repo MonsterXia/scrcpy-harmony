@@ -50,7 +50,7 @@ jobs:
       - name: Check operation safety regressions
         run: |
           python -B -m unittest discover -s script/dev-release -p 'test_*.py'
-          node --test script/dev-release/test-profile.cjs
+          node --test script/dev-release/test-*.cjs
       - name: Install genuine binaries and verify default profiles and update paths
         run: python -B script/dev-release/run-matrix.py
       - uses: actions/upload-artifact@v4
