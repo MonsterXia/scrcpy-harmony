@@ -104,7 +104,7 @@ iPhone 与电脑处于同一局域网，在“控制中心 → 屏幕镜像”�
 - `src/renderer/native-mirror/`：应用内画面、状态、鼠标/键盘/文字控件；USB iOS 支持输入与 `nativeMirrorVideo` 开关，AirPlay 只读；PNG/H.264 共用帧流。
 - 原鸿蒙 `window/screencast.ts` 和 `hdc/captureSessions.ts` 保留独立窗口/owner 管理。
 
-已删除外部工具启动、查找和路径设置代码。应用名及配置目录与上游独立，未配置 Plus 独立发行源前不检查/发布上游更新。
+已删除外部工具启动、查找和路径设置代码。Plus 作为本项目的正式延续，发行仓库为 `MonsterXia/scrcpy-plus`；更新查询、主页、问题反馈及打包目标已切换，检查更新与预发布选项已启用。运行时和打包共用 `package.json.publish`。默认打包不上传，显式 `npm run pack -- --publish` 才发布。保持现有 Plus 应用 ID 与配置目录；Harmony 用户手动安装 Plus，不提供旧仓库解析或配置迁移分支。迁移状态与验证见 [仓库改名记录](../maintenance/scrcpy-plus-rename.md)。
 
 ## 验证
 
@@ -123,7 +123,7 @@ npm_config_registry=https://registry.npmjs.org npm_config_prefer_offline=true np
 npm start
 ```
 
-这里显式指定 registry 是为了覆盖本机失效的全局 npm 镜像；不修改用户的全局配置。Windows、Intel Mac 和旧系统的安装包留待本机真机验证后构建验收。
+这里显式指定 registry 是为了覆盖本机失效的全局 npm 镜像；不修改用户的全局配置。当前 Plus 只支持 Windows x64 与 macOS arm64，Intel Mac 不再作为构建和验收目标。Windows 和旧 macOS 系统的实际兼容性仍需对应验收。
 
 ## 源码后端的 CI 工具链
 

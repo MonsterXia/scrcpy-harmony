@@ -1,0 +1,5 @@
+{
+  "scenarios": [],
+  "passed": false,
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(win)\n\n    at /private/tmp/scrcpy-plus-update-ui.cjs:5:147"
+}

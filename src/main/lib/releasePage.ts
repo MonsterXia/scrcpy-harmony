@@ -1,3 +1,4 @@
+import pkg from '../../../package.json'
 import { parse, DefaultTreeAdapterMap } from 'parse5'
 
 type Node = DefaultTreeAdapterMap['node']
@@ -8,7 +9,8 @@ export interface ReleaseRecord {
   name?: string
   body?: string
 }
-const repository = 'MonsterXia/scrcpy-harmony'
+const { owner, repo } = pkg.publish
+const repository = `${owner}/${repo}`
 const attr = (node: Node, name: string) => 'attrs' in node ? node.attrs.find(a => a.name === name)?.value : undefined
 const hasClass = (node: Node, name: string) => (attr(node, 'class') || '').split(/\s+/).includes(name)
 function nodes(root: Node): Node[] {

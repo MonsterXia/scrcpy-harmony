@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-17",
+  "repository": {
+    "name": "MonsterXia/scrcpy-plus",
+    "id": 1426959270,
+    "origin": "https://github.com/MonsterXia/scrcpy-plus.git",
+    "oldReleasesRedirect": 301
+  },
+  "checks": {
+    "application": {
+      "pass": 1149,
+      "skip": 2,
+      "fail": 0
+    },
+    "licia": {
+      "production": {
+        "pass": 606,
+        "pending": 4
+      },
+      "fallback": {
+        "pass": 606,
+        "pending": 4
+      }
+    },
+    "focused": {
+      "pass": 52,
+      "fail": 0
+    },
+    "lint": true,
+    "i18n": true,
+    "fullBuild": true,
+    "liveProvider": true,
+    "electronBilingual": true
+  },
+  "boundaries": {
+    "legacyHarmonyMigration": false,
+    "newReleasePublished": false,
+    "installedApplicationReplaced": false,
+    "sourceCommitted": false,
+    "windowsIntelInstallationVerified": false
+  }
+}

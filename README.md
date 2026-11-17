@@ -1,5 +1,9 @@
 # Scrcpy Plus
 
+Current Plus builds support Windows x64 and macOS Apple Silicon (arm64). Intel Macs are no longer supported; existing Intel release artifacts are historical.
+
+Scrcpy Plus is the continuation of this project, now hosted at `MonsterXia/scrcpy-plus`. Update checks and issue links use the new repository. Existing Harmony users should manually install Plus; no automatic settings migration is provided. Existing Plus settings and application identity remain unchanged. Release history is preserved; the inherited Harmony documentation below describes historical versions. See the [migration record](docs/maintenance/scrcpy-plus-rename.md).
+
 Android, HarmonyOS and iOS mirroring workbench, based on Scrcpy Harmony. See [integration status and setup](docs/scrcpy-plus/integration.md). Android USB/ADB and iOS AirPlay are integrated as source libraries and built-in app windows; developer build requirements and unverified device coverage are documented there. The upstream documentation below describes the original Harmony project.
 
 The development branch adds iOS USB screenshot/control through WDA and opt-in ReplayKit video; signing and physical-device acceptance are still pending. See [iOS USB setup](docs/scrcpy-plus/ios-usb-wda.md).
@@ -8,30 +12,30 @@ Development automation: the shared local service, standalone Node CLI and [MCP s
 
 ## 1.0.5-dev.2 development prerelease
 
-**[Scrcpy Plus 1.0.5-dev.2 is available](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.2).** See the [release record](docs/releases/1.0.5-dev.2.md) for source, artifact checks and acceptance boundaries. Stable Latest remains **Scrcpy Harmony 1.0.4**.
+**[Scrcpy Plus 1.0.5-dev.2 is available](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.2).** See the [release record](docs/releases/1.0.5-dev.2.md) for source, artifact checks and acceptance boundaries. Stable Latest remains **Scrcpy Harmony 1.0.4**.
 
 This release includes Android/Harmony mirroring, iOS AirPlay, USB iPhone overview, the unified workspace, instant language switching, and the standalone Node CLI/MCP client. USB WDA screenshots/control and ReplayKit video are experimental and require a separately signed Runner; physical control/video acceptance remains pending.
 
 **Moving from Harmony to Plus:** the apps have different installation and configuration identities. Keep the old Harmony installation and settings; Plus creates its own profile (`~/Library/Application Support/Scrcpy Plus` on macOS, `%APPDATA%\Scrcpy Plus` on Windows). Settings are not automatically migrated from Harmony. Existing Plus development installations keep their Plus profile. The updater opens the release page for manual installation; it does not install updates automatically.
 
-Choose the Windows x64 EXE or macOS arm64/x64 DMG for your computer. The optional `scrcpy-plus-cli-1.0.5-dev.2.tgz` contains both CLI and MCP clients and requires Node >=22.12 and the running desktop app. Signature and validation results are recorded per release; WDA signing products are not distributed in the desktop installer.
+Choose the Windows x64 EXE or macOS arm64 DMG for your computer. The optional `scrcpy-plus-cli-1.0.5-dev.2.tgz` contains both CLI and MCP clients and requires Node >=22.12 and the running desktop app. Signature and validation results are recorded per release; WDA signing products are not distributed in the desktop installer.
 
 ---
 
 # Scrcpy Harmony
 
-[![Version](https://img.shields.io/github/v/release/MonsterXia/scrcpy-harmony?color=blue&label=version)](https://github.com/MonsterXia/scrcpy-harmony/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)](https://github.com/MonsterXia/scrcpy-harmony/releases)
-[![Downloads](https://img.shields.io/github/downloads/MonsterXia/scrcpy-harmony/total)](https://github.com/MonsterXia/scrcpy-harmony/releases/latest)
+[![Version](https://img.shields.io/github/v/release/MonsterXia/scrcpy-plus?color=blue&label=version)](https://github.com/MonsterXia/scrcpy-plus/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)](https://github.com/MonsterXia/scrcpy-plus/releases)
+[![Downloads](https://img.shields.io/github/downloads/MonsterXia/scrcpy-plus/total)](https://github.com/MonsterXia/scrcpy-plus/releases/latest)
 
 **English** | [中文](README_ZH.md)
 
 Scrcpy Harmony is a graphical HDC desktop tool for HarmonyOS devices, bringing together screen mirroring, device control, app management, logs, and debugging tools.
 
-[Download](https://github.com/MonsterXia/scrcpy-harmony/releases/latest) · [Changelog](CHANGELOG.md) · [Report an issue](https://github.com/MonsterXia/scrcpy-harmony/issues)
+[Download](https://github.com/MonsterXia/scrcpy-plus/releases/latest) · [Changelog](CHANGELOG.md) · [Report an issue](https://github.com/MonsterXia/scrcpy-plus/issues)
 
 
-**1.0.5-dev.1 pre-release:** fixes app icon lookup and UITest agent compatibility, including protection for active external tool sessions. The 1.0.5 series delivers the approved desktop workspace design. See the [workspace guide](docs/user-guide-1.0.5.md), [phased roadmap](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md), and [validation record](docs/maintenance/v1.0.5-ui-completion.md). Screen mirroring and update windows retain their existing design. Download [dev.1](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.1); see its [validation record](docs/releases/1.0.5-dev.1.md). Stable Latest remains 1.0.4.
+**1.0.5-dev.1 pre-release:** fixes app icon lookup and UITest agent compatibility, including protection for active external tool sessions. The 1.0.5 series delivers the approved desktop workspace design. See the [workspace guide](docs/user-guide-1.0.5.md), [phased roadmap](docs/superpowers/plans/2026-11-03-v1.0.5-ui-roadmap.md), and [validation record](docs/maintenance/v1.0.5-ui-completion.md). Screen mirroring and update windows retain their existing design. Download [dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1); see its [validation record](docs/releases/1.0.5-dev.1.md). Stable Latest remains 1.0.4.
 
 ![1.0.5 application workspace — simulated data](docs/design/1.0.5-evidence/applications-en-dark-compact-final.jpg)
 
@@ -48,13 +52,12 @@ Scrcpy Harmony is a graphical HDC desktop tool for HarmonyOS devices, bringing t
 
 ## Download and installation
 
-Visit [Releases](https://github.com/MonsterXia/scrcpy-harmony/releases/latest) and choose the installer for your operating system and processor:
+Visit [Releases](https://github.com/MonsterXia/scrcpy-plus/releases/latest) and choose the installer for your operating system and processor:
 
 | Platform | Installer suffix | Installation |
 | --- | --- | --- |
 | Windows x64 | `win-x64.exe` | Run the installer and follow the prompts |
 | macOS Apple Silicon | `mac-arm64.dmg` | Open the disk image and drag the app into Applications |
-| macOS Intel | `mac-x64.dmg` | Open the disk image and drag the app into Applications |
 
 macOS requires **version 13 or later**. Linux installers are not currently available.
 
@@ -62,9 +65,9 @@ Installers include HDC and the required device resources; Node.js is not needed 
 
 **Windows packages are unsigned. macOS packages use ad-hoc signing, without Developer ID or notarization.** System installation warnings may still appear. Verify the download source and checksums; see the [1.0.4 release report](docs/releases/1.0.4.md) for publication status and actual validation results.
 
-**[1.0.4 is now available as the stable Latest release](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.4).** Three-platform installation and direct upgrade/update checks passed; signing and device-validation limitations remain documented in the release report.
+**[1.0.4 is now available as the stable Latest release](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4).** Three-platform installation and direct upgrade/update checks passed; signing and device-validation limitations remain documented in the release report.
 
-The following describes the historical Harmony **1.0.5-dev.1** pre-release. It retains the 1.0.4 features: H.264 mirroring with JPEG fallback, keyboard/IME and clipboard input, HAP drag-and-drop installation, guarded recovery of idle mirroring sessions, bounded app-store requests, English/Chinese language selection, and visible **Beta Update: On/Off** state with aligned menu labels. Choose [stable 1.0.4](https://github.com/MonsterXia/scrcpy-harmony/releases/latest) or [development 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.1) to upgrade; settings use the same application directory. Beta Update is in the application menu, defaults to off and is required to discover development releases. See the [release evidence and limitations](docs/releases/1.0.5-dev.1.md).
+The following describes the historical Harmony **1.0.5-dev.1** pre-release. It retains the 1.0.4 features: H.264 mirroring with JPEG fallback, keyboard/IME and clipboard input, HAP drag-and-drop installation, guarded recovery of idle mirroring sessions, bounded app-store requests, English/Chinese language selection, and visible **Beta Update: On/Off** state with aligned menu labels. Choose [stable 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/latest) or [development 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1) to upgrade; settings use the same application directory. Beta Update is in the application menu, defaults to off and is required to discover development releases. See the [release evidence and limitations](docs/releases/1.0.5-dev.1.md).
 
 Version **1.0.3** remains available as the recovery version before dependency source migration. If switching from ECHO, configure settings again: its separate configuration directory is not migrated automatically. Device compatibility and pending validation are listed in the release report; include your version and commit when reporting a problem.
 
@@ -89,7 +92,7 @@ Version 1.0.4 supports English and Simplified Chinese throughout the app. In **S
 - **The device appears, but screencasting or layout inspection fails:** These features also depend on compatibility between the device system and uitestkit. Include your device model, system version, and the exact error when reporting a problem.
 - **How do I install an update?** The app prompts you to open this repository's Releases page. Download and install the new version manually.
 
-Report other problems through [Issues](https://github.com/MonsterXia/scrcpy-harmony/issues) or **Help → Report Issue** (帮助 → 报告问题) in the app menu. Include the app version, desktop operating system, device model, HarmonyOS/HDC versions, reproduction steps, and expected and actual behavior. Remove device identifiers and personal information before uploading logs or screenshots.
+Report other problems through [Issues](https://github.com/MonsterXia/scrcpy-plus/issues) or **Help → Report Issue** (帮助 → 报告问题) in the app menu. Include the app version, desktop operating system, device model, HarmonyOS/HDC versions, reproduction steps, and expected and actual behavior. Remove device identifiers and personal information before uploading logs or screenshots.
 
 ## Repository structure
 
@@ -111,8 +114,8 @@ Report other problems through [Issues](https://github.com/MonsterXia/scrcpy-harm
 The project uses Electron, React, and TypeScript. You need **Node.js 22.12.0 or later** and Git. The resource download script also requires `curl` and `unzip`; on Windows, these tools can be provided by Git Bash.
 
 ```sh
-git clone https://github.com/MonsterXia/scrcpy-harmony.git
-cd scrcpy-harmony
+git clone https://github.com/MonsterXia/scrcpy-plus.git
+cd scrcpy-plus
 npm ci
 npm run init
 ```

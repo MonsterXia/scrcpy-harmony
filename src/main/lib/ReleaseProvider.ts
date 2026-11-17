@@ -1,3 +1,4 @@
+import pkg from '../../../package.json'
 import { GitHubProvider } from 'electron-updater/out/providers/GitHubProvider'
 import { parseUpdateInfo, ProviderRuntimeOptions } from 'electron-updater/out/providers/Provider'
 import type { AppUpdater } from 'electron-updater'
@@ -6,7 +7,8 @@ import { eq, gt, prerelease, valid } from 'semver'
 
 import { parseReleasePage, ReleaseRecord } from './releasePage'
 
-const repository = 'MonsterXia/scrcpy-harmony'
+const { owner, repo } = pkg.publish
+const repository = `${owner}/${repo}`
 const activeChecks = new Set<CancellationToken>()
 let scheduledCheck: CancellationToken | undefined
 
@@ -35,7 +37,7 @@ export class ReleaseProvider extends GitHubProvider {
 
   constructor(_options: unknown, updater: AppUpdater, runtime: ProviderRuntimeOptions) {
     const channel = updater.channel || 'latest'
-    super({ provider: 'github', owner: 'MonsterXia', repo: 'scrcpy-harmony', channel }, updater, runtime)
+    super({ provider: 'github', owner, repo, channel }, updater, runtime)
     this.includePrerelease = () => updater.allowPrerelease
     this.metadataChannel = this.getCustomChannelName(channel)
   }

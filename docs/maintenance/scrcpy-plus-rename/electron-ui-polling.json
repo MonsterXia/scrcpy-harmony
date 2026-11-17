@@ -1,0 +1,5 @@
+{
+  "scenarios": [],
+  "passed": false,
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'checking'\n- 'available'\n\n    at /private/tmp/scrcpy-plus-update-ui.cjs:5:329"
+}

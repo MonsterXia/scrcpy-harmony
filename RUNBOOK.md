@@ -1,5 +1,12 @@
 # Scrcpy Plus 跨平台改造（2026-11-03）
 
+## 仓库改名与更新源迁移（2026-11-17）
+
+状态：GitHub 仓库已改为 `MonsterXia/scrcpy-plus`，本地 origin、更新源、发布目标与当前入口文档已同步。恢复更新及预发布菜单，保留 Plus 配置和应用标识；按用户要求不兼容旧 Harmony 自动更新/配置迁移。原工作区测试、完整构建、六组线上元数据及 Electron 双语更新/下载链接验收通过。已从最新 master 独立提取迁移变更，保留 1.0.5-dev.2；独立分支应用 1167 pass / 2 skip、Licia 两模式各 606/4、lint/i18n 通过，独立审查无阻断问题。按后续授权改为仅支持 macOS arm64（保留 Windows x64），移除 Intel Mac 构建和必需检查。交付及最终四项 CI/合入状态见 [PR #93](https://github.com/MonsterXia/scrcpy-plus/pull/93)；未发布或替换安装版。详情与下一步见 [迁移记录](docs/maintenance/scrcpy-plus-rename.md)。
+
+
+
+
 ## 1.0.5-dev.2 发行执行（2026-11-17）
 
 **2026-11-17 09:19:33（UTC+8）已公开 dev.2 Pre-release，Latest 保持 1.0.4。** PR #91 经独立审查、五项 CI 全绿后正常合入；固定源 e26c06b 完成三平台 Build/安装启动、补丁 WDA 未签名编译、公开前 162 场景和 15 附件重下载校验。公开后三平台再验证 162 场景通过；本轮没有替换日常安装。来源、签名报告、失败记录和未验收真机范围见[发行记录](docs/releases/1.0.5-dev.2.md)。

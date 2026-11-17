@@ -48,7 +48,7 @@ npm run dev
 npm start
 ```
 
-`dev` 不负责启动 Electron；renderer 服务端口为 8080，Vite 配置关闭 HMR。`start` 加载 `dist/main/index.js` 并打开 9229 inspector。本地依赖成功重编译会触发 Vite 重启并更新依赖预打包；等待就绪后手动刷新 renderer。主进程、preload 或其依赖改动后需要重启 Electron 才能载入新的构建。不要在同一检出并行运行会重写生成目录的 build/test/dev。
+`dev` 不负责启动 Electron；renderer 服务端口为 8080，Vite 配置关闭 HMR。`start` 从根 package.json 入口加载 `dist/main/index.js` 并打开 9229 inspector，确保 Electron 和更新器读取产品版本，不能直接以 JS 文件启动更新验收。本地依赖成功重编译会触发 Vite 重启并更新依赖预打包；等待就绪后手动刷新 renderer。主进程、preload 或其依赖改动后需要重启 Electron 才能载入新的构建。不要在同一检出并行运行会重写生成目录的 build/test/dev。
 
 实际设备操作需要可用 HDC、已允许调试且可连接的鸿蒙设备；投屏/布局额外依赖匹配的 uitestkit 资源。HDC 默认使用内置资源；设置中的 `hdcPath` 可指定存在的可执行文件路径或字面值 `hdc`，后者依赖 PATH。选择逻辑在 `src/main/lib/hdc.ts`。
 
@@ -133,7 +133,7 @@ Windows 菜单状态回归：完整 build 后运行 `node script/check-beta-menu
 
 ## 打包与 CI
 
-`.github/workflows/ci.yml` 对目标为 `master` 的所有 PR、master push 和手动触发运行独立的 `test`、`lint`、`windows-package`、`macos-package-arm64`、`macos-package-x64` 检查。`test`、`lint` 使用 Ubuntu、Node 22 和 `npm ci`，不下载 Electron 二进制或设备资源，也不需要初始化子模块。没有路径过滤，文档 PR 同样会产生检查结果；检查名用于 master 分支保护，重命名前需同步更新 GitHub 设置。
+`.github/workflows/ci.yml` 对目标为 `master` 的所有 PR、master push 和手动触发运行独立的 `test`、`lint`、`windows-package`、`macos-package-arm64` 检查。`test`、`lint` 使用 Ubuntu、Node 22 和 `npm ci`，不下载 Electron 二进制或设备资源，也不需要初始化子模块。没有路径过滤，文档 PR 同样会产生检查结果；检查名用于 master 分支保护，重命名前需同步更新 GitHub 设置。
 
 `windows-package` 使用标准 Windows runner 和 Node 22，执行 npm ci（含本地依赖编译） → 下载设备资源（显式指定 Git Bash）→ build → pack → 验证非空的 NSIS x64 安装包、应用程序、app.asar、HDC 和 uitestkit 文件 → 安装与启动检查。通过 `npm run pack -- --no-publish` 禁止发布，不使用签名 secrets，也不上传安装包 artifact；任务超时为 20 分钟。
 
@@ -141,17 +141,17 @@ Windows 菜单状态回归：完整 build 后运行 `node script/check-beta-menu
 
 本机已有安装时可单独运行 `node script/smoke-app.mjs "C:/path/to/Scrcpy Harmony.exe"`，它使用临时用户配置并关闭自己启动的进程，不执行安装。macOS 可传入已安装应用的 `"/path/to/Scrcpy Harmony.app/Contents/MacOS/Scrcpy Harmony"` 路径。启动自动化依赖 Electron 的调试接口，不修改发行程序或模拟 IPC；它不替代真实设备投屏、签名/SmartScreen 和人工视觉验收。
 
-`macos-package-arm64` 和 `macos-package-x64` 使用标准 `macos-15` 与 `macos-15-intel` runner，分别在原生架构上完成依赖安装、资源下载、build 和 DMG 打包。两个任务固定相同系统版本，避免 latest 标签自动切换系统。`script/check-macos-install.mjs` 挂载 DMG，将 `.app` 复制到临时目录后卸载镜像，验证包内资源和可执行权限，再运行共享的启动检查。此检查校验实际架构，使用隔离用户配置并在退出后清理配置及 HDC 服务；只读仓库权限、不发布、不上传 artifact、不使用签名或公证 secrets。它不验证 Developer ID 签名、公证或从互联网下载后的 Gatekeeper 放行。
+`macos-package-arm64` 使用固定 `macos-15` ARM runner 完成依赖安装、资源下载、build 和 DMG 打包。当前 Plus 不支持 Intel Mac，不再运行 x64 macOS 构建。`script/check-macos-install.mjs` 挂载 DMG，将 `.app` 复制到临时目录后卸载镜像，验证包内资源和可执行权限，再运行共享的启动检查。此检查校验实际架构，使用隔离用户配置并在退出后清理配置及 HDC 服务；只读仓库权限、不发布、不上传 artifact、不使用签名或公证 secrets。它不验证 Developer ID 签名、公证或从互联网下载后的 Gatekeeper 放行。
 
-`script/pack.mjs` 配置 Windows NSIS exe 和 macOS dmg；读取 dist 内的包元数据及资源。`.github/workflows/build.yml` 是手动产物构建（workflow_dispatch），矩阵与 CI 对齐为 `windows-latest` x64、`macos-15` arm64、`macos-15-intel` x64，并核验 Node 实际架构。顺序为 checkout → npm ci（含本地依赖编译） → 下载资源（Windows 显式 Git Bash）→ build → pack --no-publish → 使用现有安装脚本验收实际安装包 → 记录签名和 SHA-256 → 上传 artifact。任一安装启动检查失败时不上传该平台 artifact。产物附带 `verification-win-x64.json` 或 `verification-mac-<arch>.txt`，记录源 SHA、运行链接、安装启动结果和系统签名检查；macOS 另外记录 Gatekeeper 与 stapler 退出码。信任检查失败如实记录，不把未签名包可启动等同于签名/公证通过。该 workflow 不创建 GitHub Release，真机及用户从互联网下载后的信任体验仍需单独验收。
+`script/pack.mjs` 配置 Windows NSIS exe 和 macOS dmg；读取 dist 内的包元数据及资源。`.github/workflows/build.yml` 是手动产物构建（workflow_dispatch），矩阵与 CI 对齐为 `windows-latest` x64、`macos-15` arm64，并核验 Node 实际架构。顺序为 checkout → npm ci（含本地依赖编译） → 下载资源（Windows 显式 Git Bash）→ build → pack --no-publish → 使用现有安装脚本验收实际安装包 → 记录签名和 SHA-256 → 上传 artifact。任一安装启动检查失败时不上传该平台 artifact。产物附带 `verification-win-x64.json` 或 `verification-mac-<arch>.txt`，记录源 SHA、运行链接、安装启动结果和系统签名检查；macOS 另外记录 Gatekeeper 与 stapler 退出码。信任检查失败如实记录，不把未签名包可启动等同于签名/公证通过。该 workflow 不创建 GitHub Release，真机及用户从互联网下载后的信任体验仍需单独验收。
 
 Electron 45 的 macOS 最低系统要求为 macOS 13；升级后需在目标平台验证安装包及设备功能，单测和 lint 不代表完整运行兼容性。
 
-打包更新元数据使用 `MonsterXia/scrcpy-harmony` 的 GitHub Releases 源。Windows / macOS arm64 使用 `latest`，macOS x64 使用 `latest-x64`；手动构建 workflow 显式 `--no-publish`，仅上传安装包、YAML 更新元数据和 blockmap 为 artifact，不创建 Release。正式发布时需将各平台安装包及配套更新文件放入本仓库相应版本的 Release。electron-builder 的 GitHub 更新 YAML 使用安全文件名（例如 `Scrcpy-Harmony-...`），可能不同于本地带空格的安装包名；上传前按 YAML 的 URL 命名安装包和配套 blockmap，保持字节不变，并核对 size、SHA-512 和远端 SHA-256。无 Release 时检查更新可能报错，不能回退到上游。
+运行时更新和打包目标共用 `package.json.publish` 的 `MonsterXia/scrcpy-plus` GitHub Releases 源。打包默认不上传，显式 `--publish` 才上传，`--no-publish` 优先禁止上传。Windows / macOS arm64 使用 `latest`；历史 macOS x64 元数据为 `latest-x64`，当前不再发布 Intel 构建；手动构建 workflow 显式 `--no-publish`，仅上传安装包、YAML 更新元数据和 blockmap 为 artifact，不创建 Release。正式发布时需将各平台安装包及配套更新文件放入本仓库相应版本的 Release。electron-builder 的 GitHub 更新 YAML 使用安全文件名（例如 `Scrcpy-Plus-...`），可能不同于本地带空格的安装包名；上传前按 YAML 的 URL 命名安装包和配套 blockmap，保持字节不变，并核对 size、SHA-512 和远端 SHA-256。无 Release 时检查更新可能报错，不能回退到上游。
 
 ## 实际打包应用的更新验收
 
-M0-3 的 `.github/workflows/update-acceptance.yml` 是固定版本的实际更新验收：在三个原生 runner 上从固定提交打包 1.0.1，下载并核对公开 1.0.2 安装包 SHA-256，再使用 `script/install-update-check.mjs` 安装两版。安装器包装只允许 GitHub 托管临时 runner，不能在开发机绕过限制。该 workflow 可手动运行，也在修改验收脚本/自身的 PR 上运行，不改变五项必需 CI 检查名称。
+M0-3 的 `.github/workflows/update-acceptance.yml` 是固定版本的实际更新验收：在三个原生 runner 上从固定提交打包 1.0.1，下载并核对公开 1.0.2 安装包 SHA-256，再使用 `script/install-update-check.mjs` 安装两版。安装器包装只允许 GitHub 托管临时 runner，不能在开发机绕过限制。该 workflow 可手动运行，也在修改验收脚本/自身的 PR 上运行，不改变四项必需 CI 检查名称。
 
 `script/check-packaged-update.mjs <已安装程序路径> <1.0.1或1.0.2> <证据目录>` 使用隔离配置启动真实 app.asar，通过实际菜单回调触发检查；记录 `electron-updater` 网络会话的请求、重定向和最终响应，检查真实 IPC 驱动的提示并截图。网络错误通过取消该会话请求注入，之后恢复网络再检查；不替换更新器结果或应用版本。确认有更新时包装 `shell.openExternal` 记录 URL 并调用原方法，验收操作系统是否接受 Releases 跳转；不声称检查了默认浏览器页面内容。报告包含安装包哈希、运行版本/架构、JSON 和应用日志，CDN 临时签名查询参数不写入网络记录。本验收固定目标为 v1.0.2；发布后续版本后须显式更新对照版本、预期提示和安装包哈希，不能将旧断言继续用于新 Release。
 
@@ -211,3 +211,5 @@ macOS 无证书开发包可运行 `npm run pack -- --no-publish --adhoc-sign`，
 `npm run ios:wda -- build --unsigned` 从 `vendor/ios-wda/manifest.json` 固定来源编译 WDA 和 ReplayKit 扩展；无需签名但不能用于真机安装。显式 `run --udid ... --team ...` 才签名启动，保持专用 Runner 运行。脚本用局部 `DEVELOPER_DIR`，不修改 xcode-select。`node script/check-ios-ui.mjs [证据目录]` 使用真实 Electron、生产 React/PNG/WebCodecs 与模拟设备 IPC 验证双语界面；不能替代真机。详见 [iOS USB 文档](../../../../docs/scrcpy-plus/ios-usb-wda.md)。
 
 桌面 `build` 重建生成的 `dist/build`，排除 `build/ios-wda` 源码及签名缓存，避免复用旧发行目录时携带本地 Runner/签名产物。WDA 始终按独立准备流程安装到手机。
+
+线上更新只读验证：`node script/check-release-source.mjs <预期.json> [报告.json]` 使用生产 ReleaseProvider 查询 Windows x64、Mac ARM 的稳定与预发布元数据，不下载安装包；预期 JSON 必须显式提供 stable/prerelease 的 version 和 updateAvailable，发布变化后需重新确认这些预期，示例见 `docs/maintenance/scrcpy-plus-rename/expected-dev2.json`。Harmony 用户手动重装 Plus；不提供旧地址解析或旧配置迁移代码。仓库改名状态见 [迁移记录](../../../../docs/maintenance/scrcpy-plus-rename.md)。

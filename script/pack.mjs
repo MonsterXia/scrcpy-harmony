@@ -46,15 +46,13 @@ const config = {
     ],
   },
   publish: {
-    provider: 'github',
-    owner: 'MonsterXia',
-    repo: 'scrcpy-harmony',
+    ...pkg.publish,
     channel: publishChannel,
   },
 }
 
 await builder.build({
   config,
-  // Plus has no independent release repository configured yet.
-  publish: 'never',
+  // Publishing is explicit; local and CI builds never upload by default.
+  publish: process.argv.includes('--publish') && !process.argv.includes('--no-publish') ? 'always' : 'never',
 })
