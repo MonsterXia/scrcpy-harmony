@@ -1,5 +1,9 @@
 # Scrcpy Plus 跨平台改造（2026-11-03）
 
+## 1.0.5-dev.2 发行执行（2026-11-17）
+
+用户已授权按计划完成独立审查与验收后发布。当前候选准备中，三处版本号与 CLI/MCP 构建附件已更新；本机 Xcode 许可未就绪，未签名 Runner 编译在 macOS Build 验证。状态与后续证据见[发行记录](docs/releases/1.0.5-dev.2.md)。
+
 ## 1.0.5-dev.2 发行规划（2026-11-16）
 
 PR #90 已经独立审查、五项 CI 全绿后正常合入 `b328246`；[最终证据](https://github.com/MonsterXia/scrcpy-harmony/pull/90#issuecomment-6916559409)。按用户要求完成[下一开发版计划](docs/superpowers/plans/2026-11-16-release-1.0.5-dev.2.md)，拟为 Scrcpy Plus `1.0.5-dev.2` Pre-release，稳定 Latest 保持1.0.4。计划覆盖更名后的独立配置、三平台同源安装与更新验证、CLI/MCP附件、15项附件重下载校验和公开复验。当前只完成规划，版本/tag/Release均未变；补丁后Runner编译、签名真机矩阵仍需按计划补验。

@@ -206,6 +206,8 @@ macOS 无证书开发包可运行 `npm run pack -- --no-publish --adhoc-sign`，
 
 ### iOS USB 开发验证
 
+开发版 `Build` 工作流在 macOS arm64 的完整 build 后验证独立 CLI/MCP 包并生成通用 tgz，只有该平台上传此附件；同时使用 runner 当前 Xcode 编译未签名 WDA Runner/ReplayKit，任何失败阻止后续打包和上传。其余平台仍生成各自桌面安装包、更新元数据及验证报告。WDA 源码与编译/签名缓存不作为发行附件。
+
 `npm run ios:wda -- build --unsigned` 从 `vendor/ios-wda/manifest.json` 固定来源编译 WDA 和 ReplayKit 扩展；无需签名但不能用于真机安装。显式 `run --udid ... --team ...` 才签名启动，保持专用 Runner 运行。脚本用局部 `DEVELOPER_DIR`，不修改 xcode-select。`node script/check-ios-ui.mjs [证据目录]` 使用真实 Electron、生产 React/PNG/WebCodecs 与模拟设备 IPC 验证双语界面；不能替代真机。详见 [iOS USB 文档](../../../../docs/scrcpy-plus/ios-usb-wda.md)。
 
 桌面 `build` 重建生成的 `dist/build`，排除 `build/ios-wda` 源码及签名缓存，避免复用旧发行目录时携带本地 Runner/签名产物。WDA 始终按独立准备流程安装到手机。
