@@ -212,4 +212,4 @@ macOS 无证书开发包可运行 `npm run pack -- --no-publish --adhoc-sign`，
 
 桌面 `build` 重建生成的 `dist/build`，排除 `build/ios-wda` 源码及签名缓存，避免复用旧发行目录时携带本地 Runner/签名产物。WDA 始终按独立准备流程安装到手机。
 
-线上更新只读验证：`node script/check-release-source.mjs [报告.json]` 使用生产 ReleaseProvider 查询 Windows、Mac ARM/Intel 的稳定与预发布元数据，不下载安装包。Harmony 用户手动重装 Plus；不提供旧地址解析或旧配置迁移代码。仓库改名状态见 [迁移记录](../../../../docs/maintenance/scrcpy-plus-rename.md)。
+线上更新只读验证：`node script/check-release-source.mjs <预期.json> [报告.json]` 使用生产 ReleaseProvider 查询 Windows、Mac ARM/Intel 的稳定与预发布元数据，不下载安装包；预期 JSON 必须显式提供 stable/prerelease 的 version 和 updateAvailable，发布变化后需重新确认这些预期，示例见 `docs/maintenance/scrcpy-plus-rename/expected-dev2.json`。Harmony 用户手动重装 Plus；不提供旧地址解析或旧配置迁移代码。仓库改名状态见 [迁移记录](../../../../docs/maintenance/scrcpy-plus-rename.md)。

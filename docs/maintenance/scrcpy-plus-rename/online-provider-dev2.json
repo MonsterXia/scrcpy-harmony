@@ -1,0 +1,108 @@
+{
+  "repository": "MonsterXia/scrcpy-plus",
+  "current": "1.0.5-dev.2",
+  "checkedAt": "2026-11-17T03:37:56.113Z",
+  "scenarios": [
+    {
+      "platform": "win32",
+      "channel": "latest",
+      "beta": false,
+      "version": "1.0.4",
+      "tag": "v1.0.4",
+      "updateAvailable": false,
+      "files": [
+        "https://github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.4/Scrcpy-Harmony-1.0.4-win-x64.exe"
+      ],
+      "requests": [
+        "api.github.com/repos/MonsterXia/scrcpy-plus/releases?per_page=100&page=1",
+        "github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.4/latest.yml"
+      ]
+    },
+    {
+      "platform": "win32",
+      "channel": "latest",
+      "beta": true,
+      "version": "1.0.5-dev.2",
+      "tag": "v1.0.5-dev.2",
+      "updateAvailable": false,
+      "files": [
+        "https://github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.5-dev.2/Scrcpy-Plus-1.0.5-dev.2-win-x64.exe"
+      ],
+      "requests": [
+        "api.github.com/repos/MonsterXia/scrcpy-plus/releases?per_page=100&page=1",
+        "github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.5-dev.2/latest.yml"
+      ]
+    },
+    {
+      "platform": "darwin",
+      "channel": "latest",
+      "beta": false,
+      "version": "1.0.4",
+      "tag": "v1.0.4",
+      "updateAvailable": false,
+      "files": [
+        "https://github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.4/Scrcpy-Harmony-1.0.4-mac-arm64.dmg"
+      ],
+      "requests": [
+        "api.github.com/repos/MonsterXia/scrcpy-plus/releases?per_page=100&page=1",
+        "github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.4/latest-mac.yml"
+      ]
+    },
+    {
+      "platform": "darwin",
+      "channel": "latest",
+      "beta": true,
+      "version": "1.0.5-dev.2",
+      "tag": "v1.0.5-dev.2",
+      "updateAvailable": false,
+      "files": [
+        "https://github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.5-dev.2/Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg"
+      ],
+      "requests": [
+        "api.github.com/repos/MonsterXia/scrcpy-plus/releases?per_page=100&page=1",
+        "github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.5-dev.2/latest-mac.yml"
+      ]
+    },
+    {
+      "platform": "darwin",
+      "channel": "latest-x64",
+      "beta": false,
+      "version": "1.0.4",
+      "tag": "v1.0.4",
+      "updateAvailable": false,
+      "files": [
+        "https://github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.4/Scrcpy-Harmony-1.0.4-mac-x64.dmg"
+      ],
+      "requests": [
+        "api.github.com/repos/MonsterXia/scrcpy-plus/releases?per_page=100&page=1",
+        "github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.4/latest-x64-mac.yml"
+      ]
+    },
+    {
+      "platform": "darwin",
+      "channel": "latest-x64",
+      "beta": true,
+      "version": "1.0.5-dev.2",
+      "tag": "v1.0.5-dev.2",
+      "updateAvailable": false,
+      "files": [
+        "https://github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.5-dev.2/Scrcpy-Plus-1.0.5-dev.2-mac-x64.dmg"
+      ],
+      "requests": [
+        "api.github.com/repos/MonsterXia/scrcpy-plus/releases?per_page=100&page=1",
+        "github.com/MonsterXia/scrcpy-plus/releases/download/v1.0.5-dev.2/latest-x64-mac.yml"
+      ]
+    }
+  ],
+  "passed": true,
+  "expectations": {
+    "stable": {
+      "version": "1.0.4",
+      "updateAvailable": false
+    },
+    "prerelease": {
+      "version": "1.0.5-dev.2",
+      "updateAvailable": false
+    }
+  }
+}

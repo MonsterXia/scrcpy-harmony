@@ -29,3 +29,9 @@
 独立分支 `1423983`：`npm test` 为应用 1163 pass / 2 skip，Licia 两模式各 606 passing / 4 pending；lint/i18n 通过。独立审查另外执行更新定向 52 项全部通过，无 Critical/Important；版本证据措辞的 Minor 已澄清。本轮只修改迁移配置、逻辑、测试及记录，未改 iOS 实现文件。
 
 交付为 [PR #93](https://github.com/MonsterXia/scrcpy-plus/pull/93)，最终审查、五项必需 CI 和合并状态以该 PR 为准；使用正常分支保护合入，不绕过检查。合入不代表发布新版本或更新本机安装。
+
+## PR 自动审查修复与历史验收边界
+
+Sourcery 指出原线上脚本只记录版本、未断言选中结果。已改为必需显式提供 stable/prerelease 的 version 和 updateAvailable，并对三平台六场景分别断言。新增4项实际脚本测试证明正确预期通过、错版本/错可用性/缺预期均失败（先红3项，再绿4项）。独立复核无新增问题；修复后全量应用 1167 pass / 2 skip，Licia 两模式各606/4。[独立分支线上六场景](scrcpy-plus-rename/online-provider-dev2.json)按 [显式预期](scrcpy-plus-rename/expected-dev2.json)全部通过；当前 dev.2 对历史稳定版与同版本预发布均不提示升级。
+
+初轮仅修改历史 `update-acceptance.yml` 的下载地址触发了固定 Harmony 1.0.1/1.0.2 验收。[该次 mac-arm64 失败日志](https://github.com/MonsterXia/scrcpy-plus/actions/runs/44011194858/job/133798334791)显示 `check-packaged-update.mjs:93` 的旧 metadataUrl 请求断言失败，1.0.2 随后等待“无可用更新”提示超时。未将该结果记为通过，也未修改旧客户端或放宽断言。按用户明确不要求 Harmony 升级兼容的范围，撤回历史工作流的一行地址改动，最终 PR 保持该文件与 master 相同；历史测试仍保留，不改变五项必需 CI 或分支保护。
