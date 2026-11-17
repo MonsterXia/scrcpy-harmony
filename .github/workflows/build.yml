@@ -46,6 +46,10 @@ jobs:
       uses: ./.github/actions/platform-toolchain
     - name: Build distribution
       run: npm run build
+    - name: Verify patched iOS Runner compiles without signing
+      if: runner.os == 'macOS' && matrix.arch == 'arm64'
+      shell: bash
+      run: npm run ios:wda -- build --unsigned --xcode "$(xcode-select -p)"
     - name: Package installer
       shell: bash
       run: |
@@ -66,6 +70,15 @@ jobs:
         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         CSC_LINK: ${{ secrets.CSC_LINK }}
         CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+    - name: Verify and package standalone CLI and MCP client
+      if: runner.os == 'macOS' && matrix.arch == 'arm64'
+      shell: bash
+      run: |
+        npm run check:automation-package
+        version=$(node -p 'require("./package.json").version')
+        mkdir -p "release/$version"
+        npm pack ./dist/cli --pack-destination "release/$version"
+        test -s "release/$version/scrcpy-plus-cli-$version.tgz"
     - name: Install and smoke test Windows release artifact
       if: runner.os == 'Windows'
       timeout-minutes: 5
@@ -129,6 +142,7 @@ jobs:
           release/**/*.exe
           release/**/*.yml
           release/**/*.blockmap
+          release/**/*.tgz
           release/**/verification-*.json
           release/**/verification-*.txt
           !release/**/win-unpacked/

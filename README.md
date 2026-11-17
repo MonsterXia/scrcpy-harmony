@@ -6,6 +6,16 @@ The development branch adds iOS USB screenshot/control through WDA and opt-in Re
 
 Development automation: the shared local service, standalone Node CLI and [MCP stdio adapter](docs/scrcpy-plus/automation/mcp.md) expose sessions, screenshots, input and existing Harmony tools. See the [automation guide](docs/scrcpy-plus/automation/README.md) and [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md). Local simulated workflows pass; real-device and Windows acceptance remain pending.
 
+## 1.0.5-dev.2 release candidate
+
+The next development prerelease is **Scrcpy Plus 1.0.5-dev.2**. Candidate preparation and acceptance are tracked in the [release record](docs/releases/1.0.5-dev.2.md); download only versions actually listed on [Releases](https://github.com/MonsterXia/scrcpy-harmony/releases). Stable Latest remains **Scrcpy Harmony 1.0.4**.
+
+The candidate includes Android/Harmony mirroring, iOS AirPlay, USB iPhone overview, the unified workspace, instant language switching, and the standalone Node CLI/MCP client. USB WDA screenshots/control and ReplayKit video are experimental and require a separately signed Runner; physical control/video acceptance remains pending.
+
+**Moving from Harmony to Plus:** the apps have different installation and configuration identities. Keep the old Harmony installation and settings; Plus creates its own profile (`~/Library/Application Support/Scrcpy Plus` on macOS, `%APPDATA%\Scrcpy Plus` on Windows). Settings are not automatically migrated from Harmony. Existing Plus development installations keep their Plus profile. The updater opens the release page for manual installation; it does not install updates automatically.
+
+Choose the Windows x64 EXE or macOS arm64/x64 DMG for your computer. The optional `scrcpy-plus-cli-1.0.5-dev.2.tgz` contains both CLI and MCP clients and requires Node >=22.12 and the running desktop app. Signature and validation results are recorded per release; WDA signing products are not distributed in the desktop installer.
+
 ---
 
 # Scrcpy Harmony
@@ -54,7 +64,7 @@ Installers include HDC and the required device resources; Node.js is not needed 
 
 **[1.0.4 is now available as the stable Latest release](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.4).** Three-platform installation and direct upgrade/update checks passed; signing and device-validation limitations remain documented in the release report.
 
-Current source targets the published **1.0.5-dev.1** pre-release. It retains the 1.0.4 features: H.264 mirroring with JPEG fallback, keyboard/IME and clipboard input, HAP drag-and-drop installation, guarded recovery of idle mirroring sessions, bounded app-store requests, English/Chinese language selection, and visible **Beta Update: On/Off** state with aligned menu labels. Choose [stable 1.0.4](https://github.com/MonsterXia/scrcpy-harmony/releases/latest) or [development 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.1) to upgrade; settings use the same application directory. Beta Update is in the application menu, defaults to off and is required to discover development releases. See the [release evidence and limitations](docs/releases/1.0.5-dev.1.md).
+The following describes the historical Harmony **1.0.5-dev.1** pre-release. It retains the 1.0.4 features: H.264 mirroring with JPEG fallback, keyboard/IME and clipboard input, HAP drag-and-drop installation, guarded recovery of idle mirroring sessions, bounded app-store requests, English/Chinese language selection, and visible **Beta Update: On/Off** state with aligned menu labels. Choose [stable 1.0.4](https://github.com/MonsterXia/scrcpy-harmony/releases/latest) or [development 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.1) to upgrade; settings use the same application directory. Beta Update is in the application menu, defaults to off and is required to discover development releases. See the [release evidence and limitations](docs/releases/1.0.5-dev.1.md).
 
 Version **1.0.3** remains available as the recovery version before dependency source migration. If switching from ECHO, configure settings again: its separate configuration directory is not migrated automatically. Device compatibility and pending validation are listed in the release report; include your version and commit when reporting a problem.
 

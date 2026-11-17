@@ -40,6 +40,6 @@ npm run ios:wda -- run --udid <UDID> --team <TEAM_ID>
 - GUI、CLI/MCP 共享会话与输入互斥；CLI/MCP 的坐标操作必须引用当前截图帧。视频开关当前在 GUI 提供。状态不明的写请求不会重试，后续输入被阻断，需重开会话。
 - WDA 使用已核验公开 fork：[固定源提交](https://github.com/droidrun/WebDriverAgent/tree/8ce9d6f528e6f6c01bc0fa903b33555842d43571)，归档 SHA-256 与许可证见 `vendor/ios-wda/`；不依赖闭源 `mobilerun-ios` 二进制。
 - 自动测试包含真实回环 USB/HTTP 模拟端点、JSON/分帧、目标 UDID、超时/取消、输入坐标与时长、资源清理；Electron 测试运行生产 React 组件、PNG 解码及真实 H.264 编解码，设备 IPC 为模拟。
-- 未签名 Xcode 构建成功，包含 Broadcast 扩展；上游仍有编译/静态分析警告，不能把编译成功视为设备兼容性结论。
+- 历史 Xcode 26.6 未签名构建成功，包含 Broadcast 扩展；回环监听补丁后的编译由 dev.2 Build 另行验收。上游仍有编译/静态分析警告，不能把编译成功视为设备兼容性结论。
 
 下一步在有签名账户和真机后验证：安装/启动 Runner → PNG 截图 → 点击 Home/系统设置 → 连续视频授权和长时间播放 → 横竖屏/180°/锁屏 → USB 拔插 → 关闭与重连 → GUI/MCP 并发。验证命令与证据见[维护记录](../maintenance/ios-usb-wda.md)。

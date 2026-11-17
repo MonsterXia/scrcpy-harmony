@@ -6,6 +6,16 @@
 
 开发版自动化已提供共享本地服务、独立 Node CLI 与 [MCP stdio](docs/scrcpy-plus/automation/mcp.md)，支持会话、截图、输入和现有 Harmony 工具。参见[使用指南](docs/scrcpy-plus/automation/README.md)与 [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md)。本机模拟流程通过，真机及 Windows 验收仍 pending。
 
+## 1.0.5-dev.2 发行候选
+
+下一开发预发布为 **Scrcpy Plus 1.0.5-dev.2**。候选准备和验收状态见[发行记录](docs/releases/1.0.5-dev.2.md)；请仅下载 [Releases](https://github.com/MonsterXia/scrcpy-harmony/releases) 实际列出的版本。稳定 Latest 保持 **Scrcpy Harmony 1.0.4**。
+
+本候选包含安卓/鸿蒙投屏、iOS AirPlay、USB iPhone 概览、统一设备工作区、即时语言切换，以及独立 Node CLI/MCP 客户端。USB WDA 截图/控制和 ReplayKit 视频为实验能力，需另行签名运行 Runner；真机控制/视频验收仍待完成。
+
+**从 Harmony 切换到 Plus：** 两者安装和配置身份不同。保留原 Harmony 安装与设置；Plus 创建自己的配置目录（macOS 为 `~/Library/Application Support/Scrcpy Plus`，Windows 为 `%APPDATA%\Scrcpy Plus`），不会自动迁移 Harmony 设置。已有 Plus 开发版继续使用原 Plus 配置。更新器仅打开发行页供手动安装，不自动安装更新。
+
+按电脑选择 Windows x64 EXE 或 macOS arm64/x64 DMG。可选 `scrcpy-plus-cli-1.0.5-dev.2.tgz` 包含 CLI 和 MCP，需要 Node >=22.12 及正在运行的桌面应用。签名和验收结果按版本记录；桌面安装包不分发 WDA 签名产物。
+
 ---
 
 # Scrcpy Harmony
@@ -54,7 +64,7 @@ macOS 需要 **13 或更新版本**。当前未提供 Linux 安装包。
 
 **[1.0.4 已作为正式 Latest 发布](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.4)。** 三平台安装与直接升级/更新检查通过；签名限制和未补测真机范围继续在发布记录中明确列出。
 
-当前源码版本为已公开的 **1.0.5-dev.1** 开发预发布，保留 1.0.4 的功能，包括 H.264 投屏与 JPEG 回退、键盘/IME 和文本粘贴、HAP 拖入安装、空闲投屏残留的受限恢复、商店请求有限等待、中英文选择，以及清楚显示开启/关闭、文字对齐的 **Beta Update／接收预发布更新** 菜单。升级可选择[稳定版 1.0.4](https://github.com/MonsterXia/scrcpy-harmony/releases/latest)或[开发版 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.1)；应用配置目录保持不变。Beta Update 位于应用菜单，默认关闭，发现开发预发布需开启；[发行证据与限制](docs/releases/1.0.5-dev.1.md)另行记录。
+以下为历史 Harmony **1.0.5-dev.1** 开发预发布说明，保留 1.0.4 的功能，包括 H.264 投屏与 JPEG 回退、键盘/IME 和文本粘贴、HAP 拖入安装、空闲投屏残留的受限恢复、商店请求有限等待、中英文选择，以及清楚显示开启/关闭、文字对齐的 **Beta Update／接收预发布更新** 菜单。升级可选择[稳定版 1.0.4](https://github.com/MonsterXia/scrcpy-harmony/releases/latest)或[开发版 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.1)；应用配置目录保持不变。Beta Update 位于应用菜单，默认关闭，发现开发预发布需开启；[发行证据与限制](docs/releases/1.0.5-dev.1.md)另行记录。
 
 **1.0.3** 保留为依赖源码迁移前的恢复版本。从 ECHO 切换时需要重新配置设置，其独立配置目录不会自动迁移。设备兼容和待验收范围见发布记录；反馈问题时请附版本和提交号。
 
