@@ -4,13 +4,13 @@ Android, HarmonyOS and iOS mirroring workbench, based on Scrcpy Harmony. See [in
 
 The development branch adds iOS USB screenshot/control through WDA and opt-in ReplayKit video; signing and physical-device acceptance are still pending. See [iOS USB setup](docs/scrcpy-plus/ios-usb-wda.md).
 
-Development automation: the shared local service, standalone Node CLI and [MCP stdio adapter](docs/scrcpy-plus/automation/mcp.md) expose sessions, screenshots, input and existing Harmony tools. See the [automation guide](docs/scrcpy-plus/automation/README.md) and [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md). Local simulated workflows pass; real-device and Windows acceptance remain pending.
+Development automation: the shared local service, standalone Node CLI and [MCP stdio adapter](docs/scrcpy-plus/automation/mcp.md) expose sessions, screenshots, input and existing Harmony tools. See the [automation guide](docs/scrcpy-plus/automation/README.md) and [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md). Local simulated workflows pass; physical-device automation and Windows automation end-to-end acceptance remain pending.
 
-## 1.0.5-dev.2 release candidate
+## 1.0.5-dev.2 development prerelease
 
-The next development prerelease is **Scrcpy Plus 1.0.5-dev.2**. Candidate preparation and acceptance are tracked in the [release record](docs/releases/1.0.5-dev.2.md); download only versions actually listed on [Releases](https://github.com/MonsterXia/scrcpy-harmony/releases). Stable Latest remains **Scrcpy Harmony 1.0.4**.
+**[Scrcpy Plus 1.0.5-dev.2 is available](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.2).** See the [release record](docs/releases/1.0.5-dev.2.md) for source, artifact checks and acceptance boundaries. Stable Latest remains **Scrcpy Harmony 1.0.4**.
 
-The candidate includes Android/Harmony mirroring, iOS AirPlay, USB iPhone overview, the unified workspace, instant language switching, and the standalone Node CLI/MCP client. USB WDA screenshots/control and ReplayKit video are experimental and require a separately signed Runner; physical control/video acceptance remains pending.
+This release includes Android/Harmony mirroring, iOS AirPlay, USB iPhone overview, the unified workspace, instant language switching, and the standalone Node CLI/MCP client. USB WDA screenshots/control and ReplayKit video are experimental and require a separately signed Runner; physical control/video acceptance remains pending.
 
 **Moving from Harmony to Plus:** the apps have different installation and configuration identities. Keep the old Harmony installation and settings; Plus creates its own profile (`~/Library/Application Support/Scrcpy Plus` on macOS, `%APPDATA%\Scrcpy Plus` on Windows). Settings are not automatically migrated from Harmony. Existing Plus development installations keep their Plus profile. The updater opens the release page for manual installation; it does not install updates automatically.
 
