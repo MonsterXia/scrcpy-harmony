@@ -9,7 +9,7 @@
 - 恢复“检查更新”和预发布菜单。仍为检查元数据后打开指定 Release 手动安装；不自动下载/安装，不允许降级。Windows/Mac ARM 使用 latest，Mac Intel 使用 latest-x64。
 - 打包默认不发布，只有显式 `npm run pack -- --publish` 才上传，`--no-publish` 优先。构建 workflow 继续只产生 artifact。
 - `npm start` 改为 `electron . --inspect=9229`，从根包入口加载相同 dist 主进程，避免开发模式检查更新时误把 Electron 运行时版本当作产品版本。
-- 不改 `io.scrcpyplus.desktop`、Plus 配置目录或工作区版本 `1.0.5-dev.1`。线上已有 `1.0.5-dev.2`，此次不覆盖现有 tag/附件、不新建发行版。
+- 不改 `io.scrcpyplus.desktop` 或 Plus 配置目录。原工作区验证使用 `1.0.5-dev.1`，本次独立 PR 保留 master 的 `1.0.5-dev.2`；不覆盖现有 tag/附件、不新建发行版。
 - 旧 Harmony 手动安装 Plus；不做自动配置迁移。GitHub 自身重定向继续可用，但不保证已发布旧客户端的网页回退。历史发行证据、旧安装器测试及内置图标字体名保留原名。
 
 ## 原工作区验证（1.0.5-dev.1）
@@ -26,4 +26,6 @@
 
 原工作区阶段未提交/推送或替换安装版。用户随后授权仅提取本迁移变更，独立 PR 经审查与 CI 通过后合入。已从最新 master `e4f01c9` 建立独立 worktree/分支 `codex/scrcpy-plus-rename`，保留 master 的 `1.0.5-dev.2` 版本及已合入的 iOS 代码；本次 diff 不包含任何 iOS 实现。原工作区的其他改动保持原样。
 
-独立分支验证、审查及 CI 状态待本轮记录；不以本页前面的旧工作区测试计数代替最终分支验证。合入不代表发布新版本或更新本机安装。
+独立分支 `1423983`：`npm test` 为应用 1163 pass / 2 skip，Licia 两模式各 606 passing / 4 pending；lint/i18n 通过。独立审查另外执行更新定向 52 项全部通过，无 Critical/Important；版本证据措辞的 Minor 已澄清。本轮只修改迁移配置、逻辑、测试及记录，未改 iOS 实现文件。
+
+交付为 [PR #93](https://github.com/MonsterXia/scrcpy-plus/pull/93)，最终审查、五项必需 CI 和合并状态以该 PR 为准；使用正常分支保护合入，不绕过检查。合入不代表发布新版本或更新本机安装。
