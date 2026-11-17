@@ -5,6 +5,7 @@ import { execFileSync, spawnSync } from 'node:child_process'
 import assert from 'node:assert/strict'
 import { Client } from '@modelcontextprotocol/client'
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio'
+import { assertInstalledClient } from '../lib/automation-package-check.mjs'
 const directory=await fs.mkdtemp(path.join(tmpdir(),'plus-package-测试 '))
 const npm=process.env.npm_execpath
 if(!npm)throw Error('Run through npm: npm run check:automation-package')
@@ -24,7 +25,7 @@ try {
   let errors='';transport.stderr?.on('data',chunk=>errors+=chunk)
   try {
     await client.connect(transport)
-    const list=await client.listTools();assert.ok(list.tools.some(t=>t.name==='screen_capture'));assert.equal(list.tools.length,35)
+    const list=await client.listTools();assertInstalledClient(installed,expectedVersion,list.tools,schema.data)
     const offline=await client.callTool({name:'schema',arguments:{}});assert.equal(offline.structuredContent.ok,true)
     const absent=await client.callTool({name:'doctor',arguments:{}});assert.equal(absent.isError,true);assert.equal(absent.structuredContent.error.code,'UNAVAILABLE')
     assert.equal(errors,'')

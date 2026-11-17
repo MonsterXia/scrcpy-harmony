@@ -22,7 +22,7 @@ spec.loader.exec_module(module)
 class PublishSafetyTests(unittest.TestCase):
     def test_prepare_requires_both_macos_signature_checks(self):
         cases = [(None, None)] + [(platform, key) for platform in ('macos-15', 'macos-15-intel')
-            for key in ('codesignDetailsExit', 'codesignVerifyExit')]
+            for key in ('codesignDetailsExit', 'codesignVerifyExit')] + [('windows-latest',key) for key in ('yaml-url','yaml-size','yaml-sha512')]
         for bad_platform, bad_key in cases:
             with self.subTest(platform=bad_platform, key=bad_key), tempfile.TemporaryDirectory() as tmp:
                 p = object.__new__(module.Publisher)
@@ -32,6 +32,7 @@ class PublishSafetyTests(unittest.TestCase):
                 p.c = {'version': '1.0.5-dev.2', 'source_sha': 'a'*40, 'repo': 'MonsterXia/scrcpy-harmony',
                     'ci_run': 1, 'build_run': 2, 'preparation_pr': 75}
                 p.identity = p.c.copy()
+                p.accepted_assets = []
                 p.verify_source = Mock()
                 p.yaml = lambda path: json.loads(path.read_text())
                 artifacts = []
@@ -41,8 +42,12 @@ class PublishSafetyTests(unittest.TestCase):
                     content = f'fixture-{platform}'.encode()
                     sha256 = hashlib.sha256(content).hexdigest()
                     sha512 = base64.b64encode(hashlib.sha512(content).digest()).decode()
+                    p.accepted_assets.append({'name':safe,'size':len(content),'sha256':sha256})
                     metadata = {'version': p.c['version'], 'files': [{'url': safe, 'size': len(content), 'sha512': sha512}],
                         'path': safe, 'sha512': sha512}
+                    if platform == bad_platform and bad_key == 'yaml-url': metadata['files'][0]['url']='wrong.exe'
+                    if platform == bad_platform and bad_key == 'yaml-size': metadata['files'][0]['size']+=1
+                    if platform == bad_platform and bad_key == 'yaml-sha512': metadata['sha512']='wrong'
                     run_url = 'https://github.com/MonsterXia/scrcpy-harmony/actions/runs/2'
                     if report_name.endswith('.json'):
                         report = json.dumps({'sourceCommit': 'a'*40, 'runUrl': run_url, 'installationAndStartup': 'passed',
@@ -64,6 +69,7 @@ class PublishSafetyTests(unittest.TestCase):
                                 for filename,body in [('package.json',json.dumps({'name':'scrcpy-plus-cli','version':p.c['version'],'bin':{'scrcpy-plus':'index.cjs','scrcpy-plus-mcp':'mcp.cjs'}}).encode()),('index.cjs',b'cli'),('mcp.cjs',b'mcp'),('LICENSE',b'license'),('THIRD_PARTY_LICENSES.txt',b'zod')]:
                                     item=tarfile.TarInfo('package/'+filename);item.size=len(body);tgz.addfile(item,io.BytesIO(body))
                             zipped.writestr('scrcpy-plus-cli-'+p.c['version']+'.tgz',data.getvalue())
+                            p.accepted_assets.append({'name':'scrcpy-plus-cli-'+p.c['version']+'.tgz','size':len(data.getvalue()),'sha256':hashlib.sha256(data.getvalue()).hexdigest()})
                     artifacts.append({'id':artifact_id,'name':platform,'expired':False,
                         'workflow_run':{'head_sha':'a'*40},'digest':'sha256:'+module.digest(archive),
                         'size_in_bytes':archive.stat().st_size})
@@ -76,7 +82,7 @@ class PublishSafetyTests(unittest.TestCase):
                         self.assertEqual(len(prepared['assets']),15)
                         self.assertEqual({item['name'] for item in prepared['assets']},p.expected_names())
                     else:
-                        with self.assertRaisesRegex(module.VerificationError,'macOS signature must pass strict verification before publication'):
+                        with self.assertRaisesRegex(module.VerificationError,'YAML' if str(bad_key).startswith('yaml-') else 'macOS signature must pass strict verification before publication'):
                             p.prepare()
                         self.assertFalse(p.prepared_path.exists())
                 p.gh.assert_not_called()
@@ -248,12 +254,34 @@ class Dev0IdentityTests(unittest.TestCase):
 
 class AcceptanceGateTests(unittest.TestCase):
     def test_wrong_source_mode_or_incomplete_matrix_is_rejected(self):
-        c={'source_sha':'a'*40,'build_run':123}
-        summary={'mode':'preflight','source':'a'*40,'build':123,'platform':'mac','arch':'arm64','passed':True,'starts':9,'scenarios':54,'legacyPreservation':[{'oldExecutableUnchanged':True,'oldProfileFilesUnchanged':2}]*2,'versions':[{'scenarios':6}]*9}
+        c={'source_sha':'a'*40,'build_run':123,'version':'1.0.5-dev.2'}
+        summary={'mode':'preflight','source':'a'*40,'build':123,'platform':'mac','arch':'arm64','passed':True,'starts':9,'scenarios':54,'legacyPreservation':[{'oldExecutableUnchanged':True,'oldProfileFilesUnchanged':2}]*2,'versions':[{'scenarios':6}]*9,'plusMainPreservation':{'mainAndSettingsBytesPreserved':True,'overviewChoiceSerialized':True,'disconnectedOverviewNormalized':True},'candidateAssets':[{'name':'Scrcpy-Plus-1.0.5-dev.2-mac-arm64.dmg','size':3,'sha256':'a'*64},{'name':'scrcpy-plus-cli-1.0.5-dev.2.tgz','size':4,'sha256':'b'*64}]}
         module.validate_acceptance_summary(summary,c,'mac','arm64')
         for change in [{'source':'b'*40},{'build':124},{'mode':'postrelease'},{'passed':False},{'starts':8},{'scenarios':0},{'legacyPreservation':[]}]:
             with self.subTest(change=change), self.assertRaises(module.VerificationError):
                 module.validate_acceptance_summary(summary|change,c,'mac','arm64')
+
+    def test_same_build_with_replaced_bytes_is_rejected(self):
+        accepted=[{'name':'installer.dmg','size':3,'sha256':'a'*64},{'name':'client.tgz','size':4,'sha256':'b'*64}]
+        module.validate_candidate_assets(accepted,accepted)
+        for field,value in [('sha256','c'*64),('size',8),('name','other.dmg')]:
+            changed=[accepted[0]|{field:value},accepted[1]]
+            with self.subTest(field=field),self.assertRaises(module.VerificationError):module.validate_candidate_assets(accepted,changed)
+        with self.assertRaises(module.VerificationError):module.validate_candidate_assets(accepted,accepted[:1])
+
+    def test_wrong_source_run_cannot_reach_release_mutation(self):
+        for change in [{'head_sha':'b'*40},{'conclusion':'failure'},{'name':'Other'}]:
+            p=object.__new__(module.Publisher);p.c={'ci_run':1,'build_run':2,'source_sha':'a'*40}
+            p.api=Mock(return_value={'head_sha':'a'*40,'name':'CI','status':'completed','conclusion':'success'}|change)
+            with self.assertRaises(module.VerificationError):p.verify_source(True)
+            p.api.assert_called_once_with('actions/runs/1')
+
+    def test_existing_tag_mismatch_is_never_moved(self):
+        p=object.__new__(module.Publisher);p.c={'tag':'v1.0.5-dev.2','source_sha':'a'*40}
+        for obj in [{'type':'commit','sha':'b'*40},{'type':'tag','sha':'a'*40}]:
+            p.api=Mock(return_value={'object':obj})
+            with self.assertRaises(module.VerificationError):p.check_tag()
+            p.api.assert_called_once_with('git/ref/tags/v1.0.5-dev.2',allow404=False)
 
     def test_cli_archive_rejects_missing_symlink_or_wrong_version(self):
         import tarfile

@@ -182,6 +182,11 @@ try {
     report.preservedBeta=savedBeta
     report.settingsPreserved=true
   }
+  if(process.env.RELEASE_EXPECT_MAIN==='normalize-disconnected'){
+    await page.waitForFunction(async()=>await window.main.getMainStore('overviewTarget')===null)
+    assert.equal(await page.evaluate(()=>window.main.getMainStore('panel')),'settings')
+    report.disconnectedOverviewNormalized=true
+  }
   await page.evaluate(async()=>{await window.main.setSettingsStore('language','en-US');await window.main.setSettingsStore('theme','dark')})
   await check(false)
   await check(false,true)
@@ -189,6 +194,15 @@ try {
   if(!legacy){await check(true);await check(true,true,true);await check(true)}
   assert.equal(app.process().exitCode,null)
   await app.close();app=null
+  if(process.env.RELEASE_SEED_MAIN==='true'){
+    // Seed a disconnected-device fixture after shutdown so discovery cannot
+    // erase it before the installer preservation check. This is not a phone.
+    const mainPath=path.join(runtime.profile,'data/main.json')
+    const saved=JSON.parse(await fs.readFile(mainPath,'utf8'))
+    saved.panel='settings';saved.overviewTarget={key:'harmony:release-fixture',name:'Release fixture',platform:'harmony',transport:'usb',state:'ready',ohosVersion:'',sdkVersion:''}
+    await fs.writeFile(mainPath,JSON.stringify(saved))
+    report.mainStoreFixtureSeeded=true
+  }
   report.passed=true
 }catch(error){report.error=error.stack;console.error(error);throw error}
 finally{

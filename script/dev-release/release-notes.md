@@ -19,7 +19,7 @@ Windows 安装包未做发行者签名；macOS 使用 ad-hoc 签名，通过 dee
 
 ### 验证与实验边界
 
-最终源提交：a116aa09f46259954493e83a498774500bae8954。
+最终源提交：e26c06bf4846e91823ed76c788b71c7e10a4de0b。
 
 公开前门禁包括五项 CI、同源三平台实际安装启动、补丁后 WDA/ReplayKit 未签名编译、CLI/MCP 安装、三平台默认配置与升级/更新矩阵、15 项附件重新下载校验。SHA256SUMS 与 release-validation 提供固定来源和摘要。
 

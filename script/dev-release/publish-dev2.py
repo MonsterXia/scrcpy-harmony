@@ -156,9 +156,24 @@ def validate_acceptance_summary(summary, config, platform, arch):
             summary.get('arch') == arch and summary.get('passed') is True, 'Acceptance source/mode/result differs')
     require(summary.get('starts') == 9 and summary.get('scenarios') == 54 and
             len(summary.get('versions', [])) == 9 and all(v.get('scenarios') == 6 for v in summary['versions']), 'Acceptance matrix incomplete')
+    ext = 'exe' if platform == 'win' else 'dmg'
+    expected = {f"Scrcpy-Plus-{config['version']}-{platform}-{arch}.{ext}"}
+    if platform == 'mac' and arch == 'arm64': expected.add(f"scrcpy-plus-cli-{config['version']}.tgz")
+    assets = summary.get('candidateAssets', [])
+    require(len(assets) == len(expected) and {a.get('name') for a in assets} == expected and
+            all(set(a) == {'name','size','sha256'} and type(a['size']) is int and a['size'] > 0 and
+                re.fullmatch('[0-9a-f]{64}', a['sha256']) for a in assets), 'Candidate byte evidence incomplete')
+    require(summary.get('plusMainPreservation') == {'mainAndSettingsBytesPreserved':True,'overviewChoiceSerialized':True,'disconnectedOverviewNormalized':True}, 'Plus main store preservation missing')
     legacy = summary.get('legacyPreservation', [])
     require(len(legacy) == 2 and all(v.get('oldExecutableUnchanged') is True and
             type(v.get('oldProfileFilesUnchanged')) is int and v['oldProfileFilesUnchanged'] > 0 for v in legacy), 'Legacy preservation incomplete')
+
+
+def validate_candidate_assets(accepted, inventory):
+    current = {a['name']: a for a in inventory}
+    require(len(current) == len(inventory), 'Duplicate candidate inventory')
+    for asset in accepted:
+        require(current.get(asset['name']) == asset, 'Accepted candidate bytes differ from release assets: ' + asset['name'])
 
 
 class Publisher:
@@ -303,6 +318,9 @@ class Publisher:
                 reports = list(extracted.rglob('summary.json')); require(len(reports) == 1, 'Preflight summary missing or duplicate')
                 summary = json.loads(reports[0].read_text()); validate_acceptance_summary(summary, self.c, *expected[artifact['name']])
                 summaries.append(summary)
+        self.accepted_assets = [asset for summary in summaries for asset in summary['candidateAssets']]
+        if self.prepared_path.exists():
+            validate_candidate_assets(self.accepted_assets, list(self.prepared().values()))
         atomic_json(self.root / 'preflight-verification.json', {'run': self.c['acceptance_run'], 'operations': self.c['operations_sha'], 'summaries': summaries})
 
     def yaml(self, path):
@@ -427,6 +445,7 @@ class Publisher:
         require({p.name for p in self.assets_dir.iterdir()} <= self.expected_names(), 'Unexpected local asset')
         base_assets = self.inventory(exclude={'release-validation.json', 'SHA256SUMS.txt'})
         require(len(base_assets) == 13, 'Expected 13 source assets')
+        validate_candidate_assets(self.accepted_assets, base_assets)
         report = {'version': self.c['version'], 'sourceCommit': self.c['source_sha'],
                   'ciRun': f"https://github.com/{self.c['repo']}/actions/runs/{self.c['ci_run']}",
                   'buildRun': f"https://github.com/{self.c['repo']}/actions/runs/{self.c['build_run']}",

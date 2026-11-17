@@ -45,6 +45,7 @@ def built(run_id,commit,version):
     return file,expected,f'Build {run_id} source {commit}'
 
 candidate=built(build,source,c['version']) if mode=='preflight' else published(c['version'],'Scrcpy Plus')
+candidate_assets=[dict(name=f"Scrcpy-Plus-{c['version']}-{platform}-{arch}.{ext}",size=candidate[0].stat().st_size,sha256=candidate[1])]
 if platform=='mac' and arch=='arm64':
     cli_name=f"scrcpy-plus-cli-{c['version']}.tgz"
     if mode=='preflight':
@@ -56,6 +57,7 @@ if platform=='mac' and arch=='arm64':
         rel=api('releases/tags/'+c['tag']);asset=next(a for a in rel['assets'] if a['name']==cli_name)
         assert asset['digest']=='sha256:'+sha(client)
     run(['npm','exec','--','node',str(tools/'check-client.mjs'),str(client),c['version']])
+    candidate_assets.append(dict(name=cli_name,size=client.stat().st_size,sha256=sha(client)))
 baseline=built(baseline_build,baseline_source,'1.0.5-dev.1')
 legacy={v:published(v,'Scrcpy Harmony') for v in ['1.0.4','1.0.5-dev.1']}
 env=os.environ.copy();env.pop('SCRCPY_PLUS_PROFILE',None);env.pop('RELEASE_PROFILE',None)
@@ -67,6 +69,9 @@ plus_profile=None
 def check(item,version,product,expect,label,restart=False):
     global step,plus_profile
     step+=1;dest=output/f'{step:02}-{label}';dest.mkdir()
+    env.pop('RELEASE_PRESERVE_PROFILE',None);env.pop('RELEASE_EXPECT_MAIN',None);env.pop('RELEASE_SEED_MAIN',None)
+    if label=='plus-baseline':env['RELEASE_SEED_MAIN']='true'
+    if label=='plus-upgrade':env.update(RELEASE_PRESERVE_PROFILE=str(plus_profile),RELEASE_EXPECT_MAIN='normalize-disconnected')
     env.update(RELEASE_PRODUCT=product,RELEASE_PROFILE_EXPECT=expect,RELEASE_SOURCE_LABEL=item[2],RELEASE_INSTALL_ROOT=str(install_base/product))
     if restart:
         executable=summaries[-1]['executable']
@@ -93,6 +98,10 @@ def archive_plus_profile():
     # Move only the profile this test created and observed; preserve it as evidence.
     shutil.move(str(plus_profile),str(output/f'private-profile-{step}'))
 
+archive_plus_profile()
+check(baseline,'1.0.5-dev.1','Scrcpy Plus','fresh','plus-baseline')
+check(candidate,c['version'],'Scrcpy Plus','preserved','plus-upgrade')
+check(candidate,c['version'],'Scrcpy Plus','preserved','plus-upgrade-restart',True)
 for index,version in enumerate(['1.0.4','1.0.5-dev.1']):
     archive_plus_profile()
     old=check(legacy[version],version,'Scrcpy Harmony','fresh' if index==0 else 'preserved','harmony-'+version)
@@ -100,11 +109,10 @@ for index,version in enumerate(['1.0.4','1.0.5-dev.1']):
     check(candidate,c['version'],'Scrcpy Plus','fresh','plus-from-harmony-'+version)
     check(candidate,c['version'],'Scrcpy Plus','preserved','plus-restart-'+version,True)
     preservation.append({'path':'Harmony '+version+' → Plus',**unchanged(before)})
-archive_plus_profile()
-check(baseline,'1.0.5-dev.1','Scrcpy Plus','fresh','plus-baseline')
-check(candidate,c['version'],'Scrcpy Plus','preserved','plus-upgrade')
-check(candidate,c['version'],'Scrcpy Plus','preserved','plus-upgrade-restart',True)
 assert len(summaries)==9 and all(s['passed'] for s in summaries)
-summary=dict(mode=mode,source=source,build=build,baselineSource=baseline_source,baselineBuild=baseline_build,platform=platform,arch=arch,passed=True,scenarios=sum(len(s['scenarios']) for s in summaries),starts=len(summaries),legacyPreservation=preservation,versions=[dict(label=s['label'],version=s['version'],scenarios=len(s['scenarios']),settingsPreserved=s.get('settingsPreserved',False),freshProfile=s.get('freshProfile',False),source=s['source']) for s in summaries])
+main_preservation=json.loads((output/'02-plus-upgrade'/'profile-preservation.json').read_text())
+assert main_preservation['mainAndSettingsBytesPreserved'] and main_preservation['overviewChoiceSerialized'] and summaries[1]['disconnectedOverviewNormalized']
+main_preservation['disconnectedOverviewNormalized']=True
+summary=dict(plusMainPreservation=main_preservation,mode=mode,source=source,build=build,baselineSource=baseline_source,baselineBuild=baseline_build,platform=platform,arch=arch,passed=True,candidateAssets=candidate_assets,scenarios=sum(len(s['scenarios']) for s in summaries),starts=len(summaries),legacyPreservation=preservation,versions=[dict(label=s['label'],version=s['version'],scenarios=len(s['scenarios']),settingsPreserved=s.get('settingsPreserved',False),freshProfile=s.get('freshProfile',False),source=s['source']) for s in summaries])
 (output/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
 print(json.dumps(summary))

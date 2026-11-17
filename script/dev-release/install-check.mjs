@@ -1,5 +1,6 @@
 // Install a specified acceptance artifact only on disposable hosted runners.
 import assert from 'node:assert/strict'
+import {snapshotProfile,assertProfilePreserved} from './profile-check.mjs'
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, realpath, writeFile, rename, stat } from 'node:fs/promises'
@@ -43,6 +44,12 @@ const hdc = win ? path.join(installDir, 'resources/hdc/hdc.exe')
 const mount = path.join(root, 'volume')
 const run = (command, args, timeout = 60_000, env = process.env) =>
   execFileSync(command, args, { stdio: 'inherit', timeout, env })
+const preserved=process.env.RELEASE_PRESERVE_PROFILE
+const before=preserved ? await snapshotProfile(preserved) : undefined
+if(preserved){
+  const main=JSON.parse(await readFile(path.join(preserved,'data/main.json'),'utf8'))
+  assert.equal(main.overviewTarget.key,'harmony:release-fixture');assert.equal(main.panel,'settings')
+}
 let mounted = false
 async function detach() {
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -85,6 +92,7 @@ try {
     run('ditto', [path.join(mount, product + '.app'), app])
     await detach()
   }
+  if(preserved){assertProfilePreserved(before,await snapshotProfile(preserved));await writeFile(path.join(outputDir,'profile-preservation.json'),JSON.stringify({mainAndSettingsBytesPreserved:true,overviewChoiceSerialized:true}))}
   run(process.execPath, [fileURLToPath(new URL('./check-update.mjs', import.meta.url)), executable, version, outputDir,
     process.env.RELEASE_EXPECT_STABLE || '1.0.4', process.env.RELEASE_EXPECT_BETA || '1.0.4'], 260_000)
 } finally {
