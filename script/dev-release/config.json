@@ -1,0 +1,15 @@
+{
+  "repo": "MonsterXia/scrcpy-harmony",
+  "version": "1.0.5-dev.2",
+  "tag": "v1.0.5-dev.2",
+  "source_sha": "a116aa09f46259954493e83a498774500bae8954",
+  "baseline_sha": "b3282465649a5c8ffb7fa8a07fc5f926582f7745",
+  "ci_run": 43989496478,
+  "build_run": 43989502610,
+  "preparation_pr": 91,
+  "stable_tag": "v1.0.4",
+  "repo_dir": "RUNTIME",
+  "work_dir": "RUNTIME",
+  "notes_file": "RUNTIME",
+  "release_name": "Scrcpy Plus 1.0.5-dev.2"
+}
