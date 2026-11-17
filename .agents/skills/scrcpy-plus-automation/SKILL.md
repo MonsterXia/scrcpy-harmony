@@ -13,7 +13,7 @@ Run `scrcpy-plus doctor --json`, then `devices list --json` and `devices capabil
 
 Call `sessions start --device KEY --json` even if the GUI already mirrors it: this obtains your lease on the shared backend. Record sessionId and leaseId. `sessions wait --session SESSION --state running --json` waits for actual frame presentation. An existing window is not proof of running video.
 
-`ios:airplay-receiver` is a waiting receiver, not a connected iPhone. Start it and have the user select Scrcpy Plus from iOS Screen Mirroring. Wait for running; AirPlay is view-only. USB iOS uses a separate `ios:<UDID>` target and requires an explicitly prepared, signed WDA Runner for screenshots and control; see `docs/scrcpy-plus/ios-usb-wda.md`. Device discovery or overview metadata does not prove WDA is ready. Capabilities distinguish supported from currently available. Never substitute Harmony tools for unsupported Android/iOS operations.
+`ios:airplay-receiver` is a waiting receiver, not a connected iPhone. Start it and have the user select Scrcpy Plus from iOS Screen Mirroring. Wait for running; AirPlay is view-only. USB iOS uses its own `ios:<UDID>` session with a signed, running WDA; capabilities may support screenshot and input. See `docs/scrcpy-plus/ios-usb-wda.md` for preparation. Capabilities distinguish supported from currently available. Never substitute Harmony tools for unsupported Android/iOS operations.
 
 ## Observe → act → observe
 
@@ -25,7 +25,7 @@ scrcpy-plus screen capture --session SESSION --after-action TOKEN --output after
 
 Substitute returned sessionId, frameId and input observationToken. View the first image before choosing a location. x/y use the exported screenshot's pixels, not window/CSS size or physical device resolution. Use a fresh frame from the same session; expired or changed geometry requires recapture. Default image freshness is 2000ms; `--allow-stale` is explicit and must not be used to justify input.
 
-The after-action token waits for a strictly newer frame in the same geometry. It is valid for 60 seconds; static/stalled video can time out. A newer frame does not prove the intended action succeeded: inspect the image (or Harmony layout) and verify the visible result. Rotation metadata describes the bitmap, not an independently verified physical orientation.
+The after-action token waits for a strictly newer frame in the same geometry. It is valid for 60 seconds; static/stalled video can time out. A newer frame does not prove the intended action succeeded: inspect the image (or Harmony layout) and verify the visible result. Rotation metadata describes the bitmap; USB iOS additionally reads WDA device orientation and revalidates it before coordinate input.
 
 For text use `input text --session SESSION --text-file FILE` or `--text-stdin`, avoiding sensitive text in process arguments. Never automatically resend text, gestures, installation, shell or other writes after timeout/disconnect/`outcome=unknown`: inspect current state first. A requestId is not an idempotency key.
 

@@ -1,0 +1,103 @@
+{
+  "scope": "Real Electron production React renderer; simulated device IPC, no physical iPhone",
+  "cases": [
+    {
+      "locale": "en-US",
+      "png": true,
+      "tapMetadata": true,
+      "home": true,
+      "videoToggle": true,
+      "edgeToEdge": true,
+      "floatingToolsDoNotResizeCanvas": true,
+      "connectionErrorDoesNotResizeCanvas": true,
+      "staleFrameDimmed": true,
+      "recoveryClearsError": true,
+      "inputErrorNonBlocking": true,
+      "explicitReconnectRestoresInput": true
+    },
+    {
+      "locale": "zh-CN",
+      "png": true,
+      "tapMetadata": true,
+      "home": true,
+      "videoToggle": true,
+      "edgeToEdge": true,
+      "floatingToolsDoNotResizeCanvas": true,
+      "connectionErrorDoesNotResizeCanvas": true,
+      "staleFrameDimmed": true,
+      "recoveryClearsError": true,
+      "inputErrorNonBlocking": true,
+      "explicitReconnectRestoresInput": true
+    }
+  ],
+  "designCases": [
+    {
+      "locale": "en-US",
+      "theme": "light",
+      "width": 280,
+      "setupDisclosure": true,
+      "canvasGeometryUnchanged": true,
+      "rightAlignedTools": true
+    },
+    {
+      "locale": "en-US",
+      "theme": "light",
+      "width": 460,
+      "setupDisclosure": true,
+      "canvasGeometryUnchanged": true,
+      "rightAlignedTools": true
+    },
+    {
+      "locale": "en-US",
+      "theme": "dark",
+      "width": 280,
+      "setupDisclosure": true,
+      "canvasGeometryUnchanged": true,
+      "rightAlignedTools": true
+    },
+    {
+      "locale": "en-US",
+      "theme": "dark",
+      "width": 460,
+      "setupDisclosure": true,
+      "canvasGeometryUnchanged": true,
+      "rightAlignedTools": true
+    },
+    {
+      "locale": "zh-CN",
+      "theme": "light",
+      "width": 280,
+      "setupDisclosure": true,
+      "canvasGeometryUnchanged": true,
+      "rightAlignedTools": true
+    },
+    {
+      "locale": "zh-CN",
+      "theme": "light",
+      "width": 460,
+      "setupDisclosure": true,
+      "canvasGeometryUnchanged": true,
+      "rightAlignedTools": true
+    },
+    {
+      "locale": "zh-CN",
+      "theme": "dark",
+      "width": 280,
+      "setupDisclosure": true,
+      "canvasGeometryUnchanged": true,
+      "rightAlignedTools": true
+    },
+    {
+      "locale": "zh-CN",
+      "theme": "dark",
+      "width": 460,
+      "setupDisclosure": true,
+      "canvasGeometryUnchanged": true,
+      "rightAlignedTools": true
+    }
+  ],
+  "h264WebCodecs": true,
+  "pngFallback": true,
+  "rotationMetadata": true,
+  "errors": []
+}

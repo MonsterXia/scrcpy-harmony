@@ -2,3 +2,6 @@
 vendor/** -text
 # Native resource notices retain their source CRLF bytes as well.
 vendor/native-video/** whitespace=cr-at-eol
+
+# Unified patch context lines intentionally contain a single space.
+vendor/ios-wda/*.patch whitespace=-blank-at-eol

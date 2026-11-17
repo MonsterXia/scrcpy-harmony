@@ -38,11 +38,12 @@ async function discover(): Promise<DeviceDiscovery> {
   results.forEach((result, index) => {
     if (result.status === 'fulfilled') {
       targets.push(...result.value)
+      if (providers[index].name === 'ios') void mirrorSessions.reconcileIos(result.value)
       const online = new Set(result.value.filter(target => target.state !== 'offline').map(target => target.key))
       for (const session of [...screencast.listSessions(), ...mirrorSessions.list()]) {
         if (session.platform === providers[index].name && session.deviceKey !== airplayReceiver.key && !online.has(session.deviceKey)) {
           if (session.platform === 'harmony') screencast.closeSession(session.id, true)
-          else void mirrorSessions.stop(session.id).catch(() => console.error('Disconnected session cleanup unconfirmed'))
+          else if (session.platform !== 'ios') void mirrorSessions.stop(session.id).catch(() => console.error('Disconnected session cleanup unconfirmed'))
         }
       }
     }

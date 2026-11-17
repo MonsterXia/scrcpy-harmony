@@ -8,9 +8,9 @@ dev.1 合入商店空响应按应用缓存（避免后续图标被全局冷却�
 
 左侧顶部「多端投屏」保留独立入口，窄侧栏显示图标，展开侧栏显示名称。页面按“可用设备 → 勾选批量启动 → 正在投屏”组织；USB iOS 可作为独立设备启动，AirPlay 仍为单独接收器。明暗主题共用布局，仅改变语义颜色。
 
-侧栏不再单独提供设备选择器，选择器移入「概览」顶部，支持 Android、HarmonyOS 和 USB iPhone。`overviewTarget` 持久化概览选择；选中鸿蒙时同步原 `target`（供 HDC 工具使用），选中安卓不会把安卓 key 传给 HDC。安卓与 USB iOS 概览显示设备信息、启动投屏，其他鸿蒙专用工具入口禁用；恢复旧页面或程序选择受限页面时回到概览。USB iPhone 概览通过 usbmux/lockdown 读取公开设备信息，无需 WDA 或开发者模式；AirPlay 接收器不进入选择器，iOS 不启用鸿蒙工具。旧 `mirrorTarget` 配置仍兼容保留，投屏页批量选择使用本页稳定 key 集合，不读写工具选择，也不因选择变化停止已有会话。
+侧栏不再单独提供设备选择器，选择器移入「概览」顶部，支持 Android、HarmonyOS 和 USB iPhone。`overviewTarget` 持久化概览选择；选中鸿蒙时同步原 `target`（供 HDC 工具使用），选中安卓或 iPhone 不会把其 key 传给 HDC。安卓和 iPhone 概览显示设备信息、启动投屏，其他鸿蒙专用工具入口禁用；恢复旧页面或程序选择受限页面时回到概览。AirPlay 接收器不进入概览。旧 `mirrorTarget` 配置仍兼容保留，投屏页批量选择使用本页稳定 key 集合，不读写工具选择，也不因选择变化停止已有会话。
 
-概览只在设备 key/平台/连接状态改变时重置，五秒设备轮询产生同一设备的新对象不会清空内容或重读。`getDeviceOverview(key)` 根据当前发现的平台分派：鸿蒙复用原有限 HDC 读取，安卓执行固定只读 `getprop`、`uname -r`、`wm size`、`cat /proc/meminfo`。安卓有活动投屏时复用其 ADB 连接；无投屏时临时连接，读取后释放；停止中的连接完成清理后才允许临时连接。每条 shell 读取有超时与输出上限，超时仅取消该 shell，不关闭共享投屏连接。
+概览只在设备 key/平台/连接状态改变时重置，五秒设备轮询产生同一设备的新对象不会清空内容或重读。`getDeviceOverview(key)` 根据当前发现的平台分派：鸿蒙复用原有限 HDC 读取，安卓执行固定只读 `getprop`、`uname -r`、`wm size`、`cat /proc/meminfo`。安卓有活动投屏时复用其 ADB 连接；无投屏时临时连接，读取后释放；停止中的连接完成清理后才允许临时连接。每条 shell 读取有超时与输出上限，超时仅取消该 shell，不关闭共享投屏连接。 USB iPhone 经 usbmux + lockdown 对显示字段逐项 GetValue，只读名称、系统/构建版本、产品/硬件型号、架构及序列号；总预算 8 秒，读取结束释放 socket，不创建 WDA session，不枚举完整属性字典。缺失字段显示未知，不以 UDID 冒充序列号。
 
 导航入口为 `workspace/Workspace.tsx`；设备选择为 `workspace/DeviceSwitcher.tsx`；状态与生命周期见 `store/index.ts`、`overview/Overview.tsx`、`main/lib/devices/androidOverview.ts`。此次模拟设备的 Electron、中英文、宽窄窗口与明暗主题证据见 [工作区验证](evidence/mirror-workspace-2026-11-16/ui.json)。早期独立选择/九种组合记录是历史实现证据，不代表当前 UI。
 
@@ -20,7 +20,7 @@ dev.1 合入商店空响应按应用缓存（避免后续图标被全局冷却�
 | --- | --- | --- | --- |
 | Android | 本地 Tango TypeScript ADB/scrcpy 协议源码 + USB 库 + 从源码编译的 scrcpy 3.3.3 手机端服务 | 直接枚举 USB ADB 接口 | 应用内 H.264 画面、点击/拖动/滚动、系统键、键盘和文字粘贴 |
 | Harmony | 保留原 HDC/uitestkit 与原生视频/JPEG 实现 | 原 HDC 监听 | 保留原投屏和输入能力；窗口绑定独立设备 |
-| iOS USB | 直接 usbmux + 固定源码 WDA/ReplayKit Runner | UDID 绑定的 USB 发现与连接 | PNG 截图、点击/手势/文字、可选 H.264；代码和自动验证完成，真机待验收 |
+| iOS USB | 直接 usbmux + 固定源码 WDA/ReplayKit Runner | UDID 绑定的 USB 发现与连接 | 默认 H.264 连续视频、PNG 回退、点击/手势/文字；基本真机链路已验证，完整矩阵见 iOS USB 维护记录 |
 | iOS AirPlay | UxPlay/libplist/PlayFair/llhttp/mDNS 源码 Node-API 模块 | 手机发起 AirPlay 连接 | H.264 画面，不支持控制 |
 
 Android/iOS 的运行代码不启动 adb、scrcpy、UxPlay、idevice_id 或 ideviceinfo 可执行文件，也不查找它们的路径。原“工具路径”设置已移除。安卓通过 USB 协议在手机端启动自带采集服务，不启动电脑端 scrcpy 程序。
@@ -74,7 +74,7 @@ npm start
 
 「合并」将每台活动设备的画面放入一个窗口，按 Android／HarmonyOS／iOS 排列，同系统多设备各占一栏，顶部仅保留系统名称。参与组合的单端窗口隐藏并保持后台解码，切换为独立／并排、关闭组合窗口或排除某端时恢复原显示与后台节流策略，不重建设备连接。组合模式用于查看和截图；需触控时切回单端／并排。每端独立异步导出原尺寸 JPEG（质量 0.95），每端最多一个未完成任务；组合窗口约每 66ms 读取最新完成帧，不等待其他端，不累积队列。临时失败保留上一帧，源退出后移除对应列。IPC 只接受组合窗口主文档。实现入口为 `src/main/window/mergedMirrors.ts` 和 `src/renderer/merged-mirror/`。三台真机旧实现证据见 [live.json](evidence/merged-view/live.json)；本次安卓＋鸿蒙窗口隐藏、模式切换和持续刷新检查见 [验证记录](evidence/merged-refresh-2026-11-05/verification.json)。
 
-安卓设备开启 USB 调试，插入后自动列出；选择设备并打开投屏窗口，在手机上确认首次 RSA 授权。主机私钥以受限权限持久化于应用配置目录，写完临时文件后原子发布，避免两台手机首次同时授权时读取到半写入密钥。USB 接口不能与其他调试客户端同时占用；若连接失败，应关闭占用该接口的其他调试程序。应用不会自动结束全局 adb 服务。Android ACCESS/BUSY失败通过固定connectionIssue显示双语USB提示；本机可用ADB时可在核对目标后精确detach/attach，但这不是自动接管或并发共享。2026-11-16用户报告的接口占用和授权恢复见[专项记录](../maintenance/agent-automation-android-codex-2026-11-16.md)。
+安卓设备开启 USB 调试，插入后自动列出；选择设备并打开投屏窗口，在手机上确认首次 RSA 授权。主机私钥以受限权限持久化于应用配置目录，写完临时文件后原子发布，避免两台手机首次同时授权时读取到半写入密钥。直接 USB 接口不可被多进程同时占用。若在认证前遇到 ACCESS/BUSY，且 USB 序列号明确，应用释放自己的 USB 句柄并尝试复用本机 127.0.0.1:5037 已运行的 ADB 服务；严格匹配唯一在线序列号并固定 transport ID，仅关闭自己的连接，不启动/停止服务或 detach 设备。无匹配服务、未授权、序列号缺失或非接口占用错误不会选择其他设备或重放操作。回退仍失败时通过固定 connectionIssue 显示 USB 提示。2026-11-16用户报告的接口占用和授权恢复见[专项记录](../maintenance/agent-automation-android-codex-2026-11-16.md)。
 
 有序列号的设备按序列号区分；无序列号的 USB 设备使用总线/物理端口作为连接标识，不凭型号合并。当前安卓源码后端只接 USB，尚未实现无线调试配对/TLS 或远程 ADB 服务。
 
@@ -123,7 +123,7 @@ npm_config_registry=https://registry.npmjs.org npm_config_prefer_offline=true np
 npm start
 ```
 
-这里显式指定 registry 是为了覆盖本机失效的全局 npm 镜像；不修改用户的全局配置。当前 Plus 只支持 Windows x64 与 macOS arm64，Intel Mac 不再作为构建和验收目标。Windows 和旧 macOS 系统的实际兼容性仍需对应验收。
+这里显式指定 registry 是为了覆盖本机失效的全局 npm 镜像；不修改用户的全局配置。Windows、Intel Mac 和旧系统的安装包留待本机真机验证后构建验收。
 
 ## 源码后端的 CI 工具链
 
@@ -138,5 +138,3 @@ Windows AirPlay 模块采用 MinGW 延迟导入库与宿主解析钩子，将 No
 自动化最新验证源码 `1f48fbd`：应用1094pass/2skip、Licia各606/4、lint/fullbuild/包检查/Electron模拟通过；实际Codex app-server及双真机结果见[续验记录](../maintenance/agent-automation-android-codex-2026-11-16.md)。tsc既有诊断保留，iOS按用户要求暂缓；这些结果不回写上方历史集成阶段计数。
 
 2026-11-16 新增 iOS USB WDA + ReplayKit 代码接入与自动验收；取代上方历史阶段的“iOS 暂缓”范围，未取得真机证据。见[专项维护记录](../maintenance/ios-usb-wda.md)。
-
-2026-11-16 追加 USB iPhone 概览：已在真实 Electron 与连接的 iPhone 上验证设备选择和信息读取，详见[专项记录](../maintenance/ios-overview.md)。这不代表 WDA 截图/点击已通过真机验收。

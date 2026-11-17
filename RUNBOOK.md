@@ -2,6 +2,7 @@
 
 ## 仓库改名与更新源迁移（2026-11-17）
 
+状态：GitHub 仓库已改为 `MonsterXia/scrcpy-plus`，本地 origin、更新源、发布目标与当前入口文档已同步。恢复更新及预发布菜单，保留 Plus 配置和应用标识；按用户要求不兼容旧 Harmony 自动更新/配置迁移。测试、完整构建及六组线上元数据检查通过，Electron 双语更新与下载链接验收通过。源码未提交/推送，未发布或替换安装版；详情与下一步见 [迁移记录](docs/maintenance/scrcpy-plus-rename.md)。
 状态：GitHub 仓库已改为 `MonsterXia/scrcpy-plus`，本地 origin、更新源、发布目标与当前入口文档已同步。恢复更新及预发布菜单，保留 Plus 配置和应用标识；按用户要求不兼容旧 Harmony 自动更新/配置迁移。原工作区测试、完整构建、六组线上元数据及 Electron 双语更新/下载链接验收通过。已从最新 master 独立提取迁移变更，保留 1.0.5-dev.2；独立分支应用 1167 pass / 2 skip、Licia 两模式各 606/4、lint/i18n 通过，独立审查无阻断问题。按后续授权改为仅支持 macOS arm64（保留 Windows x64），移除 Intel Mac 构建和必需检查。交付及最终四项 CI/合入状态见 [PR #93](https://github.com/MonsterXia/scrcpy-plus/pull/93)；未发布或替换安装版。详情与下一步见 [迁移记录](docs/maintenance/scrcpy-plus-rename.md)。
 
 
@@ -26,6 +27,23 @@ PR #90 已经独立审查、五项 CI 全绿后正常合入 `b328246`；[最终�
 
 ## iOS USB WDA + ReplayKit（2026-11-16）
 
+运行状态更新（2026-11-17）：按用户要求执行完整 `npm run build` 并启动最新源码开发版；退出旧安装版，改用现有 Scrcpy Plus 用户配置，中文界面已确认同时发现 HarmonyOS、Android 和 USB iPhone。未替换 `/Applications/Scrcpy Plus.app`。
+
+状态：**代码与自动验证完成；2026-11-17 iPhone 13 真机签名安装、PNG 截图、点击/Home、ReplayKit 基本播放及截图/视频切换通过。** 按用户确认先交付代码：独立 USB iPhone 会话、PNG 截图、点击/手势/文字、可选 ReplayKit H.264。AirPlay 仍只读。应用 1147 pass / 2 skip，Licia 两模式各 606 pass / 4 pending，lint、三项应用构建、WDA+扩展未签名构建通过；TypeScript 55 项既有诊断无新增。真实 Electron 验证使用模拟设备 IPC，未声称真机已跑通。独立审查四项问题已修复并复核。
+
+用户反馈的 iOS 顶部冗余区域已移除：画面与 Android 同样贴边，Home/视频控件收进 Harmony 风格的「⋯」浮动工具栏；21 项专项、lint、renderer 构建和双语 UI 通过，当前开发版真机窗口已生效。
+
+随后修复运行中错误提示撑高画面、只读轮询单次失败停止和 Runner 重启后旧会话清理阻塞；1157 pass / 2 skip、lint、main/renderer 构建及双语 UI 通过，当前真机截图/Home 恢复。原始 WDA 传输中断原因仍待定位，证据见[恢复记录](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-17/recovery.json)。
+
+再次定位到 GUI 高频滚轮/移动事件塞满输入队列及丢失抬手事件；已串行派发、合并事件、保留释放，输入错误改为底部提示和显式重连。1164 pass / 2 skip、lint、main/renderer 构建和双语 UI 通过；当前开发版真机截图及 ReplayKit 模式的滚轮后数字点击通过，无新增输入错误。复测前 WDA 再次 EPIPE，重启专用 Runner 后恢复，服务中断根因仍未解决；详见[输入恢复证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-17/input-recovery.json)。
+
+状态卡片和工具入口已按反馈优化：短标题/说明、折叠准备清单、统一主按钮；USB iOS 工具图标移到右上角并保持可见。12 项回归、双语双主题宽窄窗口 8 组 UI 验证及 renderer 构建通过，当前开发版真机窗口已生效；[设计验证](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-17/status-design-ui.json)。
+
+USB 拔插恢复已修复并完成一次用户真机拔插：旧视频 capture 404 不再阻塞已确认的清理；保留窗口并自动重建同一设备会话、恢复视频和输入。1173 pass / 2 skip、构建及专项通过；用户插回后无需重试，视频及计算器点击恢复。多次快速拔插/锁屏仍待验收；[拔插证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-17/usb-reconnect.json)。
+
+概览现支持 USB iPhone：设备选择与持久化、只读基本信息、开始投屏入口及鸿蒙工具隔离已接通。1176 pass / 2 skip、lint、构建和双语双主题 UI 通过；当前源码运行版已显示真实 iPhone 信息并验证刷新。[概览证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-17/overview.json)。
+
+使用与准备见 [iOS USB 文档](docs/scrcpy-plus/ios-usb-wda.md)，状态、失败记录及下一步见 [维护记录](docs/maintenance/ios-usb-wda.md)，[证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-16/verification.json)。首次启动的联网签名验证失败在手机联网后恢复；新增[真机证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-17/verification.json)。下一步验证长时间视频、旋转、锁屏与拔插。自动化租约已释放，GUI 开发版及 WDA 留给用户，未更新安装版。
 状态：**代码与自动验证完成，签名和真机验收待办。** 按用户确认先交付代码：独立 USB iPhone 会话、PNG 截图、点击/手势/文字、可选 ReplayKit H.264。AirPlay 仍只读。应用 1147 pass / 2 skip，Licia 两模式各 606 pass / 4 pending，lint、三项应用构建、WDA+扩展未签名构建通过；TypeScript 55 项既有诊断无新增。真实 Electron 验证使用模拟设备 IPC，未声称真机已跑通。独立审查四项问题已修复并复核。
 
 使用与准备见 [iOS USB 文档](docs/scrcpy-plus/ios-usb-wda.md)，状态、失败记录及下一步见 [维护记录](docs/maintenance/ios-usb-wda.md)，[证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-16/verification.json)。下一步待签名账户与真机就绪后，依次验证截图/点击、连续视频、旋转与拔插。未更新安装版。
@@ -842,3 +860,11 @@ PR #90 已经独立审查、五项 CI 全绿后正常合入 `b328246`；[最终�
 - 在原 `sourcery-quota-comments.yml` 的整段正文白名单中增加第二种模板，数字上限可变；共用原作者/PR 校验、删除前重新读取与手动单 ID 入口，没有新工作流或定时任务。正常审查、带附加意见的混合正文及未知模板保留。
 - 新增回归测试先在旧规则得到 4 项失败，再扩展规则后专项 55/55 通过；覆盖 created/edited、手动补清、不同上限、人类/其他 Bot/不同账号、混合正文及过期事件。`git diff --check` 通过。
 - 下一步：本修复 PR 五项必需 CI 全部通过后合入；用默认分支 Actions 实际补清已有同类提示，核对正常评论正文哈希。最终合并与真实删除证据记录于本修复 PR，未以本地单测替代上线验收。
+
+- 2026-11-17：USB iOS 新窗口默认 ReplayKit 视频，同窗口重连保留手动模式；真机自动视频已验证，1180 pass / 2 skip。后续持续验证长时间播放和拔插矩阵。见 [证据](docs/scrcpy-plus/evidence/ios-usb-wda-2026-11-17/default-video.json)。
+
+- 2026-11-17：Android Studio 占用 USB 时复用本机 ADB；iOS USB 始终在线时恢复 WDA 会话的自动重连已通过真机故障注入。1189 pass / 2 skip，最终专项 56 pass。Runner 原始失效原因与长稳仍待观察，见 [维护记录](docs/maintenance/android-ios-connection-recovery-2026-11-17.md)。
+
+- 2026-11-17：独立审查五项 iOS 生命周期/资源归属问题已修复；设备端 WDA 增加原子会话保护并重新签名部署。应用 1202 pass / 2 skip，Licia 两模式各 606 pass / 4 pending；后续 renderer 状态同步专项 15 pass。真机并发创建隔离通过，长期断线根因与完整故障矩阵待验收。详见[修复记录](docs/maintenance/ios-review-fixes-2026-11-17.md)。
+
+- 2026-11-17：审查修复已整理为 [PR #94](https://github.com/MonsterXia/scrcpy-plus/pull/94)，同步最新 master 后保留 dev.2、四项必需 CI 和双 WDA 补丁。最终代码独立审查无剩余 P0–P2，应用 1211 pass / 2 skip，三部分构建及 WDA 未签名编译、双语 Electron 模拟验收通过；按用户授权待远端 CI/门禁通过后合入，结果以 PR 为准，长期设备矩阵继续待验收。

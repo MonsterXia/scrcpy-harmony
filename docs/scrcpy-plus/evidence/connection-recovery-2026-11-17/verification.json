@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-17",
+  "android": {
+    "observedFailure": "LIBUSB_ERROR_ACCESS while Android Studio actively used a local ADB server",
+    "fix": "After USB claim ACCESS/BUSY before authentication, release our USB handle and reuse only the uniquely matching online USB serial on 127.0.0.1:5037, pinned to its transport ID",
+    "physicalOverview": {
+      "osVersion": "Android 13 (API 33)",
+      "model": "M2007J1SC"
+    },
+    "mirrorPresented": true,
+    "externalAdbPreserved": true,
+    "freshCaptureProbe": "A fresh-frame CLI capture on the static Android display timed out; no continuous-frame/freshness guarantee claimed."
+  },
+  "ios": {
+    "observedFailure": "USB remained attached; WDA process existed but standalone GET /status failed with EPIPE; no xcodebuild test host was running",
+    "recovery": "Dedicated signed Runner restarted under Xcode; client now schedules recovery after runtime disconnect/error even if USB discovery never loses the device",
+    "physicalFaultInjection": "Terminated only the dedicated WDA Runner, kept USB attached, restarted its signed test host. The existing GUI/session automatically returned to running/video without Retry.",
+    "recoveredFrame": {
+      "width": 780,
+      "height": 1688,
+      "sequence": 3501,
+      "stale": false
+    },
+    "boundary": "Client recovery requires a responsive Runner. Original Runner HTTP failure cause remains unconfirmed; desktop does not automatically sign or launch WDA."
+  },
+  "checks": {
+    "before": {
+      "iosNewRegressionFailed": 1,
+      "androidNewRegressionFailed": 1
+    },
+    "applicationTests": {
+      "pass": 1189,
+      "skip": 2,
+      "fail": 0
+    },
+    "finalFocusedTests": {
+      "pass": 56,
+      "fail": 0
+    },
+    "lintAndI18n": "passed",
+    "mainBuild": "passed"
+  },
+  "installedAppReplaced": false
+}

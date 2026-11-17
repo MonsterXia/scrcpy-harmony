@@ -2,6 +2,7 @@ import type net from 'node:net'
 import type { WdaClient } from './ios-wda'
 import type { NativeFrame } from './media'
 import { connectIos } from './ios-usbmux'
+import { WdaAllocation } from './ios-ownership'
 
 export class IosVideoParser {
   private buffered = Buffer.alloc(0)
@@ -22,6 +23,7 @@ export class IosVideoParser {
 }
 
 export class IosVideo {
+  private allocation = new WdaAllocation()
   private socket?: net.Socket
   private captureId?: number
   private abort = new AbortController()
@@ -33,7 +35,7 @@ export class IosVideo {
   private watchdog?: ReturnType<typeof setTimeout>
   constructor(private client: WdaClient, private session: string,
     private geometry: { width: number; height: number; rotation: number },
-    private frame: (frame: NativeFrame) => void, private failed: () => void) {}
+    private frame: (frame: NativeFrame) => void, private failed: () => void, private runnerId: string) {}
   private path(route: string) { return `/session/${this.session}/mobilerun/screencapture${route}` }
   start() {
     if (this.starting) return this.starting
@@ -45,12 +47,13 @@ export class IosVideo {
     if (!status || !['idle','connected'].includes(status.state) || !Array.isArray(status.sessions) || !Array.isArray(status.audioSessions) || (status.state === 'idle' && (status.sessions.length || status.audioSessions.length))) throw new Error('iOS capture already in use')
     // Requests allocating remote resources finish with a bounded response even on
     // close, so cleanup learns the exact ID. Never retry an ambiguous allocation.
+    this.allocation.begin(this.runnerId)
     const capture = (await this.client.request('POST', this.path('/start'), {
       codec: 'h264', framing: 'scrcpy', width: Math.round(this.geometry.width * 2), height: Math.round(this.geometry.height * 2),
       fps: 30, bitrate: 4000000, port: 0,
     })).value
     if (!Number.isSafeInteger(capture?.id) || capture.id < 1) throw new Error('Invalid iOS capture identifier')
-    this.captureId = capture.id
+    this.captureId = capture.id; this.allocation.settled()
     if (capture.codec !== 'h264' || capture.framing !== 'scrcpy' || !Number.isInteger(capture.port) || capture.port < 1 || capture.port > 65535) throw new Error('Invalid iOS video endpoint')
     this.abort.signal.throwIfAborted()
     const socket = await connectIos(this.client.udid, capture.port, this.abort.signal)
@@ -85,16 +88,18 @@ export class IosVideo {
     this.closed = true; this.ready = false; this.abort.abort(); clearTimeout(this.watchdog); this.socket?.destroy()
     this.closing = (async () => {
       await this.starting?.catch(() => {})
+      await this.allocation.confirmCleanup(this.client)
       this.socket?.destroy()
       if (this.captureId !== undefined) {
-        try {
-          await this.client.request('POST', this.path(`/${this.captureId}/stop`), {}, undefined, 5000)
-        } catch (error) {
-          // A lost acknowledgement may follow a successful stop. Upstream
-          // rejects repeated stop, but its read-only lookup returns null for an
-          // absent ID. Unknown/unreachable state must keep cleanup retryable.
-          const result = await this.client.request('GET', `/mobilerun/screencapture/${this.captureId}`, undefined, undefined, 5000).catch(() => undefined)
-          if (!result || result.value !== null) throw error
+        try { await this.client.request('POST', this.path(`/${this.captureId}/stop`), {}, undefined, 5000) }
+        catch (error) {
+          // USB loss can restart WDA and invalidate the session-scoped route.
+          // A 404 alone is not proof of cleanup: confirm the exact capture is
+          // absent through the read-only standalone route, never stop globally.
+          const status = await this.client.request('GET', '/status', undefined, undefined, 5000)
+          if (status.value?.ready !== true) throw error
+          const capture = await this.client.request('GET', `/mobilerun/screencapture/${this.captureId}`, undefined, undefined, 5000)
+          if (capture.value !== null) throw error
         }
         this.captureId = undefined
       }

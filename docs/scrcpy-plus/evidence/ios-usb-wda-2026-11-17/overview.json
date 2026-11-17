@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-17",
+  "scope": "USB iPhone overview in the desktop GUI; AirPlay receiver remains excluded",
+  "changes": [
+    "USB iOS selection/persistence and platform-safe navigation",
+    "Bounded lockdown GetValue allowlist, independent of WDA and mirroring",
+    "System/build/UDID/name and Apple model/hardware/architecture fields; missing values remain unknown and non-copyable",
+    "Existing per-device overview lifecycle and start-mirroring entry retained"
+  ],
+  "validation": {
+    "applicationTests": {
+      "pass": 1176,
+      "skip": 2,
+      "fail": 0
+    },
+    "lintAndI18n": "passed",
+    "buildMain": "passed",
+    "buildRenderer": "passed",
+    "electronUI": "English/Chinese, light/dark, iOS selection and fields, AirPlay exclusion, unavailable fields disabled, Harmony tools disabled; simulated device IPC",
+    "physical": "Current source app restarted using existing user profile; iPhone selected in Overview; real iOS version, build, model identifier and CPU architecture displayed; refresh succeeded",
+    "physicalOsVersion": "iOS 26.4.2",
+    "physicalModelIdentifier": "iPhone14,5",
+    "physicalArchitecture": "arm64e"
+  },
+  "limitations": [
+    "SerialNumber was not returned by this phone through the sessionless metadata query and is shown as unknown.",
+    "No new iOS application/shell/log tools or CLI overview capability claimed."
+  ],
+  "installedAppReplaced": false
+}

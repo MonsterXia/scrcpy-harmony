@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-17",
+  "scope": "Current source desktop build and signed patched WDA on connected iPhone 13",
+  "defaultVideo": true,
+  "videoDimensions": [
+    780,
+    1688
+  ],
+  "explicitReconnect": {
+    "state": "running",
+    "videoMode": "video",
+    "generationBefore": 5,
+    "generationAfter": 10,
+    "freshFrame": true
+  },
+  "input": {
+    "automationTapOpenedUtilities": true,
+    "guiClickAfterReconnectOpenedCalculator": true
+  },
+  "androidOverview": {
+    "success": true,
+    "model": "M2007J1SC",
+    "osVersion": "Android 13 (API 33)"
+  },
+  "cleanup": {
+    "ownAutomationLeaseReleased": true,
+    "guiKeptRunning": true,
+    "runnerKeptRunning": true
+  },
+  "limits": [
+    "No repeated physical USB unplug test in this fix pass",
+    "No long-duration stability conclusion",
+    "Original spontaneous WDA service failure root cause not established"
+  ]
+}

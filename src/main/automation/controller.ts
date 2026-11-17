@@ -34,6 +34,12 @@ export class AutomationController {
     const id = this.sessions.register(target, { close, hide: () => window.hide(), show: () => { window.show(); window.focus() } }, gui)
     this.sources.set(id, source)
     const state = (value: string) => {
+      if (value === 'connected') {
+        // A recovered transport still needs a fresh renderer presentation.
+        // Repeated connected reports must not invalidate healthy observations.
+        if (!['error','disconnected'].includes(this.sessions.get(id).state)) return
+        value = 'starting'
+      }
       if (!['starting','authorizing','waiting','error','disconnected','stopping'].includes(value)) return
       this.frames.invalidate(id)
       this.sessions.setState(id, value as 'starting' | 'authorizing' | 'waiting' | 'error' | 'disconnected' | 'stopping')

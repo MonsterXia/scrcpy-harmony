@@ -14,6 +14,7 @@ function fixture() {
     async start(frame, state) { this.frame = frame; this.state = state; state('connected') }
     async close() { this.closed = true; this.finish?.() }
     async input(input) { this.inputs.push(input) }
+    async setVideo(enabled) { this.videoEnabled = enabled; this.state(enabled ? 'video' : 'screenshot') }
   }
   class Ios extends Android {}
   function load(file, mocks) {
@@ -263,4 +264,121 @@ test('USB iPhones keep separate identities and PNG frames reach only their own w
   await f.invoke('nativeMirrorInput', f.windows[0], { type: 'touch', action: 'cancel', x: .5, y: .5 })
   assert.equal(f.backends[0].inputs.length, 1)
   await manager.dispose()
+})
+
+test('explicit reconnect replaces a running backend after cleanup and validates its flag', async () => {
+  const f=fixture();await f.nativeMirrors.start(target());const win=f.windows[0]
+  await f.invoke('nativeMirrorOpen',win)
+  await assert.rejects(f.invoke('nativeMirrorOpen',win,'yes'),/Invalid reconnect/)
+  assert.equal(f.backends.length,1)
+  let finish;f.backends[0].close=()=>new Promise(resolve=>{finish=resolve})
+  const restarting=f.invoke('nativeMirrorOpen',win,true)
+  await new Promise(setImmediate)
+  assert.equal(f.nativeMirrors.list()[0].state,'disconnected');assert.equal(f.backends.length,1)
+  finish();await restarting
+  assert.equal(f.backends.length,2);assert.equal(f.windows.length,1)
+  assert.equal(f.nativeMirrors.list()[0].state,'running')
+  await f.nativeMirrors.dispose()
+})
+
+const usbIphone = id => ({key:`ios:${id}`,connectionId:id,name:'iPhone',platform:'ios',transport:'usb',state:'ready'})
+test('USB iPhone removal preserves its window and reappearance creates a fresh backend',async()=>{
+  const f=fixture(),phone=usbIphone('01234567');await f.nativeMirrors.start(phone);const win=f.windows[0]
+  await f.invoke('nativeMirrorOpen',win)
+  await f.nativeMirrors.reconcileIos([])
+  assert.equal(win.destroyed,undefined);assert.equal(f.nativeMirrors.list()[0].state,'disconnected');assert.equal(f.backends[0].closed,true)
+  await f.nativeMirrors.reconcileIos([usbIphone('87654321')]);assert.equal(f.backends.length,1)
+  await Promise.all([f.nativeMirrors.reconcileIos([phone]),f.nativeMirrors.reconcileIos([phone])])
+  assert.equal(f.backends.length,2);assert.equal(f.windows.length,1);assert.equal(f.nativeMirrors.list()[0].state,'running')
+  await f.nativeMirrors.dispose()
+})
+test('USB reappearance retains a failed cleanup and retries after the owned resources are confirmed gone',async()=>{
+  const f=fixture(),phone=usbIphone('01234567');await f.nativeMirrors.start(phone);const win=f.windows[0]
+  await f.invoke('nativeMirrorOpen',win);let offline=true
+  f.backends[0].close=async()=>{if(offline)throw Error('USB absent')}
+  await f.nativeMirrors.reconcileIos([]);await f.nativeMirrors.reconcileIos([phone]);assert.equal(f.backends.length,1)
+  offline=false;await f.nativeMirrors.reconcileIos([phone]);assert.equal(f.backends.length,2)
+  assert.equal(f.nativeMirrors.list()[0].state,'running');await f.nativeMirrors.dispose()
+})
+
+test('USB recovery restores a previously active video only after the fresh backend starts',async()=>{
+ const f=fixture(),phone=usbIphone('01234567');await f.nativeMirrors.start(phone);const win=f.windows[0]
+ await f.invoke('nativeMirrorOpen',win);await f.invoke('nativeMirrorVideo',win,true)
+ await f.nativeMirrors.reconcileIos([]);await f.nativeMirrors.reconcileIos([phone])
+ assert.equal(f.backends[1].videoEnabled,true);assert.equal(f.nativeMirrors.list()[0].videoMode,'video')
+ await f.nativeMirrors.dispose()
+})
+test('closing a USB window while absent prevents discovery from resurrecting it',async()=>{
+ const f=fixture(),phone=usbIphone('01234567');await f.nativeMirrors.start(phone);await f.invoke('nativeMirrorOpen',f.windows[0])
+ await f.nativeMirrors.reconcileIos([]);await f.nativeMirrors.stop(f.nativeMirrors.list()[0].id)
+ await f.nativeMirrors.reconcileIos([phone]);assert.equal(f.backends.length,1);assert.equal(f.nativeMirrors.list().length,0)
+ await f.nativeMirrors.dispose()
+})
+
+test('USB iPhone opens video by default through the shared queue and does not start it twice',async()=>{
+ const f=fixture();let queued=0
+ f.nativeMirrors.setAutomationHooks(()=>({state(){},closed(){},input:async(phase,run)=>{queued++;return run()}}))
+ await f.nativeMirrors.start(usbIphone('01234567'));const win=f.windows[0]
+ await f.invoke('nativeMirrorOpen',win);await f.invoke('nativeMirrorOpen',win)
+ assert.equal(f.backends[0].videoEnabled,true);assert.equal(queued,1)
+ assert.equal(f.nativeMirrors.list()[0].videoMode,'video')
+ await f.nativeMirrors.dispose()
+})
+test('a successful screenshot fallback keeps the iPhone connected when default video fails',async()=>{
+ const f=fixture()
+ f.Android.prototype.setVideo=async function(){this.state('video-error');throw Error('broadcast timeout')}
+ await f.nativeMirrors.start(usbIphone('01234567'));await f.invoke('nativeMirrorOpen',f.windows[0])
+ assert.equal(f.nativeMirrors.list()[0].state,'running');assert.equal(f.nativeMirrors.list()[0].videoMode,'video-error')
+ assert.equal(f.backends[0].closed,false);await f.nativeMirrors.dispose()
+})
+test('failed default video cleanup remains a connection failure instead of claiming a screenshot fallback',async()=>{
+ const f=fixture()
+ f.Android.prototype.setVideo=async function(){this.state('video-starting');throw Error('cleanup failed')}
+ await f.nativeMirrors.start(usbIphone('01234567'))
+ await assert.rejects(f.invoke('nativeMirrorOpen',f.windows[0]),/connection failed/)
+ assert.equal(f.nativeMirrors.list()[0].state,'error');await f.nativeMirrors.dispose()
+})
+test('manual screenshot choice survives USB and explicit reconnect; a new window defaults to video',async()=>{
+ const f=fixture(),phone=usbIphone('01234567');await f.nativeMirrors.start(phone);const win=f.windows[0]
+ await f.invoke('nativeMirrorOpen',win);await f.invoke('nativeMirrorVideo',win,false)
+ await f.nativeMirrors.reconcileIos([]);await f.nativeMirrors.reconcileIos([phone])
+ assert.equal(f.nativeMirrors.list()[0].videoMode,'screenshot');assert.notEqual(f.backends[1].videoEnabled,true)
+ await f.invoke('nativeMirrorOpen',win,true)
+ assert.equal(f.nativeMirrors.list()[0].videoMode,'screenshot')
+ await f.nativeMirrors.stop(f.nativeMirrors.list()[0].id)
+ await f.nativeMirrors.start(phone);await f.invoke('nativeMirrorOpen',f.windows[1])
+ assert.equal(f.nativeMirrors.list()[0].videoMode,'video');await f.nativeMirrors.dispose()
+})
+
+test('WDA recovery reconnects a previously running iPhone without a USB removal event',async()=>{
+ const f=fixture(),phone=usbIphone('01234567');await f.nativeMirrors.start(phone);const win=f.windows[0]
+ await f.invoke('nativeMirrorOpen',win);f.backends[0].state('disconnected')
+ let offline=true;f.backends[0].close=async()=>{if(offline)throw Error('write EPIPE')}
+ await f.nativeMirrors.reconcileIos([phone]);assert.equal(f.backends.length,1)
+ offline=false;await Promise.all([f.nativeMirrors.reconcileIos([phone]),f.nativeMirrors.reconcileIos([phone])])
+ assert.equal(f.backends.length,2);assert.equal(f.nativeMirrors.list()[0].state,'running');assert.equal(f.nativeMirrors.list()[0].videoMode,'video')
+ await f.nativeMirrors.dispose()
+})
+test('an initial WDA failure does not repeatedly allocate sessions on device discovery',async()=>{
+ const f=fixture(),phone=usbIphone('01234567');f.Android.prototype.start=async()=>{throw Error('WDA busy')}
+ await f.nativeMirrors.start(phone);await assert.rejects(f.invoke('nativeMirrorOpen',f.windows[0]))
+ await f.nativeMirrors.reconcileIos([phone]);assert.equal(f.backends.length,1);await f.nativeMirrors.dispose()
+})
+
+test('unknown allocation cleanup retains the backend and exposes recovery instructions',async()=>{
+ const f=fixture();let released=false
+ f.Android.prototype.start=async()=>{throw Error('allocation response lost')}
+ f.Android.prototype.close=async()=>{if(!released)throw Object.assign(Error('unknown'),{code:'IOS_WDA_ALLOCATION_UNKNOWN'})}
+ await f.nativeMirrors.start(usbIphone('01234567'));await assert.rejects(f.invoke('nativeMirrorOpen',f.windows[0]))
+ assert.equal(f.nativeMirrors.list()[0].connectionIssue,'ios-cleanup-unknown')
+ await assert.rejects(f.invoke('nativeMirrorOpen',f.windows[0]));assert.equal(f.backends.length,1)
+ released=true;await f.nativeMirrors.dispose()
+})
+test('manual video unknown allocation becomes an explicit error instead of screenshot fallback',async()=>{
+ const f=fixture();await f.nativeMirrors.start(usbIphone('01234567'));const win=f.windows[0]
+ await f.invoke('nativeMirrorOpen',win);await f.invoke('nativeMirrorVideo',win,false)
+ f.backends[0].setVideo=async()=>{throw Object.assign(Error('unknown'),{code:'IOS_WDA_ALLOCATION_UNKNOWN'})}
+ await assert.rejects(f.invoke('nativeMirrorVideo',win,true))
+ assert.equal(f.nativeMirrors.list()[0].state,'error');assert.equal(f.nativeMirrors.list()[0].connectionIssue,'ios-cleanup-unknown')
+ await f.nativeMirrors.dispose()
 })

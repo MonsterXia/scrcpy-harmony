@@ -43,13 +43,14 @@ test('codec changes and native queue loss require another keyframe', () => {
   assert.deepEqual(Array.from(next.configuration), Array.from(changed))
   assert.equal(gate.push({ data: delta, timestamp: 5, reset: true }), undefined)
 })
-function androidFixture(directory, filesystem = fs.promises) {
+function androidFixture(directory, filesystem = fs.promises, localAdb = async () => { throw Error("No local ADB server") }) {
   const devices = ['a', 'b'].map(serial => ({ serial, name: 'Same model',
     closes: 0, connects: 0, raw: { claimInterface: async () => {}, releaseInterface: async () => {}, open: async () => {}, transferIn: async () => ({}), transferOut: async () => ({}), close: async () => { devices.find(d => d.serial === serial).closes++ } },
     async connect() { this.connects++; await this.raw.open(); return { serial } },
   }))
   const clients = [], authentications = []
   const api = load('src/main/lib/devices/android.ts', {
+    './androidServer': { connectLocalAdb: localAdb },
     './androidOverview': { readAndroidOverview: async adb => ({ name: adb.serial }) },
     'node:fs/promises': filesystem,
     '@yume-chan/adb': {
@@ -302,4 +303,46 @@ test('temporary overview cleanup failure is retried before another read or mirro
     }
     assert.equal(opens, 2); assert.equal(closes, 3); assert.equal(held, false)
   }
+})
+
+test('successful iOS discovery reconciles reconnectable windows instead of stopping them',async()=>{
+  const calls=[]
+  const {getDevices}=load('src/main/lib/devices/index.ts',{
+    electron:{app:{}},'share/main/lib/util':{},'../hdc':{getTargets:async()=>[]},
+    './android':{discoverAndroid:async()=>[]},'./ios-usbmux':{discoverIos:async()=>[]},
+    '../../window/nativeMirror':{nativeMirrors:{list:()=>[{id:'ios-window',deviceKey:'ios:01234567',platform:'ios'}],reconcileIos:async targets=>calls.push(['reconcile',targets]),stop:async()=>calls.push(['stop'])}},
+    '../../window/screencast':{listSessions:()=>[]}
+  })
+  await getDevices();assert.deepEqual(calls.map(c=>c[0]),['reconcile'])
+})
+
+test('overview IPC routes a USB iPhone to its metadata reader without invoking HDC',async()=>{
+ const handlers=new Map(),calls=[]
+ const phone={key:'ios:01234567',connectionId:'01234567',platform:'ios',transport:'usb',state:'ready'}
+ const api=load('src/main/lib/devices/index.ts',{
+   electron:{app:{on(){}}},'share/main/lib/util':{handleEvent:(name,fn)=>handlers.set(name,fn)},
+   '../hdc':{getTargets:async()=>[],getOverview:async()=>{throw Error('must not use HDC')}},
+   './android':{discoverAndroid:async()=>[]},'./ios-usbmux':{discoverIos:async()=>[phone],getIosOverview:async target=>{calls.push(target);return {osVersion:'iOS fixture'}}},
+   '../../window/nativeMirror':{nativeMirrors:{list:()=>[],reconcileIos:async()=>{}}},
+   '../../window/screencast':{listSessions:()=>[]}
+ })
+ api.init();await api.getDevices();assert.equal((await handlers.get('getDeviceOverview')(phone.key)).osVersion,'iOS fixture')
+ assert.equal(calls[0].key,phone.key)
+ await assert.rejects(handlers.get('getDeviceOverview')('ios:airplay-receiver'),/unavailable/)
+})
+
+
+test('Android USB access failure reuses only the exact local ADB device after closing its USB handle',async t=>{
+ let selected,closed=false
+ const f=androidFixture(directory(t),fs.promises,async serial=>{assert.equal(closed,true);selected=serial;return {serial,close:async()=>{}}})
+ const device=f.devices[0];device.raw.serialNumber='a';device.raw.close=async()=>{closed=true}
+ device.connect=async()=>{throw Error('claimInterface error: LIBUSB_ERROR_ACCESS')}
+ const [target]=await f.discoverAndroid()
+ assert.equal((await f.getAndroidOverview(target)).name,'a');assert.equal(selected,'a');assert.equal(f.authentications.length,0)
+})
+test('Android does not fall back to another transport after authentication or generic USB failure',async t=>{
+ let calls=0
+ const f=androidFixture(directory(t),fs.promises,async()=>{calls++;throw Error('unexpected')})
+ f.devices[0].raw.serialNumber='a';f.devices[0].connect=async()=>{throw Error('disconnected')}
+ const [target]=await f.discoverAndroid();await assert.rejects(f.getAndroidOverview(target),/disconnected/);assert.equal(calls,0)
 })

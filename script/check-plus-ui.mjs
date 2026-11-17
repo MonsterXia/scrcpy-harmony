@@ -74,7 +74,7 @@ try {
       ipcMain.handle('getDeviceOverview', (_, key) => {
         globalThis.__plusOverviewReads.push(key)
         const target = targets.find(target => target.key === key)
-        if (target.platform === 'ios') return {name:target.name,brand:'Apple',model:'iPhone18,1',osVersion:'iOS 27.2.1',buildVersion:'24B156',hardwareModel:'V53AP',abi:'arm64e',udid:'01234567-1234567890abcdef',serialNum:'',modelNumber:''}
+        if (target.platform === 'ios') return {name:target.name,brand:'Apple',model:'iPhone14,5',osVersion:'iOS 26.4',buildVersion:'24E1',hardwareModel:'D17AP',abi:'arm64e',udid:'fixture-udid'}
         return { name: target.name, brand: target.platform === 'android' ? 'Google' : 'HUAWEI', model: target.name,
           osVersion: target.platform === 'android' ? 'Android 16 (API 36)' : '', processor: 'ARM', abi: 'arm64-v8a', memTotal: 8589934592, physicalResolution: '1080x2400', serialNum: 'fixture', kernelVersion: '6.1' }
       })
@@ -188,9 +188,11 @@ try {
       await page.screenshot({ path: path.join(directory, `${language}-overview-android-${theme}.png`) })
     }
     await page.locator('#workspace-device').selectOption('ios:01234567-1234567890abcdef')
-    await page.waitForFunction(() => document.querySelector('[data-overview-field="ohosVersion"]')?.textContent === 'iOS 27.2.1')
+    await page.waitForFunction(()=>document.querySelector('[data-overview-field="ohosVersion"]')?.textContent==='iOS 26.4')
     assert.equal(await page.locator('[data-navigation="shell"]').isDisabled(),true)
-    assert.equal(await page.locator('[data-overview-field="hardwareModel"]').innerText(),'V53AP')
+    assert.equal(await page.locator('#workspace-device option[value="ios:airplay-receiver"]').count(),0)
+    assert.equal(await page.locator('[data-overview-field="model"]').innerText(),'iPhone14,5')
+    assert.equal(await page.locator('[data-overview-field="serialNum"]').evaluate(n=>n.closest('button').disabled),true)
     for (const theme of ['light','dark']) {
       await page.evaluate(theme=>main.setSettingsStore('theme',theme),theme)
       await page.waitForFunction(theme=>document.querySelector('[data-workspace]').dataset.theme===theme,theme)
@@ -239,7 +241,7 @@ try {
     assert.deepEqual(errors, [])
     report.cases.push({ language, liveLanguageCases, sidebarCases,
       batchSelection: true, focusWithoutRestart: true, layoutScopeAllSessions: true, stopIsolation: true,
-      iosReceiverSeparated: true, overviewPlatforms: ['android', 'harmony', 'ios'], repeatedDiscoveryPreservesOverview: true,
+      iosReceiverSeparated: true, overviewPlatforms: ['android', 'harmony', 'ios-usb'], repeatedDiscoveryPreservesOverview: true,
       sameGeometryInBothThemes: true, runtime: await application.evaluate(() => process.versions.electron), passed: true })
     await application.close(); application = undefined
   }

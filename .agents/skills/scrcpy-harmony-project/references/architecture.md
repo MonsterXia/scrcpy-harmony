@@ -108,7 +108,7 @@ HAP 拖入由主窗口和投屏根组件各注册一次 `src/renderer/lib/useHap
 
 `hdc/parameters.ts` 的同步 `parseTargetParameters` 供枚举及概览有限读取共用；旧 `getTargetParameters` reader 导出保留，但这两个处理器不再经其读取。解析前拒绝行首 `[Fail]`、`[E` 加六位数字 `]`、`error:` 等明确命令错误；合法参数值中的同名文本不算错误，缺少可选字段仍交给上层兼容处理。解析层不修改服务生命周期或共享 shell。
 
-概览 `Overview.refresh()` 在读取失败后清空旧概览并提示错误，释放加载状态后允许再次刷新，避免将上次数据呈现为当前结果。设备选择器位于概览内，`overviewTarget` 支持 Android/Harmony/USB iOS（排除 AirPlay 接收器）；`target` 继续只供鸿蒙工具使用。概览组件不跟随 HDC target key 重挂载，以 key/平台/state 的语义身份管理读取会话，禁止以设备对象引用判断轮询中的同一设备。统一 IPC `getDeviceOverview` 按当前发现记录分派；Android 固定只读命令与有界读取见 `devices/androidOverview.ts`，连接复用/临时连接/停止期归属见 `devices/android.ts`。多端投屏页的勾选启动与已创建窗口排列范围独立，`getMirrorLayout`/`focusMirror` 不创建或重启视频会话。
+概览 `Overview.refresh()` 在读取失败后清空旧概览并提示错误，释放加载状态后允许再次刷新，避免将上次数据呈现为当前结果。设备选择器位于概览内，`overviewTarget` 支持 Android/Harmony/USB iOS（排除 AirPlay）；`target` 继续只供鸿蒙工具使用。概览组件不跟随 HDC target key 重挂载，以 key/平台/state 的语义身份管理读取会话，禁止以设备对象引用判断轮询中的同一设备。统一 IPC `getDeviceOverview` 按当前发现记录分派；Android 固定只读命令与有界读取见 `devices/androidOverview.ts`，连接复用/临时连接/停止期归属见 `devices/android.ts`。多端投屏页的勾选启动与已创建窗口排列范围独立，`getMirrorLayout`/`focusMirror` 不创建或重启视频会话。
 
 `hdc.ts` 的 `getTargets` 对每个设备单独读取参数并隔离失败，保留可读取设备的原始顺序。版本从可识别的点分数字字段提取；缺失或未知版本返回空字符串并记警告，名称缺失回退到 connectKey，API 字段缺失返回空字符串。`listTargets` 失败记录 error，非空设备列表全部读取失败记录 warn，两者均拒绝 IPC；正常无设备记录 info 并返回空数组；部分设备失败仍返回其余设备。成功返回类型仍为 `ITarget[]`。主窗口 `refreshTargets()` 捕获失败、清空列表和选择、设置 `targetsError` 并返回 false；初始化和设备事件刷新也使用此路径。`workspace/DeviceSwitcher.tsx` 区分读取失败与正常无设备，手动刷新按布尔结果提示成功或错误，并在组件卸载后忽略通知。
 
@@ -228,7 +228,7 @@ Canvas pointer 事件
 
 自动化坐标校验延伸到派发点：AndroidMirror.input 的内部 expectedGeometry 由 nativeMirrors.inputBackend 绑定原截图尺寸，设备队列执行时再核对，释放不受新几何阻断；Harmony adapter 接受缩放但检查图像方向/比例，并在非释放触摸前有界读取实际尺寸。GUI IPC不接收expectedGeometry，自动化不伪造GUI sender。
 
-原生投屏失败的 `MirrorSession/NativeMirrorInfo.connectionIssue` 为固定分类，不承载原始异常：Android ACCESS/BUSY通过nativeMirrorState/info IPC给renderer双语提示；重试/恢复清除。USB仍由后端独占，不自动detach其他ADB。共享window.ts的延迟位置保存及ready兜底必须先核对窗口存活。真实Codex宿主探针为 `script/check-automation-codex.mjs`，其结果与SDK模拟测试分开。
+原生投屏失败的 `MirrorSession/NativeMirrorInfo.connectionIssue` 为固定分类，不承载原始异常：Android ACCESS/BUSY通过nativeMirrorState/info IPC给renderer双语提示；重试/恢复清除。直接 USB 仍由后端独占，不自动 detach 其他 ADB；认证前 ACCESS/BUSY 可经 `devices/androidServer.ts` 复用已运行的本机 ADB，按 USB 序列号匹配并固定 transport ID，关闭只回收自己的 socket。共享window.ts的延迟位置保存及ready兜底必须先核对窗口存活。真实Codex宿主探针为 `script/check-automation-codex.mjs`，其结果与SDK模拟测试分开。
 
 投屏来源的 `claimGui` 回调在仅聚焦现有窗口时声明 GUI 所有权，不重启后端，也不显示合并视图中隐藏的来源窗口；自动化最后一个 lease 释放不会关闭用户已接管的会话。Android 临时概览连接单独保留清理所有权，关闭失败后必须重试释放，其他读取或投屏连接才能再次取得 USB。
 
@@ -236,6 +236,24 @@ Canvas pointer 事件
 
 USB iOS 的 `ios:<UDID>` 与 `ios:airplay-receiver` 分开。`ios-usbmux.connectIos` 每次用 UDID 查找当前 USB DeviceID，返回暂停且保留尾随数据的 socket。`ios-wda.WdaClient` 用独立 USB socket 发送有界 HTTP 请求，不重试写入；`ios.IosMirror` 管理专用 WDA session、PNG 预览与逻辑点输入；`ios-video.IosVideo` 管理自有 capture ID 和 scrcpy H.264 数据流，不停止全局广播。
 
+`NativeMirrors` 新建 USB iOS 会话默认请求视频；首张 PNG 建立几何后通过共享输入队列开启 ReplayKit。同一窗口重连保留用户模式选择，默认视频失败仅在后端确认清理完成且恢复 PNG 后保留截图回退。
+
 `nativeMirrorVideo` 为单一窗口 owner 可调用的布尔 IPC，通过原自动化输入队列互斥；`NativeMirrorFrame.format=png` 与 H.264 共用 FrameGate。USB GUI 输入附 `display`（实际显示的尺寸/方向）；自动化走完整批次 `iosInput`，不模拟 GUI pointer 事件。`AutomationFrameSource` 保留方向用于拒绝过期坐标。AirPlay 不提供输入。源码构建脚本与使用限制见 [USB 文档](../../../../docs/scrcpy-plus/ios-usb-wda.md)。
 
-USB iOS 概览由 `ios-usbmux.getIosOverview` 根据当前 UDID 连接 lockdown 62078，执行有界公开 `GetValue`，只返回白名单字段。无需启动 WDA、配对会话或开发者服务；未返回的敏感/可选字段保持未知，不猜测商品名称、内存或分辨率。概览对 iOS 显示构建版本、硬件型号、型号号码、CPU 架构和 UDID，保留刷新/身份变化保护；导航和 Store 均禁止将 iOS 选择导向鸿蒙工具。
+USB iOS 原生投屏的运行画面与 Android 共用无内边距布局，不常驻设备名/连接状态。`native-mirror/Toolbar.tsx` 复用 Harmony 的浮层样式，以标题栏右侧 portal 调节图标作为常驻入口，收纳 Home、视频切换、模式和录屏提示；展开不改变 Canvas 布局或窗口 fit inset。错误/断连提示仍保留。
+
+原生交互式投屏的连接中/失败/断连提示采用绝对定位浮层，不参与 Canvas fit inset；断连旧帧变暗。iOS 只读观察最多连续失败三次后停止，恢复不重放写入。旧 WDA session 清理失败时，必须由 GET status 确认 ready 且旧 session 已消失后才能释放归属，无法确认则继续保留失败。
+
+
+USB iOS GUI 的 `NativeInputFlow` 在 renderer 保持一个在途输入 IPC，合并待发 wheel/move、保留 up/cancel；不允许前一个 release 未完成即开始新手势，失败丢弃队列且不重放。无 display metadata 仍允许释放。输入错误为不改变布局的底部提示；`nativeMirrorOpen(restart?: boolean)` 仅窗口 owner 可显式重建，先置 disconnected 废弃旧输入队列，再等待后端清理并打开；renderer 在连接状态换代时重建输入流，不能在 open Promise 返回时再次替换已承载手势的流。PNG 异步解码和 H.264 回调绑定连接 generation，旧回调不能绘制或发布新的帧元数据。
+
+`native-mirror/StatusCard.tsx` 统一连接状态的图标、标题、说明、可折叠准备清单和重试按钮；断连状态优先于输入错误展示，避免重复提示。深浅主题和窄窗口样式仍使用 SCSS Modules，状态与工具面板均不改变 Canvas 几何。
+
+
+成功的 iOS 发现结果由 `devices/index` 交给 `nativeMirrors.reconcileIos`。USB 缺席不销毁窗口，保留 cleanup 所有权；同一 ready device key 重现后串行关闭旧后端、重开并按之前模式恢复视频（共享输入队列）。旧后端迟到的 frame/state 不得更新新会话，关闭后的窗口不得因发现事件复活。视频 stop 失败必须由 ready + standalone GET 确认精确 capture ID 不存在，不能凭 404 或换了 WDA session 就假定资源已清理。自动化 connected 恢复只解除 error/disconnected 至 starting，仍等待新的 renderer presentation；renderer 同步重置失败输入流。
+
+USB iPhone 概览由 `devices/ios-usbmux.getIosOverview` 处理，仅通过 lockdown 获取固定字段，8 秒总超时，和 WDA/投屏生命周期独立。Store 恢复和选择允许 USB iPhone，Android/iOS 的鸿蒙专用导航均禁用；实际未返回的字段显示未知，不猜测硬件参数。
+
+USB iOS 曾经连接成功后，即使 USB 发现始终在线，后端 disconnected/error 也标记 reconnectPending；设备轮询串行重建并保留 videoRequested。首次 WDA 准备失败不自动重复创建会话。该路径恢复客户端会话，不负责启动或签名 WDA Runner。
+
+WDA 使用固定源码加 `vendor/ios-wda/session-ownership.patch`：串行 session 创建入口原子拒绝已有会话，status 返回协议版本及进程 UUID，创建请求绑定该 UUID。`ios-ownership.WdaAllocation` 在分配请求发送前记录未知结果；响应丢失时 close 保留归属，只有 ready 的新 Runner UUID 可证明原资源已消失，不通过猜测 ID 删除资源。旧 Runner 被明确拒绝。`IosMirror.report` 在 disconnected/error 统一取消本代 GUI 输入，包括视频关闭和截图回退失败；每个 GUI 操作入队时捕获取消信号。

@@ -157,7 +157,7 @@ export default observer(function Overview({
               className={Style.button}
               data-action="refresh"
               aria-label={t('refresh')}
-              disabled={isLoading}
+              disabled={isLoading || !ready}
               onClick={() => {
                 void refresh()
               }}

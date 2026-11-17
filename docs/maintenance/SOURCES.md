@@ -1,5 +1,8 @@
 # 维护来源记录
 
+2026-11-17 用户确认 Plus 是当前项目正式延续，要求直接将仓库改名为 `scrcpy-plus` 并同步更新路径、配置和验证；后续明确旧 Harmony 可手动重新安装，不保留多余兼容代码。远端改名已生效，源码、验证范围及交付边界见 [迁移记录](scrcpy-plus-rename.md)。
+
+
 2026-11-17 用户确认 Plus 是当前项目正式延续，要求直接将仓库改名为 `scrcpy-plus` 并同步更新路径、配置和验证；后续明确旧 Harmony 可手动重新安装，不保留多余兼容代码。后续授权本迁移独立提交/PR，审查及 CI 通过后合入，不混入 iOS 改动；交付期间明确 Plus 只需支持 arm64 Mac，可移除 Intel Mac CI。远端改名已生效，源码、验证范围及交付边界见 [迁移记录](scrcpy-plus-rename.md)。
 
 
@@ -261,6 +264,9 @@
 
 - 2026-11-16：用户授权 WDA + ReplayKit iOS USB 接入，并明确先完成代码/自动验证。固定 [droidrun/WebDriverAgent 8ce9d6f](https://github.com/droidrun/WebDriverAgent/tree/8ce9d6f528e6f6c01bc0fa903b33555842d43571)，归档哈希/许可证见 `vendor/ios-wda`；[专项记录](ios-usb-wda.md)区分未签名编译、模拟自动验证与待办真机验收。方案参考 [mobilerun](https://github.com/droidrun/mobilerun)，实现未使用闭源 mobilerun-ios 二进制。
 
+- 2026-11-17：按用户授权完成 iPhone 13 的 WDA 签名安装和 USB 截图/点击/Home、ReplayKit 基本播放及模式切换；首次联网验证规则参照 [Apple provisioning updates](https://developer.apple.com/help/account/provisioning-profiles/provisioning-profile-updates)，实际结果及剩余矩阵见 [iOS 维护记录](ios-usb-wda.md) 与[脱敏真机证据](../scrcpy-plus/evidence/ios-usb-wda-2026-11-17/verification.json)。
+
+2026-11-17 用户在全量独立审查后要求“修复”。本轮处理五项确认问题及验证中发现的相邻错误收口；设备端补丁、自动验证与真机证据见 [iOS 审查修复](ios-review-fixes-2026-11-17.md)。
 - 2026-11-16：用户优先要求在概览选择 iPhone 并读取信息；USB lockdown 与正式 Electron IPC 真机读取结果、双语 UI 和回归见 [iPhone 概览维护记录](ios-overview.md)。无需 WDA，未将此验收扩展为截图/控制成功。
 
 - 2026-11-16 用户追加授权更新已安装应用并打开 iPhone 概览：完整构建/打包、备份、签名和安装后启动校验，以及真实安装版界面观察见 [安装记录](ios-overview.md#用户授权更新安装版) 和 [安装证据](../scrcpy-plus/evidence/ios-overview-2026-11-16/local-install.json)。

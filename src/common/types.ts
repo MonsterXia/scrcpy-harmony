@@ -19,7 +19,7 @@ export interface MirrorSession {
   name: string
   platform: string
   state: 'starting' | 'authorizing' | 'waiting' | 'running' | 'disconnected' | 'error' | 'stopping'
-  connectionIssue?: 'usb-access' | 'ios-wda'
+  connectionIssue?: 'usb-access' | 'ios-wda' | 'ios-wda-update' | 'ios-cleanup-unknown'
   videoMode?: 'screenshot' | 'video-starting' | 'video' | 'video-error'
 }
 export type NativeMirrorInput = (
@@ -42,7 +42,7 @@ export interface NativeMirrorFrame {
   reset?: boolean
 }
 export type IpcNativeMirrorInfo = () => Promise<NativeMirrorInfo>
-export type IpcNativeMirrorOpen = () => Promise<void>
+export type IpcNativeMirrorOpen = (restart?: boolean) => Promise<void>
 export type IpcNativeMirrorVideo = (enabled: boolean) => Promise<void>
 export type IpcNativeMirrorInput = (input: NativeMirrorInput) => Promise<void>
 export type IpcNativeMirrorAck = (sequence: number) => Promise<void>

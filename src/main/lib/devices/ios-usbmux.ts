@@ -78,13 +78,39 @@ export async function connectIos(udid: string, port: number, signal?: AbortSigna
   stream.setNoDelay(true)
   return stream
 }
+async function lockdownValue(stream: net.Socket, key: string, signal?: AbortSignal) {
+  const body = Buffer.from(build({ Label: 'scrcpy-plus', Request: 'GetValue', Key: key }))
+  const prefix = Buffer.alloc(4); prefix.writeUInt32BE(body.length)
+  const reply = decodePlist(await response(stream, Buffer.concat([prefix, body]), false, signal))
+  return typeof reply.Value === 'string' && reply.Value ? reply.Value.slice(0, 256) : undefined
+}
+export async function getIosOverview(target: ITarget): Promise<Record<string, string>> {
+  if (target.platform !== 'ios' || target.transport !== 'usb' || !target.connectionId || target.key !== `ios:${target.connectionId}`) throw new Error('Invalid iOS overview target')
+  const signal = AbortSignal.timeout(8000)
+  const stream = await connectIos(target.connectionId, 62078, signal)
+  try {
+    // Read only the fields shown in Overview, without creating a WDA session or
+    // requesting the device's complete property dictionary.
+    const result: Record<string, string> = { brand: 'Apple', udid: target.connectionId }
+    const fields = { DeviceName: 'name', ProductVersion: 'osVersion', BuildVersion: 'buildVersion',
+      ProductType: 'model', HardwareModel: 'hardwareModel', CPUArchitecture: 'abi', SerialNumber: 'serialNum', DeviceClass: 'deviceClass', ModelNumber: 'modelNumber' }
+    for (const [key, field] of Object.entries(fields)) {
+      const value = await lockdownValue(stream, key, signal)
+      if (value) result[field] = value
+    }
+    if (!result.name && !result.osVersion && !result.model) throw new Error('iOS metadata unavailable; unlock and trust the computer')
+    result.name ||= target.name
+    if (result.osVersion) result.osVersion = `${result.deviceClass === 'iPad' ? 'iPadOS' : 'iOS'} ${result.osVersion}`
+    return result
+  } finally { stream.destroy() }
+}
 async function deviceName(id: number) {
   const { stream, value } = await queryMux({ MessageType: 'Connect', DeviceID: id, PortNumber: 32498 }, true) // htons(62078)
   try {
     if (value.Number !== 0) throw new Error('Apple device unavailable')
-    const reply = await lockdownValue(stream, 'DeviceName')
-    if (typeof reply.Value !== 'string' || !reply.Value) throw new Error('Apple device requires trust')
-    return reply.Value.slice(0, 256)
+    const name = await lockdownValue(stream, 'DeviceName')
+    if (!name) throw new Error('Apple device requires trust')
+    return name
   } finally { stream.destroy() }
 }
 export function muxDevices(value: any): Array<{ id: number; serial: string }> {
@@ -105,32 +131,4 @@ export async function discoverIos(): Promise<ITarget[]> {
     return { key: `ios:${device.serial}`, connectionId: device.serial, name,
       platform: 'ios' as const, transport: 'usb' as const, state, ohosVersion: '', sdkVersion: '' }
   }))
-}
-
-async function lockdownValue(stream: net.Socket, key?: string) {
-  const body = Buffer.from(build({ Label: 'scrcpy-plus', Request: 'GetValue', ...(key ? { Key: key } : {}) }))
-  const prefix = Buffer.alloc(4); prefix.writeUInt32BE(body.length)
-  const reply = decodePlist(await response(stream, Buffer.concat([prefix, body]), false))
-  if (!reply || reply.Error) throw new Error('Apple lockdown requires an unlocked, trusted device')
-  return reply
-}
-
-// Public lockdown metadata needs neither WDA nor developer mode. Resolve the
-// USB identity again instead of trusting a DeviceID from the discovery poll.
-export async function getIosOverview(target: ITarget): Promise<Record<string, string | number>> {
-  if (target.platform !== 'ios' || target.transport !== 'usb' || !target.connectionId || target.key !== `ios:${target.connectionId}`) throw new Error('Invalid iOS overview target')
-  const stream = await connectIos(target.connectionId, 62078)
-  try {
-    const value = (await lockdownValue(stream)).Value
-    if (!value || typeof value !== 'object' || Array.isArray(value) || (typeof value.ProductType !== 'string' && typeof value.DeviceName !== 'string')) throw new Error('Invalid iOS metadata')
-    const text = (key: string) => typeof value[key] === 'string' ? value[key].slice(0, 256) : ''
-    const version = text('ProductVersion'), deviceClass = text('DeviceClass')
-    return {
-      name: text('DeviceName'), brand: 'Apple', model: text('ProductType'),
-      osVersion: version ? `${deviceClass === 'iPad' ? 'iPadOS' : 'iOS'} ${version}` : '',
-      buildVersion: text('BuildVersion'), serialNum: text('SerialNumber'),
-      abi: text('CPUArchitecture'), hardwareModel: text('HardwareModel'),
-      modelNumber: text('ModelNumber'), deviceClass, udid: target.connectionId,
-    }
-  } finally { stream.destroy() }
 }

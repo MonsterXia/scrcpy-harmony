@@ -11,5 +11,13 @@
     "patchedSha256": "b75487f793dae49aae390e3152a8671e11ad4b0b227e98e5754ad096c550bba6",
     "find": "    _port = port;\n    _delegate = nil;",
     "replace": "    _port = port;\n    // Scrcpy Plus: all media listeners are USB/loopback only.\n    _interface = @\"127.0.0.1\";\n    _delegate = nil;"
+  },
+  "sessionOwnershipPatch": {
+    "file": "session-ownership.patch",
+    "target": "WebDriverAgentLib/Commands/FBSessionCommands.m",
+    "sha256": "5b0c9801c5ce03925cc5188bb70f9fc3b5741bdbf14bdf81ae94e77ed721b3bc",
+    "sourceSha256": "7740092968e6b97b4f67990f74976b8be1d7b77727a3c9a4eb8d52951a4f935f",
+    "patchedSha256": "d02e5edea3b4ec1a5ad3b8ad56464e0a57ccbb0ff29bd9663ca92b4f7fcf045c",
+    "protocolVersion": 1
   }
 }

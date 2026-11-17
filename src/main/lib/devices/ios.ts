@@ -3,6 +3,7 @@ import { UnsafeInputFault, type InputAction } from '../../automation/input'
 import type { NativeFrame } from './media'
 import { WdaClient, pngSize } from './ios-wda'
 import { IosVideo } from './ios-video'
+import { ownershipRunner, WdaAllocation } from './ios-ownership'
 
 export interface IosGeometry { width: number; height: number; rotation: number }
 interface Gesture { geometry: IosGeometry; points: Array<{ x: number; y: number; at: number }> }
@@ -11,13 +12,17 @@ const same = (a: IosGeometry, b: IosGeometry) => a.width === b.width && a.height
 export class IosMirror {
   readonly client: WdaClient
   private sessionId?: string
+  private runnerId?: string
+  private allocation = new WdaAllocation()
   private lifetime = new AbortController()
+  private inputLifetime = new AbortController()
   private closed = false
   private unsafe = false
   private startWork?: Promise<void>
   private closing?: Promise<void>
   private readWork?: Promise<void>
   private timer?: ReturnType<typeof setTimeout>
+  private readFailures = 0
   private tail: Promise<unknown> = Promise.resolve()
   private pending = 0
   private gesture?: Gesture
@@ -36,19 +41,31 @@ export class IosMirror {
     this.startWork = (async () => {
       this.check()
       const status = await this.client.request('GET', '/status', undefined, this.lifetime.signal)
+      this.runnerId = ownershipRunner(status)
       if (status.sessionId) throw new Error('WDA already in use; use a dedicated runner')
       // Do not cancel session creation mid-response: close waits for the bounded
       // result so it can delete exactly the session it created.
-      const result = await this.client.request('POST', '/session', { capabilities: { alwaysMatch: {} } })
+      this.allocation.begin(this.runnerId)
+      const result = await this.client.request('POST', '/session', { scrcpyPlusRunnerId: this.runnerId, capabilities: { alwaysMatch: {} } })
+      if (result.value?.scrcpyPlusSessionBusy || result.value?.scrcpyPlusRunnerChanged) {
+        this.allocation.settled()
+        throw new Error('WDA ownership changed; retry with a dedicated runner')
+      }
       const id = result.value?.sessionId
       if (typeof id !== 'string' || !/^[a-zA-Z0-9-]{1,100}$/.test(id)) throw new Error('Invalid WDA session identifier')
-      this.sessionId = id
+      this.sessionId = id; this.allocation.settled()
       this.check()
       await this.client.request('POST', this.path('/appium/settings'), { settings: { screenshotQuality: 0 } }, this.lifetime.signal)
       await this.capture()
       this.schedule()
     })()
     return this.startWork
+  }
+  private report(state: string) {
+    if (state === 'disconnected' || state === 'error') {
+      this.inputLifetime.abort(); this.gesture = undefined
+    } else if (state === 'connected' && this.inputLifetime.signal.aborted) this.inputLifetime = new AbortController()
+    this.state?.(state)
   }
   private check(signal?: AbortSignal) {
     if (this.closed) throw new Error('iOS session closed')
@@ -77,7 +94,7 @@ export class IosMirror {
       this.check()
       this.geometry = geometry
       this.frame?.({ data, timestamp: Date.now() * 1000, format: 'png', rotation })
-      this.state?.('connected')
+      this.report('connected')
     })().finally(() => { this.readWork = undefined })
     return this.readWork
   }
@@ -88,8 +105,17 @@ export class IosMirror {
       const read = this.video ? this.readGeometry().then(async geometry => {
         if (this.geometry && !same(geometry, this.geometry)) await this.setVideo(false)
       }) : this.capture()
-      void read.then(() => this.schedule(), () => { if (!this.closed) this.state?.('disconnected') })
-    }, 700)
+      void read.then(() => {
+        if (this.readFailures) this.report('connected')
+        this.readFailures = 0; this.schedule()
+      }, error => {
+        if (this.closed) return
+        console.warn('iOS frame polling failed:', error instanceof Error ? error.message : 'unknown')
+        this.report('disconnected')
+        // Only retry observation. Never recreate sessions or replay input writes.
+        if (++this.readFailures < 3) this.schedule()
+      })
+    }, this.readFailures ? 1000 : 700)
   }
   setVideo(enabled: boolean): Promise<void> {
     this.check()
@@ -103,27 +129,33 @@ export class IosMirror {
       await this.readWork?.catch(() => {})
       this.check()
       if (!enabled) {
-        await this.video?.close(); this.video = undefined
-        await this.capture(); this.state?.('screenshot'); return
+        try {
+          await this.video?.close(); this.video = undefined
+          await this.capture(); this.report('screenshot'); return
+        } catch (error) { this.report('error'); throw error }
       }
       if (!this.sessionId || !this.geometry) throw new Error('iOS screenshot required before video')
       await this.validateGeometry(this.geometry)
-      this.state?.('video-starting')
+      this.report('video-starting')
       const video = new IosVideo(this.client, this.sessionId, this.geometry, frame => {
         if (!this.closed && this.video === video) this.frame?.(frame)
       }, () => {
         void Promise.resolve().then(async () => {
           await this.videoWork?.catch(() => {})
           if (this.closed || this.video !== video) return
-          try { await this.setVideo(false); this.state?.('video-error') }
-          catch { if (!this.closed) this.state?.('error') }
+          try { await this.setVideo(false); this.report('video-error') }
+          catch { if (!this.closed) this.report('error') }
         })
-      })
+      }, this.runnerId!)
       this.video = video
-      try { await video.start(); this.check(); this.state?.('video') }
+      try { await video.start(); this.check(); this.report('video') }
       catch (error) {
-        await video.close(); this.video = undefined
-        if (!this.closed) { await this.capture(); this.state?.('video-error') }
+        try { await video.close() } catch (cleanupError) { this.report('error'); throw cleanupError }
+        this.video = undefined
+        if (!this.closed) {
+          try { await this.capture(); this.report('video-error') }
+          catch (captureError) { this.report('error'); throw captureError }
+        }
         throw error
       }
     })().finally(() => { this.videoWork = undefined; this.schedule() })
@@ -159,13 +191,14 @@ export class IosMirror {
     return result
   }
   input(input: NativeMirrorInput, expected?: { width: number; height: number; rotation?: number }) {
-    const receivedAt = Date.now()
+    const receivedAt = Date.now(), signal = this.inputLifetime.signal
     return this.enqueue(async () => {
+      if (input.type === 'touch' && input.action === 'cancel') { this.gesture = undefined; return }
+      this.check(signal)
       const geometry = this.geometry
       if (!geometry) throw new Error('iOS screen unavailable')
       if ((input.type === 'touch' && input.action === 'down') || input.type === 'scroll') this.validateDisplay(expected, geometry)
       if (input.type === 'touch') {
-        if (input.action === 'cancel') { this.gesture = undefined; return }
         if (![input.x,input.y].every(n => Number.isFinite(n) && n >= 0 && n <= 1)) throw new Error('Invalid iOS input position')
         if (input.action === 'down') {
           if (this.gesture) throw new Error('iOS gesture already active')
@@ -179,14 +212,14 @@ export class IosMirror {
         if (previous.x !== input.x || previous.y !== input.y) gesture.points.push({ x: input.x, y: input.y, at: receivedAt })
         if (input.action !== 'up') return
         this.gesture = undefined
-        await this.validateGeometry(gesture.geometry)
-        await this.write('/mobilerun/actions?scale=1', this.actions(gesture.geometry, gesture.points, receivedAt))
+        await this.validateGeometry(gesture.geometry, signal)
+        await this.write('/mobilerun/actions?scale=1', this.actions(gesture.geometry, gesture.points, receivedAt), signal)
       } else if (input.type === 'scroll') {
-        await this.validateGeometry(geometry)
+        await this.validateGeometry(geometry, signal)
         const end = { x: Math.max(0, Math.min(1, input.x + input.dx / 2)), y: Math.max(0, Math.min(1, input.y + input.dy / 2)), at: 250 }
-        await this.write('/mobilerun/actions?scale=1', this.actions(geometry, [{ x: input.x, y: input.y, at: 0 }, end]))
-      } else if (input.type === 'text') await this.text(input.text)
-      else await this.key(input.keyCode)
+        await this.write('/mobilerun/actions?scale=1', this.actions(geometry, [{ x: input.x, y: input.y, at: 0 }, end]), signal)
+      } else if (input.type === 'text') await this.text(input.text, signal)
+      else await this.key(input.keyCode, signal)
     })
   }
   private async text(text: string, signal?: AbortSignal) {
@@ -236,18 +269,18 @@ export class IosMirror {
     this.closed = true; this.lifetime.abort(); clearTimeout(this.timer); this.gesture = undefined
     this.closing = (async () => {
       await this.startWork?.catch(() => {})
+      await this.allocation.confirmCleanup(this.client)
       await this.video?.close()
       await this.videoWork?.catch(() => {})
       await this.video?.close(); this.video = undefined
       await this.tail; await this.readWork?.catch(() => {})
       if (this.sessionId) {
-        try {
-          await this.client.request('DELETE', this.path(''), undefined, undefined, 5000)
-        } catch (error) {
-          const status = await this.client.request('GET', '/status', undefined, undefined, 5000).catch(() => undefined)
-          if (!status || status.value?.ready !== true ||
-            !(status.sessionId === null || (typeof status.sessionId === 'string' && /^[a-zA-Z0-9-]{1,100}$/.test(status.sessionId))) ||
-            status.sessionId === this.sessionId) throw error
+        try { await this.client.request('DELETE', this.path(''), undefined, undefined, 5000) }
+        catch (error) {
+          // A restarted runner no longer knows our session. Confirm that before
+          // releasing ownership; an unreachable or unchanged runner must fail.
+          const status = await this.client.request('GET', '/status', undefined, undefined, 5000)
+          if (status.sessionId === this.sessionId || status.value?.ready !== true) throw error
         }
         this.sessionId = undefined
       }

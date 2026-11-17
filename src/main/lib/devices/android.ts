@@ -13,6 +13,7 @@ import type { ITarget, NativeMirrorInput } from 'common/types'
 import { getUserDataPath, resolveResources } from 'share/main/lib/util'
 import type { NativeFrame } from './media'
 import { readAndroidOverview } from './androidOverview'
+import { connectLocalAdb } from './androidServer'
 
 export class FileAdbCredentials implements AdbCredentialStore {
   constructor(private file: string) {}
@@ -101,7 +102,7 @@ export function configureAndroidUsb(raw: USBDevice) {
   }
 }
 async function deviceManager() {
-  // Direct USB transport, with no adb server or adb executable.
+  // Discover through USB without starting an adb server or executable.
   if (!manager) {
     const { WebUSB } = createRequire(__filename)('usb')
     manager ||= new AdbDaemonWebUsbDeviceManager(new WebUSB({ allowAllDevices: true, deviceTimeout: 5000 }))
@@ -192,10 +193,23 @@ export class AndroidMirror {
       if (!this.device) throw new Error('Android device disconnected')
       configureAndroidUsb(this.device.raw)
       this.check()
-      const connection = await deadline(this.device.connect().then(async connection => {
-        if (this.closed) { await this.device?.raw.close(); this.check() }
-        return connection
-      }), () => { void this.device?.raw.close() })
+      let connection: Awaited<ReturnType<AdbDaemonWebUsbDevice['connect']>>
+      try {
+        connection = await deadline(this.device.connect().then(async connection => {
+          if (this.closed) { await this.device?.raw.close(); this.check() }
+          return connection
+        }), () => { void this.device?.raw.close() })
+      } catch (error) {
+        // ADB/Android Studio can own this USB interface. Share that local server
+        // only before authentication/writes, and only for the observed USB serial.
+        const serial = this.device.raw.serialNumber
+        if (!(error instanceof Error) || !/LIBUSB_ERROR_(ACCESS|BUSY)/.test(error.message) || !serial || serial !== this.device.serial) throw error
+        await this.device.raw.close(); this.check()
+        try { this.adb = await connectLocalAdb(serial) }
+        catch { throw error }
+        if (this.closed) { await this.adb.close(); this.check() }
+        return this.adb
+      }
       this.check()
       const transport = await deadline(AdbDaemonTransport.authenticate({
         serial: this.device.serial, connection,

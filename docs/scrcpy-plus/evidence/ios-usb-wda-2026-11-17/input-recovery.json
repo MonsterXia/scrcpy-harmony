@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-17",
+  "problem": "Live image remained available but GUI input failed and a persistent Connected/error modal obscured the screen.",
+  "findings": {
+    "oldRuntimeErrors": {
+      "Device input queue is full": 86,
+      "A GUI gesture is already in progress": 10
+    },
+    "renderer": "Wheel/move events were dispatched without backpressure; release could be skipped when display metadata was temporarily unavailable."
+  },
+  "changes": [
+    "Serialize USB iOS GUI input; coalesce pending wheel and move events; preserve release/cancel.",
+    "Do not start another gesture until the preceding release completes; stop queued writes after failure without replay.",
+    "Always release a gesture during missing geometry; cancel buffered gesture on failure or disposal.",
+    "Nonblocking bottom input error with explicit owner-scoped reconnect; recreate renderer input flow after successful reopen."
+  ],
+  "automated": {
+    "focused": {
+      "pass": 28,
+      "fail": 0
+    },
+    "applicationSuite": {
+      "pass": 1164,
+      "skip": 2,
+      "fail": 0
+    },
+    "lintAndI18n": "passed",
+    "buildMain": "passed",
+    "buildRenderer": "passed",
+    "electronUI": "English and Chinese; failure notice does not resize canvas, explicit reconnect restores input; PNG/H264 rendering and controls passed with simulated device IPC",
+    "regressions": "Missing-geometry release failed before the fix; 200-event wheel/move burst and failure/cancellation cleanup covered."
+  },
+  "physicalDevice": {
+    "model": "iPhone 13",
+    "method": "Mouse input through the production Electron GUI, not just CLI input",
+    "screenshotMode": [
+      "Opened Utilities folder and Calculator",
+      "Two eight-page wheel scrolls plus drag followed by a numeric tap; display changed from 9 to 91"
+    ],
+    "replayKitMode": [
+      "Started continuous video",
+      "Two eight-page wheel scrolls followed by a numeric tap; display changed from 91 to 912"
+    ],
+    "newInputErrors": 0,
+    "leftRunning": true,
+    "dailyInstalledAppReplaced": false
+  },
+  "limitations": [
+    "WDA transport EPIPE recurred before this verification and required restarting the dedicated Runner; the service interruption root cause remains unresolved.",
+    "Physical reconnect after an actual input failure was not injected; reconnect behavior was verified with simulated IPC and backend tests.",
+    "Long-running stability, full disconnect/reconnect matrix and arbitrary rapid input sequences remain pending."
+  ]
+}

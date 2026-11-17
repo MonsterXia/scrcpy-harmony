@@ -16,12 +16,12 @@ try {
   await build({ stdin: { contents: `
     import React from 'react'; import {createRoot} from 'react-dom/client';
     import App from './src/renderer/native-mirror/App'; import {i18n} from './src/common/util';
-    const listeners = new Map(); window.inputs=[]; window.acks=[]; window.states=[]; window.videos=[];
+    const listeners = new Map(); window.inputs=[]; window.acks=[]; window.states=[]; window.videos=[]; window.opens=[]; window.failInput=false;
     window.emit=(name,data)=>listeners.get(name)?.(data);
     const state={id:'ios:test',state:'running',target:{name:'iPhone USB — SIMULATED',platform:'ios',transport:'usb'}};
     window.main={on:(name,fn)=>{listeners.set(name,fn);return()=>listeners.delete(name)},
-      nativeMirrorInfo:async()=>state,nativeMirrorOpen:async()=>{},nativeMirrorFit:async()=>{},
-      nativeMirrorInput:async input=>window.inputs.push(input),nativeMirrorAck:async n=>window.acks.push(n),
+      nativeMirrorInfo:async()=>state,nativeMirrorOpen:async restart=>{window.opens.push(restart);window.emit('nativeMirrorState',state)},nativeMirrorFit:async()=>{},
+      nativeMirrorInput:async input=>{window.inputs.push(input);if(window.failInput){window.failInput=false;throw Error('simulated input failure')}},nativeMirrorAck:async n=>window.acks.push(n),
       automationFrameState:async s=>window.states.push(s),automationFrameResult:async()=>{},
       nativeMirrorVideo:async enabled=>{window.videos.push(enabled);window.emit('nativeMirrorState',{...state,videoMode:enabled?'video':'screenshot'})}};
     window.preload={setTitle:()=>{}};
@@ -37,6 +37,48 @@ try {
   page.on('console', m=>{if(m.type()==='error') console.error(m.text())})
   page.on('pageerror', e => errors.push(e.message))
   await page.waitForFunction(()=>document.querySelector('canvas')?.tabIndex===0)
+  await page.evaluate(()=>document.body.classList.add('platform-mac'))
+  const designCases=[]
+  for(const locale of ['en-US','zh-CN']) for(const theme of ['light','dark']) for(const width of [280,460]) {
+    const dictionary=JSON.parse(await fs.readFile(path.join(root,'src/common/langs',`${locale}.json`),'utf8'))
+    await page.evaluate(locale=>{window.language(locale);window.emit('nativeMirrorState',{id:'ios:test',state:'running',videoMode:'video-starting'})},locale)
+    await page.waitForFunction(()=>document.querySelector('#ios-mirror-tools button')?.disabled===true)
+    assert.equal(await page.locator('#ios-mirror-tools button').first().textContent(),dictionary.plusSessionStarting)
+    await page.setViewportSize({width,height:740})
+    await page.evaluate(({locale,theme})=>{
+      window.language(locale);document.body.classList.toggle('-theme-with-dark-background',theme==='dark');
+      document.body.style.setProperty('--color-bg-container',theme==='dark'?'#25282f':'#f4f6f9');
+      document.body.style.setProperty('--color-text',theme==='dark'?'#f1f3f7':'#222733');
+      window.emit('nativeMirrorState',{id:'ios:test',state:'error',connectionIssue:'ios-wda'});
+    },{locale,theme})
+    const card=page.getByRole('alert')
+    await card.getByRole('heading',{name:dictionary.plusIosNotReady,exact:true}).waitFor()
+    for (const [issue,key] of [['ios-wda-update','plusIosWdaUpdateRequired'],['ios-cleanup-unknown','plusIosCleanupUnknown']]) {
+      await page.evaluate(issue=>window.emit('nativeMirrorState',{id:'ios:test',state:'error',connectionIssue:issue}),issue)
+      await card.getByText(dictionary[key],{exact:true}).waitFor()
+    }
+    await page.evaluate(()=>window.emit('nativeMirrorState',{id:'ios:test',state:'error',connectionIssue:'ios-wda'}))
+    await card.getByRole('heading',{name:dictionary.plusIosNotReady,exact:true}).waitFor()
+    const before=await page.locator('canvas').boundingBox()
+    const box=await card.boundingBox();assert.ok(box.x>=0&&box.x+box.width<=width&&box.width<=320)
+    await card.screenshot({path:path.join(evidence,`${locale}-${theme}-${width}-setup.png`)})
+    await card.locator('summary').click()
+    await card.getByText(dictionary.plusIosSetupRunner,{exact:true}).waitFor()
+    assert.deepEqual(await page.locator('canvas').boundingBox(),before)
+    assert.ok(await card.getByRole('button',{name:dictionary.retry,exact:true}).isVisible())
+    await card.screenshot({path:path.join(evidence,`${locale}-${theme}-${width}-setup-expanded.png`)})
+    await page.getByRole('button',{name:dictionary.retry,exact:true}).click()
+    await card.waitFor({state:'hidden'})
+    const entry=await page.locator('[aria-controls="ios-mirror-tools"]').boundingBox()
+    assert.ok(entry.x>width-50,'macOS tools belong at the right of the titlebar')
+    await page.evaluate(()=>document.body.classList.remove('platform-mac'))
+    const windowsEntry=await page.locator('[aria-controls="ios-mirror-tools"]').boundingBox()
+    assert.ok(windowsEntry.x<50,'Windows tools must avoid the native controls on the right')
+    await page.evaluate(()=>document.body.classList.add('platform-mac'))
+    designCases.push({locale,theme,width,setupDisclosure:true,canvasGeometryUnchanged:true,rightAlignedTools:true})
+  }
+  await page.setViewportSize({width:460,height:840})
+  await page.evaluate(()=>{document.body.classList.remove('-theme-with-dark-background');document.body.style.setProperty('--color-bg-container','#f4f6f9');document.body.style.setProperty('--color-text','#222733')})
   // Generate a real PNG in Chromium, then decode it through production createImageBitmap.
   const png = await page.evaluate(async()=>{
     const c=document.createElement('canvas');c.width=390;c.height=844;const ctx=c.getContext('2d');
@@ -53,7 +95,23 @@ try {
   for(const locale of ['en-US','zh-CN']) {
     const dictionary=JSON.parse(await fs.readFile(path.join(root,'src/common/langs',`${locale}.json`),'utf8'))
     await page.evaluate(locale=>window.language(locale),locale)
+    const bounds = await page.locator('canvas').boundingBox()
+    assert.equal(bounds.x, 0); assert.equal(bounds.y, 0)
+    assert.equal(await page.locator('header').count(), 0)
+    await page.evaluate(()=>window.emit('nativeMirrorState',{id:'ios:test',state:'error',connectionIssue:'ios-wda'}))
+    await page.getByRole('alert').getByText(dictionary.plusIosWdaLost,{exact:true}).waitFor()
+    assert.deepEqual(await page.locator('canvas').boundingBox(),bounds)
+    assert.equal(await page.locator('canvas').evaluate(c=>getComputedStyle(c).opacity),'0.3')
+    await page.getByRole('alert').screenshot({path:path.join(evidence,`${locale}-connection-interrupted.png`)})
+    await page.evaluate(()=>window.emit('nativeMirrorState',{id:'ios:test',state:'running'}))
+    await page.getByRole('alert').waitFor({state:'hidden'})
+    assert.deepEqual(await page.locator('canvas').boundingBox(),bounds)
+    await page.evaluate(()=>window.emit('nativeMirrorFrame',{sessionId:'ios:test',sequence:10,timestamp:10,format:'png',rotation:0,data:window.png}))
+    await page.waitForFunction(()=>window.states.at(-1).state==='presented')
+    await page.locator('[aria-controls="ios-mirror-tools"]').focus()
+    await page.getByRole('button',{name:dictionary.showScreencastTools,exact:true}).click()
     await page.getByRole('button',{name:dictionary.plusIosStartVideo,exact:true}).waitFor()
+    assert.deepEqual(await page.locator('canvas').boundingBox(), bounds)
     await page.locator('canvas').click({position:{x:220,y:300}})
     const inputs=await page.evaluate(()=>window.inputs.slice(-2))
     assert.deepEqual(inputs.map(i=>i.action),['down','up']);assert.deepEqual(inputs[0].display,{width:390,height:844,rotation:0})
@@ -63,7 +121,26 @@ try {
     await page.getByRole('button',{name:dictionary.plusIosStartVideo,exact:true}).click()
     await page.getByRole('button',{name:dictionary.plusIosStopVideo,exact:true}).waitFor()
     await page.getByRole('button',{name:dictionary.plusIosStopVideo,exact:true}).click()
-    cases.push({locale,png:true,tapMetadata:true,home:true,videoToggle:true})
+    await page.getByRole('button',{name:dictionary.hideScreencastTools,exact:true}).click()
+    await page.getByRole('button',{name:dictionary.plusIosStartVideo,exact:true}).waitFor({state:'hidden'})
+    await page.waitForFunction(()=>getComputedStyle(document.getElementById('ios-mirror-tools')).visibility==='hidden')
+    await page.screenshot({path:path.join(evidence,`${locale}-collapsed.png`)})
+    await page.evaluate(()=>{window.failInput=true})
+    await page.locator('canvas').click({position:{x:220,y:300}})
+    await page.getByRole('alert').getByText(dictionary.plusNativeInputError,{exact:true}).waitFor()
+    assert.deepEqual(await page.locator('canvas').boundingBox(),bounds)
+    assert.equal(await page.getByRole('alert').getByText(dictionary.plusNativeConnected,{exact:true}).count(),0)
+    const notice=await page.getByRole('alert').boundingBox();assert.ok(notice.height<bounds.height/4);assert.ok(notice.y>bounds.height/2)
+    await page.screenshot({path:path.join(evidence,`${locale}-input-error.png`)})
+    await page.getByRole('button',{name:dictionary.plusReconnectControl,exact:true}).click()
+    await page.getByRole('alert').waitFor({state:'hidden'})
+    assert.equal(await page.evaluate(()=>window.opens.at(-1)),true)
+    await page.evaluate(()=>window.emit('nativeMirrorFrame',{sessionId:'ios:test',sequence:20,timestamp:20,format:'png',rotation:0,data:window.png}))
+    await page.waitForFunction(()=>window.states.at(-1).state==='presented')
+    await page.locator('canvas').click({position:{x:220,y:300}})
+    assert.deepEqual(await page.evaluate(()=>window.inputs.slice(-2).map(i=>i.action)),['down','up'])
+
+    cases.push({locale,png:true,tapMetadata:true,home:true,videoToggle:true,edgeToEdge:true,floatingToolsDoNotResizeCanvas:true,connectionErrorDoesNotResizeCanvas:true,staleFrameDimmed:true,recoveryClearsError:true,inputErrorNonBlocking:true,explicitReconnectRestoresInput:true})
   }
   // Encode real Annex B H.264 and feed production H264Decoder/WebCodecs, then return to PNG.
   await page.evaluate(async()=>{
@@ -76,6 +153,6 @@ try {
   await page.evaluate(()=>window.emit('nativeMirrorFrame',{sessionId:'ios:test',sequence:3,timestamp:200,format:'png',rotation:180,data:window.png}))
   await page.waitForFunction(()=>window.acks.includes(3)&&window.states.at(-1).metadata?.rotation===180)
   assert.deepEqual(errors,[])
-  const report={scope:'Real Electron production React renderer; simulated device IPC, no physical iPhone',cases,h264WebCodecs:true,pngFallback:true,rotationMetadata:true,errors}
+  const report={scope:'Real Electron production React renderer; simulated device IPC, no physical iPhone',cases,designCases,h264WebCodecs:true,pngFallback:true,rotationMetadata:true,errors}
   await fs.writeFile(path.join(evidence,'ui.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report))
 } finally {await application?.close();await fs.rm(temporary,{recursive:true,force:true})}

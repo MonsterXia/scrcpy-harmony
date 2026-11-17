@@ -14,7 +14,7 @@ const help = `Prepare the pinned Scrcpy Plus iOS WDA + ReplayKit runner (macOS/X
 Options: --bundle-id <reverse.dns.WebDriverAgentRunner>, --xcode <Developer directory>
 Run requires a trusted, unlocked iPhone with Developer Mode and a configured signing team.
 Keep the test process running, then select the USB iPhone in Scrcpy Plus.
-The script never changes xcode-select. --allow-provisioning explicitly allows Xcode to update profiles.
+The script never changes xcode-select. --allow-provisioning explicitly allows Xcode to update profiles and register the selected device.
 Unsigned builds verify compilation only and cannot be installed on a real iPhone.
 `
 export function parseOptions(args) {
@@ -44,7 +44,10 @@ export function buildArguments(options, source, derived) {
     `WDA_PRODUCT_BUNDLE_IDENTIFIER=${options['bundle-id'] || `io.scrcpyplus.${(options.team || 'unsigned').toLowerCase()}.WebDriverAgentRunner`}`]
   if (options.unsigned) args.push('CODE_SIGNING_ALLOWED=NO', 'CODE_SIGNING_REQUIRED=NO')
   else args.push(`DEVELOPMENT_TEAM=${options.team}`, 'CODE_SIGN_STYLE=Automatic')
-  if (options['allow-provisioning']) args.push('-allowProvisioningUpdates')
+  if (options['allow-provisioning']) {
+    args.push('-allowProvisioningUpdates')
+    if (options.udid) args.push('-allowProvisioningDeviceRegistration')
+  }
   args.push(options.command === 'run' ? 'test' : 'build-for-testing')
   return args
 }
@@ -64,6 +67,18 @@ export function patchSocketSource(text, patch) {
   const result = text.replace(patch.find, patch.replace)
   if (hash(result) !== patch.patchedSha256) throw Error('WDA patched socket checksum mismatch')
   return result
+}
+export async function applyOwnershipPatch(source, manifest) {
+  const spec = manifest.sessionOwnershipPatch
+  const target = path.join(source, spec.target)
+  const patch = path.join(root, 'vendor/ios-wda', spec.file)
+  const hash = bytes => createHash('sha256').update(bytes).digest('hex')
+  if (hash(await fs.readFile(patch)) !== spec.sha256) throw Error('WDA ownership patch checksum mismatch')
+  const current = hash(await fs.readFile(target))
+  if (current === spec.patchedSha256) return
+  if (current !== spec.sourceSha256) throw Error('Unexpected WDA source; refusing to patch')
+  await run('patch', ['--batch', '--forward', '-p1', '-d', source, '-i', patch])
+  if (hash(await fs.readFile(target)) !== spec.patchedSha256) throw Error('WDA patched source checksum mismatch')
 }
 async function prepareSource() {
   const manifest = JSON.parse(await fs.readFile(path.join(root, 'vendor/ios-wda/manifest.json'), 'utf8'))
@@ -85,6 +100,7 @@ async function prepareSource() {
   const original = await fs.readFile(socketFile, 'utf8')
   const patched = patchSocketSource(original, manifest.localPatch)
   if (patched !== original) await fs.writeFile(socketFile, patched)
+  await applyOwnershipPatch(source, manifest)
   return { source, cache }
 }
 async function main() {

@@ -10,12 +10,13 @@ function fixture(t, options = {}) {
   class WdaClient {
     async request(method, path, body, signal, timeout) {
       calls.push({ method, path, body, timeout })
-      if (path === '/status') return { sessionId: options.busy ? 'someone-else' : null, value: { ready: true } }
-      if (path === '/session') return { value: { sessionId: 'our-session' } }
+      if (path === '/status') { if(options.failStatus) throw Error('Offline'); return { sessionId: options.statusSession ?? (options.busy ? 'someone-else' : null), value: { ready: true, ...(options.legacy ? {} : {scrcpyPlusProtocolVersion:1,scrcpyPlusRunnerId:options.runnerId || "runner-0001"}) } } }
+      if (method === 'DELETE' && options.failDelete) throw Error('WDA HTTP 404')
+      if (path === '/session') { if(options.loseSession) {options.statusSession='unacknowledged-session';throw Error('response lost')} if(options.busyRace) return {value:{scrcpyPlusSessionBusy:true}}; return { value: { sessionId: 'our-session' } } }
       if (path.endsWith('/wda/screen')) return { value: { screenSize: { width: 390, height: 844 }, scale: 3 } }
       if (path.endsWith('/rotation') && options.readDelay) await new Promise(r => setTimeout(r, options.readDelay))
       if (path.endsWith('/rotation')) return { value: { x: 0, y: 0, z: rotation } }
-      if (path.endsWith('/screenshot')) return { value: png.toString('base64') }
+      if (path.endsWith('/screenshot')) { if(options.failRead) { options.failRead--; throw Error('read ECONNRESET') } return { value: png.toString('base64') } }
       if (path.includes('/actions') && options.failInput) throw Error('Lost input acknowledgement')
       return { value: null }
     }
@@ -46,21 +47,26 @@ test('iOS refuses to replace another WDA session', async t => {
   await assert.rejects(f.start(), /already in use/)
   assert.equal(f.calls.some(c => c.method === 'POST' || c.method === 'DELETE'), false)
 })
-
-test('lost session delete response requires a valid status proving our session is gone', async t => {
-  const f = fixture(t); await f.start()
-  const request = f.mirror.client.request.bind(f.mirror.client)
-  let status = { sessionId: 'our-session', value: { ready: true } }
-  f.mirror.client.request = async (method,path,...args) => {
-    if (method === 'DELETE') throw Error('delete response lost')
-    if (path === '/status') return status
-    return request(method,path,...args)
-  }
-  await assert.rejects(f.mirror.close(), /delete response lost/)
-  status = { value: { ready: true } }
-  await assert.rejects(f.mirror.close(), /delete response lost/)
-  status = { sessionId: 'another-session', value: { ready: true } }
+test('a transient screenshot read failure recovers without recreating the session or replaying writes', async t => {
+  const options={}, f=fixture(t,options); await f.start(); options.failRead=1
+  const deadline=Date.now()+4500
+  while(f.frames.length<2 && Date.now()<deadline) await new Promise(r=>setTimeout(r,50))
+  assert.ok(f.frames.length>=2,'preview resumes after transient read failure')
+  assert.equal(f.states.at(-1),'connected')
+  assert.equal(f.calls.filter(c=>c.path==='/session').length,1)
+  assert.equal(f.calls.filter(c=>c.method==='POST').length,2)
+})
+test('cleanup accepts an old WDA session that is confirmed gone after a runner restart', async t => {
+  const options={},f=fixture(t,options);await f.start();options.failDelete=true
   await f.mirror.close()
+  assert.equal(f.calls.filter(c=>c.method==='DELETE').length,1)
+  assert.equal(f.calls.at(-1).path,'/status')
+})
+test('failed cleanup retains ownership when status is unreachable or the same session remains', async t => {
+  const options={},f=fixture(t,options);await f.start();options.failDelete=true;options.statusSession='our-session'
+  await assert.rejects(f.mirror.close())
+  options.failStatus=true;await assert.rejects(f.mirror.close())
+  options.failStatus=false;options.failDelete=false;await f.mirror.close()
 })
 test('rotation between press and release prevents input instead of clicking stale coordinates', async t => {
   const f = fixture(t); await f.start()
@@ -131,4 +137,108 @@ test('video stop requested during startup waits then returns to PNG',async t=>{
   const stopping=f.mirror.setVideo(false);const observed=stopping.catch(error=>error)
   release();await opening;const result=await observed
   assert.equal(result,undefined);assert.equal(closed,1);assert.equal(f.states.at(-1),'screenshot')
+})
+
+test('polling disconnect cancels a GUI gesture before its delayed write',async()=>{
+const {DeviceInputQueue}=load('src/main/automation/input.ts')
+const queue=new DeviceInputQueue(),key='ios:01234567'
+let hold=false,held=false,release,disconnected,writeAfterDisconnect=false,isDisconnected=false
+const disconnectedEvent=new Promise(r=>disconnected=r)
+class WdaClient {async request(method,path){
+ if(path==='/status')return {value:{ready:true,scrcpyPlusProtocolVersion:1,scrcpyPlusRunnerId:'runner-0001'}}
+ if(path==='/session')return {value:{sessionId:'ours'}}
+ if(path.endsWith('/wda/screen')){
+  if(hold&&!held){held=true;await new Promise(r=>release=r)}
+  else if(hold&&held)throw Error('read ECONNRESET')
+  return {value:{screenSize:{width:390,height:844}}}
+ }
+ if(path.endsWith('/rotation'))return {value:{z:0}}
+ if(path.endsWith('/screenshot'))return {value:png.toString('base64')}
+ if(path.includes('/actions'))writeAfterDisconnect=isDisconnected
+ return {value:null}
+}}
+const real=load('src/main/lib/devices/ios-wda.ts',{'./ios-usbmux':{}})
+const {IosMirror}=load('src/main/lib/devices/ios.ts',{'./ios-wda':{...real,WdaClient},'./ios-usbmux':{}})
+ const m=new IosMirror({key,connectionId:'01234567',transport:'usb',platform:'ios'})
+ await m.start(()=>{},state=>{if(state==='disconnected'){isDisconnected=true;queue.discard(key);disconnected()}})
+ const display={width:390,height:844,rotation:0}
+ await queue.gui(key,'down',()=>m.input({type:'touch',action:'down',x:.5,y:.5},display))
+ hold=true
+ const up=queue.gui(key,'up',()=>m.input({type:'touch',action:'up',x:.5,y:.5},display))
+ const rejected=assert.rejects(up)
+ await disconnectedEvent
+ release();await rejected
+ assert.equal(writeAfterDisconnect,false)
+ await m.close()
+
+})
+
+test('legacy Runner is rejected before session allocation',async t=>{
+ const f=fixture(t,{legacy:true});await assert.rejects(f.start(),/Update/)
+ assert.equal(f.calls.some(c=>c.method==='POST'),false)
+})
+test('an atomic busy response never deletes the competing session',async t=>{
+ const f=fixture(t,{busyRace:true});await assert.rejects(f.start(),/ownership changed/);await f.mirror.close()
+ assert.equal(f.calls.some(c=>c.method==='DELETE'),false)
+ assert.equal(f.calls.find(c=>c.path==='/session').body.scrcpyPlusRunnerId,'runner-0001')
+})
+test('lost session allocation retains cleanup ownership until a new ready Runner is confirmed',async t=>{
+ const options={loseSession:true},f=fixture(t,options);await assert.rejects(f.start(),/response lost/)
+ await assert.rejects(f.mirror.close(),e=>e.code==='IOS_WDA_ALLOCATION_UNKNOWN')
+ options.failStatus=true;await assert.rejects(f.mirror.close(),e=>e.code==='IOS_WDA_ALLOCATION_UNKNOWN')
+ options.failStatus=false;options.runnerId='runner-0002';options.legacy=true
+ await assert.rejects(f.mirror.close(),e=>e.code==='IOS_WDA_ALLOCATION_UNKNOWN')
+ options.legacy=false;await f.mirror.close()
+ assert.equal(f.calls.some(c=>c.method==='DELETE'),false)
+})
+
+test('video fallback failure cancels pending GUI writes too',async()=>{
+const {DeviceInputQueue}=load('src/main/automation/input.ts')
+const queue=new DeviceInputQueue(),key='ios:01234567'
+let hold=false,held=false,release,errored,writeAfterError=false,isError=false,videoFailed
+const errorEvent=new Promise(r=>errored=r)
+class WdaClient {async request(method,path){
+ if(path==='/status')return {value:{ready:true,scrcpyPlusProtocolVersion:1,scrcpyPlusRunnerId:'runner-0001'}}
+ if(path==='/session')return {value:{sessionId:'ours'}}
+ if(path.endsWith('/wda/screen')){
+  if(hold&&!held){held=true;await new Promise(r=>release=r)}
+  else if(hold&&held)throw Error('read ECONNRESET')
+  return {value:{screenSize:{width:390,height:844}}}
+ }
+ if(path.endsWith('/rotation'))return {value:{z:0}}
+ if(path.endsWith('/screenshot'))return {value:png.toString('base64')}
+ if(path.includes('/actions'))writeAfterError=isError
+ return {value:null}
+}}
+class IosVideo {constructor(client,session,geometry,frame,failed){videoFailed=failed}async start(){}async close(){}}
+const real=load('src/main/lib/devices/ios-wda.ts',{'./ios-usbmux':{}})
+const {IosMirror}=load('src/main/lib/devices/ios.ts',{'./ios-wda':{...real,WdaClient},'./ios-usbmux':{},'./ios-video':{IosVideo}})
+ const m=new IosMirror({key,connectionId:'01234567',transport:'usb',platform:'ios'})
+ await m.start(()=>{},state=>{if(state==='error'){isError=true;queue.discard(key);errored()}})
+ await m.setVideo(true)
+ const display={width:390,height:844,rotation:0}
+ await queue.gui(key,'down',()=>m.input({type:'touch',action:'down',x:.5,y:.5},display))
+ hold=true
+ const up=queue.gui(key,'up',()=>m.input({type:'touch',action:'up',x:.5,y:.5},display))
+ await new Promise(setImmediate)
+ const rejected=assert.rejects(up)
+ videoFailed();await errorEvent
+ release();await rejected
+ assert.equal(writeAfterError,false)
+ await m.close()
+
+})
+
+for (const failure of ['stop', 'screenshot']) test(`manual video disable reports ${failure} failure and cancels GUI input`,async t=>{
+ let failStop=false
+ class IosVideo {async start(){}async close(){if(failStop)throw Error('stop failed')}}
+ const options={video:IosVideo},f=fixture(t,options)
+ await f.start();await f.mirror.setVideo(true)
+ await f.mirror.input({type:'touch',action:'down',x:.5,y:.5},{width:390,height:844,rotation:0})
+ if(failure==='stop')failStop=true;else options.failRead=1
+ await assert.rejects(f.mirror.setVideo(false))
+ assert.equal(f.states.at(-1),'error')
+ await assert.rejects(f.mirror.input({type:'touch',action:'up',x:.5,y:.5}))
+ assert.equal(f.calls.some(c=>c.path.includes('/actions')),false)
+ failStop=false
 })

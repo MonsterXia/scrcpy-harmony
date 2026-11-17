@@ -1,0 +1,9 @@
+{
+  "protocol": 1,
+  "concurrentRequests": 2,
+  "created": 1,
+  "busy": 1,
+  "winnerPreserved": true,
+  "staleProcessRejected": true,
+  "ownedSessionCleaned": true
+}
