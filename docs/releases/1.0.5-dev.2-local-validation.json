@@ -1,0 +1,227 @@
+{
+  "productSource": "e26c06bf4846e91823ed76c788b71c7e10a4de0b",
+  "date": "2026-11-17",
+  "applicationTests": {
+    "pass": 1157,
+    "skip": 2,
+    "fail": 0
+  },
+  "licia": {
+    "normal": {
+      "pass": 606,
+      "pending": 4
+    },
+    "fallback": {
+      "pass": 606,
+      "pending": 4
+    }
+  },
+  "lintAndI18n": "passed",
+  "fullBuild": "passed",
+  "installedCliAndMcp": {
+    "passed": true,
+    "tools": 35,
+    "version": "1.0.5-dev.2",
+    "checks": [
+      "CLI schema",
+      "CLI installed shim",
+      "MCP stdio tool set",
+      "offline service error",
+      "package version and bin mapping",
+      "licenses"
+    ]
+  },
+  "typecheck": {
+    "passed": false,
+    "existingDiagnostics": 55,
+    "newDiagnostics": 0,
+    "comparison": "output unchanged from existing baseline"
+  },
+  "workspaceUi": {
+    "scope": "Real Electron UI shell with simulated device/session IPC; no physical phone or backend acceptance",
+    "cases": [
+      {
+        "language": "en-US",
+        "liveLanguageCases": [
+          {
+            "choice": "zh-CN",
+            "resolved": "zh-CN",
+            "statePreserved": true,
+            "menuAndAuxiliaryTranslated": true
+          },
+          {
+            "choice": "en-US",
+            "resolved": "en-US",
+            "statePreserved": true,
+            "menuAndAuxiliaryTranslated": true
+          },
+          {
+            "choice": "system",
+            "resolved": "en-US",
+            "statePreserved": true,
+            "menuAndAuxiliaryTranslated": true
+          }
+        ],
+        "sidebarCases": [
+          {
+            "width": 960,
+            "theme": "light",
+            "inside": true,
+            "iconVisible": true,
+            "scrollFits": true
+          },
+          {
+            "width": 960,
+            "theme": "dark",
+            "inside": true,
+            "iconVisible": true,
+            "scrollFits": true
+          },
+          {
+            "width": 1280,
+            "theme": "light",
+            "inside": true,
+            "iconVisible": true,
+            "scrollFits": true
+          },
+          {
+            "width": 1280,
+            "theme": "dark",
+            "inside": true,
+            "iconVisible": true,
+            "scrollFits": true
+          }
+        ],
+        "batchSelection": true,
+        "focusWithoutRestart": true,
+        "layoutScopeAllSessions": true,
+        "stopIsolation": true,
+        "iosReceiverSeparated": true,
+        "overviewPlatforms": [
+          "android",
+          "harmony",
+          "ios"
+        ],
+        "repeatedDiscoveryPreservesOverview": true,
+        "sameGeometryInBothThemes": true,
+        "runtime": "45.0.0",
+        "passed": true
+      },
+      {
+        "language": "zh-CN",
+        "liveLanguageCases": [
+          {
+            "choice": "en-US",
+            "resolved": "en-US",
+            "statePreserved": true,
+            "menuAndAuxiliaryTranslated": true
+          },
+          {
+            "choice": "zh-CN",
+            "resolved": "zh-CN",
+            "statePreserved": true,
+            "menuAndAuxiliaryTranslated": true
+          },
+          {
+            "choice": "system",
+            "resolved": "en-US",
+            "statePreserved": true,
+            "menuAndAuxiliaryTranslated": true
+          }
+        ],
+        "sidebarCases": [
+          {
+            "width": 960,
+            "theme": "light",
+            "inside": true,
+            "iconVisible": true,
+            "scrollFits": true
+          },
+          {
+            "width": 960,
+            "theme": "dark",
+            "inside": true,
+            "iconVisible": true,
+            "scrollFits": true
+          },
+          {
+            "width": 1280,
+            "theme": "light",
+            "inside": true,
+            "iconVisible": true,
+            "scrollFits": true
+          },
+          {
+            "width": 1280,
+            "theme": "dark",
+            "inside": true,
+            "iconVisible": true,
+            "scrollFits": true
+          }
+        ],
+        "batchSelection": true,
+        "focusWithoutRestart": true,
+        "layoutScopeAllSessions": true,
+        "stopIsolation": true,
+        "iosReceiverSeparated": true,
+        "overviewPlatforms": [
+          "android",
+          "harmony",
+          "ios"
+        ],
+        "repeatedDiscoveryPreservesOverview": true,
+        "sameGeometryInBothThemes": true,
+        "runtime": "45.0.0",
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "iosUi": {
+    "scope": "Real Electron production React renderer; simulated device IPC, no physical iPhone",
+    "cases": [
+      {
+        "locale": "en-US",
+        "png": true,
+        "tapMetadata": true,
+        "home": true,
+        "videoToggle": true
+      },
+      {
+        "locale": "zh-CN",
+        "png": true,
+        "tapMetadata": true,
+        "home": true,
+        "videoToggle": true
+      }
+    ],
+    "h264WebCodecs": true,
+    "pngFallback": true,
+    "rotationMetadata": true,
+    "errors": []
+  },
+  "patchedWdaCompile": {
+    "passed": true,
+    "run": 43990873027,
+    "job": "build (macos-15, arm64)",
+    "result": "TEST BUILD SUCCEEDED",
+    "unsigned": true,
+    "manifest": {
+      "repository": "https://github.com/droidrun/WebDriverAgent",
+      "commit": "8ce9d6f528e6f6c01bc0fa903b33555842d43571",
+      "archive": "https://codeload.github.com/droidrun/WebDriverAgent/tar.gz/8ce9d6f528e6f6c01bc0fa903b33555842d43571",
+      "sha256": "66e1e8b3bbc8c1bbf5d7a0a62627fed8d2a9987447efd5bd7f26a9f87a4ba64f",
+      "license": "LICENSE",
+      "purpose": "Device-side XCTest control and ReplayKit H.264 capture; built with script/ios-wda.mjs. No mobilerun-ios binary.",
+      "localPatch": {
+        "file": "WebDriverAgentLib/Routing/FBTCPSocket.m",
+        "sha256": "d897961fd5dcb232665f7a80a2614f26a0df028cf5f590e4ed00e1147bf566b9",
+        "patchedSha256": "b75487f793dae49aae390e3152a8671e11ad4b0b227e98e5754ad096c550bba6",
+        "find": "    _port = port;\n    _delegate = nil;",
+        "replace": "    _port = port;\n    // Scrcpy Plus: all media listeners are USB/loopback only.\n    _interface = @\"127.0.0.1\";\n    _delegate = nil;"
+      }
+    }
+  },
+  "physicalDeviceScope": "Existing iPhone overview evidence retained; signed WDA screenshot/input/video and rotation/unplug/multi-device/long-duration acceptance remain pending. No physical device control performed in this release task.",
+  "localInstallation": "Not replaced in this release task"
+}

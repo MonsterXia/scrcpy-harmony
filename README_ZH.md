@@ -4,13 +4,13 @@
 
 开发分支新增 iOS USB WDA 截图/控制及可选 ReplayKit 连续视频，签名安装与真机验收尚未完成，见 [iOS USB 配置](docs/scrcpy-plus/ios-usb-wda.md)。
 
-开发版自动化已提供共享本地服务、独立 Node CLI 与 [MCP stdio](docs/scrcpy-plus/automation/mcp.md)，支持会话、截图、输入和现有 Harmony 工具。参见[使用指南](docs/scrcpy-plus/automation/README.md)与 [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md)。本机模拟流程通过，真机及 Windows 验收仍 pending。
+开发版自动化已提供共享本地服务、独立 Node CLI 与 [MCP stdio](docs/scrcpy-plus/automation/mcp.md)，支持会话、截图、输入和现有 Harmony 工具。参见[使用指南](docs/scrcpy-plus/automation/README.md)与 [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md)。本机模拟流程通过，真机自动化及 Windows 自动化端到端验收仍待完成。
 
-## 1.0.5-dev.2 发行候选
+## 1.0.5-dev.2 开发预发布
 
-下一开发预发布为 **Scrcpy Plus 1.0.5-dev.2**。候选准备和验收状态见[发行记录](docs/releases/1.0.5-dev.2.md)；请仅下载 [Releases](https://github.com/MonsterXia/scrcpy-harmony/releases) 实际列出的版本。稳定 Latest 保持 **Scrcpy Harmony 1.0.4**。
+**[Scrcpy Plus 1.0.5-dev.2 已公开](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.5-dev.2)。** 源码、附件校验和验收范围见[发行记录](docs/releases/1.0.5-dev.2.md)。稳定 Latest 保持 **Scrcpy Harmony 1.0.4**。
 
-本候选包含安卓/鸿蒙投屏、iOS AirPlay、USB iPhone 概览、统一设备工作区、即时语言切换，以及独立 Node CLI/MCP 客户端。USB WDA 截图/控制和 ReplayKit 视频为实验能力，需另行签名运行 Runner；真机控制/视频验收仍待完成。
+本版本包含安卓/鸿蒙投屏、iOS AirPlay、USB iPhone 概览、统一设备工作区、即时语言切换，以及独立 Node CLI/MCP 客户端。USB WDA 截图/控制和 ReplayKit 视频为实验能力，需另行签名运行 Runner；真机控制/视频验收仍待完成。
 
 **从 Harmony 切换到 Plus：** 两者安装和配置身份不同。保留原 Harmony 安装与设置；Plus 创建自己的配置目录（macOS 为 `~/Library/Application Support/Scrcpy Plus`，Windows 为 `%APPDATA%\Scrcpy Plus`），不会自动迁移 Harmony 设置。已有 Plus 开发版继续使用原 Plus 配置。更新器仅打开发行页供手动安装，不自动安装更新。
 
