@@ -92,7 +92,9 @@ def safe_extract(archive, destination):
         require(len(zipped.infolist()) <= 100, 'Unexpectedly many ZIP entries')
         require(sum(i.file_size for i in zipped.infolist()) <= 4 * 1024 ** 3, 'ZIP exceeds 4 GiB limit')
         for entry in zipped.infolist():
-            name = entry.filename
+            # ZipInfo normalizes Windows separators and truncates NULs.
+            # Reject the original archive spelling before either transformation.
+            name = entry.orig_filename
             parts = name.rstrip('/').split('/')
             require(name and '\\' not in name and '\x00' not in name and ':' not in name,
                     f'Unsafe ZIP entry: {name!r}')

@@ -10,7 +10,7 @@ from pathlib import Path
 import stat
 import tempfile
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import zipfile
 
 SCRIPT = Path(__file__).with_name('publish-dev2.py')
@@ -120,10 +120,28 @@ class PublishSafetyTests(unittest.TestCase):
                 archive, out = Path(root) / 'bad.zip', Path(root) / 'out'
                 with zipfile.ZipFile(archive, 'w') as zipped:
                     zipped.writestr('safe-first', b'fine')
-                    zipped.writestr(name, b'bad')
+                    entry = zipfile.ZipInfo('fixture')
+                    entry.filename = name  # Keep raw spelling even on Windows.
+                    zipped.writestr(entry, b'bad')
                 with self.assertRaises(module.VerificationError):
                     module.safe_extract(archive, out)
                 self.assertFalse(out.exists())
+
+    def test_zip_rejects_original_name_before_platform_normalization(self):
+        with tempfile.TemporaryDirectory() as root:
+            archive, out = Path(root) / 'bad.zip', Path(root) / 'out'
+            with zipfile.ZipFile(archive, 'w') as zipped:
+                entry = zipfile.ZipInfo('fixture')
+                entry.filename = 'a\\escape'
+                zipped.writestr(entry, b'bad')
+            original_init = zipfile.ZipInfo.__init__
+            def windows_init(entry, *args, **kwargs):
+                original_init(entry, *args, **kwargs)
+                entry.filename = entry.filename.replace('\\', '/')
+            with patch.object(zipfile.ZipInfo, '__init__', windows_init):
+                with self.assertRaises(module.VerificationError):
+                    module.safe_extract(archive, out)
+            self.assertFalse(out.exists())
 
     def test_zip_refuses_symlink_and_special_file(self):
         for mode in (stat.S_IFLNK | 0o777, stat.S_IFIFO | 0o600):
