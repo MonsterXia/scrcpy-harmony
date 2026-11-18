@@ -4,14 +4,15 @@
     "script/lib/app-icon-design.mjs": "5d0e84bb3e4d252bf5a09f1b3497e6db58f7dc263064a7e726aa5a55acfbcde1",
     "script/generate-app-icons.mjs": "048bad28d0de0f29d1d63f9c58171273396fea29417cdde4afa154e0acc28ab7",
     "script/lib/mac-icon-toolchain.mjs": "5c77c22050393e954467957ae4baf761d1131d87c0743550131c19197f12b4fc",
-    "script/pack.mjs": "489dfc67aa12a077b35c14de2d39dc445b1a5975ae02003c6f4c0e4db52b804a",
+    "script/pack.mjs": "8c98a39c07049ab02006a2f08f9ae306314f477f3e78ee0fd46d2869b2f39fb3",
     "script/smoke-app.mjs": "4eb21c8083307ea0199bac9a5935202e2e24147baec7c4cb2b23820af48ec196",
     "script/check-app-icon-ui.mjs": "b5a18ff4191e35ad629126b6604777d501f4a97d3603cb0863ed5980ebf25baa",
-    "script/check-macos-app-icon.mjs": "e7c7d9e29faf7b3925dd4134398a5691150a110210794dee3cf652c6fedc074f",
+    "script/check-macos-app-icon.mjs": "5139e4e36151b911c70c1a0c86af4075643fba308c176ca15c46405013ff4ef8",
     "src/renderer/update/App.tsx": "2ba90f20887111e370348193203ebd2c998e86f63e055cc6f3e82395778efd2c",
     "src/share/renderer/about/App.tsx": "7e2861c64fc972ad3f4c30a7b6288cfb9d421a23e668ddf1f94e2b652d9b253e",
     "src/share/common/langs/en-US.json": "dd4bf467a9df750d8a61644e24202cb7f426a1aba6596b8b517f3790ec73d7bd",
-    "src/share/common/langs/zh-CN.json": "4ec21a126ea826ed71b7adb7fde870e0f9d2c473e2669cd7f45ec61989075bdb"
+    "src/share/common/langs/zh-CN.json": "4ec21a126ea826ed71b7adb7fde870e0f9d2c473e2669cd7f45ec61989075bdb",
+    "script/compile-mac-app-icon.mjs": "94cd03741c21699a51038bc56fd2fa4f69f0c64191fa2a54dac8ed90152fa2c0"
   },
   "checks": {
     "fullBuild": "passed",

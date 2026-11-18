@@ -54,7 +54,7 @@ npm start
 
 ## 命令与作用
 
-品牌应用图标的母版是 `script/lib/app-icon-design.mjs`；`npm run gen:app-icons` 使用作者机器的 Chrome（或 `BROWSER_EXECUTABLE`）生成已跟踪的 PNG/ICO/SVG 和 `build/ScrcpyPlus.icon`。它与界面字形的 `gen:icon` 不同，普通构建不需要 Chrome。macOS 打包使用 Icon Composer，要求完整 Xcode 26+；`script/lib/mac-icon-toolchain.mjs` 在打包进程内选择工具链，显式 `DEVELOPER_DIR` 优先。electron-builder 同时嵌入 `Assets.car` 和旧系统 ICNS。可用 `SCRCPY_PLUS_PACK_OUTPUT` 指定独立的候选输出目录，启动检查使用同一个变量定位签名后库。验证命令与范围见[品牌图标记录](../../../../docs/maintenance/app-brand-icon.md)。
+品牌应用图标的母版是 `script/lib/app-icon-design.mjs`；`npm run gen:app-icons` 使用作者机器的 Chrome（或 `BROWSER_EXECUTABLE`）生成已跟踪的 PNG/ICO/SVG 和 `build/ScrcpyPlus.icon`。它与界面字形的 `gen:icon` 不同，普通构建不需要 Chrome。修改分层后，在完整 Xcode 26+ 上执行 `node script/compile-mac-app-icon.mjs` 并提交 `build/mac-icon/`，显式 `DEVELOPER_DIR` 优先。electron-builder 同时嵌入 `Assets.car` 和旧系统 ICNS。可用 `SCRCPY_PLUS_PACK_OUTPUT` 指定独立的候选输出目录，启动检查使用同一个变量定位签名后库。验证命令与范围见[品牌图标记录](../../../../docs/maintenance/app-brand-icon.md)。
 
 | 命令 | 作用 / 前提 |
 | --- | --- |

@@ -6,7 +6,7 @@
 
 关于窗口随已有 MobX 主题切换；更新窗口使用与其背景一致的 `prefers-color-scheme`，通过 picture 选择图标。关于窗口旧的“鸿蒙设备桌面工具”说明同步改为中英文三端投屏说明。
 
-`script/pack.mjs` 指定 `mac.icon: ScrcpyPlus.icon`。锁文件中的 electron-builder 26.15.3 编译 `Assets.car` 并设置 `CFBundleIconName=Icon`，同时保留 `icon.icns` 回退。打包进程自动寻找 Xcode 26+；尊重显式 `DEVELOPER_DIR`，不修改全局 xcode-select。背景/前景原生外观由系统管理，没有用 `app.dock.setIcon` 覆盖系统图标，也不会因用户强制应用窗口深浅色而覆盖系统图标风格。
+`node script/compile-mac-app-icon.mjs` 用 actool 编译分层源。已验证的 Assets.car 和 ICNS 存放在 `build/mac-icon/`。打包在签名前嵌入两份资源并设置 `CFBundleIconName=Icon`，CI 从 DMG 安装后按字节比对两份资源。首次 PR CI 中 Xcode 26.3 的 AssetCatalogAgent 在编译时退出，因此改为在资源生成阶段编译。资源编译进程自动寻找 Xcode 26+；尊重显式 `DEVELOPER_DIR`，不修改全局 xcode-select。背景/前景原生外观由系统管理，没有用 `app.dock.setIcon` 覆盖系统图标，也不会因用户强制应用窗口深浅色而覆盖系统图标风格。
 
 macOS 的系统窗口外观和“图标与小组件样式”是独立设置。支持系统默认、深色、透明与着色外观及相应自动策略，不强制把用户选定的默认图标改成深色。旧系统保留静态 ICNS；Windows 使用 16/24/32/48/64/128/256 多尺寸 ICO。
 
@@ -43,6 +43,7 @@ macOS 的系统窗口外观和“图标与小组件样式”是独立设置。�
 
 ```sh
 npm run gen:app-icons # 作者机器需 Chrome，或设置 BROWSER_EXECUTABLE
+node script/compile-mac-app-icon.mjs # 更改图标分层后在 Mac 上重新编译
 npm run build
 npm run lint
 node script/check-app-icon-ui.mjs
@@ -51,4 +52,4 @@ node script/check-macos-app-icon.mjs 'release/app-icon-20261118/mac-arm64/Scrcpy
 SCRCPY_PLUS_PACK_OUTPUT="$PWD/release/app-icon-20261118" node script/smoke-app.mjs "$PWD/release/app-icon-20261118/mac-arm64/Scrcpy Plus.app/Contents/MacOS/Scrcpy Plus"
 ```
 
-生成资源已跟踪，普通构建无需 Chrome；macOS 打包需要完整 Xcode 26+，单独导出 26/27 两代渲染图的检查使用 Xcode 27 Icon Composer。当前源码、候选包和日常安装均已替换图标，Dock/Finder 实际切换已验证；其他工作区运行中的试用包保持原状。Windows 安装、旧系统回退及全局透明样式仍需另验。对外分发仍重新签名、公证；历史公证票据不适用于新包。
+生成资源已跟踪，普通构建无需 Chrome；重新编译原生图标需要完整 Xcode 26+，单独导出 26/27 两代渲染图的检查使用 Xcode 27 Icon Composer。当前源码、候选包和日常安装均已替换图标，Dock/Finder 实际切换已验证；其他工作区运行中的试用包保持原状。Windows 安装、旧系统回退及全局透明样式仍需另验。对外分发仍重新签名、公证；历史公证票据不适用于新包。

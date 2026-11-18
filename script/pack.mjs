@@ -1,9 +1,7 @@
 import builder from 'electron-builder'
 import isMac from 'licia/isMac.js'
 import path from 'node:path'
-import { prepareMacIconToolchain } from './lib/mac-icon-toolchain.mjs'
 
-prepareMacIconToolchain()
 const outputOverride = process.env.SCRCPY_PLUS_PACK_OUTPUT
   ? path.resolve(process.env.SCRCPY_PLUS_PACK_OUTPUT) : undefined
 
@@ -41,7 +39,9 @@ const config = {
     ],
   },
   mac: {
-    icon: 'ScrcpyPlus.icon',
+    icon: 'mac-icon/icon.icns',
+    extendInfo: { CFBundleIconName: 'Icon' },
+    extraResources: [{ from: 'build/mac-icon/Assets.car', to: 'Assets.car' }],
     // Explicit development signing rebuilds the bundle seal after packaging.
     // Omit the flag when using a configured Developer ID identity.
     ...(process.argv.includes('--adhoc-sign') ? { identity: '-', notarize: false } : {}),

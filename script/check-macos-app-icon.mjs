@@ -50,7 +50,7 @@ const report = {
   bundleIconName: info.CFBundleIconName, legacyIcon: info.CFBundleIconFile,
   appearances, catalogEntries: catalog.length, icnsBytes: icns.length,
   assetCatalogSha256: createHash('sha256').update(await readFile(car)).digest('hex'),
-  signatureIntegrity: 'passed (local ad-hoc build; not notarization)', rendered, passed: true,
+  signatureIntegrity: 'passed (codesign --verify --deep --strict)', rendered, passed: true,
 }
 await writeFile(path.join(output, 'macos.json'), JSON.stringify(report, null, 2) + '\n')
 console.log(JSON.stringify(report, null, 2))
