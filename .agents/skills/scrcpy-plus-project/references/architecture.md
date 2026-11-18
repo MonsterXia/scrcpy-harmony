@@ -4,7 +4,7 @@
 
 ## 项目身份与目录
 
-`package.json` 的包名为 `scrcpy-harmony`、产品名为 `Scrcpy Harmony`，仓库目录名为 `scrcpy-harmony`。项目基于上游 `liriliri/echo`，由 MonsterXia 独立维护，2026-10-21 已解除 GitHub fork 关系；仓库、反馈和发布入口指向 `MonsterXia/scrcpy-harmony`。保留原作者和许可证；应用 ID 为 `io.github.monsterxia.scrcpyharmony`，与上游 ECHO 分开安装，用户数据采用新的产品名目录，旧配置保留且不自动迁移。操作当前 Git 远端时仍使用 `git remote -v` 核对。
+Scrcpy Plus 的包名为 `scrcpy-plus`，应用 ID 为 `io.scrcpyplus.desktop`，产品名与发布仓库以 `package.json` 为准。仓库、反馈和发行入口位于 [MonsterXia/scrcpy-plus](https://github.com/MonsterXia/scrcpy-plus)。Plus 使用独立的配置目录。旧版 Scrcpy Harmony 的项目沿革与安装迁移见[更名记录](../../../../docs/maintenance/scrcpy-plus-rename.md)。
 
 共享模块在 ready 时初始化更新监听并设置上游源；`src/main/index.ts` 随后调用本项目 `src/main/lib/updater.ts`，覆盖为本仓库 `ReleaseProvider`。菜单的 **Beta Update** 默认关闭，使用 settings.json 的 `betaUpdate` 布尔值持久化；关闭只选正式版，开启将所有正式版与预发布版按 SemVer 取最高版本，检查中改选项仅影响下一次检查。始终禁用降级、自动下载和退出安装，本地构建也可显式检查。
 

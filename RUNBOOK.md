@@ -2,7 +2,7 @@
 
 ## 公共弹窗与底部操作（2026-11-18）
 
-桌面弹窗、抽屉和升级窗口的底部操作共用组件，开发与审查入口见[通用 UI 样式规范](.agents/skills/scrcpy-harmony-project/references/ui-style.md)。本地独立审查发现的悬停对比度与 iPhone 设置关闭后的焦点恢复均已修复并复验。应用测试 1249 项通过、2 项跳过，lint 与 renderer 构建通过。Electron 使用模拟设备完成中英文、深浅主题四种组合的应用卸载确认与取消验收。后续 PR 复审、CI 和合入状态以 PR 为准。
+桌面弹窗、抽屉和升级窗口的底部操作共用组件，开发与审查入口见[通用 UI 样式规范](.agents/skills/scrcpy-plus-project/references/ui-style.md)。本地独立审查发现的悬停对比度与 iPhone 设置关闭后的焦点恢复均已修复并复验。应用测试 1249 项通过、2 项跳过，lint 与 renderer 构建通过。Electron 使用模拟设备完成中英文、深浅主题四种组合的应用卸载确认与取消验收。后续 PR 复审、CI 和合入状态以 PR 为准。
 
 ## iPhone 集成 PR 审查（2026-11-18）
 
@@ -248,7 +248,7 @@ USB 拔插恢复已修复并完成一次用户真机拔插：旧视频 capture 4
 
 ## 应用国际化与开发流程（2026-10-26）
 
-状态：**实现与本机双语验证完成，最终审查/CI 以 PR 为准；尚未发布安装包**。修复英文指向中文字典，补齐 127 项业务和 67 项共享词条（含既有共享翻译），增加系统/English/简体中文选择并在用户重启后统一应用到菜单和窗口；同步 Luna 确认框与 HTML lang。国际化检查接入 lint/应用测试，项目 skill 新增[开发流程](.agents/skills/scrcpy-harmony-project/references/internationalization.md)。隔离真实 Electron 的双语菜单、设置、跨重启持久化、更新卡与确认框通过，范围和后续验收见[专项记录](docs/maintenance/internationalization.md)。[交付 PR](https://github.com/MonsterXia/scrcpy-harmony/pulls?q=is%3Apr+head%3Acodex%2Finternationalization)。下一步完成最终提交独立复审、五项 CI 后合入；Windows/x64 人工双语视觉与发行包验收待办。
+状态：**实现与本机双语验证完成，最终审查/CI 以 PR 为准；尚未发布安装包**。修复英文指向中文字典，补齐 127 项业务和 67 项共享词条（含既有共享翻译），增加系统/English/简体中文选择并在用户重启后统一应用到菜单和窗口；同步 Luna 确认框与 HTML lang。国际化检查接入 lint/应用测试，项目 skill 新增[开发流程](.agents/skills/scrcpy-plus-project/references/internationalization.md)。隔离真实 Electron 的双语菜单、设置、跨重启持久化、更新卡与确认框通过，范围和后续验收见[专项记录](docs/maintenance/internationalization.md)。[交付 PR](https://github.com/MonsterXia/scrcpy-harmony/pulls?q=is%3Apr+head%3Acodex%2Finternationalization)。下一步完成最终提交独立复审、五项 CI 后合入；Windows/x64 人工双语视觉与发行包验收待办。
 
 ## Beta Update 与即时更新窗口（2026-10-26）
 
@@ -288,7 +288,7 @@ USB 拔插恢复已修复并完成一次用户真机拔插：旧视频 capture 4
 
 1. 从最早未完成阶段选择一项，在下方记录负责人、分支、基线提交和复现环境。没有目标设备时，可先做无设备验证，将真机验收保留为待办。
 2. 读取来源正文/讨论并核对当前代码。上游开放 Issue 是报告，上游开放 PR 是候选方案；先复现或建立失败用例，再决定适配方式，不直接批量合入。
-3. 每个独立问题使用小范围 PR。实现后执行与改动相关的检查，并等待该 PR 的必需 CI 检查通过；流程见 [开发与验证](.agents/skills/scrcpy-harmony-project/references/development.md)。
+3. 每个独立问题使用小范围 PR。实现后执行与改动相关的检查，并等待该 PR 的必需 CI 检查通过；流程见 [开发与验证](.agents/skills/scrcpy-plus-project/references/development.md)。
 4. 在本文件更新任务状态、证据链接和剩余限制。只有满足该项验收条件才标记完成；PR 合并但缺少设备回归时，标为“待验收”。
 5. 若无法复现，记录版本、步骤、持续时间和观察结果；若缺少设备/权限，记录阻塞条件及下次动作。不要以“未复现”直接代替“已修复”。
 

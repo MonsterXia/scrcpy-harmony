@@ -24,7 +24,7 @@ Scrcpy Plus 作为本项目的正式延续，仓库已迁移至 `MonsterXia/scrc
 
 ---
 
-# Scrcpy Harmony
+## Scrcpy Harmony 历史版本
 
 [![Version](https://img.shields.io/github/v/release/MonsterXia/scrcpy-plus?color=blue&label=version)](https://github.com/MonsterXia/scrcpy-plus/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)](https://github.com/MonsterXia/scrcpy-plus/releases)
@@ -41,7 +41,7 @@ Scrcpy Harmony 是面向鸿蒙设备的 HDC 图形化桌面工具，集成投屏
 
 ![1.0.5 应用工作区，模拟数据](docs/design/1.0.5-evidence/applications-en-dark-compact-final.jpg)
 
-## 功能
+### 功能
 
 | 功能 | 说明 |
 | --- | --- |
@@ -52,14 +52,15 @@ Scrcpy Harmony 是面向鸿蒙设备的 HDC 图形化桌面工具，集成投屏
 | 进程与日志 | 查看进程、浏览和筛选 HiLog 日志、导出日志文件 |
 | 调试工具 | 交互终端、布局查看、端口转发与 WebView 调试 |
 
-## 下载安装
+### 下载安装
 
-前往 [Releases](https://github.com/MonsterXia/scrcpy-plus/releases/latest)，按电脑系统和处理器选择安装包：
+前往 [Scrcpy Harmony 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4)，按电脑系统和处理器选择安装包：
 
 | 平台 | 安装包后缀 | 安装方式 |
 | --- | --- | --- |
 | Windows x64 | `win-x64.exe` | 运行安装程序，按提示完成安装 |
 | macOS Apple Silicon | `mac-arm64.dmg` | 打开镜像，将应用拖入“应用程序”目录 |
+| macOS Intel | `mac-x64.dmg` | 打开镜像，将应用拖入“应用程序”目录 |
 
 macOS 需要 **13 或更新版本**。当前未提供 Linux 安装包。
 
@@ -69,11 +70,11 @@ macOS 需要 **13 或更新版本**。当前未提供 Linux 安装包。
 
 **[1.0.4 已作为正式 Latest 发布](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4)。** 三平台安装与直接升级/更新检查通过；签名限制和未补测真机范围继续在发布记录中明确列出。
 
-以下为历史 Harmony **1.0.5-dev.1** 开发预发布说明，保留 1.0.4 的功能，包括 H.264 投屏与 JPEG 回退、键盘/IME 和文本粘贴、HAP 拖入安装、空闲投屏残留的受限恢复、商店请求有限等待、中英文选择，以及清楚显示开启/关闭、文字对齐的 **Beta Update／接收预发布更新** 菜单。升级可选择[稳定版 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/latest)或[开发版 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1)；应用配置目录保持不变。Beta Update 位于应用菜单，默认关闭，发现开发预发布需开启；[发行证据与限制](docs/releases/1.0.5-dev.1.md)另行记录。
+以下为历史 Harmony **1.0.5-dev.1** 开发预发布说明，保留 1.0.4 的功能，包括 H.264 投屏与 JPEG 回退、键盘/IME 和文本粘贴、HAP 拖入安装、空闲投屏残留的受限恢复、商店请求有限等待、中英文选择，以及清楚显示开启/关闭、文字对齐的 **Beta Update／接收预发布更新** 菜单。升级可选择[稳定版 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4)或[开发版 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1)；应用配置目录保持不变。Beta Update 位于应用菜单，默认关闭，发现开发预发布需开启；[发行证据与限制](docs/releases/1.0.5-dev.1.md)另行记录。
 
 **1.0.3** 保留为依赖源码迁移前的恢复版本。从 ECHO 切换时需要重新配置设置，其独立配置目录不会自动迁移。设备兼容和待验收范围见发布记录；反馈问题时请附版本和提交号。
 
-## 快速上手
+### 快速上手
 
 1.0.4会向兼容手机自动部署内置原生采集库，使用 H.264 投屏，无需手机预装该库，也不需要 Java。设备不兼容时回退 JPEG。
 
@@ -86,9 +87,9 @@ macOS 需要 **13 或更新版本**。当前未提供 Linux 安装包。
 
 应用默认使用内置 HDC。需要使用其他版本时，可在设置中的“HDC 位置”指定可执行文件路径。
 
-1.0.4已补齐简体中文和英文界面。在“设置 → 语言”选择“系统设置”“English”或“简体中文”，再重启应用，将语言应用到所有窗口和菜单。中文和英文的系统地区变体分别使用简体中文和英文，其他系统语言默认使用英文。开发界面时请遵循[国际化流程](.agents/skills/scrcpy-harmony-project/references/internationalization.md)，并运行 `npm run check:i18n`。
+1.0.4已补齐简体中文和英文界面。在“设置 → 语言”选择“系统设置”“English”或“简体中文”，再重启应用，将语言应用到所有窗口和菜单。中文和英文的系统地区变体分别使用简体中文和英文，其他系统语言默认使用英文。开发界面时请遵循[国际化流程](.agents/skills/scrcpy-plus-project/references/internationalization.md)，并运行 `npm run check:i18n`。
 
-### 常见问题
+#### 常见问题
 
 - **设备列表为空**：确认数据线支持数据传输、设备已允许调试连接，再刷新列表。使用自定义 HDC 时，检查“HDC 位置”是否有效。
 - **能看到设备，但无法投屏或查看布局**：这些功能还依赖设备系统与 uitestkit 的兼容性。反馈时请附上设备型号、系统版本和具体错误信息。
@@ -161,7 +162,7 @@ npm run pack -- --no-publish
 
 `npm test` 执行应用回归和 Licia 两种 Node 测试模式；每种模式明确跳过 4 项依赖外部夹具的用例。上游浏览器/manual 测试、完整类型检查和真机验收分别处理。安装包输出到 `release/<version>/`，包含许可证声明；通用工具链和设备/打包原生资源仍需安装或下载。
 
-干净检出准备、Windows Shell 配置和排错见[构建指南](docs/build-guide.md)，验证脚本和 CI 细节见[维护者参考](.agents/skills/scrcpy-harmony-project/references/development.md)。
+干净检出准备、Windows Shell 配置和排错见[构建指南](docs/build-guide.md)，验证脚本和 CI 细节见[维护者参考](.agents/skills/scrcpy-plus-project/references/development.md)。
 
 ## 项目来源与维护
 

@@ -39,12 +39,12 @@ Windows 使用 `node_modules\.bin\scrcpy-plus.cmd`；也可在两平台直接用
 
 默认 profile 为 macOS 的 `~/Library/Application Support/Scrcpy Plus`、Windows 的 `%APPDATA%\Scrcpy Plus`。`--profile` 或 `SCRCPY_PLUS_PROFILE` 可选择绝对路径；命令行选项优先。隔离测试建议新建 profile，不修改日常设置。
 
-显式启动时传可执行文件绝对路径；macOS `.app` 目录本身不是可执行文件，需要传其 `Contents/MacOS/...` 文件。开发 Electron 还需传入口：
+显式启动时传可执行文件绝对路径；macOS `.app` 目录本身不是可执行文件，需要传其 `Contents/MacOS/...` 文件。开发时将仓库根目录作为应用入口，让 Electron 读取项目的包名与版本：
 
 ```sh
 node dist/cli/index.cjs service start \
   --app /absolute/path/to/Electron.app/Contents/MacOS/Electron \
-  --app-arg /absolute/path/to/scrcpy-harmony/dist/main/index.js \
+  --app-arg /absolute/path/to/scrcpy-plus \
   --profile /absolute/path/to/test-profile --json
 ```
 

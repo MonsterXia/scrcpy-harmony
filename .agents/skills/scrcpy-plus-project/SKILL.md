@@ -1,11 +1,11 @@
 ---
-name: scrcpy-harmony-project
-description: Use when analyzing, developing, debugging, reviewing, or building this scrcpy-harmony repository, the Scrcpy Plus Electron desktop app, including shared UI styles and dialogs, device mirroring, HarmonyOS HDC, IPC, and packaging.
+name: scrcpy-plus-project
+description: Use when analyzing, developing, debugging, reviewing, or building the Scrcpy Plus multi-platform Electron desktop app, including shared UI styles and dialogs, device mirroring, HarmonyOS HDC, IPC, and packaging.
 ---
 
-# Scrcpy Harmony 项目基础
+# Scrcpy Plus 项目基础
 
-用于本仓库的持久项目上下文。代码路径均相对仓库根目录，参考文档链接相对本 skill。目录与构建说明已按 2026-10-24 依赖源码迁移更新；源码与文档不一致时，以当前源码为准并修正文档。
+用于本仓库的持久项目上下文。代码路径均相对仓库根目录，参考文档链接相对本 skill。跨平台后端与设备支持范围见[集成说明](../../../docs/scrcpy-plus/integration.md)。
 
 ## 快速定位
 
@@ -15,9 +15,10 @@ description: Use when analyzing, developing, debugging, reviewing, or building t
 | --- | --- |
 | 启动、窗口与生命周期 | `src/main/index.ts`、`src/main/window/` |
 | IPC 参数和桥接 API | `src/common/types.ts`、`src/preload/main.ts` |
-| 设备连接、HDC 能力 | `src/main/lib/hdc.ts`、`src/main/lib/hdc/` |
+| 跨平台设备发现、Android 与 iOS 投屏 | `src/main/lib/devices/`、`src/main/window/nativeMirror.ts`、`src/renderer/native-mirror/` |
+| HarmonyOS 设备连接、HDC 能力 | `src/main/lib/hdc.ts`、`src/main/lib/hdc/` |
 | 主窗口功能与状态 | `src/renderer/main/App.tsx`、`src/renderer/main/components/`、`src/renderer/main/store/` |
-| 投屏、触摸坐标 | `src/renderer/screencast/lib/ScreencastClient.ts`、`src/main/lib/hdc/uitest.ts` |
+| HarmonyOS 投屏、触摸坐标 | `src/renderer/screencast/lib/ScreencastClient.ts`、`src/main/lib/hdc/uitest.ts` |
 | 构建、资源、打包 | `package.json`、`vite*.ts`、`script/` |
 | 本地依赖二次适配 | `vendor/README.md`、`vendor/packages/*/src/`、`script/lib/` |
 | 新增、修改或审查弹窗、确认框、抽屉、弹窗按钮 | 先读[通用 UI 样式规范](references/ui-style.md)，复用 `share/renderer/dialog` 下的组件 |
@@ -34,9 +35,9 @@ description: Use when analyzing, developing, debugging, reviewing, or building t
 
 ## 关键约束
 
-- 设备调用链为 renderer 的全局 `main` → preload `invoke` → 主进程 `handleEvent` → `hdckit`。新增接口时一并检查类型、桥接和处理器；事件名称需两端一致。
+- HarmonyOS 的 HDC 调用链为 renderer 的全局 `main` → preload `invoke` → 主进程 `handleEvent` → `hdckit`。新增接口时一并检查类型、桥接和处理器；事件名称需两端一致。
 - `share/*` 来自本仓库跟踪的 `src/share`；图标源 `src/renderer/icon` 也为普通目录。v1.0.3 及更早 tag 才需要初始化子模块。`common/*` 对应 `src/common`，两者都是 Vite 别名。
-- 投屏 JPEG 帧尺寸、CSS 显示尺寸和设备触摸尺寸是三个坐标空间。触摸使用 `getDisplaySize()` 的结果，不用请求的 `scale` 反推。
+- HarmonyOS 投屏 JPEG 帧尺寸、CSS 显示尺寸和设备触摸尺寸是三个坐标空间。触摸使用 `getDisplaySize()` 的结果，不用请求的 `scale` 反推。
 - 主窗口切换标签后，已访问面板仍挂载；异步任务和监听的清理不能只依赖标签切换。设备切换另有按 target key 重建机制。
 - UI 延续 MobX + `observer`、Luna 组件、SCSS Modules；业务文案通过 `common/util.ts` 的 `t()`，同步维护 `src/common/langs/{en-US,zh-CN}.json`。共享文案在 `src/share/common/langs/`；不得把英文映射到中文字典或依靠 fallback 代替翻译。提交前运行 `npm run check:i18n`；修改布局或语言流程时补双语 UI 验证。
 - 验证报告区分静态检查、无真机单测、Electron 运行与设备验证，不把其中一种当作其余几种已通过。

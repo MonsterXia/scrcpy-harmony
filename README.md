@@ -24,7 +24,7 @@ Choose the Windows x64 EXE or macOS arm64 DMG for your computer. The optional `s
 
 ---
 
-# Scrcpy Harmony
+## Earlier Scrcpy Harmony releases
 
 [![Version](https://img.shields.io/github/v/release/MonsterXia/scrcpy-plus?color=blue&label=version)](https://github.com/MonsterXia/scrcpy-plus/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-lightgrey.svg)](https://github.com/MonsterXia/scrcpy-plus/releases)
@@ -41,7 +41,7 @@ Scrcpy Harmony is a graphical HDC desktop tool for HarmonyOS devices, bringing t
 
 ![1.0.5 application workspace — simulated data](docs/design/1.0.5-evidence/applications-en-dark-compact-final.jpg)
 
-## Features
+### Features
 
 | Feature | Description |
 | --- | --- |
@@ -52,14 +52,15 @@ Scrcpy Harmony is a graphical HDC desktop tool for HarmonyOS devices, bringing t
 | Processes and logs | View processes, browse and filter HiLog output, and export logs |
 | Debugging tools | Interactive terminal, layout inspector, port forwarding, and WebView debugging |
 
-## Download and installation
+### Download and installation
 
-Visit [Releases](https://github.com/MonsterXia/scrcpy-plus/releases/latest) and choose the installer for your operating system and processor:
+Visit [Scrcpy Harmony 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4) and choose the installer for your operating system and processor:
 
 | Platform | Installer suffix | Installation |
 | --- | --- | --- |
 | Windows x64 | `win-x64.exe` | Run the installer and follow the prompts |
 | macOS Apple Silicon | `mac-arm64.dmg` | Open the disk image and drag the app into Applications |
+| macOS Intel | `mac-x64.dmg` | Open the disk image and drag the app into Applications |
 
 macOS requires **version 13 or later**. Linux installers are not currently available.
 
@@ -69,11 +70,11 @@ Installers include HDC and the required device resources; Node.js is not needed 
 
 **[1.0.4 is now available as the stable Latest release](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4).** Three-platform installation and direct upgrade/update checks passed; signing and device-validation limitations remain documented in the release report.
 
-The following describes the historical Harmony **1.0.5-dev.1** pre-release. It retains the 1.0.4 features: H.264 mirroring with JPEG fallback, keyboard/IME and clipboard input, HAP drag-and-drop installation, guarded recovery of idle mirroring sessions, bounded app-store requests, English/Chinese language selection, and visible **Beta Update: On/Off** state with aligned menu labels. Choose [stable 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/latest) or [development 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1) to upgrade; settings use the same application directory. Beta Update is in the application menu, defaults to off and is required to discover development releases. See the [release evidence and limitations](docs/releases/1.0.5-dev.1.md).
+The following describes the historical Harmony **1.0.5-dev.1** pre-release. It retains the 1.0.4 features: H.264 mirroring with JPEG fallback, keyboard/IME and clipboard input, HAP drag-and-drop installation, guarded recovery of idle mirroring sessions, bounded app-store requests, English/Chinese language selection, and visible **Beta Update: On/Off** state with aligned menu labels. Choose [stable 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4) or [development 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1) to upgrade; settings use the same application directory. Beta Update is in the application menu, defaults to off and is required to discover development releases. See the [release evidence and limitations](docs/releases/1.0.5-dev.1.md).
 
 Version **1.0.3** remains available as the recovery version before dependency source migration. If switching from ECHO, configure settings again: its separate configuration directory is not migrated automatically. Device compatibility and pending validation are listed in the release report; include your version and commit when reporting a problem.
 
-## Quick start
+### Quick start
 
 Version 1.0.4 automatically deploys bundled native capture libraries to compatible phones for H.264 mirroring; no preinstalled phone library or Java runtime is required. Unsupported devices fall back to JPEG.
 
@@ -86,9 +87,9 @@ Version 1.0.4 retries video once when the picture changes after JPEG fallback. Y
 
 The app uses its bundled HDC by default. To use another version, specify the executable path in **HDC location** (HDC 位置) in settings.
 
-Version 1.0.4 supports English and Simplified Chinese throughout the app. In **Settings → Language** (设置 → 语言), choose **System Preference**, **English**, or **简体中文**, then restart the app to apply the choice to all windows and menus. Regional English and Chinese system locales use English and Simplified Chinese respectively; other system languages fall back to English. When developing UI, follow the [internationalization workflow](.agents/skills/scrcpy-harmony-project/references/internationalization.md) and run `npm run check:i18n`.
+Version 1.0.4 supports English and Simplified Chinese throughout the app. In **Settings → Language** (设置 → 语言), choose **System Preference**, **English**, or **简体中文**, then restart the app to apply the choice to all windows and menus. Regional English and Chinese system locales use English and Simplified Chinese respectively; other system languages fall back to English. When developing UI, follow the [internationalization workflow](.agents/skills/scrcpy-plus-project/references/internationalization.md) and run `npm run check:i18n`.
 
-### Common questions
+#### Common questions
 
 - **The device list is empty:** Make sure your cable supports data transfer and debugging is authorized on the device, then refresh the list. If you use a custom HDC, check that its configured path is valid.
 - **The device appears, but screencasting or layout inspection fails:** These features also depend on compatibility between the device system and uitestkit. Include your device model, system version, and the exact error when reporting a problem.
@@ -161,7 +162,7 @@ npm run pack -- --no-publish
 
 `npm test` runs application regressions and both Licia Node test modes; four fixture-dependent Licia cases are explicitly skipped in each mode. Browser-only/manual upstream tests, full type checking and real-device acceptance remain separate. Installers are written to `release/<version>/`, with license notices included. The general toolchain and native device/packaging resources still require installation or download.
 
-See the [build guide](docs/build-guide.md) for a clean checkout, Windows shell configuration and troubleshooting, and the [maintainer reference](.agents/skills/scrcpy-harmony-project/references/development.md) for validation scripts and CI details.
+See the [build guide](docs/build-guide.md) for a clean checkout, Windows shell configuration and troubleshooting, and the [maintainer reference](.agents/skills/scrcpy-plus-project/references/development.md) for validation scripts and CI details.
 
 ## Origins and maintenance
 
