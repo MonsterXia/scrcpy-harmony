@@ -1,5 +1,9 @@
 # Scrcpy Plus 跨平台改造（2026-11-03）
 
+## 1.0.5-dev.3 发行（2026-11-18）
+
+用户已授权发布下一开发版本。当前准备 1.0.5-dev.3，按四项必需 PR 门禁合入后从 master 运行 Release Build，Windows x64 / Mac arm64 同源出包；Mac 必须签名、公证、Gatekeeper 和安装校验通过。尚未公开，来源、验证及下一步见[发行记录](docs/releases/1.0.5-dev.3.md)。
+
 ## macOS CI 自动签名与公证（2026-11-18）
 
 状态：PR #100 经独立审查、四项必需检查后合入；主干首次 Release Build 已完成自动签名、公证、Gatekeeper、最终更新元数据及安装启动检查。下载后的 DMG/app 签名、票据、Gatekeeper 和 YAML/blockmap 复验也通过。普通 PR CI 保持不变；手动 Release Build 使用仅允许 master 的 macos-release environment。5 项 Secret 已配置，不含凭据的设计、使用方式、验证状态与下一步见 [CI 分发签名](docs/maintenance/macos-release-ci.md)。
