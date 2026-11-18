@@ -8,15 +8,15 @@ Scrcpy Plus 作为本项目的正式延续，仓库已迁移至 `MonsterXia/scrc
 
 开发分支提供 iOS USB WDA 截图/控制，默认启用 ReplayKit 连续视频；iPhone 13 的视频、输入及重连基本验证通过，长稳与跨平台验收仍待完成，见 [iOS USB 配置](docs/scrcpy-plus/ios-usb-wda.md)。
 
-本地开发候选新增应用内 Apple ID 登录、WDA 自动准备，以及应用运行且手机连接时的自动续签。macOS 应用内登录、签名安装、启动及受控时钟触发的真实续签已验证；干净环境、实际七天到期及 Windows 仍待验收，见 [实现状态](docs/maintenance/ios-desktop-provisioning.md)。
+1.0.5-dev.3 开发预发布新增应用内 Apple ID 登录、WDA 自动准备，以及应用运行且手机连接时的自动续签。macOS 应用内登录、签名安装、启动及受控时钟触发的真实续签已验证；干净环境、实际七天到期及 Windows 仍待验收，见 [实现状态](docs/maintenance/ios-desktop-provisioning.md)。
 
 开发版自动化已提供共享本地服务、独立 Node CLI 与 [MCP stdio](docs/scrcpy-plus/automation/mcp.md)，支持会话、截图、输入和现有 Harmony 工具。参见[使用指南](docs/scrcpy-plus/automation/README.md)与 [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md)。本机模拟流程通过，真机自动化及 Windows 自动化端到端验收仍待完成。
 
-## 1.0.5-dev.3 发行候选
+## 1.0.5-dev.3 开发预发布
 
-正在准备下一个开发预发布：包含应用内 iPhone 准备与 WDA 续签、iOS 重连修复、Plus 自适应图标、公共弹窗及迁移后的 Plus 更新源。Mac arm64 发行包必须完成 Developer ID 签名和 Apple 公证，Windows x64 仍未签名。当前验证与设备限制见[发行记录](docs/releases/1.0.5-dev.3.md)。稳定 Latest 保持 1.0.4。
+**[Scrcpy Plus 1.0.5-dev.3 已公开](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.3)**：包含应用内 iPhone 准备与 WDA 续签、iOS 重连修复、Plus 自适应图标、公共弹窗及迁移后的 Plus 更新源。Mac arm64 发行包已通过 Developer ID 签名、Apple 公证及 Gatekeeper 校验，Windows x64 仍未签名。当前验证与设备限制见[发行记录](docs/releases/1.0.5-dev.3.md)。稳定 Latest 保持 1.0.4。
 
-## 1.0.5-dev.2 开发预发布
+## 历史 1.0.5-dev.2 开发预发布
 
 **[Scrcpy Plus 1.0.5-dev.2 已公开](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.2)。** 源码、附件校验和验收范围见[发行记录](docs/releases/1.0.5-dev.2.md)。稳定 Latest 保持 **Scrcpy Harmony 1.0.4**。
 

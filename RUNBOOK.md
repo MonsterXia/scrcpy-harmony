@@ -2,7 +2,7 @@
 
 ## 1.0.5-dev.3 发行（2026-11-18）
 
-用户已授权发布下一开发版本。当前准备 1.0.5-dev.3，按四项必需 PR 门禁合入后从 master 运行 Release Build，Windows x64 / Mac arm64 同源出包；Mac 必须签名、公证、Gatekeeper 和安装校验通过。尚未公开，来源、验证及下一步见[发行记录](docs/releases/1.0.5-dev.3.md)。
+**2026-11-18 18:14:43（UTC+8）已公开 1.0.5-dev.3 Pre-release，Latest 保持 1.0.4。** PR #102 四项门禁全绿后正常合入，固定源 `229c39b` 完成两平台 Release Build；Mac Developer ID 签名、app/DMG 公证、Gatekeeper 及两平台安装启动通过。12 附件重下载、公开后固定 ID/摘要回读和 8 场景线上更新源检查通过。来源、证据与仍待验收设备范围见[发行记录](docs/releases/1.0.5-dev.3.md)。
 
 ## macOS CI 自动签名与公证（2026-11-18）
 

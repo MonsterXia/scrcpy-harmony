@@ -297,4 +297,4 @@
 
 - 2026-11-18 CI 签名验收：PR #100 与首次 master Release Build 均成功，下载产物独立复验通过；运行链接、哈希、App/DMG 公证及 Gatekeeper 结果见 [结构化证据](evidence/macos-release-ci-20261118.json)。未公开发行。
 
-- 2026-11-18：用户明确要求发布下一个开发版本；以最新主干 a5ddade 为功能基线准备 1.0.5-dev.3，真实发布状态及同源产物证据见 [发行记录](../releases/1.0.5-dev.3.md)。
+- 2026-11-18：用户明确要求发布下一个开发版本；以 a5ddade 为功能基线，经 PR #102 正常门禁合入，以固定源 229c39b 完成两平台 Release Build 和全部附件重下载，于 18:14:43（UTC+8）公开 1.0.5-dev.3 Pre-release；Mac 已正式签名公证，Latest 仍为 1.0.4。实际验证和设备边界见 [发行记录](../releases/1.0.5-dev.3.md)。
