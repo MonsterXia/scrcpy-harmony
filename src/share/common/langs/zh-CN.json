@@ -72,7 +72,7 @@
   "applicationLogs": "应用日志",
   "applicationLogsDescription": "Scrcpy Harmony 的运行日志。",
   "applicationLogsError": "无法读取或清空应用日志，请重新打开此窗口。",
-  "aboutDescription": "鸿蒙设备桌面工具",
+  "aboutDescription": "Android、HarmonyOS 与 iOS 投屏工具",
   "toolProcessDescription": "查看 Scrcpy Harmony 的运行进程。",
   "toolMetrics": "资源使用",
   "toolMetricsError": "暂时无法读取资源指标，正在重试…",

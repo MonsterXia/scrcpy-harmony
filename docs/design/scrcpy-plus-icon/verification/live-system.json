@@ -1,0 +1,81 @@
+{
+  "date": "2026-11-18",
+  "os": {
+    "version": "27.2.1",
+    "build": "26B131"
+  },
+  "installedApp": "/Applications/Scrcpy Plus.app",
+  "version": "1.0.5-dev.2",
+  "backup": "release/app-icon-20261118/local-install-backup",
+  "signature": "codesign --verify --deep --strict passed; ad-hoc",
+  "installedStartup": "passed; Electron 45.0.0 arm64; installed app.asar",
+  "assetsCarSha256": "5a442397ff5b49b125696c8642853037c5b3c484d6c039a0550fa23ccbff7fa7",
+  "assetsMatchCandidate": true,
+  "cases": [
+    {
+      "setting": "Dark icon style / Auto, system Light → Dark → Light",
+      "dock": "passed (running installed app, external display)",
+      "finder": "passed (actual Finder window screenshots)"
+    },
+    {
+      "setting": "Installed app quit; system Dark → Light",
+      "finder": "passed; bundle resources work without application running"
+    },
+    {
+      "setting": "Dark icon style / Always",
+      "finder": "passed; dark icon with light system UI"
+    },
+    {
+      "setting": "Tinted icon style / Auto, system Light",
+      "dock": "passed",
+      "finder": "passed"
+    }
+  ],
+  "observation": {
+    "dock": "User-authorized screencapture -D2; sips crop of target app icon only",
+    "finder": "Observed via cua getAXStateAndScreenshot; images in conversation, not persisted in repo",
+    "cacheReset": false,
+    "relaunchRequiredForAppearanceChange": false
+  },
+  "settingsBefore": {
+    "appearance": "Auto",
+    "iconStyle": "Default",
+    "darkStyleOption": "Always",
+    "dockPosition": "Bottom",
+    "dockAutoHide": false
+  },
+  "settingsAfter": {
+    "appearance": "Auto",
+    "iconStyle": "Default",
+    "darkStyleOption": "Always",
+    "dockPosition": "Bottom",
+    "dockAutoHide": false
+  },
+  "settingsRestored": true,
+  "installedAppLeftRunning": true,
+  "otherWorktreeSessionPreserved": true,
+  "screenshots": {
+    "dock-light.png": {
+      "path": "live/dock-light.png",
+      "sha256": "86750f8f53be28f5e4fcd8c2565ed4fef185572abca5ced6077ff0134902970c"
+    },
+    "dock-dark.png": {
+      "path": "live/dock-dark.png",
+      "sha256": "19cb8d3e96a6002939b319b936a0c11849c79ea09ffeae1b392392eeb62320fc"
+    },
+    "dock-light-return.png": {
+      "path": "live/dock-light-return.png",
+      "sha256": "86750f8f53be28f5e4fcd8c2565ed4fef185572abca5ced6077ff0134902970c"
+    },
+    "dock-tinted.png": {
+      "path": "live/dock-tinted.png",
+      "sha256": "222bc0977a782b3534ef8be54aa949b7bf30d321fb1b36fa67f6c059b1b6951b"
+    }
+  },
+  "limits": [
+    "No live Clear style check",
+    "No other macOS version or Windows installation check",
+    "Not a new notarized/public release"
+  ],
+  "passed": true
+}

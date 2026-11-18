@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-18",
+  "sources": {
+    "script/lib/app-icon-design.mjs": "5d0e84bb3e4d252bf5a09f1b3497e6db58f7dc263064a7e726aa5a55acfbcde1",
+    "script/generate-app-icons.mjs": "048bad28d0de0f29d1d63f9c58171273396fea29417cdde4afa154e0acc28ab7",
+    "script/lib/mac-icon-toolchain.mjs": "5c77c22050393e954467957ae4baf761d1131d87c0743550131c19197f12b4fc",
+    "script/pack.mjs": "489dfc67aa12a077b35c14de2d39dc445b1a5975ae02003c6f4c0e4db52b804a",
+    "script/smoke-app.mjs": "4eb21c8083307ea0199bac9a5935202e2e24147baec7c4cb2b23820af48ec196",
+    "script/check-app-icon-ui.mjs": "b5a18ff4191e35ad629126b6604777d501f4a97d3603cb0863ed5980ebf25baa",
+    "script/check-macos-app-icon.mjs": "a40e67c1d10880bfb258d7b45e8b074a78fc37b85e2bf8a07fcee4d0ea1024be",
+    "src/renderer/update/App.tsx": "2ba90f20887111e370348193203ebd2c998e86f63e055cc6f3e82395778efd2c",
+    "src/share/renderer/about/App.tsx": "7e2861c64fc972ad3f4c30a7b6288cfb9d421a23e668ddf1f94e2b652d9b253e",
+    "src/share/common/langs/en-US.json": "dd4bf467a9df750d8a61644e24202cb7f426a1aba6596b8b517f3790ec73d7bd",
+    "src/share/common/langs/zh-CN.json": "4ec21a126ea826ed71b7adb7fde870e0f9d2c473e2669cd7f45ec61989075bdb"
+  },
+  "checks": {
+    "fullBuild": "passed",
+    "lintAndI18n": "passed",
+    "rendererThemeCases": 12,
+    "nativeRenditions": 12,
+    "signatureIntegrity": "passed (ad-hoc)",
+    "packagedStartup": "passed",
+    "generatedEntrySyntax": "checked before Electron launch",
+    "installedStartup": "passed",
+    "installedSignatureIntegrity": "passed (ad-hoc)",
+    "liveDockAndFinder": "passed: light-dark-light and tinted",
+    "liveEvidence": "live-system.json",
+    "originalAppearanceRestored": true
+  },
+  "artifact": {
+    "path": "release/app-icon-20261118/Scrcpy Plus-1.0.5-dev.2-mac-arm64.dmg",
+    "sha256": "36798b4a151b9d3d1689a6fb62e01d501a1be26a1fb50621eb2ea69da38974a6"
+  },
+  "limitations": [
+    "No Windows installation or older macOS runtime validation",
+    "Clear appearance validated through native rendering only, not live system UI",
+    "Other running worktree builds were not replaced",
+    "Local ad-hoc package, not notarized or published"
+  ],
+  "jsCrash": {
+    "cause": "Missing object-closing brace in temporary icon UI verification entry",
+    "fixed": true,
+    "prevention": "vm.Script syntax validation before launch; launch timeout"
+  },
+  "passed": true
+}

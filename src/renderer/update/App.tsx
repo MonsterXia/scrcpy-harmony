@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { UpdateAction, UpdateState } from 'common/types'
 import { t } from 'common/util'
 import icon from '../assets/icon.png'
+import darkIcon from '../assets/icon-dark.png'
 import Style from './App.module.scss'
 
 export default observer(function UpdateApp() {
@@ -56,7 +57,10 @@ export default observer(function UpdateApp() {
   >
     {checking && <header>{t('softwareUpdate')}</header>}
     <div className={Style.content}>
-      <img className={Style.icon} src={icon} alt="" />
+      <picture className={Style.iconPicture}>
+        <source media="(prefers-color-scheme: dark)" srcSet={darkIcon} />
+        <img className={Style.icon} src={icon} alt="" />
+      </picture>
       <section aria-live="polite">
         <h1 id="update-heading">{title}</h1>
         {checking ? <div className={Style.progress} role="progressbar" aria-label={t('checkingForUpdates')}><span /></div>

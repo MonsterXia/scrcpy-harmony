@@ -1,0 +1,95 @@
+{
+  "scope": "Packaged asset catalog and signature; Icon Composer native rendering. Global appearance preferences were not changed.",
+  "toolVersion": "27.2",
+  "generations": [
+    26,
+    27
+  ],
+  "bundleIconName": "Icon",
+  "legacyIcon": "icon.icns",
+  "appearances": [
+    "ISAppearanceTintable",
+    "NSAppearanceNameAqua",
+    "NSAppearanceNameDarkAqua",
+    "NSAppearanceNameSystem"
+  ],
+  "catalogEntries": 28,
+  "icnsBytes": 38775,
+  "assetCatalogSha256": "5a442397ff5b49b125696c8642853037c5b3c484d6c039a0550fa23ccbff7fa7",
+  "signatureIntegrity": "passed (local ad-hoc build; not notarization)",
+  "rendered": [
+    {
+      "generation": 26,
+      "rendition": "Default",
+      "file": "macos-26-Default.png",
+      "sha256": "8689aad197268b05e39ad7e6b4f5146c071bdaeeae2c31b3082471d1595620b2"
+    },
+    {
+      "generation": 26,
+      "rendition": "Dark",
+      "file": "macos-26-Dark.png",
+      "sha256": "eec53548b7d99b15b3aa2b9abf123597c095bec585c9bbba3d56f5356fb5b0c0"
+    },
+    {
+      "generation": 26,
+      "rendition": "TintedLight",
+      "file": "macos-26-TintedLight.png",
+      "sha256": "e87ad438e9c6b3a04c5bcafbaf3e662756ba686bd7d30adffed5fb63bd56c199"
+    },
+    {
+      "generation": 26,
+      "rendition": "TintedDark",
+      "file": "macos-26-TintedDark.png",
+      "sha256": "1a73061f24fe9c3b3a4f7357d10d978609a2f114782b7f5a8bf0497943fae4b6"
+    },
+    {
+      "generation": 26,
+      "rendition": "ClearLight",
+      "file": "macos-26-ClearLight.png",
+      "sha256": "228b90c3f7e5f24b68296b9d2d55b65cf72164c467bb4108e7adb285563148fe"
+    },
+    {
+      "generation": 26,
+      "rendition": "ClearDark",
+      "file": "macos-26-ClearDark.png",
+      "sha256": "ab9d5fbec3bb77898c4b1d0ea54cc699cd870aa4e47b8f35a3a23b07933f5628"
+    },
+    {
+      "generation": 27,
+      "rendition": "Default",
+      "file": "macos-27-Default.png",
+      "sha256": "0ec4c2358af29236c675666c642bfb5fae3caae6f2016292c27e50affeaacfab"
+    },
+    {
+      "generation": 27,
+      "rendition": "Dark",
+      "file": "macos-27-Dark.png",
+      "sha256": "9e74559795e54cefb3f9c8f49ba08371eba5301e58c64e34614ca357827b8bea"
+    },
+    {
+      "generation": 27,
+      "rendition": "TintedLight",
+      "file": "macos-27-TintedLight.png",
+      "sha256": "024bb9a987a412068fbc3f975524083420fe1b88122e94c196e98ca05d5762a5"
+    },
+    {
+      "generation": 27,
+      "rendition": "TintedDark",
+      "file": "macos-27-TintedDark.png",
+      "sha256": "d7a055e285b44e89259840b8036e2422ffdae2c02aeb3e9aa94f592956998a1e"
+    },
+    {
+      "generation": 27,
+      "rendition": "ClearLight",
+      "file": "macos-27-ClearLight.png",
+      "sha256": "d31fe601a77e532cdce6504c8c2a86e44304b82294569a4f40499da1ac8b2aa6"
+    },
+    {
+      "generation": 27,
+      "rendition": "ClearDark",
+      "file": "macos-27-ClearDark.png",
+      "sha256": "09b100736c1b4984942f8a7d6ab62e79100c5ec29dec9b1afc20e0d5f5cec639"
+    }
+  ],
+  "passed": true
+}
