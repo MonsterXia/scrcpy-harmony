@@ -79,6 +79,7 @@ jobs:
           release/*/*.blockmap
           release/*/verification-*.json
           !release/**/win-unpacked/
+          !release/**/builder-debug.yml
 
   macos-release:
     needs: [release-source, ios-wda]
@@ -168,6 +169,7 @@ jobs:
           release/*/*.blockmap
           release/*/*.tgz
           release/*/verification-*.json
+          !release/**/builder-debug.yml
     - name: Remove temporary notarization keychain
       if: always()
       shell: bash

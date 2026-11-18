@@ -32,8 +32,8 @@
 - [x] Implement release preflight and artifact finalizer; add strict installed-app verification to the existing macOS install check.
 - [x] Split manual release build jobs, add protected environment credentials and sufficient timeouts, and make validation block uploads.
 - [x] Run focused/full tests and workflow validation; independently review the final diff.
-- [ ] Configure encrypted environment secrets, deliver through normal PR checks, then run the master release workflow and validate its downloaded artifacts.
-- [ ] Update maintenance state, evidence, development reference and bilingual release-build instructions.
+- [x] Configure encrypted environment secrets, deliver through normal PR checks, then run the master release workflow and validate its downloaded artifacts.
+- [x] Update maintenance state, evidence, development reference and bilingual release-build instructions.
 
 ## Decisions
 
@@ -49,3 +49,6 @@
 
 - Rebased onto master 2294be9, preserving unsigned WDA and both iOS toolchains; PR CI remains unchanged against that base. Rebased tests: 1260 pass / 2 skip, Licia both 606 / 4 pending, lint/actionlint pass.
 - Fresh review found Windows unpacked payload upload regression; restored exclusion and narrowed uploads to release version directory top-level files. Finding rechecked as resolved.
+
+- PR #100 merged after all required checks. Master a9648e7 Release Build 44268063532 passed all jobs; app/DMG signing and notarization took 9m7s. Downloaded artifact passed independent local app/DMG trust and final metadata/blockmap checks; evidence archived in docs/maintenance/evidence/macos-release-ci-20261118.json.
+- Final artifact inspection found builder-debug.yml in the YAML glob; explicitly exclude it on both platforms. actionlint and filtering against actual downloaded filenames pass. No signing/packaging logic changed after the successful release run.
