@@ -2,11 +2,11 @@
   "date": "2026-11-18",
   "sources": {
     "script/lib/app-icon-design.mjs": "5d0e84bb3e4d252bf5a09f1b3497e6db58f7dc263064a7e726aa5a55acfbcde1",
-    "script/generate-app-icons.mjs": "048bad28d0de0f29d1d63f9c58171273396fea29417cdde4afa154e0acc28ab7",
+    "script/generate-app-icons.mjs": "05acfb574934427f35d544a9c8b368bddef42e9e49d3b6800c4511a2f903a520",
     "script/lib/mac-icon-toolchain.mjs": "5c77c22050393e954467957ae4baf761d1131d87c0743550131c19197f12b4fc",
     "script/pack.mjs": "8c98a39c07049ab02006a2f08f9ae306314f477f3e78ee0fd46d2869b2f39fb3",
     "script/smoke-app.mjs": "4eb21c8083307ea0199bac9a5935202e2e24147baec7c4cb2b23820af48ec196",
-    "script/check-app-icon-ui.mjs": "b5a18ff4191e35ad629126b6604777d501f4a97d3603cb0863ed5980ebf25baa",
+    "script/check-app-icon-ui.mjs": "abed9c29362f06c682dc0708284aa4a5f889d8778f38cf99970fb8f59710aa61",
     "script/check-macos-app-icon.mjs": "5139e4e36151b911c70c1a0c86af4075643fba308c176ca15c46405013ff4ef8",
     "src/renderer/update/App.tsx": "2ba90f20887111e370348193203ebd2c998e86f63e055cc6f3e82395778efd2c",
     "src/share/renderer/about/App.tsx": "7e2861c64fc972ad3f4c30a7b6288cfb9d421a23e668ddf1f94e2b652d9b253e",

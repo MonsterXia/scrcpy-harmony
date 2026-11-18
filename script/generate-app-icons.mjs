@@ -1,5 +1,5 @@
 // Authoring only: generated resources are checked in, so builds do not need Chrome.
-import { mkdir, writeFile, copyFile } from 'node:fs/promises'
+import { mkdir, writeFile, mkdtemp, rename, rm } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
@@ -8,10 +8,9 @@ import { iconSvg, layerSvg, palettes, shapes, composerDocument } from './lib/app
 const root = fileURLToPath(new URL('..', import.meta.url))
 const output = path.join(root, 'build/app-icons')
 const composer = path.join(root, 'build/ScrcpyPlus.icon')
-await mkdir(output, { recursive: true })
-await mkdir(path.join(composer, 'Assets'), { recursive: true })
-for (const name of Object.keys(shapes)) await writeFile(path.join(composer, 'Assets', `${name}.svg`), layerSvg(name))
-await writeFile(path.join(composer, 'icon.json'), JSON.stringify(composerDocument, null, 2) + '\n')
+const assets = new Map()
+for (const name of Object.keys(shapes)) assets.set(path.join(composer, 'Assets', `${name}.svg`), layerSvg(name))
+assets.set(path.join(composer, 'icon.json'), JSON.stringify(composerDocument, null, 2) + '\n')
 
 const browser = await chromium.launch(process.env.BROWSER_EXECUTABLE
   ? { executablePath: process.env.BROWSER_EXECUTABLE, headless: true }
@@ -32,11 +31,11 @@ try {
   }
   for (const name of Object.keys(palettes)) {
     const source = iconSvg(name)
-    await writeFile(path.join(output, `${name}.svg`), source)
-    await writeFile(path.join(output, `${name}.png`), await rasterize(source, 1024))
-    await writeFile(path.join(root, 'src/renderer/assets', name === 'light' ? 'icon.png' : `icon-${name}.png`), await rasterize(source, 128))
+    assets.set(path.join(output, `${name}.svg`), source)
+    assets.set(path.join(output, `${name}.png`), await rasterize(source, 1024))
+    assets.set(path.join(root, 'src/renderer/assets', name === 'light' ? 'icon.png' : `icon-${name}.png`), await rasterize(source, 128))
   }
-  await copyFile(path.join(output, 'light.png'), path.join(root, 'build/icon.png'))
+  assets.set(path.join(root, 'build/icon.png'), assets.get(path.join(output, 'light.png')))
   const sizes = [16, 24, 32, 48, 64, 128, 256]
   const entries = await Promise.all(sizes.map(size => rasterize(iconSvg('light'), size)))
   const header = Buffer.alloc(6 + sizes.length * 16)
@@ -52,8 +51,26 @@ try {
     header.writeUInt32LE(offset, pos + 12)
     offset += png.length
   })
-  await writeFile(path.join(root, 'build/icon.ico'), Buffer.concat([header, ...entries]))
-  console.log('Generated three SVG/PNG appearances, renderer PNGs, Windows ICO and Icon Composer layers.')
+  assets.set(path.join(root, 'build/icon.ico'), Buffer.concat([header, ...entries]))
+
 } finally {
   await browser.close()
+}
+
+// Stage every output before replacing any checked-in file. Renaming on the same
+// volume also prevents readers from observing partially written PNG/ICO files.
+const staging = await mkdtemp(path.join(root, '.app-icons-'))
+try {
+  for (const [destination, data] of assets) {
+    const staged = path.join(staging, path.relative(root, destination))
+    await mkdir(path.dirname(staged), { recursive: true })
+    await mkdir(path.dirname(destination), { recursive: true })
+    await writeFile(staged, data)
+  }
+  for (const destination of assets.keys()) {
+    await rename(path.join(staging, path.relative(root, destination)), destination)
+  }
+  console.log('Generated three SVG/PNG appearances, renderer PNGs, Windows ICO and Icon Composer layers.')
+} finally {
+  await rm(staging, { recursive: true, force: true })
 }

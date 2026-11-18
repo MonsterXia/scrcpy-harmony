@@ -3,7 +3,7 @@ import { _electron } from 'playwright-core'
 import { createRequire } from 'node:module'
 import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import path from 'node:path'
 import assert from 'node:assert/strict'
 import { Script } from 'node:vm'
@@ -37,7 +37,7 @@ try {
         width:400,height:280,useContentSize:true,
         webPreferences:{preload:${JSON.stringify(path.join(temporary, 'preload.cjs'))}}
       });
-      return window.loadFile(${JSON.stringify(renderer)},{query:{page:'about'}});
+      global.initialLoad = window.loadFile(${JSON.stringify(renderer)}, {query:{page:'about'}});
     });
     app.on('window-all-closed',()=>app.quit());
   `)
@@ -51,6 +51,7 @@ try {
   application = await _electron.launch({ executablePath: createRequire(import.meta.url)('electron'), args: [path.join(temporary, 'main.cjs')], env, timeout: 30000, colorScheme: null })
   console.log('Icon UI: Electron launched')
   const page = await application.firstWindow()
+  await application.evaluate(() => global.initialLoad)
   console.log('Icon UI: window ready')
   page.setDefaultTimeout(15000)
   const lightData = 'data:image/png;base64,' + (await readFile('src/renderer/assets/icon.png')).toString('base64')
@@ -83,7 +84,12 @@ try {
       const image = page.locator('img').first()
       const box = await image.boundingBox()
       assert.equal(box.width, view === 'about' ? 62 : 64)
-      sources.push(await image.evaluate(img => img.currentSrc))
+      const actualSource = await image.evaluate(img => img.currentSrc)
+      const actualData = actualSource.startsWith('file:')
+        ? 'data:image/png;base64,' + (await readFile(fileURLToPath(actualSource))).toString('base64')
+        : actualSource
+      assert.equal(actualData, theme === 'dark' ? darkData : lightData, 'Window must load the expected PNG bytes')
+      sources.push(actualSource)
       await page.screenshot({ path: path.join(output, `${view}-${language}-${theme}.png`) })
       report.cases.push({ language, view, theme, imageWidth: box.width, switched: true })
     }
