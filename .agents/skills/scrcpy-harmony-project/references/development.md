@@ -206,6 +206,8 @@ M0-3 的 `.github/workflows/update-acceptance.yml` 是固定版本的实际更�
 
 macOS 无证书开发包可运行 `npm run pack -- --no-publish --adhoc-sign`，显式重建包签名；CI 使用该参数，Build 仅在未配置 CSC_LINK 时使用。`check-macos-install.mjs` 对从 DMG 复制的应用执行 deep/strict codesign 验证，失败阻止打包验收。它仍不代表 Developer ID、公证或 Gatekeeper 放行。
 
+本机正式分发可使用钥匙串中的 Developer ID Application 身份，通过 `CSC_NAME` 指定团队部分、`APPLE_KEYCHAIN_PROFILE` 指定已验证的 notarytool profile，再运行 `npm run pack -- --no-publish`，不追加 `--adhoc-sign`。证书/私钥和公证凭据不进入仓库。打包成功仍须核对 Developer ID、stapler 和 Gatekeeper，并验证最终 DMG 中的 app；操作与证据见 [macOS 分发签名](../../../../docs/maintenance/macos-distribution-signing.md)。
+
 ### iOS USB 开发验证
 
 开发版 `Build` 工作流在 macOS arm64 的桌面 pack 后验证独立 CLI/MCP 包并生成通用 tgz，只有该平台上传此附件；打包前使用 runner 当前 Xcode 编译未签名 WDA Runner/ReplayKit，任何失败阻止附件上传。其余平台仍生成各自桌面安装包、更新元数据及验证报告。WDA 源码与编译/签名缓存不作为发行附件。
