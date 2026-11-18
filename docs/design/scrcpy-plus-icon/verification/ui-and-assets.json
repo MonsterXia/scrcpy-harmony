@@ -1,0 +1,122 @@
+{
+  "scope": "Production renderer, real Electron nativeTheme, fixture IPC; no phone I/O",
+  "cases": [
+    {
+      "language": "en-US",
+      "view": "about",
+      "theme": "light",
+      "imageWidth": 62,
+      "switched": true
+    },
+    {
+      "language": "en-US",
+      "view": "about",
+      "theme": "dark",
+      "imageWidth": 62,
+      "switched": true
+    },
+    {
+      "language": "en-US",
+      "view": "about",
+      "theme": "light",
+      "imageWidth": 62,
+      "switched": true
+    },
+    {
+      "language": "en-US",
+      "view": "update",
+      "theme": "light",
+      "imageWidth": 64,
+      "switched": true
+    },
+    {
+      "language": "en-US",
+      "view": "update",
+      "theme": "dark",
+      "imageWidth": 64,
+      "switched": true
+    },
+    {
+      "language": "en-US",
+      "view": "update",
+      "theme": "light",
+      "imageWidth": 64,
+      "switched": true
+    },
+    {
+      "language": "zh-CN",
+      "view": "about",
+      "theme": "light",
+      "imageWidth": 62,
+      "switched": true
+    },
+    {
+      "language": "zh-CN",
+      "view": "about",
+      "theme": "dark",
+      "imageWidth": 62,
+      "switched": true
+    },
+    {
+      "language": "zh-CN",
+      "view": "about",
+      "theme": "light",
+      "imageWidth": 62,
+      "switched": true
+    },
+    {
+      "language": "zh-CN",
+      "view": "update",
+      "theme": "light",
+      "imageWidth": 64,
+      "switched": true
+    },
+    {
+      "language": "zh-CN",
+      "view": "update",
+      "theme": "dark",
+      "imageWidth": 64,
+      "switched": true
+    },
+    {
+      "language": "zh-CN",
+      "view": "update",
+      "theme": "light",
+      "imageWidth": 64,
+      "switched": true
+    }
+  ],
+  "resources": [
+    {
+      "appearance": "light",
+      "width": 1024,
+      "height": 1024,
+      "exteriorPixels": 0,
+      "alphaHash": "09819fd652d32dc9d07878790f018627c68359c236247cb3553526d814898318"
+    },
+    {
+      "appearance": "dark",
+      "width": 1024,
+      "height": 1024,
+      "exteriorPixels": 0,
+      "alphaHash": "09819fd652d32dc9d07878790f018627c68359c236247cb3553526d814898318"
+    },
+    {
+      "appearance": "mono",
+      "width": 1024,
+      "height": 1024,
+      "exteriorPixels": 0,
+      "alphaHash": "09819fd652d32dc9d07878790f018627c68359c236247cb3553526d814898318"
+    }
+  ],
+  "icoSizes": [
+    16,
+    24,
+    32,
+    48,
+    64,
+    128,
+    256
+  ],
+  "passed": true
+}

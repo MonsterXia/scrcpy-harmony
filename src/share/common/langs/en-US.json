@@ -72,7 +72,7 @@
   "applicationLogs": "Application Logs",
   "applicationLogsDescription": "Runtime messages from Scrcpy Harmony.",
   "applicationLogsError": "Unable to read or clear application logs. Try reopening this window.",
-  "aboutDescription": "Desktop tools for HarmonyOS devices",
+  "aboutDescription": "Screen mirroring for Android, HarmonyOS and iOS",
   "toolProcessDescription": "Inspect the processes running Scrcpy Harmony.",
   "toolMetrics": "Resource usage",
   "toolMetricsError": "Resource metrics are unavailable. Retrying…",

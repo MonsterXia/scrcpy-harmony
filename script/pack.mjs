@@ -1,5 +1,9 @@
 import builder from 'electron-builder'
 import isMac from 'licia/isMac.js'
+import path from 'node:path'
+
+const outputOverride = process.env.SCRCPY_PLUS_PACK_OUTPUT
+  ? path.resolve(process.env.SCRCPY_PLUS_PACK_OUTPUT) : undefined
 
 cd('dist')
 
@@ -13,7 +17,7 @@ if (isMac && process.arch !== 'arm64') {
 const config = {
   appId: pkg.appId,
   directories: {
-    output: `../release/${pkg.version}`,
+    output: outputOverride || `../release/${pkg.version}`,
   },
   asarUnpack: ['node_modules/**/*.node'],
   files: ['main', 'preload', 'renderer', 'LICENSE', 'THIRD_PARTY_NOTICES.txt'],
@@ -35,6 +39,9 @@ const config = {
     ],
   },
   mac: {
+    icon: 'mac-icon/icon.icns',
+    extendInfo: { CFBundleIconName: 'Icon' },
+    extraResources: [{ from: 'build/mac-icon/Assets.car', to: 'Assets.car' }],
     // Explicit development signing rebuilds the bundle seal after packaging.
     // Omit the flag when using a configured Developer ID identity.
     ...(process.argv.includes('--adhoc-sign') ? { identity: '-', notarize: false } : {}),

@@ -13,6 +13,13 @@ function fixture(t) {
     fs.mkdirSync(path.join(root, dir), { recursive: true })
     fs.writeFileSync(path.join(root, dir, 'fixture.txt'), dir)
   }
+  const manifestPath = 'build/mac-icon/manifest.json'
+  const iconManifest = require('../build/mac-icon/manifest.json')
+  for (const file of [manifestPath, ...Object.keys(iconManifest)]) {
+    const destination = path.join(root, file)
+    fs.mkdirSync(path.dirname(destination), { recursive: true })
+    fs.copyFileSync(path.resolve(__dirname, '..', file), destination)
+  }
   const platformManifest = {
     android: { version: '3.3.3' }, airplay: { platform: process.platform, arch: process.arch, napi: 8 },
   }
@@ -139,5 +146,15 @@ test('distribution rejects corrupted or wrong-architecture platform backends', t
   const f = fixture(t)
   fs.writeFileSync(path.join(f.root, 'resources/android/scrcpy-server'), 'corrupted')
   assert.notEqual(f.run().status, 0)
+  assert.equal(fs.existsSync(path.join(f.root, 'dist/package.json')), false)
+})
+
+
+test('distribution rejects icon files from a different generation', t => {
+  const f = fixture(t)
+  fs.writeFileSync(path.join(f.root, 'src/renderer/assets/icon-dark.png'), 'stale icon')
+  const result = f.run()
+  assert.notEqual(result.status, 0)
+  assert.match(result.stderr, /Icon set mismatch: src\/renderer\/assets\/icon-dark\.png/)
   assert.equal(fs.existsSync(path.join(f.root, 'dist/package.json')), false)
 })

@@ -40,6 +40,12 @@ try {
     path.join(resources, 'uitestkit_sdk/uitest_agent_v1.1.0.so')]) {
     assert.ok((await stat(file)).size > 0, `Missing or empty installed file: ${file}`)
   }
+  for (const name of ['Assets.car', 'icon.icns']) {
+    assert.ok((await readFile(path.join(resources, name))).equals(await readFile(path.join('build/mac-icon', name))),
+      `Installed icon differs from the verified resource: ${name}`)
+  }
+  assert.equal(execFileSync('/usr/libexec/PlistBuddy', ['-c', 'Print :CFBundleIconName',
+    path.join(application, 'Contents/Info.plist')], { encoding: 'utf8' }).trim(), 'Icon')
   await access(executable, constants.X_OK)
   await access(hdc, constants.X_OK)
   // Verify the copied DMG payload, not just the staging bundle. Ad-hoc is
