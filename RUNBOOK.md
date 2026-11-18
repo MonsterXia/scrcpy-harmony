@@ -4,6 +4,10 @@
 
 三版统一矢量资源、应用内替换与 macOS Icon Composer 打包已完成；完整构建、lint/i18n、12 项双语窗口主题切换、透明边缘/ICO、macOS 26/27 原生渲染、候选包签名及隔离启动通过。图标测试程序括号错误导致的 JS 弹窗已修复并加入启动前语法检查。已备份并更新日常安装，安装后签名/启动检查、Dock/Finder 实际浅→深→浅及着色样式通过，Finder 退出应用后仍能切换；已恢复原系统外观设置。Windows/旧系统安装及全局透明样式仍待验收，其他工作区运行包保持原状。详情、证据及下一步见[品牌图标记录](docs/maintenance/app-brand-icon.md)。
 
+## macOS 正式分发签名（2026-11-17）
+
+状态：**本机 arm64 候选正式签名、公证、Gatekeeper 与 DMG 复制安装启动验收完成。** 候选源码 `a5175fe` 的 app 与独立 DMG 均获 Apple `Accepted` 并装订票据，Gatekeeper 均返回 `Notarized Developer ID`。未替换公开 Release 或安装版，CI secrets 未配置；其他 Mac 下载与真机投屏未在本任务验收。验证证据、安装包位置和下一步见 [分发签名记录](docs/maintenance/macos-distribution-signing.md)。
+
 ## 仓库改名与更新源迁移（2026-11-17）
 
 状态：GitHub 仓库已改为 `MonsterXia/scrcpy-plus`，本地 origin、更新源、发布目标与当前入口文档已同步。恢复更新及预发布菜单，保留 Plus 配置和应用标识；按用户要求不兼容旧 Harmony 自动更新/配置迁移。测试、完整构建及六组线上元数据检查通过，Electron 双语更新与下载链接验收通过。源码未提交/推送，未发布或替换安装版；详情与下一步见 [迁移记录](docs/maintenance/scrcpy-plus-rename.md)。

@@ -1,0 +1,81 @@
+{
+  "verifiedAt": "2026-11-17T19:18:29.708075+08:00",
+  "sourceCommit": "a5175fee71d697a1f3b5fe5fee2db0842ea3d2cf",
+  "version": "1.0.5-dev.2",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "artifact": "Scrcpy Plus-1.0.5-dev.2-mac-arm64-signed.dmg",
+  "sizeBytes": 130998150,
+  "sha256": "d83dd7e281ab27c1ec98667b779719984ec8a69778a5638e3635d9d78f086e64",
+  "identity": "Developer ID Application",
+  "appNotarization": {
+    "status": "Accepted",
+    "message": "Successfully received submission info",
+    "name": "Scrcpy Plus.zip",
+    "createdDate": "2026-11-17T11:11:12.531Z"
+  },
+  "dmgNotarization": {
+    "createdDate": "2026-11-17T11:15:27.298Z",
+    "message": "Successfully received submission info",
+    "status": "Accepted",
+    "name": "Scrcpy Plus-1.0.5-dev.2-mac-arm64-signed.dmg"
+  },
+  "installedAppChecks": [
+    {
+      "check": "dmg-mount",
+      "exitCode": 0
+    },
+    {
+      "check": "dmg-copy",
+      "exitCode": 0
+    },
+    {
+      "check": "dmg-detach",
+      "exitCode": 0
+    },
+    {
+      "check": "installed-codesign",
+      "exitCode": 0
+    },
+    {
+      "check": "installed-stapler",
+      "exitCode": 0
+    },
+    {
+      "check": "installed-gatekeeper",
+      "exitCode": 0
+    },
+    {
+      "check": "installed-smoke",
+      "exitCode": 0
+    }
+  ],
+  "dmgChecks": [
+    {
+      "check": "dmg-staple",
+      "exitCode": 0
+    },
+    {
+      "check": "dmg-stapler",
+      "exitCode": 0
+    },
+    {
+      "check": "dmg-signature",
+      "exitCode": 0
+    },
+    {
+      "check": "dmg-gatekeeper",
+      "exitCode": 0
+    }
+  ],
+  "appGatekeeper": "accepted; source=Notarized Developer ID",
+  "dmgGatekeeper": "Scrcpy Plus-1.0.5-dev.2-mac-arm64-signed.dmg: accepted\nsource=Notarized Developer ID",
+  "publicReleaseChanged": false,
+  "installedApplicationReplaced": false,
+  "ciSigningSecretsConfigured": false,
+  "limitations": [
+    "Local arm64 candidate built from the recorded source commit after the public dev.2 release.",
+    "No fresh physical Mac download or device-mirroring acceptance in this task.",
+    "Standalone signed DMG; do not reuse electron-builder update hashes or blockmaps for this modified copy."
+  ]
+}
