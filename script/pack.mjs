@@ -42,6 +42,11 @@ const config = {
     icon: 'mac-icon/icon.icns',
     extendInfo: { CFBundleIconName: 'Icon' },
     extraResources: [{ from: 'build/mac-icon/Assets.car', to: 'Assets.car' }],
+
+    // TZif zoneinfo files are data, not native executables. Signing each of
+    // these hundreds of files adds needless timestamp requests; the app seal
+    // still covers them. Keep all helper executables and libraries signed.
+    signIgnore: ['/ios-provisioning/device/_internal/tzdata/'],
     // Explicit development signing rebuilds the bundle seal after packaging.
     // Omit the flag when using a configured Developer ID identity.
     ...(process.argv.includes('--adhoc-sign') ? { identity: '-', notarize: false } : {}),

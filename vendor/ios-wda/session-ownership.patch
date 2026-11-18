@@ -31,12 +31,13 @@
  + (id<FBResponsePayload>)handleGetStatus:(FBRouteRequest *)request
  {
    // For updatedWDABundleId capability by Appium
-@@ -199,6 +216,8 @@
+@@ -199,6 +216,9 @@
    return FBResponseWithObject(
      @{
        @"ready" : @YES,
 +      @"scrcpyPlusProtocolVersion" : @1,
 +      @"scrcpyPlusRunnerId" : [self scrcpyPlusRunnerId],
++      @"scrcpyPlusBundleId" : NSBundle.mainBundle.bundleIdentifier ?: @"",
        @"message" : @"WebDriverAgent is ready to accept commands",
        @"state" : @"success",
        @"os" :

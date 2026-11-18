@@ -15,6 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  ios-wda:
+    uses: ./.github/workflows/ios-wda-artifact.yml
   checks:
     # These names are used by master's required status checks.
     name: ${{ matrix.check }}
@@ -38,10 +40,11 @@ jobs:
         run: npm run ${{ matrix.check }}
 
   windows-package:
+    needs: ios-wda
     # This name is used by master's required status checks.
     name: windows-package
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     defaults:
       run:
         shell: pwsh
@@ -62,6 +65,7 @@ jobs:
         run: npx --no-install zx --shell "C:/Program Files/Git/bin/bash.exe" script/resources.mjs
       - name: Prepare source backend toolchain
         uses: ./.github/actions/platform-toolchain
+      - uses: ./.github/actions/ios-toolchain
       - name: Build distribution
         run: npm run build
       - name: Package Windows installer
@@ -92,10 +96,11 @@ jobs:
         run: ./script/check-windows-install.ps1
 
   macos-package:
+    needs: ios-wda
     # macos-package-arm64 is required by master's branch protection.
     name: macos-package-${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -121,6 +126,7 @@ jobs:
         run: npm run init
       - name: Prepare source backend toolchain
         uses: ./.github/actions/platform-toolchain
+      - uses: ./.github/actions/ios-toolchain
       - name: Build distribution
         run: npm run build
       - name: Package macOS disk image

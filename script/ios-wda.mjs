@@ -82,7 +82,12 @@ export async function applyOwnershipPatch(source, manifest) {
 }
 async function prepareSource() {
   const manifest = JSON.parse(await fs.readFile(path.join(root, 'vendor/ios-wda/manifest.json'), 'utf8'))
-  const cache = path.join(root, 'build/ios-wda'), source = path.join(cache, `WebDriverAgent-${manifest.commit}`)
+  const cache = path.join(root, 'build/ios-wda')
+  // A patch update can keep the upstream commit unchanged. Never patch over a
+  // previous generation (or a developer's edits) just because that commit matches.
+  const generation = createHash('sha256').update(JSON.stringify(manifest)).digest('hex')
+  const sourceRoot = path.join(cache, 'sources', `${manifest.commit}-${generation}`)
+  const source = path.join(sourceRoot, `WebDriverAgent-${manifest.commit}`)
   await fs.mkdir(cache, { recursive: true })
   const archive = path.join(cache, `${manifest.commit}.tar.gz`)
   let bytes
@@ -95,7 +100,16 @@ async function prepareSource() {
   await fs.writeFile(archive, bytes)
   // The hash-pinned archive contains no mutable branch lookup or install script.
   try { await fs.access(path.join(source, 'WebDriverAgent.xcodeproj/project.pbxproj')) }
-  catch { await run('tar', ['-xzf', archive, '-C', cache]) }
+  catch {
+    if (await fs.lstat(sourceRoot).catch(() => null)) throw Error('Incomplete WDA source cache; refusing to overwrite it')
+    await fs.mkdir(path.dirname(sourceRoot), { recursive: true })
+    const staging = await fs.mkdtemp(path.join(cache, 'extract-'))
+    try {
+      await run('tar', ['-xzf', archive, '-C', staging])
+      await fs.access(path.join(staging, `WebDriverAgent-${manifest.commit}`, 'WebDriverAgent.xcodeproj/project.pbxproj'))
+      await fs.rename(staging, sourceRoot)
+    } finally { await fs.rm(staging, { recursive: true, force: true }) }
+  }
   const socketFile = path.join(source, manifest.localPatch.file)
   const original = await fs.readFile(socketFile, 'utf8')
   const patched = patchSocketSource(original, manifest.localPatch)

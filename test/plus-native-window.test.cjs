@@ -7,7 +7,7 @@ const { transformSync } = require('esbuild')
 const loadAutomation = require('./helpers/load-automation.cjs')
 const config = Uint8Array.from([0,0,0,1,0x67,0x42,0,0x1f,0,0,0,1,0x68,0x11])
 const key = Uint8Array.from([0,0,0,1,0x65,1])
-function fixture() {
+function fixture(provisioning = {}) {
   const handlers = new Map(), windows = [], backends = []
   class Android {
     constructor(target) { this.target = target; this.closed = false; this.inputs = []; backends.push(this) }
@@ -20,11 +20,12 @@ function fixture() {
   function load(file, mocks) {
     const module = { exports: {} }
     vm.runInNewContext(transformSync(fs.readFileSync(file, 'utf8'), { loader: 'ts', format: 'cjs' }).code,
-      { module, exports: module.exports, console,
+      { module, exports: module.exports, console, AbortController,
         require: id => Object.hasOwn(mocks, id) ? mocks[id] : require(id) })
     return module.exports
   }
   const api = load('src/main/window/nativeMirror.ts', {
+    '../lib/ios-provisioning': { setIosProvisioningBusy() {}, prepareManagedIos: async () => {}, cancelIosSetup() {}, iosSetup: async (_udid, action) => ({phase:'idle', action:action.action}), ...provisioning },
     electron: { ipcMain: { handle: (key, handler) => handlers.set(key, handler) },
       screen: { getDisplayMatching: () => ({ workArea: { x: 0, y: 0, width: 1440, height: 900 } }) } },
     'share/main/lib/window': {
@@ -46,6 +47,43 @@ function fixture() {
   return { ...api, handlers, windows, backends, invoke, Android }
 }
 const target = (id = 'a') => ({ key: `android:${id}`, connectionId: id, name: 'Same model', platform: 'android' })
+test('closing an iPhone window during backend cleanup cannot start deferred provisioning',async()=>{
+ const calls=[]
+ const f=fixture({iosSetup:async()=>{calls.push('prepare');return {phase:'ready'}}})
+ await f.nativeMirrors.start({key:'ios:01234567',connectionId:'01234567',platform:'ios',transport:'usb',name:'iPhone'})
+ const w=f.windows[0];await f.invoke('nativeMirrorOpen',w)
+ let release;f.backends[0].close=()=>new Promise(r=>release=r)
+ const pending=f.invoke('iosSetup',w,{action:'prepare'});await Promise.resolve()
+ f.backends[0].close=async()=>{};await f.nativeMirrors.stop(f.nativeMirrors.list()[0].id)
+ release();await assert.rejects(pending)
+ assert.equal(w.destroyed,true);assert.deepEqual(calls,[])
+})
+test('closing a window aborts the lifecycle signal of its active setup call',async()=>{
+ let signal,finish
+ const f=fixture({iosSetup:async(_udid,_action,s)=>{signal=s;return new Promise(r=>finish=r)}})
+ await f.nativeMirrors.start({key:'ios:01234567',connectionId:'01234567',platform:'ios',transport:'usb',name:'iPhone'})
+ const pending=f.invoke('iosSetup',f.windows[0],{action:'prepare'});await Promise.resolve()
+ await f.nativeMirrors.stop(f.nativeMirrors.list()[0].id)
+ finish({phase:'cancelled'});await pending
+ assert.equal(signal?.aborted,true)
+})
+test('closing an iPhone during automatic preparation aborts its operation signal',async()=>{
+ let signal,finish
+ const f=fixture({prepareManagedIos:async(_udid,s)=>{signal=s;return new Promise(r=>finish=r)}})
+ await f.nativeMirrors.start({key:'ios:01234567',connectionId:'01234567',platform:'ios',transport:'usb',name:'iPhone'})
+ const pending=f.invoke('nativeMirrorOpen',f.windows[0]);await new Promise(setImmediate)
+ const rejected=assert.rejects(pending)
+ const stopping=f.nativeMirrors.stop(f.nativeMirrors.list()[0].id)
+ finish();await rejected;await stopping
+ assert.equal(signal?.aborted,true);assert.equal(f.backends.length,0)
+})
+test('closing an idle window does not issue device-wide cancellation of background work',async()=>{
+ let cancelled=0
+ const f=fixture({cancelIosSetup:()=>cancelled++})
+ await f.nativeMirrors.start({key:'ios:01234567',connectionId:'01234567',platform:'ios',transport:'usb',name:'iPhone'})
+ await f.nativeMirrors.stop(f.nativeMirrors.list()[0].id)
+ assert.equal(cancelled,0)
+})
 for (const reason of ['gui', 'force']) test(`native ${reason} stop blocks new automation owners until cleanup finishes`, async t => {
   const f = fixture()
   const { AutomationController } = loadAutomation('src/main/automation/controller.ts')
@@ -380,5 +418,13 @@ test('manual video unknown allocation becomes an explicit error instead of scree
  f.backends[0].setVideo=async()=>{throw Object.assign(Error('unknown'),{code:'IOS_WDA_ALLOCATION_UNKNOWN'})}
  await assert.rejects(f.invoke('nativeMirrorVideo',win,true))
  assert.equal(f.nativeMirrors.list()[0].state,'error');assert.equal(f.nativeMirrors.list()[0].connectionIssue,'ios-cleanup-unknown')
+ await f.nativeMirrors.dispose()
+})
+
+ test('iOS setup IPC is bound to the owning USB window and rejects other frames',async()=>{
+ const f=fixture();await f.nativeMirrors.start({key:'ios:01234567',connectionId:'01234567',platform:'ios',transport:'usb',name:'Phone'})
+ const w=f.windows[0];assert.equal((await f.invoke('iosSetup',w,{action:'status'})).phase,'idle')
+ await assert.rejects(Promise.resolve().then(()=>f.handlers.get('iosSetup')({sender:w.webContents,senderFrame:{}},{action:'login',email:'test@example.com',password:'test'})))
+ await f.nativeMirrors.start(target());await assert.rejects(f.invoke('iosSetup',f.windows[1],{action:'status'}))
  await f.nativeMirrors.dispose()
 })

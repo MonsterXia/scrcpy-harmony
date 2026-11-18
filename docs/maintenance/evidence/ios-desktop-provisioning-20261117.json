@@ -1,0 +1,229 @@
+{
+  "date": "2026-11-17",
+  "status": "integrated-macos-flow-and-controlled-real-renewal-validated; notarized-arm64-candidate-ready-for-further-testing",
+  "authorization": "User explicitly chose bundled implementation and opted out of design questions",
+  "implementation": {
+    "inAppLoginAnd2FA": true,
+    "teamSelection": true,
+    "bundledHelpers": true,
+    "automaticPreparation": true,
+    "renewWithinHours": 24,
+    "retryBackoffMinutes": 15,
+    "renewOnlyConnectedIdleManagedDevices": true,
+    "reusableAuthorizationInSystemKeyring": true,
+    "persistAppleIdPassword": false,
+    "certificateRevocation": false,
+    "ownedSessionReservationJournal": true,
+    "exactRunnerBundleIdentity": true
+  },
+  "verification": {
+    "applicationRegressionBeforeFinalReauthorizationUi": {
+      "passed": 1229,
+      "skipped": 2,
+      "failed": 0
+    },
+    "finalTargetedRegression": {
+      "passed": 81,
+      "failed": 0
+    },
+    "pythonTests": {
+      "passed": 4
+    },
+    "rustTests": {
+      "passed": 2
+    },
+    "lintAndI18n": "passed",
+    "fullDesktopBuild": "passed; final main/preload/renderer rebuild also passed",
+    "unsignedWda": "test build succeeded; one upstream broadcast pipeline analyzer warning",
+    "frozenHelperRealDeviceInspection": "passed with existing installed Runner before exact-bundle field upgrade",
+    "englishLoginUi": "observed in real Electron without entering credentials",
+    "packagedHelperProtocol": "both self-contained executables ran and rejected invalid input; stderr empty",
+    "codesignDeepStrict": "passed for local ad-hoc candidate",
+    "notarization": "Latest 2026-11-18 app and standalone DMG Accepted; tickets and Gatekeeper passed",
+    "fullTypecheck": "56 diagnostics outside new provisioning modules; not reported as passed",
+    "lastAuthAndReservationRegression": {
+      "passed": 19,
+      "failed": 0
+    },
+    "review": "Independent read-only review in three passes; reported cancellation/restore/unknown-status/install-guard/journal/bundle-binding issues addressed with regression tests",
+    "integratedValidation20261118": {
+      "userReportedRebootAndUnlock": true,
+      "usbPaired": true,
+      "developerMode": true,
+      "mountedImageCountBeforeLogin": 1,
+      "coldUnmountedImageTest": "not established: image already mounted at inspection",
+      "packagedAppLoginUi": "observed from latest local ad-hoc candidate; awaiting user login",
+      "isolatedValidationProfile": true
+    },
+    "loginResourceFix20261118": {
+      "rootCause": "Runtime rejected manifest above 5000 entries; packaged frozen helper contains 7304 entries, all present. Build-time validation had no matching bound.",
+      "fix": "Build and runtime both allow up to 20000 files; path and IPA integrity checks retained.",
+      "redGreenRegression": "Real-filesystem fixture above 5000 files failed before fix and passed after; corrupt IPA rejected. Login UI pending IPC status failed before fix and passed after.",
+      "actualPackagedResources": "Validated all manifest paths and IPA hash; read-only account helper completed, authenticated=false.",
+      "targetedTests": {
+        "passed": 21,
+        "failed": 0
+      },
+      "fullApplicationTests": {
+        "passed": 1234,
+        "skipped": 2,
+        "failed": 0
+      },
+      "liciaModes": "606 pass / 4 pending each",
+      "lintAndI18n": "passed",
+      "uiChanges": "Consent checkbox vertically centered; login immediately shows authenticating state.",
+      "integratedLogin": "awaiting user retry after rebuilding",
+      "bilingualVisualValidation": "English and Chinese login pages observed in rebuilt packaged app; consent checkbox centered against wrapped text; fields and buttons visible.",
+      "rebuiltPackage": "passed; codesign --verify --deep --strict passed (ad-hoc)",
+      "oversizedManifestRegression": "Both build and runtime reject more than 20000 entries."
+    },
+    "integratedAccount20261118": {
+      "inAppLogin": "succeeded; reached automatic signing",
+      "persistedAuthorization": "read-only account command in separate process returned authenticated=true and one team",
+      "signing": "succeeded after explicitly approved old test certificate revocation",
+      "certificateRevocation": false,
+      "installedNewRunner": true,
+      "twoFactorChallenge": "not independently observed in this attempt"
+    },
+    "certificateInspection20261118": {
+      "mode": "read-only DeveloperSession list_ios_certs using own stored authorization; no keychain values emitted",
+      "iosDevelopmentCertificateCount": 1,
+      "machineName": "iloader",
+      "issuedAtUtc": "2026-11-17T11:49:42Z",
+      "status": "Issued",
+      "connectedPhoneCertificateFingerprintMatch": "installed Mobilerun/WDA provisioning profile",
+      "otherMatchingInstalledAppsOnConnectedPhone": 0,
+      "otherDevices": "not checked",
+      "revoked": true,
+      "nextStep": "Retried prepare through packaged GUI using persisted authorization",
+      "revocationAuthorization": "User explicitly confirmed revoking the identified iloader test certificate and continuing automatic signing/install",
+      "confirmedAbsentAfterRevocation": true,
+      "remainingIosCertificateCountAfterRevocation": 0
+    },
+    "developerImageFix20261118": {
+      "rootCause": "pymobiledevice3 auto_mount raises AlreadyMountedError for existing DDI; treating it as fatal blocked launch",
+      "fix": "Only AlreadyMountedError is treated as ready; all other mount errors propagate; no replacement/unmount",
+      "pythonTests": {
+        "passed": 6
+      },
+      "sourceRealDeviceStart": "passed: exact new bundle ready",
+      "rebuiltPackagedStart": "passed after stopping exact idle validation Runner and verifying port absent; app launched Runner and connected without external start command",
+      "ddiAlreadyMounted": true
+    },
+    "controlledRealRenewal20261118": {
+      "date": "2026-11-18",
+      "mode": "production renewal manager with injected clock at 12h before profile expiry; real signing/install/start using persisted authorization",
+      "systemClockChanged": false,
+      "operations": [
+        "sign:account",
+        "device:inspect",
+        "sign:install",
+        "device:inspect",
+        "device:start"
+      ],
+      "phases": [
+        "checking",
+        "signing",
+        "installing",
+        "starting",
+        "mounting",
+        "starting",
+        "ready"
+      ],
+      "beforeExpiresAt": 1795570183000,
+      "afterExpiresAt": 1795570544000,
+      "ready": true,
+      "freeOfSession": true,
+      "saved": true,
+      "actualSevenDayElapsed": false
+    },
+    "packagedMirror20261118": {
+      "homeControl": "passed",
+      "replayKit": "passed after manually enabling video following initial fallback",
+      "initialVideoAfterRunnerRestart": "one initial automatic video fallback to screenshot mode; retry succeeded; not claimed zero-retry reliable",
+      "newPhoneTrustPrompt": "no new prompt observed in this existing trusted test phone"
+    },
+    "packagingDataExclusion20261118": {
+      "zoneinfoFiles": 605,
+      "machoFilesInExcludedDirectory": 0,
+      "exclude": "/ios-provisioning/device/_internal/tzdata/",
+      "reason": "Skip per-data-file timestamp requests; data remains in outer app resource seal",
+      "tests": "build.test.cjs and release-pack.test.cjs passed",
+      "nativeHelpersAndLibraries": "not excluded"
+    },
+    "developerIdCandidate20261118": {
+      "appDeepStrict": "passed",
+      "nativeCodeFilesChecked": 172,
+      "nativeCodeSignatureFailures": 0,
+      "allNativeCodeExpectedTeam": true,
+      "signedHelperPersistedAuthorization": "restored authenticated=true, one team; no re-login",
+      "appNotarization": "Accepted",
+      "appNotarizationId": "e5f378b1-86ca-4197-a426-59188c2d0c6c",
+      "appStapler": "passed",
+      "appGatekeeper": "accepted / Notarized Developer ID",
+      "copiedFromDmgApp": "codesign deep strict, stapler, Gatekeeper and real UI launch passed",
+      "installedSignedDeviceHelper": "read-only device inspection passed; existing active GUI session reported busy as expected",
+      "dmgNotarizationId": "d4db516b-86ff-4b66-9a05-762e18dcf669",
+      "dmgNotarization": "Accepted",
+      "dmgStapler": "passed",
+      "dmgGatekeeper": "accepted / Notarized Developer ID",
+      "installedSignedAppVideo": "connected automatically using retained validation profile"
+    }
+  },
+  "pending": [
+    "First setup on a clean Mac and unmounted developer image",
+    "Independent 2FA challenge observation in integrated UI",
+    "Seven-day elapsed-time renewal and offline/reconnect matrix",
+    "ReplayKit first attempt reliability after Runner restart with prior broadcast",
+    "Windows build and device hardware validation",
+    "Default daily-profile adoption: authorization remains in isolated validation scope; do not blindly create another signing identity from a different profile"
+  ],
+  "limitations": [
+    "No renewal while desktop app is closed or device is offline",
+    "Apple authorization may require user re-login",
+    "Runner reservation protects existing compatible sessions; no global lock against independent clients starting a previously absent Runner",
+    "No seven-day elapsed-time expiry test yet"
+  ],
+  "sourceSha256": {
+    "src/main/lib/ios-provisioning/manager.ts": "75fca135a70f0305d11b091e48ae37af966d090df45d99189d3863f0b670f36f",
+    "src/main/lib/ios-provisioning/helper.ts": "a8923384c6f18645e28ba38a99d1bacc2033d046ddb093e837337a302161c61c",
+    "src/main/lib/ios-provisioning/reservation.ts": "91dce9e4d728acbc7a3e6038eb8f44c3490d59f723c6ba7c10fa1cecb2bc3aa8",
+    "src/main/lib/ios-provisioning/index.ts": "ef535736ad5f63d94044958a4aea0f37b0ab9b47cfe3e6343c78f13a1afecdf8",
+    "src/renderer/native-mirror/IosSetup.tsx": "850e21fe8b5a8ad7707fbaf3cad5e7795d93b6ed46d9ac402597a4e3ada852af",
+    "native/ios-sign/src/main.rs": "567271856a523e8a673cf1ad5c2e662ec661869c2addeac197678ba8eec582fe",
+    "native/ios-device/device.py": "607d772d6c2e3fba63d3e34cf093e5106fa1f4f36c4612db1592ba4cafa09ffc",
+    "script/build-ios-provisioning.mjs": "f0da9c46120c584ce35a0c78a35263a7d50f7a4f245ade7cf9dc3b093272de8f",
+    "vendor/ios-wda/manifest.json": "5ba4799d8b8afa6ed99c35aa94552cb40fdcd519ef8efa8fccd460e980e31aa1",
+    "script/pack.mjs": "cf138efdeef01b5ee153d516b96ec977a653eeecf1aab66d20a600f5503ad0cf"
+  },
+  "localCandidate": {
+    "file": "Scrcpy Plus-1.0.5-dev.2-mac-arm64.dmg",
+    "sha256": "b9f3948acebfb503324fb4fd9f9c62bc293fc5bee7786c0d1864bef559e9186d",
+    "bytes": 184576765,
+    "signing": "ad-hoc test candidate; not notarized",
+    "publicReleaseReplaced": false
+  },
+  "distributionCandidate": {
+    "file": "Scrcpy Plus-1.0.5-dev.2-mac-arm64-signed.dmg",
+    "bytes": 185824890,
+    "sha256": "6ac15ea40533284aa79f06912cf6ebc0518d5a5b212aaeb55f7c55dbb8f70315",
+    "appNotarizationId": "e5f378b1-86ca-4197-a426-59188c2d0c6c",
+    "dmgNotarizationId": "d4db516b-86ff-4b66-9a05-762e18dcf669",
+    "appNotarization": "Accepted",
+    "dmgNotarization": "Accepted",
+    "appAndDmgStapler": "passed",
+    "appAndDmgGatekeeper": "accepted / Notarized Developer ID",
+    "installedAppDeepStrict": "passed",
+    "installedAppUiLaunch": "passed",
+    "installedAppVideo": "ReplayKit connected using existing test profile; no login repeated",
+    "nativeCodeSignaturesChecked": 172,
+    "publicReleaseReplaced": false,
+    "applicationsDirectoryReplaced": false,
+    "validationProfile": "isolated; no credentials bundled or migrated into default daily profile",
+    "date": "2026-11-18",
+    "baselineCommit": "a5175fee71d697a1f3b5fe5fee2db0842ea3d2cf",
+    "includesUncommittedIosProvisioningChanges": true,
+    "architecture": "arm64",
+    "version": "1.0.5-dev.2"
+  }
+}

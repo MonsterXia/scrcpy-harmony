@@ -1,0 +1,136 @@
+{
+  "date": "2026-11-17",
+  "status": "passed-on-current-device-product-integration-pending",
+  "scope": "free Apple ID WDA signing/install/launch spike; not product integration",
+  "iloader": {
+    "version": "2.4.1",
+    "sourceCommit": "9797ecaf6ccdcfc68bd2ef4e0b1123910dd847b6",
+    "archiveSha256": "cf4bdd269f91ae91651cd20b101c6217052bedd3ae06ead72ef04d611afcfa5b",
+    "codesignDeepStrict": true,
+    "gatekeeper": "accepted; Notarized Developer ID",
+    "saveCredentials": false
+  },
+  "pymobiledevice3": {
+    "version": "11.57.1",
+    "environment": "isolated venv in user cache",
+    "rsdTransport": "userspace USB",
+    "rsdConnected": true,
+    "testmanagerServicePresent": true,
+    "appServicePresent": true
+  },
+  "baseline": {
+    "tool": "pymobiledevice3 11.57.1",
+    "transport": "USB lockdown",
+    "ios": "26.4.2",
+    "developerMode": true,
+    "mountedImageCount": 1,
+    "runnerMatches": []
+  },
+  "wdaInput": {
+    "commit": "8ce9d6f528e6f6c01bc0fa903b33555842d43571",
+    "source": "previous unsigned build, with project patches; not rebuilt this round",
+    "ipaSha256": "d3b92d205f08034df54c82f2cb42acbf38073d5e1aba6de9d46d84e2d57b6f2e",
+    "bytes": 1283590,
+    "containsRunner": true,
+    "containsXCTest": true,
+    "containsReplayKitExtension": true
+  },
+  "stages": {
+    "appleIdLogin": "passed on user retry; observed logged-in GUI",
+    "freeTeamConfirmed": true,
+    "signed": true,
+    "installed": true,
+    "started": true,
+    "statusEndpoint": true,
+    "screenAndInput": true,
+    "renewal": "not tested"
+  },
+  "limitations": [
+    "Developer image was already mounted; fresh preparation on a Mac without Xcode not verified",
+    "Current Mac has Xcode installed; signing, installation and successful startup did not invoke Xcode commands; WDA input was previously compiled with Xcode",
+    "No product integration or new desktop package; renewal, reconnect, reboot recovery, other iOS versions and Windows not tested",
+    "No raw credentials, pairing records, account addresses or device identifiers in evidence"
+  ],
+  "authorization": "user confirmed signing and installation; certificate revocation excluded",
+  "freeTeamEvidence": {
+    "installed": true,
+    "matchingRunnerCount": 1,
+    "profiles": [
+      {
+        "applicationIdMatchesInstalledApp": true,
+        "localProvision": true,
+        "creation": "2026-11-17 12:02:45",
+        "expiration": "2026-11-24 12:02:45",
+        "durationDays": 7.0,
+        "getTaskAllow": true,
+        "containsSelectedDevice": true
+      }
+    ],
+    "profileTimestampTimezone": "UTC"
+  },
+  "attempts": [
+    {
+      "ipa": "original",
+      "result": "signer rejected XCTest bundle ID hierarchy; no installation"
+    },
+    {
+      "ipa": "XCTest ID adjusted only",
+      "result": "signing succeeded; installer rejected AppleDouble ._ extension metadata"
+    },
+    {
+      "ipa": "clean zip, adjusted XCTest ID",
+      "sha256": "a739e0a28518cf6d742bdb220bd852b811a654e4fbdb061fa997f6af2eb2f34a",
+      "result": "signed and installed; confirmed through InstallationProxy"
+    }
+  ],
+  "launchError": [
+    {
+      "domain": "com.apple.dt.deviceprocesscontrolservice",
+      "code": 2,
+      "description": "Request to launch [runner] failed.; The request to open \"[runner]\" failed. : Failed to launch process with bundle identifier '[runner]'.; "
+    },
+    {
+      "domain": "FBSOpenApplicationServiceErrorDomain",
+      "code": 1,
+      "description": "The request to open \"[runner]\" failed.; The request was denied by service delegate (SBMainWorkspace) for reason: Security (\"Unable to launch [runner] because it has an invalid code signature, inadequate entitlements or its profile has not been explicitly trusted by the user\").; "
+    },
+    {
+      "domain": "FBSOpenApplicationErrorDomain",
+      "code": 3,
+      "description": "; Unable to launch [runner] because it has an invalid code signature, inadequate entitlements or its profile has not been explicitly trusted by the user.; "
+    }
+  ],
+  "certificateHandling": "user explicitly confirmed signing credentials and install; iloader managed identity in OS keyring; no revocation prompt accepted",
+  "startup": {
+    "beforeTrust": "DVT launch rejected by SpringBoard security; user subsequently confirmed developer trust",
+    "dvtAfterTrust": "testRunnerReadyWithCapabilities observed; HTTP service did not start; launcher stopped; cause unresolved",
+    "coreDevice": "userspace USB launch-application with console; UITestingUITests/testRunner and server listeners observed",
+    "environment": {
+      "USE_IP": "127.0.0.1",
+      "USE_PORT": "8100"
+    },
+    "broadcastControlListener": "127.0.0.1:9300",
+    "launcherCleanup": "owned DVT and CoreDevice console processes stopped with SIGINT; phone Runner left running",
+    "postLauncherExitChecks": 2
+  },
+  "wdaStatusAfterLauncherExit": {
+    "httpStatus": "HTTP/1.1 200 OK",
+    "ready": true,
+    "ownershipProtocol": 1,
+    "runnerIdentityPresent": true,
+    "sessionActive": true
+  },
+  "desktopValidation": {
+    "version": "1.0.5-dev.2",
+    "errorClearedAfterRetry": true,
+    "replayKitVideoAndUsbControlModeObserved": true,
+    "homeActionScreenTransitionObserved": true,
+    "screenshotsArchived": false
+  },
+  "preparedIpa": {
+    "name": "ScrcpyPlus-WDA-clean.ipa",
+    "bytes": 1270485,
+    "sha256": "a739e0a28518cf6d742bdb220bd852b811a654e4fbdb061fa997f6af2eb2f34a",
+    "purpose": "unsigned input for per-account signing, not a universally installable signed IPA"
+  }
+}

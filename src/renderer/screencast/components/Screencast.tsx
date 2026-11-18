@@ -2,7 +2,8 @@ import { observer } from 'mobx-react-lite'
 import store from '../store'
 import { useEffect, useRef, useState } from 'react'
 import Style from './Screencast.module.scss'
-import { LoadingBar } from 'share/renderer/components/loading'
+import StatusCard from '../../components/MirrorStatus'
+import StatusStyle from '../../components/MirrorStatus.module.scss'
 import { fitWindow } from '../lib/fitWindow'
 import ScreencastInput from '../lib/ScreencastInput'
 import { t } from 'common/util'
@@ -72,9 +73,12 @@ export default observer(function Screencast() {
   return (
     <div
       ref={screenContainerRef}
-      className={Style.container}
+      className={`${Style.container} ${StatusStyle.theme}`}
+      data-loading={captureState === 'loading'}
     >
-      {captureState === 'loading' && <LoadingBar />}
+      {captureState === 'loading' && <div className={StatusStyle.statusOverlay}>
+        <StatusCard title={t('plusNativeStarting')} description={t('plusConnectionWaiting')} busy setup={false} />
+      </div>}
       {captureState === 'failed' && (
         <div className={Style.error} role="alert">
           <p>{t('screencastStartFailed')}</p>

@@ -15,9 +15,9 @@
   "sessionOwnershipPatch": {
     "file": "session-ownership.patch",
     "target": "WebDriverAgentLib/Commands/FBSessionCommands.m",
-    "sha256": "5b0c9801c5ce03925cc5188bb70f9fc3b5741bdbf14bdf81ae94e77ed721b3bc",
+    "sha256": "ba434647517297cb1d242983c53122d8a888188b48b09ab001041e4a8778af24",
     "sourceSha256": "7740092968e6b97b4f67990f74976b8be1d7b77727a3c9a4eb8d52951a4f935f",
-    "patchedSha256": "d02e5edea3b4ec1a5ad3b8ad56464e0a57ccbb0ff29bd9663ca92b4f7fcf045c",
+    "patchedSha256": "339631199f4783ce57f4c6679dd12c4caba13cbfb286f17bd4acb84a2cec4bf8",
     "protocolVersion": 1
   }
 }

@@ -6,70 +6,15 @@
 .canvas { min-height: 0; width: 100%; flex: 1; object-fit: contain; background: #080808; touch-action: none; outline-offset: -2px; }
 
 .interactive { padding: 0; gap: 0; }
-.page {
-  --mirror-surface: rgba(250, 251, 253, .96);
-  --mirror-text: #222733;
-  --mirror-secondary: #606775;
-  --mirror-line: rgba(25, 36, 52, .1);
-  --mirror-accent: #326bc4;
-  --mirror-accent-text: #fff;
-  --mirror-tint: #eaf0fa;
-  :global(.-theme-with-dark-background) & {
-    --mirror-surface: rgba(37, 40, 47, .96);
-    --mirror-text: #f1f3f7;
-    --mirror-secondary: #b1b7c3;
-    --mirror-line: rgba(255, 255, 255, .12);
-    --mirror-accent: #a6c8ff;
-    --mirror-accent-text: #162944;
-    --mirror-tint: #343e51;
-  }
-  button:focus-visible, summary:focus-visible { outline: 2px solid var(--mirror-accent); outline-offset: 3px; }
-}
-.statusOverlay {
-  position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center;
-  padding: 20px; pointer-events: none; box-sizing: border-box;
-}
-.statusCard {
-  width: 320px; max-width: 100%; max-height: 100%; overflow-y: auto; box-sizing: border-box;
-  padding: 20px; border: 1px solid var(--mirror-line); border-radius: 16px;
-  background: var(--mirror-surface); color: var(--mirror-text); pointer-events: auto;
-  box-shadow: 0 8px 32px #0002, 0 1px 4px #0001;
-  backdrop-filter: blur(20px); font-size: 12px; line-height: 1.6;
-  h2 { margin: 0; font-size: 15px; line-height: 1.35; font-weight: 600; letter-spacing: -.15px; }
-}
-.statusHeading { display: flex; align-items: center; gap: 12px; }
-.statusIcon {
-  display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0;
-  border-radius: 11px; background: var(--mirror-tint); color: var(--mirror-accent);
-  svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-  &[data-busy='true'] svg { animation: statusSpin 1.2s linear infinite; }
-}
-.statusDescription { margin: 14px 0 0; color: var(--mirror-secondary); overflow-wrap: anywhere; }
-.statusActions { display: flex; justify-content: flex-end; margin-top: 18px; }
-.page .retryButton {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px;
-  padding: 6px 14px; border: 1px solid transparent; border-radius: 8px;
-  background: var(--mirror-accent); color: var(--mirror-accent-text); font-size: 12px; font-weight: 500; line-height: 1.4;
-  white-space: nowrap; transition: filter .15s;
-  svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-  &:hover { filter: brightness(.93); }
-  &:active { filter: brightness(.87); }
-}
-.setupDetails {
-  margin-top: 14px; border-top: 1px solid var(--mirror-line); padding-top: 12px;
-  summary { cursor: pointer; width: fit-content; color: var(--mirror-secondary); font-size: 11px; }
-  ol { margin: 10px 0 0; padding-left: 18px; color: var(--mirror-secondary); }
-  li + li { margin-top: 6px; }
-}
 .receiverStatus { font-size: 13px; line-height: 1.5; p { margin: 8px 0; } }
-.interactive .canvas[data-unavailable='true'] { opacity: .3; }
+.canvas[data-unavailable='true'] { opacity: .3; }
 .inputNotice {
   position: absolute; bottom: 14px; left: 14px; right: 14px; z-index: 6;
   display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--mirror-line); border-radius: 12px;
   background: var(--mirror-surface); color: var(--mirror-text); box-shadow: 0 4px 20px #0002;
   backdrop-filter: blur(20px); font-size: 12px; line-height: 1.5;
-  > span:not(.statusIcon) { flex: 1; }
-  .statusIcon { width: 28px; height: 28px; border-radius: 8px; svg { width: 17px; height: 17px; } }
+  > span:nth-child(2) { flex: 1; }
+  > span:first-child { width: 28px; height: 28px; border-radius: 8px; svg { width: 17px; height: 17px; } }
   button { flex-shrink: 0; }
 }
 .toolEntry.toolEntry {
@@ -92,11 +37,19 @@
 }
 .mode { flex-basis: 100%; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--mirror-line); font-size: 11px; font-weight: 500; }
 .hint { flex-basis: 100%; margin: 0; font-size: 11px; line-height: 1.6; opacity: .65; }
-@keyframes statusSpin { to { transform: rotate(360deg); } }
 @media (max-width: 320px) {
-  .statusOverlay { padding: 12px; }
-  .statusCard { padding: 16px; }
   .inputNotice { flex-wrap: wrap; left: 10px; right: 10px; gap: 8px; button { margin-left: auto; } }
 }
-@media (prefers-reduced-motion: reduce) { .statusIcon[data-busy='true'] svg { animation: none; } }
-@media (prefers-reduced-transparency: reduce) { .statusCard, .inputNotice { backdrop-filter: none; background: var(--color-bg-container, #fff); } }
+@media (prefers-reduced-transparency: reduce) { .inputNotice { backdrop-filter: none; background: var(--color-bg-container, #fff); } }
+
+.setupCard { max-height: calc(100vh - 56px); overflow-y: auto; pointer-events: auto; }
+.setupCard form { display: grid; gap: 12px; }
+.setupCard label { display: grid; gap: 5px; font-size: 14px; }
+.setupCard input:not([type='checkbox']) { width: 100%; box-sizing: border-box; padding: 9px; border: 1px solid var(--color-border, #888); border-radius: 6px; background: var(--color-bg-container); color: inherit; }
+.setupCard .setupConsent { display: flex; align-items: center; gap: 8px; }
+.setupConsent input { flex-shrink: 0; margin: 0; }
+.setupHelp { font-size: 12px; line-height: 1.6; opacity: .85; }
+.setupLinks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.setupLinks button { padding: 6px 9px; border-radius: 6px; }
+
+.setupOverlay { pointer-events: auto; background: #0003; }

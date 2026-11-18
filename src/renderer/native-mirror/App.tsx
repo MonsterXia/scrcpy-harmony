@@ -5,8 +5,10 @@ import type { MirrorSession, NativeMirrorFrame, NativeMirrorInfo, NativeMirrorIn
 import { t } from 'common/util'
 import H264Decoder from '../screencast/lib/H264Decoder'
 import Style from './App.module.scss'
+import StatusStyle from '../components/MirrorStatus.module.scss'
 import Toolbar from './Toolbar'
-import StatusCard, { StatusIcon } from './StatusCard'
+import IosSetup from './IosSetup'
+import StatusCard, { StatusIcon } from '../components/MirrorStatus'
 import { NativeInputFlow } from './NativeInputFlow'
 
 function statusLabel(state: string, issue?: MirrorSession['connectionIssue'], wasConnected = false) {
@@ -28,6 +30,7 @@ export default observer(function App() {
   const [connectionIssue, setConnectionIssue] = useState<MirrorSession['connectionIssue']>()
   const [videoMode, setVideoMode] = useState<MirrorSession['videoMode']>('screenshot')
   const [videoBusy, setVideoBusy] = useState(false)
+  const [setupOpen, setSetupOpen] = useState(false)
   const inputFlow = useRef<NativeInputFlow | null>(null)
   const invalidateFrames = useRef<((state: 'starting' | 'disconnected' | 'error') => void) | null>(null)
   const createInputFlow = () => new NativeInputFlow(input => main.nativeMirrorInput(input), () => setError('plusNativeInputError'))
@@ -40,6 +43,7 @@ export default observer(function App() {
   const display = useRef<{ width: number; height: number; rotation: number } | undefined>(undefined)
   const title = interactive ? info.target.name : t('screencast')
   useEffect(() => preload.setTitle(title), [title])
+  useEffect(() => { if (iosUsb && connectionIssue === 'ios-wda' && status === 'error' && !presented.current) setSetupOpen(true) },[iosUsb,connectionIssue,status])
   const send = (input: NativeMirrorInput) => {
     if (iosUsb) {
       if (!display.current && (input.type === 'scroll' || (input.type === 'touch' && ['down','move'].includes(input.action)))) return false
@@ -197,10 +201,11 @@ export default observer(function App() {
   const setup = status === 'error' && connectionIssue === 'ios-wda' && !presented.current
   const decoding = status === 'running' && error === 'plusNativeDecodeError'
   const statusTitle = setup ? t('plusIosNotReady') : failed ? t(presented.current ? 'plusConnectionInterrupted' : 'plusConnectionFailed') : decoding ? t('plusVideoRecovering') : t('plusNativeStarting')
-  return <main className={`${Style.page} ${interactive ? Style.interactive : ''}`}>
-    {(!interactive || status !== 'running' || decoding) && <div className={interactive ? Style.statusOverlay : undefined}>
-      {interactive ? <StatusCard title={statusTitle}
-        description={decoding ? t('plusNativeDecodeError') : failed || status === 'authorizing' ? statusLabel(status, connectionIssue, presented.current) : t('plusConnectionWaiting')}
+  return <main className={`${Style.page} ${StatusStyle.theme} ${interactive ? Style.interactive : ''}`}>
+    {iosUsb && setupOpen && <div className={`${StatusStyle.statusOverlay} ${Style.setupOverlay}`}><IosSetup onClose={()=>setSetupOpen(false)} onReady={()=>{setSetupOpen(false);void reconnect()}} /></div>}
+    {!setupOpen && (!interactive || status !== 'running' || decoding) && <div className={!interactive && status === 'running' && !decoding ? undefined : StatusStyle.statusOverlay}>
+      {interactive || status !== 'running' || decoding ? <StatusCard title={statusTitle}
+        description={decoding ? t('plusNativeDecodeError') : failed || status === 'authorizing' || status === 'waiting' ? statusLabel(status, connectionIssue, presented.current) : t('plusConnectionWaiting')}
         busy={!failed} setup={setup} onRetry={failed ? () => void reconnect() : undefined} /> :
         <div className={Style.receiverStatus} role={failed ? 'alert' : 'status'}>
           <strong>{info?.target.name || t('screencast')}</strong>
@@ -211,12 +216,12 @@ export default observer(function App() {
     {error === 'plusNativeInputError' && status === 'running' && <div className={Style.inputNotice} role="alert">
       <StatusIcon />
       <span>{t('plusNativeInputError')}</span>
-      <button className={Style.retryButton} type="button" onClick={() => void reconnect(true)}>{t('plusReconnectControl')}</button>
+      <button className={StatusStyle.retryButton} type="button" onClick={() => void reconnect(true)}>{t('plusReconnectControl')}</button>
     </div>}
     {iosUsb && <Toolbar mode={videoMode} busy={videoBusy} connected={status === 'running'} onVideo={() => {
         setVideoBusy(true)
         void main.nativeMirrorVideo(videoMode !== 'video').catch(() => setVideoMode('video-error')).finally(() => setVideoBusy(false))
-      }} onHome={() => send({ type: 'key', keyCode: 3 })} />}
+      }} onHome={() => send({ type: 'key', keyCode: 3 })} onSetup={() => setSetupOpen(true)} />}
     <canvas ref={canvas} width={480} height={800} className={Style.canvas} data-unavailable={status !== 'running'} tabIndex={interactive ? 0 : -1}
       aria-label={t(interactive ? 'plusInteractiveScreen' : 'plusViewOnly')}
       onPointerDown={event => {

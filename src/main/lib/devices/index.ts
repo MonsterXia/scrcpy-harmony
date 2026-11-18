@@ -1,3 +1,4 @@
+import { renewIos, disposeIosSetup } from '../ios-provisioning'
 import { app } from 'electron'
 import type { DeviceDiscovery, ITarget } from 'common/types'
 import { handleEvent } from 'share/main/lib/util'
@@ -79,12 +80,17 @@ export function init() {
     if (typeof id !== 'string') throw new Error('Invalid session')
     if (!screencast.closeSession(id)) await mirrorSessions.stop(id, 'gui')
   })
+  const renewal = setInterval(() => {
+    void getDevices().then(result => renewIos(result.targets.filter(t => t.platform === 'ios' && t.transport === 'usb' && t.state === 'ready').map(t => t.connectionId!))).catch(() => {})
+  },60000)
+  renewal.unref()
   let cleaned = false, stopping = false
   app.on('before-quit', event => {
     if (cleaned) return
     event.preventDefault()
     if (stopping) return
     stopping = true
+    clearInterval(renewal); disposeIosSetup()
     screencast.dispose()
     void mirrorSessions.dispose().catch(() => console.error('Mirror backend cleanup unconfirmed'))
       .finally(() => { cleaned = true; app.quit() })

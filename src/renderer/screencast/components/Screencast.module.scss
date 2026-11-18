@@ -29,3 +29,8 @@
     cursor: pointer;
   }
 }
+
+.container[data-loading='true'] {
+  background: color-mix(in srgb, var(--color-bg-container, #f4f6f9) 70%, #080808);
+  canvas { opacity: .3; }
+}

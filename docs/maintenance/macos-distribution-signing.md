@@ -1,5 +1,7 @@
 # macOS 分发签名与公证（2026-11-17）
 
+2026-11-18：包含 Apple ID/WDA 自动准备与续签的新 arm64 候选也已正式签名、公证并通过 Gatekeeper。文件、校验值与验证边界见 [新候选证据](evidence/macos-ios-provisioning-signing-20261118.json) 和 [集成记录](ios-desktop-provisioning.md)。下文保留 11 月 17 日原候选结果。
+
 ## 状态与范围
 
 **2026-11-17 19:18（UTC+8），本机 arm64 候选的完整构建、应用和 DMG 的正式签名、公证、票据装订、Gatekeeper 与从 DMG 复制的应用启动验收全部通过。** 结构化证据见 [验证报告](evidence/macos-distribution-signing-20261117.json)。

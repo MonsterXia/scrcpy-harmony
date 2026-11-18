@@ -30,6 +30,13 @@ function fixture(t) {
     Object.assign(platformManifest[name], { size: bytes.length, sha256: require('node:crypto').createHash('sha256').update(bytes).digest('hex') })
   }
   fs.writeFileSync(path.join(root, 'resources/platform-backends.json'), JSON.stringify(platformManifest))
+  const iosFiles = []
+  for (const file of ['ios-sign' + (process.platform === 'win32' ? '.exe' : ''), 'device/ios-device' + (process.platform === 'win32' ? '.exe' : ''), 'WDA.ipa', 'THIRD_PARTY_NOTICES.txt']) {
+    const full = path.join(root,'resources/ios-provisioning',file)
+    fs.mkdirSync(path.dirname(full),{recursive:true});fs.writeFileSync(full,'ios fixture')
+    iosFiles.push({file,sha256:require('node:crypto').createHash('sha256').update('ios fixture').digest('hex')})
+  }
+  fs.writeFileSync(path.join(root,'resources/ios-provisioning/manifest.json'),JSON.stringify({version:1,platform:process.platform,arch:process.arch,files:iosFiles}))
   fs.writeFileSync(path.join(root, 'LICENSE'), 'application license fixture')
   fs.mkdirSync(path.join(root, 'vendor/packages/example'), { recursive: true })
   fs.writeFileSync(path.join(root, 'vendor/packages/example/LICENSE'), 'upstream license fixture')
@@ -106,6 +113,7 @@ test('build prepares a runnable distribution without requiring a shell', (t) => 
   assert.match(fs.readFileSync(path.join(f.root, 'dist/THIRD_PARTY_NOTICES.txt'), 'utf8'), /native upstream license fixture/)
   assert.deepEqual(fs.readdirSync(path.join(f.root, 'dist/resources/native-video')).sort(), ['LICENSE', 'README.md', 'fixture.so', 'manifest.json'])
   assert.equal(fs.readFileSync(path.join(f.root, 'dist/build/fixture.txt'), 'utf8'), 'build')
+  assert.equal(fs.readFileSync(path.join(f.root, 'dist/resources/ios-provisioning/WDA.ipa'), 'utf8'), 'ios fixture')
   assert.deepEqual(f.commands().at(-1), {
     args: ['install', '--omit=dev', '--no-audit', '--no-fund'],
     cwd: path.join(f.root, 'dist'),
@@ -122,13 +130,14 @@ test('distribution build rejects missing or corrupted native video resources', (
 
 test('distribution excludes WDA source and signing cache, including stale output', t => {
   const f = fixture(t)
-  for (const dir of ['build/ios-wda', 'dist/build/ios-wda']) {
+  const excluded = ['ios-wda', 'ios-provisioning', 'ios-wda-input', 'loading-preview']
+  for (const dir of excluded.flatMap(name => ['build/' + name, 'dist/build/' + name])) {
     fs.mkdirSync(path.join(f.root, dir), { recursive: true })
     fs.writeFileSync(path.join(f.root, dir, 'signing-fixture'), 'local signing cache')
   }
   const result = f.run()
   assert.equal(result.status, 0, result.stderr)
-  assert.equal(fs.existsSync(path.join(f.root, 'dist/build/ios-wda')), false)
+  for (const name of excluded) assert.equal(fs.existsSync(path.join(f.root, 'dist/build', name)), false, name)
   assert.equal(fs.readFileSync(path.join(f.root, 'build/ios-wda/signing-fixture'), 'utf8'), 'local signing cache')
 })
 
@@ -137,7 +146,7 @@ test('a failed build stops before packaging incomplete output', (t) => {
   const result = f.run('build:preload')
   assert.notEqual(result.status, 0)
   assert.deepEqual(f.commands().map(({ args }) => args), [
-    ['run', 'build:backends'], ['run', 'build:main'], ['run', 'build:preload'],
+    ['run', 'build:ios'], ['run', 'build:backends'], ['run', 'build:main'], ['run', 'build:preload'],
   ])
   assert.equal(fs.existsSync(path.join(f.root, 'dist/package.json')), false)
 })
@@ -158,3 +167,5 @@ test('distribution rejects icon files from a different generation', t => {
   assert.match(result.stderr, /Icon set mismatch: src\/renderer\/assets\/icon-dark\.png/)
   assert.equal(fs.existsSync(path.join(f.root, 'dist/package.json')), false)
 })
+
+test('distribution rejects tampered bundled WDA',t=>{const f=fixture(t);fs.writeFileSync(path.join(f.root,'resources/ios-provisioning/WDA.ipa'),'tampered');assert.notEqual(f.run().status,0)})

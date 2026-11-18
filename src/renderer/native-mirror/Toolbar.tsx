@@ -12,9 +12,10 @@ interface Props {
   connected: boolean
   onVideo: () => void
   onHome: () => void
+  onSetup: () => void
 }
 
-export default observer(function Toolbar({ mode, busy, connected, onVideo, onHome }: Props) {
+export default observer(function Toolbar({ mode, busy, connected, onVideo, onHome, onSetup }: Props) {
   const transitioning = busy || mode === 'video-starting'
   const [expanded, setExpanded] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -57,6 +58,7 @@ export default observer(function Toolbar({ mode, busy, connected, onVideo, onHom
           {t(transitioning ? 'plusSessionStarting' : mode === 'video' ? 'plusIosStopVideo' : 'plusIosStartVideo')}
         </button>
         <button type="button" disabled={transitioning || !connected} onClick={onHome}>{t('plusIosHome')}</button>
+        <button type="button" onClick={() => { setExpanded(false); onSetup() }}>{t('iosSetupTitle')}</button>
         <span className={Style.mode}>{t(transitioning ? 'plusSessionStarting' : mode === 'video' ? 'plusIosVideoMode' : mode === 'video-error' ? 'plusIosVideoFailed' : 'plusIosScreenshotMode')}</span>
         <p className={Style.hint}>{t('plusIosBroadcastHint')}</p>
       </div>

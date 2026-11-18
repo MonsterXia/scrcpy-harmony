@@ -210,10 +210,10 @@ macOS 无证书开发包可运行 `npm run pack -- --no-publish --adhoc-sign`，
 
 ### iOS USB 开发验证
 
-开发版 `Build` 工作流在 macOS arm64 的桌面 pack 后验证独立 CLI/MCP 包并生成通用 tgz，只有该平台上传此附件；打包前使用 runner 当前 Xcode 编译未签名 WDA Runner/ReplayKit，任何失败阻止附件上传。其余平台仍生成各自桌面安装包、更新元数据及验证报告。WDA 源码与编译/签名缓存不作为发行附件。
+开发版 `Build` 工作流在 macOS arm64 的桌面 pack 后验证独立 CLI/MCP 包并生成通用 tgz，只有该平台上传此附件；`ios-wda-artifact.yml` 先使用 macOS runner 的 Xcode 编译 unsigned WDA/ReplayKit，再向桌面构建任务提供干净 IPA；任何失败阻止桌面构建。其余平台仍生成各自桌面安装包、更新元数据及验证报告。WDA 源码与本机签名缓存不作为发行附件；仅专用资源目录内的 unsigned IPA 和 helpers 随新桌面包分发。
 
 `npm run ios:wda -- build --unsigned` 从 `vendor/ios-wda/manifest.json` 固定来源编译 WDA 和 ReplayKit 扩展；无需签名但不能用于真机安装。显式 `run --udid ... --team ...` 才签名启动，保持专用 Runner 运行。脚本用局部 `DEVELOPER_DIR`，不修改 xcode-select。`node script/check-ios-ui.mjs [证据目录]` 使用真实 Electron、生产 React/PNG/WebCodecs 与模拟设备 IPC 验证双语界面；不能替代真机。详见 [iOS USB 文档](../../../../docs/scrcpy-plus/ios-usb-wda.md)。
 
-桌面 `build` 重建生成的 `dist/build`，排除 `build/ios-wda` 源码及签名缓存，避免复用旧发行目录时携带本地 Runner/签名产物。WDA 始终按独立准备流程安装到手机。
+桌面 `build` 重建生成的 `dist/build`，排除 `build/ios-wda` 源码及签名缓存，避免复用旧发行目录时携带本地 Runner/签名产物。桌面准备开发分支通过 `npm run build:ios` 单独生成并复制 `resources/ios-provisioning`；只携带 unsigned WDA 输入和自包含 helpers，不复制上述签名缓存。构建工具链、账号安全、会话预约、续签与未验收事项见 [桌面准备记录](../../../../docs/maintenance/ios-desktop-provisioning.md)。
 
 线上更新只读验证：`node script/check-release-source.mjs <预期.json> [报告.json]` 使用生产 ReleaseProvider 查询 Windows x64、Mac ARM 的稳定与预发布元数据，不下载安装包；预期 JSON 必须显式提供 stable/prerelease 的 version 和 updateAvailable，发布变化后需重新确认这些预期，示例见 `docs/maintenance/scrcpy-plus-rename/expected-dev2.json`。Harmony 用户手动重装 Plus；不提供旧地址解析或旧配置迁移代码。仓库改名状态见 [迁移记录](../../../../docs/maintenance/scrcpy-plus-rename.md)。
