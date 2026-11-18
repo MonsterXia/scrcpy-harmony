@@ -31,7 +31,7 @@
 - [x] Add failing behavior tests for explicit release configuration and finalization failure/success, using real temporary files/blockmaps and a controlled Apple-command boundary.
 - [x] Implement release preflight and artifact finalizer; add strict installed-app verification to the existing macOS install check.
 - [x] Split manual release build jobs, add protected environment credentials and sufficient timeouts, and make validation block uploads.
-- [ ] Run focused/full tests and workflow validation; independently review the final diff.
+- [x] Run focused/full tests and workflow validation; independently review the final diff.
 - [ ] Configure encrypted environment secrets, deliver through normal PR checks, then run the master release workflow and validate its downloaded artifacts.
 - [ ] Update maintenance state, evidence, development reference and bilingual release-build instructions.
 
@@ -46,3 +46,6 @@
 - 2026-11-18: 15 focused tests green after observed pre-implementation failures. Full test: 1223 application pass / 2 skip, Licia both 606 pass / 4 pending. Lint/i18n and actionlint pass.
 - macos-release environment restricted to master; 5 secrets configured, password provided directly by user through GitHub UI.
 - Ruling: delivering the requested working CI includes normal branch/PR and gated merge followed by an actual release build; no public release. Existing user authorization covers that configuration work.
+
+- Rebased onto master 2294be9, preserving unsigned WDA and both iOS toolchains; PR CI remains unchanged against that base. Rebased tests: 1260 pass / 2 skip, Licia both 606 / 4 pending, lint/actionlint pass.
+- Fresh review found Windows unpacked payload upload regression; restored exclusion and narrowed uploads to release version directory top-level files. Finding rechecked as resolved.

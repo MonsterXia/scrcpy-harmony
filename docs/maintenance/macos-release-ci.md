@@ -2,7 +2,7 @@
 
 ## 范围与状态
 
-2026-11-18，按用户要求保留普通 PR 的快速打包检查，单独配置发行构建。实现与本地回归完成；首次 GitHub Release Build 和下载产物复验尚待运行，不将本机历史公证结果当作 CI 成功。
+2026-11-18，按用户要求保留普通 PR 的快速打包检查，单独配置发行构建。实现、本地回归与独立审查完成；首次 GitHub Release Build 和下载产物复验尚待运行，不将本机历史公证结果当作 CI 成功。
 
 - `.github/workflows/ci.yml` 不变：`test`、`lint`、`windows-package`、`macos-package-arm64` 四项必需检查；Mac 使用 ad-hoc，不接触签名凭据，不执行公证。
 - `.github/workflows/build.yml` 改为手动 **Release Build**，只接受受保护的 `master`，分别生成 Windows x64 和 macOS arm64 产物。Mac job 时限 120 分钟，签名公证步骤时限 100 分钟；不创建或更新公开 GitHub Release。
@@ -46,11 +46,12 @@
 ## 验证记录
 
 - 定向配置、失败分支及真实临时文件/blockmap 测试：15/15 通过。
-- 完整 `npm test`：应用 1223 pass / 2 skip；Licia 生产与 fallback 各 606 passing / 4 pending。
+- 完整 `npm test`：同步最新主干后应用 1260 pass / 2 skip；Licia 生产与 fallback 各 606 passing / 4 pending。
 - `npm run lint`（含 i18n）通过。
 - actionlint 1.7.12 校验 release 与 PR workflow 通过；`git diff --check` 通过。
 - GitHub 配置：5 项 Environment secrets 名称已确认，部署分支规则为 master；不读取/记录 secret 值。
-- 待完成：独立审查、PR 必需门禁、master Release Build、下载 DMG 的系统签名/公证及元数据复验。
+- 独立审查：1 项 Windows 解包目录误上传问题已修复并复核；上传范围同时收窄为版本目录顶层文件，避免夹带 staging app 内部 YAML。
+- 待完成：PR 必需门禁、master Release Build、下载 DMG 的系统签名/公证及元数据复验。
 
 ## 参考
 

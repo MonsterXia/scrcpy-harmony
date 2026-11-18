@@ -2,7 +2,7 @@
 
 ## macOS CI 自动签名与公证（2026-11-18）
 
-状态：实现与本地回归完成，独立审查、PR 门禁及云端首次签名公证运行待验。普通 PR CI 保持不变；手动 Release Build 使用仅允许 master 的 macos-release environment。5 项 Secret 已配置，不含凭据的设计、使用方式、验证状态与下一步见 [CI 分发签名](docs/maintenance/macos-release-ci.md)。
+状态：实现、本地回归和独立审查完成，PR 门禁及云端首次签名公证运行待验。普通 PR CI 保持不变；手动 Release Build 使用仅允许 master 的 macos-release environment。5 项 Secret 已配置，不含凭据的设计、使用方式、验证状态与下一步见 [CI 分发签名](docs/maintenance/macos-release-ci.md)。
 
 ## 公共弹窗与底部操作（2026-11-18）
 
