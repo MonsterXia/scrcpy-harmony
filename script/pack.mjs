@@ -1,6 +1,9 @@
 import builder from 'electron-builder'
 import isMac from 'licia/isMac.js'
 import path from 'node:path'
+import { macReleaseConfig } from './lib/macos-release.mjs'
+
+const releaseConfig = macReleaseConfig(process)
 
 const outputOverride = process.env.SCRCPY_PLUS_PACK_OUTPUT
   ? path.resolve(process.env.SCRCPY_PLUS_PACK_OUTPUT) : undefined
@@ -15,6 +18,7 @@ if (isMac && process.arch !== 'arm64') {
 }
 
 const config = {
+  ...releaseConfig,
   appId: pkg.appId,
   directories: {
     output: outputOverride || `../release/${pkg.version}`,
@@ -39,6 +43,7 @@ const config = {
     ],
   },
   mac: {
+    ...releaseConfig.mac,
     icon: 'mac-icon/icon.icns',
     extendInfo: { CFBundleIconName: 'Icon' },
     extraResources: [{ from: 'build/mac-icon/Assets.car', to: 'Assets.car' }],

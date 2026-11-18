@@ -145,7 +145,7 @@ Windows 菜单状态回归：完整 build 后运行 `node script/check-beta-menu
 
 `macos-package-arm64` 使用固定 `macos-15` ARM runner 完成依赖安装、资源下载、build 和 DMG 打包。当前 Plus 不支持 Intel Mac，不再运行 x64 macOS 构建。`script/check-macos-install.mjs` 挂载 DMG，将 `.app` 复制到临时目录后卸载镜像，验证包内资源和可执行权限，再运行共享的启动检查。此检查校验实际架构，使用隔离用户配置并在退出后清理配置及 HDC 服务；只读仓库权限、不发布、不上传 artifact、不使用签名或公证 secrets。它不验证 Developer ID 签名、公证或从互联网下载后的 Gatekeeper 放行。
 
-`script/pack.mjs` 配置 Windows NSIS exe 和 macOS dmg；读取 dist 内的包元数据及资源。`.github/workflows/build.yml` 是手动产物构建（workflow_dispatch），矩阵与 CI 对齐为 `windows-latest` x64、`macos-15` arm64，并核验 Node 实际架构。顺序为 checkout → npm ci（含本地依赖编译） → 下载资源（Windows 显式 Git Bash）→ build → pack --no-publish → 使用现有安装脚本验收实际安装包 → 记录签名和 SHA-256 → 上传 artifact。任一安装启动检查失败时不上传该平台 artifact。产物附带 `verification-win-x64.json` 或 `verification-mac-<arch>.txt`，记录源 SHA、运行链接、安装启动结果和系统签名检查；macOS 另外记录 Gatekeeper 与 stapler 退出码。信任检查失败如实记录，不把未签名包可启动等同于签名/公证通过。该 workflow 不创建 GitHub Release，真机及用户从互联网下载后的信任体验仍需单独验收。
+`script/pack.mjs` 配置 Windows NSIS exe 和 macOS dmg。`.github/workflows/build.yml` 的 **Release Build** 仅手动触发，要求受保护的 `master`；Windows x64 与 macOS arm64 分为独立 job。Mac job 使用只允许 master 的 `macos-release` environment，时限 120 分钟，执行 `pack --no-publish --release`，强制 Developer ID、Hardened Runtime、app 与 DMG 公证及票据装订。任何凭据缺失、签名、公证、Gatekeeper 或安装启动失败都阻止该平台产物上传，不回退到 ad-hoc。`script/lib/macos-release.mjs` 在 DMG 装订后重建 blockmap，再交给 electron-builder 生成匹配最终字节的更新 YAML；安装检查再次核对 hash/size/blockmap，并输出 `verification-mac-arm64.json`。Windows 保留原未签名安装流程和 `verification-win-x64.json`。该 workflow 上传 Actions artifacts，不创建 GitHub Release；操作、Secret 名称和证据见 [CI 分发签名](../../../../docs/maintenance/macos-release-ci.md)。
 
 Electron 45 的 macOS 最低系统要求为 macOS 13；升级后需在目标平台验证安装包及设备功能，单测和 lint 不代表完整运行兼容性。
 
@@ -161,7 +161,7 @@ M0-3 的 `.github/workflows/update-acceptance.yml` 是固定版本的实际更�
 
 2026-10-21 的 [PR #8 CI](https://github.com/MonsterXia/scrcpy-plus/actions/runs/39611929271) 已通过 test、lint 及 Windows/macOS arm64/macOS x64 的安装包、安装和启动检查；这是该提交的历史结果，后续改动仍需自己的检查。真实设备、签名/公证、线上更新检查及普通用户操作文档的待办见 [RUNBOOK](../../../../RUNBOOK.md)。
 
-签名环境变量来自 CI secrets；手动 Build 在打包前移除空值，防止缺失的 `CSC_LINK` 被当作证书路径，非空凭据保留。理解打包时查看配置即可，不需要为项目分析读取或配置真实签名凭据。
+签名凭据仅由 Release Build 的 Mac job 从 `macos-release` environment 注入需要的步骤；App 专用密码存入 runner 临时钥匙串，打包使用 profile，结束后清理钥匙串。PR CI 没有 environment 或签名 secrets。理解打包时查看配置即可，不需要读取真实签名凭据。
 
 ## Sourcery 超额度评论清理
 
@@ -204,13 +204,13 @@ M0-3 的 `.github/workflows/update-acceptance.yml` 是固定版本的实际更�
 
 商店探针使用 `script/lib/live-probe-lifecycle.mjs` 管理验证截止和资源归属：超时后不再推进验证，等待晚到资源后逆序清理；应用关闭必须确认子进程退出，强杀或清理失败均不能报告通过。120 秒为验证阶段预算，总运行时间还包括有限的启动等待与清理。最终报告在清理后写入，`test/live-probe-lifecycle.test.cjs` 覆盖这些失败边界。
 
-macOS 无证书开发包可运行 `npm run pack -- --no-publish --adhoc-sign`，显式重建包签名；CI 使用该参数，Build 仅在未配置 CSC_LINK 时使用。`check-macos-install.mjs` 对从 DMG 复制的应用执行 deep/strict codesign 验证，失败阻止打包验收。它仍不代表 Developer ID、公证或 Gatekeeper 放行。
+macOS 无证书开发包可运行 `npm run pack -- --no-publish --adhoc-sign`，显式重建包签名；普通 PR CI 使用该参数，Release Build 禁止此参数。`check-macos-install.mjs` 对从 DMG 复制的应用执行 deep/strict codesign 验证，失败阻止打包验收。它仍不代表 Developer ID、公证或 Gatekeeper 放行。
 
-本机正式分发可使用钥匙串中的 Developer ID Application 身份，通过 `CSC_NAME` 指定团队部分、`APPLE_KEYCHAIN_PROFILE` 指定已验证的 notarytool profile，再运行 `npm run pack -- --no-publish`，不追加 `--adhoc-sign`。证书/私钥和公证凭据不进入仓库。打包成功仍须核对 Developer ID、stapler 和 Gatekeeper，并验证最终 DMG 中的 app；操作与证据见 [macOS 分发签名](../../../../docs/maintenance/macos-distribution-signing.md)。
+本机正式分发可使用钥匙串中的 Developer ID Application 身份，通过 `CSC_NAME` 指定团队部分、`APPLE_KEYCHAIN_PROFILE` 指定已验证的 notarytool profile，并设置 `APPLE_TEAM_ID`，再运行 `npm run pack -- --no-publish --release`，不追加 `--adhoc-sign`。证书/私钥和公证凭据不进入仓库。打包成功仍须核对 Developer ID、stapler 和 Gatekeeper，并验证最终 DMG 中的 app；操作与证据见 [macOS 分发签名](../../../../docs/maintenance/macos-distribution-signing.md)。
 
 ### iOS USB 开发验证
 
-开发版 `Build` 工作流在 macOS arm64 的桌面 pack 后验证独立 CLI/MCP 包并生成通用 tgz，只有该平台上传此附件；`ios-wda-artifact.yml` 先使用 macOS runner 的 Xcode 编译 unsigned WDA/ReplayKit，再向桌面构建任务提供干净 IPA；任何失败阻止桌面构建。其余平台仍生成各自桌面安装包、更新元数据及验证报告。WDA 源码与本机签名缓存不作为发行附件；仅专用资源目录内的 unsigned IPA 和 helpers 随新桌面包分发。
+`Release Build` 工作流在 macOS arm64 的桌面 pack 后验证独立 CLI/MCP 包并生成通用 tgz，只有该平台上传此附件；`ios-wda-artifact.yml` 先使用 macOS runner 的 Xcode 编译 unsigned WDA/ReplayKit，再向桌面构建任务提供干净 IPA；任何失败阻止桌面构建。其余平台仍生成各自桌面安装包、更新元数据及验证报告。WDA 源码与本机签名缓存不作为发行附件；仅专用资源目录内的 unsigned IPA 和 helpers 随新桌面包分发。
 
 `npm run ios:wda -- build --unsigned` 从 `vendor/ios-wda/manifest.json` 固定来源编译 WDA 和 ReplayKit 扩展；无需签名但不能用于真机安装。显式 `run --udid ... --team ...` 才签名启动，保持专用 Runner 运行。脚本用局部 `DEVELOPER_DIR`，不修改 xcode-select。`node script/check-ios-ui.mjs [证据目录]` 使用真实 Electron、生产 React/PNG/WebCodecs 与模拟设备 IPC 验证双语界面；不能替代真机。详见 [iOS USB 文档](../../../../docs/scrcpy-plus/ios-usb-wda.md)。
 

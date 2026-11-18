@@ -1,4 +1,4 @@
-name: Build
+name: Release Build
 
 on:
   workflow_dispatch:
@@ -6,25 +6,29 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: release-build-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
+  release-source:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Require the protected release branch
+      env:
+        RELEASE_REF: ${{ github.ref }}
+      run: test "$RELEASE_REF" = refs/heads/master
+
   ios-wda:
+    needs: release-source
     uses: ./.github/workflows/ios-wda-artifact.yml
-  build:
-    needs: ios-wda
-    runs-on: ${{ matrix.os }}
+
+  windows-release:
+    needs: [release-source, ios-wda]
+    runs-on: windows-latest
     timeout-minutes: 35
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            arch: x64
-          - os: macos-15
-            arch: arm64
-
     env:
-      EXPECTED_ARCH: ${{ matrix.arch }}
-
+      EXPECTED_ARCH: x64
     steps:
     - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       with:
@@ -38,55 +42,18 @@ jobs:
     - name: Install dependencies
       run: npm ci --no-audit --no-fund
     - name: Download Windows device resources
-      if: runner.os == 'Windows'
       run: npx --no-install zx --shell "C:/Program Files/Git/bin/bash.exe" script/resources.mjs
-    - name: Download macOS device resources
-      if: runner.os == 'macOS'
-      run: npm run init
     - name: Prepare source backend toolchain
       uses: ./.github/actions/platform-toolchain
     - uses: ./.github/actions/ios-toolchain
     - name: Build distribution
       run: npm run build
     - name: Package installer
-      shell: bash
-      run: |
-        # GitHub expands absent secrets to empty strings. electron-builder treats
-        # an empty CSC_LINK as a certificate path, so omit unset credentials.
-        for name in APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID CSC_LINK CSC_KEY_PASSWORD; do
-          if [[ -z "${!name}" ]]; then unset "$name"; fi
-        done
-        pack_args=(--no-publish)
-        # Without a certificate, generate a valid ad-hoc bundle seal on Apple Silicon Macs.
-        if [[ "$RUNNER_OS" == "macOS" && -z "${CSC_LINK:-}" ]]; then
-          pack_args+=(--adhoc-sign)
-        fi
-        npm run pack -- "${pack_args[@]}"
-      env:
-        APPLE_ID: ${{ secrets.APPLE_ID }}
-        APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        CSC_LINK: ${{ secrets.CSC_LINK }}
-        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-    - name: Verify and package standalone CLI and MCP client
-      if: runner.os == 'macOS' && matrix.arch == 'arm64'
-      shell: bash
-      run: |
-        npm run check:automation-package
-        version=$(node -p 'require("./package.json").version')
-        mkdir -p "release/$version"
-        npm pack ./dist/cli --pack-destination "release/$version"
-        test -s "release/$version/scrcpy-plus-cli-$version.tgz"
+      run: npm run pack -- --no-publish
     - name: Install and smoke test Windows release artifact
-      if: runner.os == 'Windows'
       timeout-minutes: 5
       run: ./script/check-windows-install.ps1
-    - name: Install and smoke test macOS release artifact
-      if: runner.os == 'macOS'
-      timeout-minutes: 5
-      run: node script/check-macos-install.mjs
     - name: Record Windows signature and hash
-      if: runner.os == 'Windows'
       shell: pwsh
       run: |
         $pkg = Get-Content package.json -Raw | ConvertFrom-Json
@@ -102,45 +69,108 @@ jobs:
           signer = $signature.SignerCertificate.Subject
           installationAndStartup = 'passed'
         } | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $release 'verification-win-x64.json')
-    - name: Record macOS signature, Gatekeeper and hash
-      if: runner.os == 'macOS'
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      with:
+        name: windows-release-x64
+        if-no-files-found: error
+        path: |
+          release/**/*.exe
+          release/**/*.yml
+          release/**/*.blockmap
+          release/**/verification-*.json
+
+  macos-release:
+    needs: [release-source, ios-wda]
+    runs-on: macos-15
+    timeout-minutes: 120
+    environment: macos-release
+    env:
+      EXPECTED_ARCH: arm64
+      APPLE_KEYCHAIN_PROFILE: pipeline-release
+    steps:
+    - name: Check release credentials
+      shell: bash
+      env:
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        CSC_LINK: ${{ secrets.CSC_LINK }}
+        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      run: |
+        for name in APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID CSC_LINK CSC_KEY_PASSWORD; do
+          if [[ -z "${!name}" ]]; then
+            echo "::error::Missing macos-release secret: $name"
+            exit 1
+          fi
+        done
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: '22'
+        cache: npm
+    - name: Verify runner architecture
+      run: node -e "require('node:assert/strict').equal(process.arch, process.env.EXPECTED_ARCH)"
+    - name: Install dependencies
+      run: npm ci --no-audit --no-fund
+    - name: Download macOS device resources
+      run: npm run init
+    - name: Prepare source backend toolchain
+      uses: ./.github/actions/platform-toolchain
+    - uses: ./.github/actions/ios-toolchain
+    - name: Build distribution
+      run: npm run build
+    - name: Prepare temporary notarization keychain
+      shell: bash
+      env:
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        export APPLE_KEYCHAIN="$RUNNER_TEMP/scrcpy-plus-notary.keychain-db"
+        echo "APPLE_KEYCHAIN=$APPLE_KEYCHAIN" >> "$GITHUB_ENV"
+        keychain_password=$(openssl rand -hex 32)
+        security create-keychain -p "$keychain_password" "$APPLE_KEYCHAIN"
+        security set-keychain-settings -lut 7200 "$APPLE_KEYCHAIN"
+        security unlock-keychain -p "$keychain_password" "$APPLE_KEYCHAIN"
+        xcrun notarytool store-credentials "$APPLE_KEYCHAIN_PROFILE" \
+          --keychain "$APPLE_KEYCHAIN" --apple-id "$APPLE_ID" \
+          --password "$APPLE_APP_SPECIFIC_PASSWORD" --team-id "$APPLE_TEAM_ID"
+    - name: Sign and notarize app and DMG
+      timeout-minutes: 100
+      run: npm run pack -- --no-publish --release
+      env:
+        CSC_LINK: ${{ secrets.CSC_LINK }}
+        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    - name: Verify and package standalone CLI and MCP client
       shell: bash
       run: |
+        npm run check:automation-package
         version=$(node -p 'require("./package.json").version')
-        product=$(node -p 'require("./package.json").productName')
-        release="$PWD/release/$version"
-        dmg="$release/$product-$version-mac-$EXPECTED_ARCH.dmg"
-        mount=$(mktemp -d "$RUNNER_TEMP/release-inspection.XXXXXX")
-        hdiutil attach -readonly -nobrowse -mountpoint "$mount" "$dmg"
-        trap 'hdiutil detach "$mount"' EXIT
-        app="$mount/$product.app"
-        {
-          echo "sourceCommit=$GITHUB_SHA"
-          echo "runUrl=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          echo 'installationAndStartup=passed'
-          shasum -a 256 "$dmg"
-          # Trust-policy failures are reported, not mislabelled as smoke failures.
-          set +e
-          codesign -dvvv --entitlements :- "$app" 2>&1
-          echo "codesignDetailsExit=$?"
-          codesign --verify --deep --strict --verbose=2 "$app" 2>&1
-          echo "codesignVerifyExit=$?"
-          spctl --assess --type execute --verbose=4 "$app" 2>&1
-          echo "gatekeeperExit=$?"
-          xcrun stapler validate "$app" 2>&1
-          echo "staplerExit=$?"
-          set -e
-        } > "$release/verification-mac-$EXPECTED_ARCH.txt"
-    - uses: actions/upload-artifact@v4
+        mkdir -p "release/$version"
+        npm pack ./dist/cli --pack-destination "release/$version"
+        test -s "release/$version/scrcpy-plus-cli-$version.tgz"
+    - name: Verify trust, update metadata and installed app startup
+      timeout-minutes: 10
+      run: node script/check-macos-install.mjs --release
+      env:
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
-        name: ${{ matrix.os }}
+        name: macos-release-arm64
         if-no-files-found: error
         path: |
           release/**/*.dmg
-          release/**/*.exe
           release/**/*.yml
           release/**/*.blockmap
           release/**/*.tgz
           release/**/verification-*.json
-          release/**/verification-*.txt
-          !release/**/win-unpacked/
+    - name: Remove temporary notarization keychain
+      if: always()
+      shell: bash
+      run: |
+        if [[ -n "${APPLE_KEYCHAIN:-}" && -f "$APPLE_KEYCHAIN" ]]; then
+          security delete-keychain "$APPLE_KEYCHAIN"
+        fi
