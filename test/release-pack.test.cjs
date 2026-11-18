@@ -10,9 +10,12 @@ for (const [argv, publish] of [[[], 'never'], [['--publish'], 'always'], [['--no
     await vm.runInNewContext(`(async () => { ${source} })()`, {
       cd: directory => assert.equal(directory, 'dist'),
       fs: { readJson: async () => require('../package.json') },
-      isMac: true, process: { argv, arch: 'arm64' },
+      prepareMacIconToolchain() {},
+      path: require('node:path'),
+      isMac: true, process: { argv, arch: 'arm64', env: {} },
       builder: { build: async value => { options = value } },
     })
+    assert.equal(options.config.mac.icon, 'ScrcpyPlus.icon')
     assert.equal(options.publish, publish)
     assert.equal(options.config.publish.provider, 'github')
     assert.equal(options.config.publish.owner, 'MonsterXia')
