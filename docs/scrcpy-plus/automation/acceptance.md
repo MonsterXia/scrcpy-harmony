@@ -8,7 +8,7 @@
 - `npm run build:cli`：`dist/cli/index.cjs`、`mcp.cjs`、独立包 manifest 与许可。安装见 [指南](README.md)。
 - `npm run check:automation-package`：在临时目录打包、安装，验证离线 schema、缺服务诊断和真实 MCP stdio；自动删除临时安装。
 - `node script/check-automation-electron.mjs <空目录>`：真实 Electron、模拟设备、Canvas PNG 和租约/输入闭环。
-- Agent 使用 skill：`.agents/skills/scrcpy-plus-automation/SKILL.md`；维护代码入口 skill 仍是 scrcpy-harmony-project。
+- Agent 使用 skill：`.agents/skills/scrcpy-plus-automation/SKILL.md`；维护代码时使用[项目 skill](../../../.agents/skills/scrcpy-plus-project/SKILL.md)。
 
 ## 需求与证据映射
 

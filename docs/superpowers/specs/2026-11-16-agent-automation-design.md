@@ -201,6 +201,6 @@ Codex 宿主验收使用本机 Codex app-server 的实际 MCP 发现/调用，�
 
 ## 代码交付补充（2026-11-16）
 
-用户授权按项目规范提 PR，独立审查确认无阻塞问题且最终 head 的五项必需 CI 通过后合入 master。交付为 [PR #88](https://github.com/MonsterXia/scrcpy-harmony/pull/88)，详见[交付记录](../../maintenance/agent-automation-pr-2026-11-16.md)。不放宽本 spec 的全矩阵验收标准；iOS暂缓和其他pending事项继续明确记录，不以代码合入代替真机证据。
+用户授权按项目规范提 PR，独立审查确认无阻塞问题且最终 head 的五项必需 CI 通过后合入 master。交付为 [PR #88](https://github.com/MonsterXia/scrcpy-plus/pull/88)，详见[交付记录](../../maintenance/agent-automation-pr-2026-11-16.md)。不放宽本 spec 的全矩阵验收标准；iOS暂缓和其他pending事项继续明确记录，不以代码合入代替真机证据。
 
 合入前审查明确：已派发写请求的响应解码/身份/版本/大小校验失败必须保留 unknown 且不可自动重试；已验证服务错误仍保留其 outcome。所有 native 停止入口必须同步会话清理屏障，禁止在 backend.close 在途时获取新 lease 或 GUI owner。端口清单只按完整方向字段及空清单哨兵解析，合法端点名称不参与状态判定。AUTO-BUG-015～017 的失败回归与复核见上述交付记录。

@@ -141,7 +141,7 @@ Windows 菜单状态回归：完整 build 后运行 `node script/check-beta-menu
 
 `script/check-windows-install.ps1` 仅允许在 GitHub 托管 Windows runner 上运行：静默安装到包含空格的临时目录（限时 120 秒），再执行 `script/smoke-app.mjs`。NSIS 可能替换同 app ID 的已有安装，因此不要在开发机上绕过此限制。启动脚本使用锁定版本的 `playwright-core` 驱动已安装的 Electron，无需下载额外浏览器；检查实际 exe/app.asar 路径、版本、隔离用户目录、主窗口可见性、React 初始化、preload/设备枚举 IPC、设置页、页面异常及正常退出。DOM 就绪可能早于原生窗口显示；通过 `script/lib/smoke-window.mjs` 最长等待 20 秒观察实际可见状态，不强制 show，超时或销毁仍失败。启动检查整体限时 90 秒，失败输出进程日志；CI 最后停止 HDC 服务。
 
-本机已有安装时可单独运行 `node script/smoke-app.mjs "C:/path/to/Scrcpy Harmony.exe"`，它使用临时用户配置并关闭自己启动的进程，不执行安装。macOS 可传入已安装应用的 `"/path/to/Scrcpy Harmony.app/Contents/MacOS/Scrcpy Harmony"` 路径。启动自动化依赖 Electron 的调试接口，不修改发行程序或模拟 IPC；它不替代真实设备投屏、签名/SmartScreen 和人工视觉验收。
+本机已有安装时可单独运行 `node script/smoke-app.mjs "C:/path/to/Scrcpy Plus.exe"`，它使用临时用户配置并关闭自己启动的进程，不执行安装。macOS 可传入已安装应用的 `"/path/to/Scrcpy Plus.app/Contents/MacOS/Scrcpy Plus"` 路径。启动自动化依赖 Electron 的调试接口，不修改发行程序或模拟 IPC；它不替代真实设备投屏、签名/SmartScreen 和人工视觉验收。
 
 `macos-package-arm64` 使用固定 `macos-15` ARM runner 完成依赖安装、资源下载、build 和 DMG 打包。当前 Plus 不支持 Intel Mac，不再运行 x64 macOS 构建。`script/check-macos-install.mjs` 挂载 DMG，将 `.app` 复制到临时目录后卸载镜像，验证包内资源和可执行权限，再运行共享的启动检查。此检查校验实际架构，使用隔离用户配置并在退出后清理配置及 HDC 服务；只读仓库权限、不发布、不上传 artifact、不使用签名或公证 secrets。它不验证 Developer ID 签名、公证或从互联网下载后的 Gatekeeper 放行。
 
@@ -159,7 +159,7 @@ M0-3 的 `.github/workflows/update-acceptance.yml` 是固定版本的实际更�
 
 ## 当前验证基线与后续维护
 
-2026-10-21 的 [PR #8 CI](https://github.com/MonsterXia/scrcpy-harmony/actions/runs/39611929271) 已通过 test、lint 及 Windows/macOS arm64/macOS x64 的安装包、安装和启动检查；这是该提交的历史结果，后续改动仍需自己的检查。真实设备、签名/公证、线上更新检查及普通用户操作文档的待办见 [RUNBOOK](../../../../RUNBOOK.md)。
+2026-10-21 的 [PR #8 CI](https://github.com/MonsterXia/scrcpy-plus/actions/runs/39611929271) 已通过 test、lint 及 Windows/macOS arm64/macOS x64 的安装包、安装和启动检查；这是该提交的历史结果，后续改动仍需自己的检查。真实设备、签名/公证、线上更新检查及普通用户操作文档的待办见 [RUNBOOK](../../../../RUNBOOK.md)。
 
 签名环境变量来自 CI secrets；手动 Build 在打包前移除空值，防止缺失的 `CSC_LINK` 被当作证书路径，非空凭据保留。理解打包时查看配置即可，不需要为项目分析读取或配置真实签名凭据。
 

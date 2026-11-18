@@ -1,10 +1,10 @@
 # Scrcpy Plus 构建指南
 
-[返回中文 README](../README_ZH.md) · [仓库结构](repository-guide.md) · [用户指南](user-guide.md) · [维护者开发与验证参考](../.agents/skills/scrcpy-harmony-project/references/development.md)
+[返回中文 README](../README_ZH.md) · [仓库结构](repository-guide.md) · [用户指南](user-guide.md) · [维护者开发与验证参考](../.agents/skills/scrcpy-plus-project/references/development.md)
 
 ## 范围与准备
 
-当前工作源码为 Scrcpy Plus 1.0.5-dev.1，基于 Scrcpy Harmony 改造；新增源码后端依赖及验证边界见[集成说明](scrcpy-plus/integration.md)。下列 Scrcpy Harmony 1.0.4 及迁移验收均为历史证据，公开状态见[发行记录](releases/1.0.4.md)。迁移前恢复版为 [v1.0.3](https://github.com/MonsterXia/scrcpy-harmony/releases/tag/v1.0.3)，其构建提交为 `417e78ff9a4f99bc0d3a68080b9ceb11810d1d09`。当前源码与迁移前恢复版的依赖布局不同，构建时应记录提交号。
+当前工作源码为 Scrcpy Plus，版本见 [package.json](../package.json)，基于 Scrcpy Harmony 改造；新增源码后端依赖及验证边界见[集成说明](scrcpy-plus/integration.md)。下列 Scrcpy Harmony 1.0.4 及迁移验收均为历史证据，公开状态见[发行记录](releases/1.0.4.md)。迁移前恢复版为 [v1.0.3](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.3)，其构建提交为 `417e78ff9a4f99bc0d3a68080b9ceb11810d1d09`。当前源码与迁移前恢复版的依赖布局不同，构建时应记录提交号。
 
 当前布局的干净检出、完整测试、本地 Windows 打包启动和三平台 CI 证据见[依赖源码迁移记录](maintenance/dependency-sources.md)。当前 Plus 仅由原生 arm64 runner 验证 macOS 构建、DMG 安装与启动，Intel Mac 不再支持；没有新增 macOS 本机人工走读或真机验收。迁移前的 [M3-3](maintenance/M3-3.md)及[复核记录](maintenance/M3-3-release-guide.md)保留为历史记录，不作为当前目录和命令的操作入口。
 
@@ -78,8 +78,8 @@ npm run pack -- --no-publish
 | `dist/preload/index.js`、`dist/renderer/index.html` | 桥接与 UI |
 | `dist/resources/hdc/`、`dist/resources/uitestkit_sdk/` | 本机设备资源 |
 | `dist/LICENSE`、`dist/THIRD_PARTY_NOTICES.txt` | 应用许可证与本地依赖来源/授权声明，随安装包分发 |
-| `release/<版本>/Scrcpy Harmony-<版本>-win-x64.exe` | Windows NSIS 安装包 |
-| `release/<版本>/Scrcpy Harmony-<版本>-mac-<架构>.dmg` | macOS 原生架构安装包 |
+| `release/<版本>/Scrcpy Plus-<版本>-win-x64.exe` | Windows NSIS 安装包 |
+| `release/<版本>/Scrcpy Plus-<版本>-mac-<架构>.dmg` | macOS 原生架构安装包 |
 
 本地文件名含空格，公开 v1.0.3 的安装包名使用连字符；不要据此误判缺包。该 Release 的 `latest.yml`、`latest-mac.yml`、`latest-x64-mac.yml` 分别对应 Windows x64、macOS arm64、macOS x64；`release-validation.json` 与 `SHA256SUMS.txt` 记录已发布文件的名称、大小或校验值，不应拿它们校验不同提交生成的本地包。打包按当前系统/Node 架构生成，请在目标平台的原生架构环境执行。`--no-publish` 禁止发布，打包完成不等于已经签名、公证或通过真机验收。
 
@@ -87,7 +87,7 @@ npm run pack -- --no-publish
 
 ## 开发启动
 
-先完成本地依赖编译、共享源码和设备资源准备。**先正常退出已安装的 Scrcpy Harmony 和其他使用同一配置的开发实例**，再在仓库根目录打开两个终端，避免同时写入相同配置文件；不需要为此终止共享 HDC 服务。
+先完成本地依赖编译、共享源码和设备资源准备。**先正常退出已安装的 Scrcpy Plus 和其他使用同一配置的开发实例**，再在仓库根目录打开两个终端，避免同时写入相同配置文件；不需要为此终止共享 HDC 服务。
 
 ```text
 # 终端 1：编译并监听本地依赖、main/preload，启动 renderer 服务
@@ -101,7 +101,7 @@ npm start
 
 `dev` 不会启动 Electron。Vite 端口配置为 **8080**，主进程开发加载地址也固定使用 8080；若 Vite 因占用转到 8081，请先解决端口冲突，不能直接继续。`start` 加载 `dist/main/index.js` 并打开 9229 inspector。HMR 已关闭，renderer 改动后需重新加载页面；main/preload 改动后退出并重启 Electron。
 
-Electron 45 的运行时按需下载；如提示缺少 Electron 二进制，可先执行 `node node_modules/electron/install.js`，完成后再启动。主进程诊断保留终端 2 的相关输出，页面错误可在“帮助 → 切换开发人员工具”的 Console 查看；分享前脱敏。开发构建仍可能使用与已安装 Scrcpy Harmony 相同的配置目录，即使错开运行也可能改变该配置；启动会初始化真实 HDC。若当前禁止设备访问，不要运行 `npm start` 或设备验收脚本。
+Electron 45 的运行时按需下载；如提示缺少 Electron 二进制，可先执行 `node node_modules/electron/install.js`，完成后再启动。主进程诊断保留终端 2 的相关输出，页面错误可在“帮助 → 切换开发人员工具”的 Console 查看；分享前脱敏。开发构建仍可能使用与已安装 Scrcpy Plus 相同的配置目录，即使错开运行也可能改变该配置；启动会初始化真实 HDC。若当前禁止设备访问，不要运行 `npm start` 或设备验收脚本。
 
 ### 为什么不能直接在浏览器运行
 
@@ -122,7 +122,7 @@ React 页面使用 preload 注入的全局 `main`，经 Electron IPC 调用主�
 
 `npm test` 无需真机：应用回归替换设备等外部边界，Licia 测试运行本地生成模块并使用临时目录夹具。lint 检查源码，Vite 成功只表示构建通过，均不能替代真机投屏、输入和连接验收；项目没有独立 `typecheck` script。
 
-CI 的四项必需检查为 `test`、`lint`、`windows-package`、`macos-package-arm64`。打包检查会在临时 runner 中安装并启动应用；不要在开发机绕过 `script/check-windows-install.ps1` 的 CI 限制，它可能替换已有安装。macOS 安装检查也只应在隔离环境运行，会启动设备层并清理 HDC。手动 Build 工作流验收安装包后上传 artifacts，不创建 Release；签名、公证、互联网下载后的信任提示和真机功能分别验收。更多脚本与 CI 说明见[维护者参考](../.agents/skills/scrcpy-harmony-project/references/development.md)。
+CI 的四项必需检查为 `test`、`lint`、`windows-package`、`macos-package-arm64`。打包检查会在临时 runner 中安装并启动应用；不要在开发机绕过 `script/check-windows-install.ps1` 的 CI 限制，它可能替换已有安装。macOS 安装检查也只应在隔离环境运行，会启动设备层并清理 HDC。手动 Build 工作流验收安装包后上传 artifacts，不创建 Release；签名、公证、互联网下载后的信任提示和真机功能分别验收。更多脚本与 CI 说明见[维护者参考](../.agents/skills/scrcpy-plus-project/references/development.md)。
 
 ## 多平台源码后端
 
