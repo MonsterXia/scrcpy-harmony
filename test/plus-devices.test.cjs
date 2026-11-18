@@ -6,9 +6,10 @@ const path = require('node:path')
 const vm = require('node:vm')
 const { transformSync } = require('esbuild')
 function load(file, mocks = {}) {
+  mocks = { '../ios-provisioning': { renewIos: async () => {}, disposeIosSetup() {} }, ...mocks }
   const module = { exports: {} }
   vm.runInNewContext(transformSync(fs.readFileSync(file, 'utf8'), { loader: 'ts', format: 'cjs' }).code,
-    { module, exports: module.exports, __filename: path.resolve(file), console, process, Buffer, Error, setTimeout, clearTimeout,
+    { module, exports: module.exports, __filename: path.resolve(file), console, process, Buffer, Error, setTimeout, clearTimeout, setInterval, clearInterval,
       require: id => Object.hasOwn(mocks, id) ? mocks[id] : require(id) })
   return module.exports
 }

@@ -1,5 +1,25 @@
 # Scrcpy Plus 跨平台改造（2026-11-03）
 
+## iPhone 集成 PR 审查（2026-11-18）
+
+用户授权独立审查、创建 PR、复审及 CI 全绿后合入。首轮确认的账号互斥、窗口取消、预约恢复、签名私钥保留、WDA 缓存及后台启动机制问题已修复，完整本地构建与整批独立复审已通过、无剩余 P0–P2；交付进入 [PR #97](https://github.com/MonsterXia/scrcpy-plus/pull/97)，最终 CI/复审/合入结果以 PR 为准。详情、门禁与下一步见[审查记录](docs/maintenance/ios-provisioning-review-20261118.md)。
+
+## 投屏加载态统一（2026-11-18）
+
+状态：**源码与 renderer 构建完成，实际双语视觉/真机验收待补。** 按用户截图，将鸿蒙加载条和 AirPlay 连接提示统一到 Android/iOS 共用圆角卡片；抽出共享组件、主题与动效。50 项定向回归、lint/i18n、renderer 构建通过。本地 file URL 预览被工具策略拒绝，未绕过；未重打安装包。下一步与边界见[维护记录](docs/maintenance/mirror-loading.md)。
+
+## iPhone 桌面准备与续签（2026-11-17）
+
+2026-11-18 布局修复：删除左上角常驻「iPhone 设置」，入口移至右上角工具面板；中英文实际界面、11 项定向测试、lint/i18n、renderer 构建通过，新 app/ZIP 正式签名、公证和解压验签通过。实时投屏仍未通过：用户重启后 WDA 启动超时，已安装且 profile 有效，但服务不可达。下一步定位启动超时后补真机画面验收；旧 DMG 未更新，见[本轮记录](docs/maintenance/ios-desktop-provisioning.md#2026-11-18-移除挡住画面的设置按钮)及[证据](docs/maintenance/evidence/ios-toolbar-20261118.json)。
+
+2026-11-18 续测：应用内登录、授权恢复、签名安装、打包程序启动及 Home 控制通过；使用测试时钟触发的真实重签/重装/启动通过。修复大资源清单误拒和 AlreadyMountedError；旧 iloader 证书经用户明确确认后撤销。ReplayKit 重启后首次回退、重试成功；干净环境/实际七天到期/Windows 仍待验收，arm64 新候选 app/DMG 正式签名、公证、票据和 Gatekeeper 均通过，该阶段正式签名验证窗口可用；后续启动故障见下条。
+
+状态：**macOS 集成登录、签名安装、启动和受控真实续签已验证；arm64 公证候选已生成。干净环境、真实七天到期、Windows 与重启后首次视频可靠性仍待验收。** 用户明确选择内置组件并授权直接实施。新增独立签名与设备 helper、应用内登录/2FA/团队选择、自动准备和续签调度、精确 bundle 身份及会话预约恢复。原有 standalone 验证不当作集成验证；详情与待办见 [集成记录](docs/maintenance/ios-desktop-provisioning.md)。
+
+## iPhone 首次连接缺口（2026-11-17）
+
+状态：**免费签名→安装→CoreDevice 启动真机验证通过，产品自动准备尚未实现。** 用户亲自登录免费 Apple ID、确认签名安装并完成手机信任；在 iPhone 13 / iOS 26.4.2 核对 LocalProvision 和 7 天 profile，修正验证 IPA 的 XCTest Bundle ID 与 AppleDouble 元数据后安装成功。DVT XCTest 启动路径握手停滞，CoreDevice 启动成功；现有桌面包 ReplayKit 画面与 Home 控制通过。启动未调用 Xcode，但开发者镜像已预挂载；干净环境准备、断线重启和自动续签待验收。见 [首次连接记录](docs/maintenance/ios-first-connection.md)、[调研与实测](docs/maintenance/ios-apple-id-signing-research.md) 和 [阶段证据](docs/maintenance/evidence/ios-apple-id-validation-20261117.json)。
+
 ## Plus 正式品牌图标（2026-11-18）
 
 三版统一矢量资源、应用内替换与 macOS Icon Composer 打包已完成；完整构建、lint/i18n、12 项双语窗口主题切换、透明边缘/ICO、macOS 26/27 原生渲染、候选包签名及隔离启动通过。图标测试程序括号错误导致的 JS 弹窗已修复并加入启动前语法检查。已备份并更新日常安装，安装后签名/启动检查、Dock/Finder 实际浅→深→浅及着色样式通过，Finder 退出应用后仍能切换；已恢复原系统外观设置。Windows/旧系统安装及全局透明样式仍待验收，其他工作区运行包保持原状。详情、证据及下一步见[品牌图标记录](docs/maintenance/app-brand-icon.md)。

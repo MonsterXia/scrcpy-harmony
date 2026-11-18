@@ -7,9 +7,12 @@ permissions:
   contents: read
 
 jobs:
+  ios-wda:
+    uses: ./.github/workflows/ios-wda-artifact.yml
   build:
+    needs: ios-wda
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -42,12 +45,9 @@ jobs:
       run: npm run init
     - name: Prepare source backend toolchain
       uses: ./.github/actions/platform-toolchain
+    - uses: ./.github/actions/ios-toolchain
     - name: Build distribution
       run: npm run build
-    - name: Verify patched iOS Runner compiles without signing
-      if: runner.os == 'macOS' && matrix.arch == 'arm64'
-      shell: bash
-      run: npm run ios:wda -- build --unsigned --xcode "$(xcode-select -p)"
     - name: Package installer
       shell: bash
       run: |

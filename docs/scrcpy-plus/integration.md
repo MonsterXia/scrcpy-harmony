@@ -138,3 +138,11 @@ Windows AirPlay 模块采用 MinGW 延迟导入库与宿主解析钩子，将 No
 自动化最新验证源码 `1f48fbd`：应用1094pass/2skip、Licia各606/4、lint/fullbuild/包检查/Electron模拟通过；实际Codex app-server及双真机结果见[续验记录](../maintenance/agent-automation-android-codex-2026-11-16.md)。tsc既有诊断保留，iOS按用户要求暂缓；这些结果不回写上方历史集成阶段计数。
 
 2026-11-16 新增 iOS USB WDA + ReplayKit 代码接入与自动验收；取代上方历史阶段的“iOS 暂缓”范围，未取得真机证据。见[专项维护记录](../maintenance/ios-usb-wda.md)。
+
+## 桌面 iPhone 准备（本地开发中）
+
+`src/main/lib/ios-provisioning/` 通过内置 Rust 签名 helper 与冻结 Python 设备 helper 提供 Apple ID 登录、安装、启动和续签。IPC `iosSetup` 仅接受所属 USB 投屏窗口的动作，设备由主进程解析。已管理设备在创建投屏前检查；后台每分钟调度，临近到期且空闲时续签。`IosSetup.tsx` 提供双语进度与系统授权引导，入口位于 USB 投屏窗口右上角工具面板；首次 WDA 连接失败时自动打开，不在画面上常驻按钮。密码不写配置。WDA 状态包含实际 bundle 身份；安装前有会话预约和持久恢复记录。当前为本地候选，macOS 应用内登录、签名安装、启动及受控时钟触发的真实续签已验证；干净环境、实际七天到期及 Windows 仍待验收，见 [状态与边界](../maintenance/ios-desktop-provisioning.md)。
+
+### 投屏加载态
+
+`src/renderer/components/MirrorStatus.tsx` 和 `MirrorStatus.module.scss` 定义共享连接卡片及主题，native-mirror（Android/iOS USB/AirPlay）和鸿蒙 Screencast 在加载期间使用。设备授权、AirPlay 连接指导仍由各入口提供；加载完成沿用原有会话/首帧状态。实现及验收范围见[加载态维护记录](../maintenance/mirror-loading.md)。

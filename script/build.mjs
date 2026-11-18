@@ -5,6 +5,7 @@ import { vendorNotices } from './lib/vendor-notices.mjs'
 import path from 'node:path'
 import { validatePlatformBackends } from './platform-backend-resources.mjs'
 import { validateNativeResources } from './native-video-resources.mjs'
+import { validateIosProvisioning } from './ios-provisioning-resources.mjs'
 
 const npmCli = process.env.npm_execpath
 if (!npmCli) {
@@ -30,6 +31,9 @@ pkg.main = 'main/index.js'
 
 const iconManifest = await fs.readJson('build/mac-icon/manifest.json')
 await verifyIconSet(iconManifest)
+
+runNpm('run', 'build:ios')
+await validateIosProvisioning('resources/ios-provisioning')
 runNpm('run', 'build:backends')
 await validatePlatformBackends('resources')
 runNpm('run', 'build:main')
@@ -38,12 +42,14 @@ runNpm('run', 'build:renderer')
 runNpm('run', 'build:cli')
 
 // Refresh generated assets so an earlier build cannot retain local WDA signing
-// products. WDA is prepared and installed separately, never shipped in desktop.
+// products. Only the dedicated unsigned WDA and self-contained helpers are shipped.
 const workspaceRoot = await fs.realpath(process.cwd())
 const distRoot = await fs.realpath('dist')
 if (!distRoot.startsWith(workspaceRoot + path.sep)) throw new Error('Build output escaped workspace')
 await fs.remove('dist/build')
-await fs.copy('build', 'dist/build', { filter: file => !['native-airplay', 'android-server', 'ios-wda'].includes(path.relative('build', file).split(path.sep)[0]) })
+await fs.copy('build', 'dist/build', { filter: file => !['native-airplay', 'android-server', 'ios-wda', 'ios-provisioning', 'ios-wda-input', 'loading-preview'].includes(path.relative('build', file).split(path.sep)[0]) })
+await fs.remove('dist/resources/ios-provisioning')
+await fs.copy('resources/ios-provisioning', 'dist/resources/ios-provisioning', { dereference: false })
 await verifyIconSet(iconManifest, true)
 await fs.copy('resources/android', 'dist/resources/android')
 await fs.copy('resources/airplay', 'dist/resources/airplay')

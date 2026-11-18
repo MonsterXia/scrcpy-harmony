@@ -1,3 +1,5 @@
+import { iosSetup, prepareManagedIos, setIosProvisioningBusy } from '../lib/ios-provisioning'
+import type { IosSetupAction } from 'common/iosProvisioning'
 import type { AutomationWindowHooks, AutomationWindowObserver } from '../automation/windowHooks'
 import { BrowserWindow, ipcMain, screen } from 'electron'
 import { randomUUID } from 'node:crypto'
@@ -24,6 +26,7 @@ interface Session {
   videoRequested?: boolean
   hasConnected?: boolean
   recovery?: Promise<void>
+  setupCalls: Set<AbortController>
 }
 export function validateNativeInput(input: NativeMirrorInput) {
   if (!input || typeof input !== 'object') throw new Error('Invalid input')
@@ -43,6 +46,7 @@ class NativeMirrors {
   private initialized = false
   private disposed = false
   private automationHooks?: AutomationWindowHooks
+  constructor() { setIosProvisioningBusy(udid => [...this.sessions.values()].some(s => s.target.connectionId === udid && !!s.backend && !['error','disconnected','stopping'].includes(s.info.state))) }
   setAutomationHooks(hooks: AutomationWindowHooks) { this.automationHooks = hooks }
   list() { return [...this.sessions.values()].map(session => ({ ...session.info })) }
   getWindows() { return [...this.sessions.values()].filter(session => !session.stopping && !session.window.isDestroyed()).map(session => session.window) }
@@ -98,12 +102,13 @@ class NativeMirrors {
     const session: Session = { info: { id, deviceKey: key, name: receiver ? 'Scrcpy Plus' : target.name,
       platform: target.platform!, state: 'starting' }, target: receiver
       ? { ...target, key, name: 'AirPlay', connectionId: undefined, transport: 'receiver' } : { ...target },
-      window: win, ready: false, gate: new FrameGate(), videoRequested: target.platform === 'ios' && target.transport === 'usb' }
+      window: win, ready: false, gate: new FrameGate(), setupCalls: new Set(), videoRequested: target.platform === 'ios' && target.transport === 'usb' }
     this.sessions.set(id, session)
     session.automation = this.automationHooks?.({ target: session.target, window: win, gui, close: () => this.stop(id) })
     win.on('close', event => { if (session.automation?.closeRequested()) event.preventDefault() })
     win.webContents.on('did-start-navigation', details => {
       if (details.isMainFrame && !details.isSameDocument) {
+        for (const call of session.setupCalls) call.abort(Error('cancelled'))
         session.ready = false; session.gate.reset()
         if (session.backend) void this.stop(id).catch(() => {})
       }
@@ -141,6 +146,12 @@ class NativeMirrors {
       await session.backend?.close()
       if (session.stopping || session.usbMissing) throw new Error('Mirror device unavailable')
       session.gate.reset()
+      if (session.target.platform === 'ios' && session.target.transport === 'usb') {
+        const call = new AbortController(); session.setupCalls.add(call)
+        try { await prepareManagedIos(session.target.connectionId!, call.signal) }
+        finally { session.setupCalls.delete(call) }
+      }
+      if (session.stopping || session.usbMissing) throw new Error('Mirror device unavailable')
       backend = session.target.platform === 'android' ? new AndroidMirror(session.target) : session.target.transport === 'usb' ? new IosMirror(session.target) : new AirplayMirror()
       session.backend = backend
       if (backend instanceof IosMirror) session.info.videoMode = session.videoRequested ? 'video-starting' : 'screenshot'
@@ -187,6 +198,7 @@ class NativeMirrors {
     if (!session) return Promise.resolve()
     if (reason === 'gui' && session.automation?.closeRequested()) return Promise.resolve()
     if (session.stopping) return session.stopping
+    for (const call of session.setupCalls) call.abort(Error('cancelled'))
     const wasReady = session.ready
     session.automation?.state('stopping')
     session.info.state = 'stopping'; session.ready = false; session.gate.reset()
@@ -227,6 +239,22 @@ class NativeMirrors {
     if (this.initialized) return
     this.initialized = true
     ipcMain.handle('nativeMirrorInfo', event => { const s = this.owner(event); return { id: s.info.id, target: s.target, state: s.info.state, connectionIssue: s.info.connectionIssue, videoMode: s.info.videoMode } })
+    ipcMain.handle('iosSetup', async (event, action: IosSetupAction) => {
+      const session = this.owner(event)
+      if (session.target.platform !== 'ios' || session.target.transport !== 'usb' || !session.target.connectionId) throw Error('device-unavailable')
+      const call = new AbortController(); session.setupCalls.add(call)
+      try {
+        if (['login','team','prepare'].includes(action?.action) && session.backend) {
+          // An explicit setup action may release this window's own mirror; the
+          // background renewal path never closes an active GUI/automation session.
+          await session.backend.close(); call.signal.throwIfAborted()
+          session.backend = undefined
+          this.state(session, 'disconnected'); session.gate.reset()
+        }
+        call.signal.throwIfAborted()
+        return await iosSetup(session.target.connectionId, action, call.signal)
+      } finally { session.setupCalls.delete(call) }
+    })
     ipcMain.handle('nativeMirrorOpen', (event, restart?: boolean) => {
       const session = this.owner(event)
       if (restart !== undefined && typeof restart !== 'boolean') throw new Error('Invalid reconnect request')

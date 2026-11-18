@@ -1,5 +1,5 @@
 import { t } from 'common/util'
-import Style from './App.module.scss'
+import Style from './MirrorStatus.module.scss'
 
 export function StatusIcon({ busy = false }: { busy?: boolean }) {
   return <span className={Style.statusIcon} data-busy={busy} aria-hidden="true">

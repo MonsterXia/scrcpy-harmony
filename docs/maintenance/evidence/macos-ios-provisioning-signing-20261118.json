@@ -1,0 +1,23 @@
+{
+  "file": "Scrcpy Plus-1.0.5-dev.2-mac-arm64-signed.dmg",
+  "bytes": 185824890,
+  "sha256": "6ac15ea40533284aa79f06912cf6ebc0518d5a5b212aaeb55f7c55dbb8f70315",
+  "appNotarizationId": "e5f378b1-86ca-4197-a426-59188c2d0c6c",
+  "dmgNotarizationId": "d4db516b-86ff-4b66-9a05-762e18dcf669",
+  "appNotarization": "Accepted",
+  "dmgNotarization": "Accepted",
+  "appAndDmgStapler": "passed",
+  "appAndDmgGatekeeper": "accepted / Notarized Developer ID",
+  "installedAppDeepStrict": "passed",
+  "installedAppUiLaunch": "passed",
+  "installedAppVideo": "ReplayKit connected using existing test profile; no login repeated",
+  "nativeCodeSignaturesChecked": 172,
+  "publicReleaseReplaced": false,
+  "applicationsDirectoryReplaced": false,
+  "validationProfile": "isolated; no credentials bundled or migrated into default daily profile",
+  "date": "2026-11-18",
+  "baselineCommit": "a5175fee71d697a1f3b5fe5fee2db0842ea3d2cf",
+  "includesUncommittedIosProvisioningChanges": true,
+  "architecture": "arm64",
+  "version": "1.0.5-dev.2"
+}

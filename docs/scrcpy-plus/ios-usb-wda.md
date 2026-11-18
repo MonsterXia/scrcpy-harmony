@@ -1,5 +1,7 @@
 # iOS USB：WDA 控制与 ReplayKit 视频
 
+> 本地开发候选已加入应用内 Apple ID 登录与自动准备/续签，仍在集成真机验收中；见 [当前实现与验证边界](../maintenance/ios-desktop-provisioning.md)。下文 Xcode 命令保留为开发者手动工作流。
+
 本开发版已接入 USB iPhone 的 PNG 截图预览、点击/拖动/滚动、文字、Home/音量键，以及默认开启的 ReplayKit H.264 视频。截图与输入通过 WDA；连续视频通过 ReplayKit Broadcast Upload Extension。两条链路都绑定所选 UDID，经系统 usbmux 传输，不使用 Wi-Fi 地址或运行时 iproxy。
 
 **2026-11-17 已在 iPhone 13（iOS 26.4.2）通过签名安装、USB PNG 截图、点击/Home、ReplayKit 连续视频基本播放和截图/视频切换验证。长时间稳定性、旋转和拔插等矩阵仍待验收。** 现有 AirPlay 接收器保持独立，只看画面，不提供控制。USB iPhone 出现在多端投屏和概览的设备列表；鸿蒙专用工具不适用于 iOS。

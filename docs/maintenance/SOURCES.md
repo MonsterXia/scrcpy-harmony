@@ -1,6 +1,24 @@
 # 维护来源记录
 
+2026-11-18 用户授权独立审查全部本地改动，无问题后提 PR，按项目规范复审、CI 通过后合入。首轮问题与修复、验证和门禁见[审查记录](ios-provisioning-review-20261118.md)，最终交付与合入证据见 [PR #97](https://github.com/MonsterXia/scrcpy-plus/pull/97)。
+
 2026-11-18 用户要求将 Scrcpy Plus 图标改为不限定鸿蒙的跨平台形象，确认双屏加号的浅色、深色和单色预览后，授权制作正式资源、清理边缘、替换旧图标及适配 macOS 系统外观。期间用户提供图标验证程序 JS 错误截图，要求修复；后续明确要求更新本地安装并实际验证 Dock/Finder 随外观切换，另授权使用 macOS 系统截图命令获取 Dock 本地验证证据；原因、修复与验证边界见[品牌图标记录](app-brand-icon.md)。
+
+2026-11-18 用户指定以 iOS 截图统一所有投屏加载态。共享组件、鸿蒙/AirPlay 接入、验证与未覆盖边界见[维护记录](mirror-loading.md)。
+
+2026-11-18 用户截图反馈左上角设置按钮挡住投屏。入口迁移、双语真实界面、签名 ZIP 验证及用户重启后 WDA 启动超时，见[维护记录](ios-desktop-provisioning.md#2026-11-18-移除挡住画面的设置按钮)与[证据](evidence/ios-toolbar-20261118.json)。
+
+2026-11-18 用户完成修复包内免费 Apple ID 登录，并明确授权撤销已识别的旧 iloader 开发证书。随后通过真实签名安装、启动、Home、ReplayKit 重试，以及测试时钟触发的真实续签；证书指纹核对和剩余验证范围见 [集成验收记录](ios-desktop-provisioning.md)。
+
+2026-11-18 用户反馈授权勾选框应居中、点击登录清空密码后无反应。确认是打包资源数量超过运行时上限；修复及回归见 [桌面准备记录](ios-desktop-provisioning.md)。
+
+2026-11-17 用户要求把登录、签名、安装、启动与自动续签内置到桌面，并明确选择“按推荐方案直接实施，跳过设计问答”。新增实现、审查修复和尚未完成的集成验收见 [桌面准备记录](ios-desktop-provisioning.md)。
+
+2026-11-17 用户授权继续验证免费 Apple ID 的签名、安装、启动完整流程，并亲自完成登录、签名安装确认及 iPhone 开发者信任。iloader 2.4.1与 pymobiledevice3 11.57.1 独立验证通过当前手机的免费签名、安装、CoreDevice 启动及桌面 ReplayKit/Home；DVT 启动失败和包适配均记录，未集成产品、未验收到期续签或干净电脑首次镜像准备。见 [验证结果](ios-apple-id-signing-research.md)。
+
+2026-11-17 用户了解普通 Apple ID 签名和团队预签名设备限制后，最新指示“可以探索登录 Apple ID 的方案”，调整此前完全不登录的约束。完成候选库固定版本源码、Apple 账号限制和本地 WDA 结构调研；未做认证或设备变更，未宣称功能实现。见 [Apple ID 签名可行性](ios-apple-id-signing-research.md)。
+
+2026-11-17 用户安装已签名 macOS 候选包，删除 iPhone 上 Mobilerun / WDA 模拟新设备，反馈无法连接；随后明确要求“只安装桌面包，尽量自动完成”。现场已确认 Runner 缺失及桌面包没有部署流程，未恢复或宣称修复。见 [首次连接记录](ios-first-connection.md)。
 
 2026-11-17 用户要求解决 macOS 未正式签名导致的安装拦截，授权新建 `Pipeline For Tools` 分发证书，并自行完成 App 专用密码生成及钥匙串保存。网页证书申请及本机凭据验证通过；签名、公证与安装验证进度见 [分发签名记录](macos-distribution-signing.md)。
 

@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-18",
+  "scope": "Move iPhone setup from persistent screen overlay into existing titlebar tools panel",
+  "changes": [
+    "Remove top-left setup overlay button and its styles",
+    "Expose setup in existing toolbar",
+    "Collapse toolbar before opening setup",
+    "Keep initial WDA failure setup guidance"
+  ],
+  "checks": {
+    "targetedNodeTests": {
+      "passed": 11,
+      "failed": 0
+    },
+    "lintAndI18n": "passed",
+    "rendererBuild": "passed",
+    "actualElectronUi": {
+      "enUS": "passed: setup entry in tools, opens setup and collapses tools",
+      "zhCN": "passed: setup entry in tools, opens setup and collapses tools",
+      "topLeftOverlay": "removed"
+    },
+    "signedApp": "deep/strict passed",
+    "notarization": "Accepted",
+    "notarizationId": "5480b817-5fbc-4783-9a6e-154a5bf302a8",
+    "stapler": "passed",
+    "gatekeeper": "accepted: Notarized Developer ID",
+    "zipExtractionValidation": "deep/strict, stapler and Gatekeeper passed"
+  },
+  "artifact": {
+    "app": "release/ios-toolbar-20261118/Scrcpy Plus.app",
+    "zip": "release/ios-toolbar-20261118/Scrcpy Plus-toolbar-fixed-mac-arm64.zip",
+    "zipSha256": "8347f7f5df6720a65437efdd3c7e53ad3c26509b6d6b1168f5a439badc425907",
+    "asarHeaderSha256": "2f6e3ff1f6b293dcf994d6e3277fc7392e14b947c8326e208fc7420719c094f4",
+    "packaging": "Only renderer replaced in previously signed candidate; all non-renderer ASAR files and unpacking layout compared unchanged; outer app re-signed and notarized"
+  },
+  "deviceVerification": {
+    "beforeReboot": "WDA USB connection returned EOF; non-terminating activation did not recover",
+    "userConfirmedRebootAndUnlock": true,
+    "afterReboot": "Automatic managed startup returned start-timeout; manual prepare retry did not recover",
+    "finalInspection": {
+      "ready": false,
+      "reachable": false,
+      "availability": "absent",
+      "installed": true,
+      "expiresAt": 1795570544000,
+      "developerMode": true
+    },
+    "liveVideo": "not verified for this candidate",
+    "authentication": "Existing authorization restored; no new login, certificate creation or revocation"
+  },
+  "next": [
+    "Diagnose WDA start-timeout after device reboot",
+    "Verify live video with corrected toolbar after startup recovery",
+    "Continue clean-machine, actual seven-day renewal and Windows acceptance"
+  ],
+  "distribution": "Local candidate only; prior DMG unchanged; no release or /Applications replacement"
+}

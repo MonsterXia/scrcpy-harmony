@@ -45,7 +45,8 @@
     "cli": "node dist/cli/index.cjs",
     "precli": "npm run --silent build:cli",
     "check:automation-package": "node script/check-automation-package.mjs",
-    "ios:wda": "node script/ios-wda.mjs"
+    "ios:wda": "node script/ios-wda.mjs",
+    "build:ios": "node script/build-ios-provisioning.mjs"
   },
   "publish": {
     "provider": "github",
