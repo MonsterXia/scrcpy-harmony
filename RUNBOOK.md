@@ -2,7 +2,7 @@
 
 ## iPhone 集成 PR 审查（2026-11-18）
 
-用户授权独立审查、创建 PR、复审及 CI 全绿后合入。首轮确认的账号互斥、窗口取消、预约恢复、签名私钥保留、WDA 缓存及后台启动机制问题已修复，完整本地构建与整批独立复审已通过、无剩余 P0–P2；准备创建 PR，未合入。详情、门禁与下一步见[审查记录](docs/maintenance/ios-provisioning-review-20261118.md)。
+用户授权独立审查、创建 PR、复审及 CI 全绿后合入。首轮确认的账号互斥、窗口取消、预约恢复、签名私钥保留、WDA 缓存及后台启动机制问题已修复，完整本地构建与整批独立复审已通过、无剩余 P0–P2；交付进入 [PR #97](https://github.com/MonsterXia/scrcpy-plus/pull/97)，最终 CI/复审/合入结果以 PR 为准。详情、门禁与下一步见[审查记录](docs/maintenance/ios-provisioning-review-20261118.md)。
 
 ## 投屏加载态统一（2026-11-18）
 

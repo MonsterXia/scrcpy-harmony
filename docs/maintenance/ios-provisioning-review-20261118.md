@@ -1,5 +1,7 @@
 # iPhone 桌面准备独立审查（2026-11-18）
 
+交付入口：[PR #97](https://github.com/MonsterXia/scrcpy-plus/pull/97)。最终提交、独立 PR 复审、远端 CI 与合入结果以该 PR 为准；下文的未提交/未创建描述保留各阶段历史边界。
+
 用户授权独立审查本地更改，无阻断问题后按项目规范创建 PR；再对最终 PR 独立审查，必需 CI 通过后正常合入。基线为 `1007885`，分支 `codex/ios-provisioning-and-mirror-status`。保留此前 macOS 分发和真机验收历史，未把历史包当作本次最终提交。
 
 ## 已确认与修复

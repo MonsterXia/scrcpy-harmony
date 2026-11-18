@@ -1,5 +1,7 @@
 # 投屏加载态统一（2026-11-18）
 
+交付入口：[PR #97](https://github.com/MonsterXia/scrcpy-plus/pull/97)。最终提交、独立 PR 复审、远端 CI 与合入结果以该 PR 为准；下文的未提交/未创建描述保留各阶段历史边界。
+
 用户要求各平台投屏加载态沿用 iOS 现有的居中圆角卡片。将卡片、旋转图标、深浅主题变量、窄窗口适配及减少动态效果样式提取至 `src/renderer/components/MirrorStatus.tsx` / `MirrorStatus.module.scss`，Android、iOS USB、鸿蒙及 AirPlay 连接等待共用。
 
 鸿蒙将原 LoadingBar 替换为卡片，沿用 CaptureState：首次启动与重连显示，ready 后隐藏；加载时采用与 iOS 相近的暗化底色。Android/iOS 原有状态文案与重试行为保留，AirPlay 等待仍显示其连接指导。iPhone 设置弹窗与输入异常提示引用提取后的共享样式，避免出现第二套视觉参数。
