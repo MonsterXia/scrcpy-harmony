@@ -162,6 +162,8 @@ npm run pack -- --no-publish
 
 `npm test` 执行应用回归和 Licia 两种 Node 测试模式；每种模式明确跳过 4 项依赖外部夹具的用例。上游浏览器/manual 测试、完整类型检查和真机验收分别处理。安装包输出到 `release/<version>/`，包含许可证声明；通用工具链和设备/打包原生资源仍需安装或下载。
 
+发行安装包使用 `master` 上独立的手动 **Release Build** 工作流。Mac arm64 任务强制完成应用和 DMG 的 Developer ID 签名、Apple 公证，再校验 Gatekeeper 和最终更新元数据后上传产物。普通 PR CI 保留 ad-hoc 打包，不执行公证。操作见 [CI 分发签名说明](docs/maintenance/macos-release-ci.md)。
+
 干净检出准备、Windows Shell 配置和排错见[构建指南](docs/build-guide.md)，验证脚本和 CI 细节见[维护者参考](.agents/skills/scrcpy-plus-project/references/development.md)。
 
 ## 项目来源与维护

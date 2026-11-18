@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { access, mkdir, mkdtemp, readFile, realpath, stat } from 'node:fs/promises'
+import { access, mkdir, mkdtemp, readFile, realpath, stat, writeFile } from 'node:fs/promises'
 import { constants } from 'node:fs'
 import path from 'node:path'
+import { verifyTrustedMacArtifact, verifyMacUpdateMetadata } from './lib/macos-release.mjs'
 
 assert.ok(
   process.platform === 'darwin' && process.env.GITHUB_ACTIONS === 'true' &&
@@ -51,7 +52,25 @@ try {
   // Verify the copied DMG payload, not just the staging bundle. Ad-hoc is
   // acceptable here; Developer ID/Gatekeeper/notarization are separate checks.
   run('codesign', ['--verify', '--deep', '--strict', '--verbose=2', application])
+  let releaseMetadata
+  if (process.argv.includes('--release')) {
+    const options = { teamId: process.env.APPLE_TEAM_ID }
+    assert.match(options.teamId || '', /^[A-Z0-9]{10}$/, 'APPLE_TEAM_ID required for release verification')
+    await verifyTrustedMacArtifact(application, options)
+    await verifyTrustedMacArtifact(dmg, { ...options, kind: 'dmg' })
+    releaseMetadata = await verifyMacUpdateMetadata(dmg, pkg.version)
+  }
   run(process.execPath, ['script/smoke-app.mjs', executable], 120_000)
+  if (releaseMetadata) {
+    await writeFile(path.join(path.dirname(dmg), `verification-mac-${process.arch}.json`), JSON.stringify({
+      sourceCommit: process.env.GITHUB_SHA,
+      runUrl: `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+      installer: path.basename(dmg), version: pkg.version, architecture: process.arch,
+      teamId: process.env.APPLE_TEAM_ID, ...releaseMetadata,
+      developerIdSignature: 'passed', appNotarization: 'passed', dmgNotarization: 'passed',
+      gatekeeper: 'passed', installationAndStartup: 'passed',
+    }, null, 2) + '\n')
+  }
 } finally {
   try {
     // The hosted runner is disposable and has no user's HDC sessions.

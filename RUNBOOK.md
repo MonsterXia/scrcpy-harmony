@@ -1,5 +1,9 @@
 # Scrcpy Plus 跨平台改造（2026-11-03）
 
+## macOS CI 自动签名与公证（2026-11-18）
+
+状态：实现、本地回归和独立审查完成，PR 门禁及云端首次签名公证运行待验。普通 PR CI 保持不变；手动 Release Build 使用仅允许 master 的 macos-release environment。5 项 Secret 已配置，不含凭据的设计、使用方式、验证状态与下一步见 [CI 分发签名](docs/maintenance/macos-release-ci.md)。
+
 ## 公共弹窗与底部操作（2026-11-18）
 
 桌面弹窗、抽屉和升级窗口的底部操作共用组件，开发与审查入口见[通用 UI 样式规范](.agents/skills/scrcpy-plus-project/references/ui-style.md)。本地独立审查发现的悬停对比度与 iPhone 设置关闭后的焦点恢复均已修复并复验。应用测试 1249 项通过、2 项跳过，lint 与 renderer 构建通过。Electron 使用模拟设备完成中英文、深浅主题四种组合的应用卸载确认与取消验收。后续 PR 复审、CI 和合入状态以 PR 为准。
@@ -30,7 +34,7 @@
 
 ## macOS 正式分发签名（2026-11-17）
 
-状态：**本机 arm64 候选正式签名、公证、Gatekeeper 与 DMG 复制安装启动验收完成。** 候选源码 `a5175fe` 的 app 与独立 DMG 均获 Apple `Accepted` 并装订票据，Gatekeeper 均返回 `Notarized Developer ID`。未替换公开 Release 或安装版，CI secrets 未配置；其他 Mac 下载与真机投屏未在本任务验收。验证证据、安装包位置和下一步见 [分发签名记录](docs/maintenance/macos-distribution-signing.md)。
+状态：**本机 arm64 候选正式签名、公证、Gatekeeper 与 DMG 复制安装启动验收完成。** 候选源码 `a5175fe` 的 app 与独立 DMG 均获 Apple `Accepted` 并装订票据，Gatekeeper 均返回 `Notarized Developer ID`。未替换公开 Release 或安装版，该次本机任务未配置 CI secrets（后续配置见上方 CI 条目）；其他 Mac 下载与真机投屏未在本任务验收。验证证据、安装包位置和下一步见 [分发签名记录](docs/maintenance/macos-distribution-signing.md)。
 
 ## 仓库改名与更新源迁移（2026-11-17）
 

@@ -162,6 +162,8 @@ npm run pack -- --no-publish
 
 `npm test` runs application regressions and both Licia Node test modes; four fixture-dependent Licia cases are explicitly skipped in each mode. Browser-only/manual upstream tests, full type checking and real-device acceptance remain separate. Installers are written to `release/<version>/`, with license notices included. The general toolchain and native device/packaging resources still require installation or download.
 
+Release installers use the separate manual **Release Build** workflow on `master`. Its Mac arm64 job requires Developer ID signing and Apple notarization for the app and DMG, validates Gatekeeper and final update metadata, then uploads artifacts. Ordinary PR CI keeps ad-hoc packaging without notarization. See [release CI setup and operation](docs/maintenance/macos-release-ci.md).
+
 See the [build guide](docs/build-guide.md) for a clean checkout, Windows shell configuration and troubleshooting, and the [maintainer reference](.agents/skills/scrcpy-plus-project/references/development.md) for validation scripts and CI details.
 
 ## Origins and maintenance
