@@ -17,6 +17,10 @@ function setup() {
 // Execute production React modules; replace only IPC and unrelated widget boundaries.
 // Strict mode reproduces the browser ESM invariant for read-only DOM properties.
 function load(file, mocks = {}, globals = {}, cache = new Map(), strict = false) {
+  // jsdom does not implement the dialog top layer. Electron covers the native behavior.
+  const dialog = window.HTMLDialogElement.prototype
+  dialog.showModal ??= function () { this.setAttribute('open', '') }
+  dialog.close ??= function () { this.removeAttribute('open') }
   const filename = path.resolve(__dirname, '../..', file)
   if (cache.has(filename)) return cache.get(filename).exports
   const module = { exports: {} }
@@ -29,6 +33,8 @@ function load(file, mocks = {}, globals = {}, cache = new Map(), strict = false)
     require(id) {
       if (Object.hasOwn(mocks, id)) return mocks[id]
       if (id.endsWith('.scss')) return new Proxy({}, { get: (_, key) => key === '__esModule' ? false : key })
+      if (id.startsWith('share/renderer/dialog/')) return load('src/' + id + '.tsx', mocks, globals, cache, strict)
+      if (id === '../../common/i18n' && mocks['common/util']) return mocks['common/util']
       if (id.startsWith('.')) {
         const base = path.resolve(path.dirname(filename), id)
         const resolved = ['.tsx', '.ts', '/index.ts'].map(ext => base + ext).find(fs.existsSync)

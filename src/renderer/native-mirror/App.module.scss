@@ -42,7 +42,7 @@
 }
 @media (prefers-reduced-transparency: reduce) { .inputNotice { backdrop-filter: none; background: var(--color-bg-container, #fff); } }
 
-.setupCard { max-height: calc(100vh - 56px); overflow-y: auto; pointer-events: auto; }
+.setupCard > p:first-child { margin-top: 0; }
 .setupCard form { display: grid; gap: 12px; }
 .setupCard label { display: grid; gap: 5px; font-size: 14px; }
 .setupCard input:not([type='checkbox']) { width: 100%; box-sizing: border-box; padding: 9px; border: 1px solid var(--color-border, #888); border-radius: 6px; background: var(--color-bg-container); color: inherit; }
@@ -52,4 +52,31 @@
 .setupLinks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 .setupLinks button { padding: 6px 9px; border-radius: 6px; }
 
-.setupOverlay { pointer-events: auto; background: #0003; }
+.accountDetails {
+  summary {
+    width: fit-content;
+    max-width: 100%;
+    padding: 7px 0;
+    color: var(--mirror-secondary);
+    cursor: pointer;
+    &:hover { color: var(--mirror-text); }
+  }
+
+  p { margin: 6px 0 0; color: var(--mirror-secondary); }
+}
+
+.accountActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 8px;
+
+  button {
+    padding: 5px 10px;
+    border: 0;
+    border-radius: 6px;
+    color: var(--mirror-accent);
+    background: var(--mirror-tint);
+    &:hover:not(:disabled) { text-decoration: underline; }
+  }
+}

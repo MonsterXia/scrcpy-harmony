@@ -1,3 +1,4 @@
+import { DialogFooter } from 'share/renderer/dialog/Dialog'
 import { observer } from 'mobx-react-lite'
 import { useEffect, useRef, useState } from 'react'
 import type { UpdateAction, UpdateState } from 'common/types'
@@ -67,12 +68,12 @@ export default observer(function UpdateApp() {
           : <p>{description}</p>}
       </section>
     </div>
-    <div className={Style.actions}>
+    <DialogFooter className={Style.actions}>
       {checking ? <button disabled={acting} onClick={() => void act('cancel')}>{t('updateCancel')}</button>
         : <>
-          <button className={Style.primary} disabled={acting} onClick={() => void act(available ? 'openRelease' : 'close')}>{t(available ? 'updateOpenReleases' : 'updateOK')}</button>
+          <button data-tone="primary" disabled={acting} onClick={() => void act(available ? 'openRelease' : 'close')}>{t(available ? 'updateOpenReleases' : 'updateOK')}</button>
           {available && <button disabled={acting} onClick={() => void act('close')}>{t('updateLater')}</button>}
         </>}
-    </div>
+    </DialogFooter>
   </div>
 })

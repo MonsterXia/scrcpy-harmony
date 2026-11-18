@@ -395,7 +395,9 @@
   "iosSetupSms": "发送短信至尾号",
   "iosSetupPrepare": "检查并自动准备",
   "iosSetupRenewal": "免费签名通常有效 7 天。应用运行且手机连接时，会在到期前 24 小时内于空闲时自动续签；离线后下次连接补做。授权失效时需要重新登录。",
-  "iosSetupSignOut": "退出登录（保留签名凭据）",
+  "iosSetupSignOut": "退出登录",
   "iosSetupUnknown": "无法确认现有手机端组件的状态。请关闭其他投屏客户端；若上次运行异常退出，请重启 iPhone 后重试。",
-  "iosSetupReauthorize": "重新登录（保留签名凭据）"
+  "iosSetupManageAccount": "管理 Apple ID",
+  "iosSetupKeepCredentials": "重新登录或退出登录都会保留签名凭据。",
+  "iosSetupReauthorize": "重新登录"
 }

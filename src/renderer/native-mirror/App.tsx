@@ -202,7 +202,7 @@ export default observer(function App() {
   const decoding = status === 'running' && error === 'plusNativeDecodeError'
   const statusTitle = setup ? t('plusIosNotReady') : failed ? t(presented.current ? 'plusConnectionInterrupted' : 'plusConnectionFailed') : decoding ? t('plusVideoRecovering') : t('plusNativeStarting')
   return <main className={`${Style.page} ${StatusStyle.theme} ${interactive ? Style.interactive : ''}`}>
-    {iosUsb && setupOpen && <div className={`${StatusStyle.statusOverlay} ${Style.setupOverlay}`}><IosSetup onClose={()=>setSetupOpen(false)} onReady={()=>{setSetupOpen(false);void reconnect()}} /></div>}
+    {iosUsb && setupOpen && <IosSetup onClose={()=>setSetupOpen(false)} onReady={()=>{setSetupOpen(false);void reconnect()}} />}
     {!setupOpen && (!interactive || status !== 'running' || decoding) && <div className={!interactive && status === 'running' && !decoding ? undefined : StatusStyle.statusOverlay}>
       {interactive || status !== 'running' || decoding ? <StatusCard title={statusTitle}
         description={decoding ? t('plusNativeDecodeError') : failed || status === 'authorizing' || status === 'waiting' ? statusLabel(status, connectionIssue, presented.current) : t('plusConnectionWaiting')}

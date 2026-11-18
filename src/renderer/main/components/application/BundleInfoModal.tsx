@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite'
-import { useEffect, useRef } from 'react'
+import { Dialog } from 'share/renderer/dialog/Dialog'
 import { t } from 'common/util'
 import Style from './BundleInfoModal.module.scss'
 import defaultIcon from '../../../assets/default-icon.png'
@@ -31,16 +31,6 @@ export default observer(function BundleInfoModal({
   restoreFocus,
   suspended = false,
 }: IProps) {
-  const dialog = useRef<HTMLElement>(null)
-  useEffect(() => {
-    if (!visible) return
-    const opener = returnFocus || (document.activeElement as HTMLElement | null)
-    dialog.current?.querySelector<HTMLButtonElement>('button')?.focus()
-    return () => {
-      if (restoreFocus) restoreFocus()
-      else if (opener?.isConnected) opener.focus()
-    }
-  }, [visible, returnFocus, restoreFocus])
   if (!visible) return null
   function item(title: string, value: string | number) {
     const text = String(value ?? '')
@@ -64,93 +54,49 @@ export default observer(function BundleInfoModal({
     )
   }
   return (
-    <div
-      className={Style.overlay}
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
-      }}
+    <Dialog
+      size="drawer"
+      title={t('bundleInfo')}
+      closeLabel={t('close')}
+      onDismiss={onClose}
+      suspended={suspended}
+      restoreFocus={
+        restoreFocus || (returnFocus ? () => returnFocus.focus() : undefined)
+      }
     >
-      <aside
-        ref={dialog}
-        className={Style.drawer}
-        role="dialog"
-        aria-modal={!suspended || undefined}
-        aria-hidden={suspended || undefined}
-        inert={suspended}
-        aria-label={t('bundleInfo')}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            event.stopPropagation()
-            onClose()
-            return
-          }
-          if (event.key !== 'Tab') return
-          const controls = Array.from(
-            dialog.current?.querySelectorAll<HTMLButtonElement>(
-              'button:not(:disabled)',
-            ) || [],
-          )
-          const first = controls[0],
-            last = controls[controls.length - 1]
-          if (event.shiftKey && document.activeElement === first) {
-            event.preventDefault()
-            last?.focus()
-          } else if (!event.shiftKey && document.activeElement === last) {
-            event.preventDefault()
-            first?.focus()
-          }
-        }}
-      >
-        <header className={Style.title}>
-          <h2>{t('bundleInfo')}</h2>
-          <button
-            type="button"
-            aria-label={t('close')}
-            title={t('close')}
-            onClick={onClose}
-          >
-            ×
-          </button>
-        </header>
-        <div className={Style.content}>
-          <div className={Style.header}>
-            <img
-              src={bundleInfo.icon || defaultIcon}
-              alt=""
-              onError={(event) => {
-                if (event.currentTarget.getAttribute('src') !== defaultIcon)
-                  event.currentTarget.src = defaultIcon
-              }}
-            />
-            <div className={Style.basic}>
-              <h3>{bundleInfo.label}</h3>
-              <span>{bundleInfo.versionName}</span>
-            </div>
-          </div>
-          <dl>
-            {item(t('bundleName'), bundleInfo.bundleName)}
-            {item(t('version'), bundleInfo.versionName)}
-            {item(t('sysBundle'), bundleInfo.system ? t('yes') : t('no'))}
-            {item(t('apiTargetVersion'), bundleInfo.apiTargetVersion)}
-            {bundleInfo.vendor && item(t('vendor'), bundleInfo.vendor)}
-            {item(
-              t('installTime'),
-              dateFormat(
-                new Date(bundleInfo.installTime),
-                'yyyy-mm-dd HH:MM:ss',
-              ),
-            )}
-            {item(t('releaseType'), bundleInfo.releaseType)}
-            {bundleInfo.mainAbility &&
-              item(t('mainAbility'), bundleInfo.mainAbility)}
-          </dl>
-          <ApplicationActions
-            busy={busy}
-            canOpen={Boolean(bundleInfo.mainAbility)}
-            onAction={onAction}
-          />
+      <div className={Style.header}>
+        <img
+          src={bundleInfo.icon || defaultIcon}
+          alt=""
+          onError={(event) => {
+            if (event.currentTarget.getAttribute('src') !== defaultIcon)
+              event.currentTarget.src = defaultIcon
+          }}
+        />
+        <div className={Style.basic}>
+          <h3>{bundleInfo.label}</h3>
+          <span>{bundleInfo.versionName}</span>
         </div>
-      </aside>
-    </div>
+      </div>
+      <dl>
+        {item(t('bundleName'), bundleInfo.bundleName)}
+        {item(t('version'), bundleInfo.versionName)}
+        {item(t('sysBundle'), bundleInfo.system ? t('yes') : t('no'))}
+        {item(t('apiTargetVersion'), bundleInfo.apiTargetVersion)}
+        {bundleInfo.vendor && item(t('vendor'), bundleInfo.vendor)}
+        {item(
+          t('installTime'),
+          dateFormat(new Date(bundleInfo.installTime), 'yyyy-mm-dd HH:MM:ss'),
+        )}
+        {item(t('releaseType'), bundleInfo.releaseType)}
+        {bundleInfo.mainAbility &&
+          item(t('mainAbility'), bundleInfo.mainAbility)}
+      </dl>
+      <ApplicationActions
+        busy={busy}
+        canOpen={Boolean(bundleInfo.mainAbility)}
+        onAction={onAction}
+      />
+    </Dialog>
   )
 })

@@ -395,7 +395,9 @@
   "iosSetupSms": "Send SMS to number ending in",
   "iosSetupPrepare": "Check and prepare",
   "iosSetupRenewal": "Free signing usually lasts 7 days. While the app is running and your iPhone is connected and idle, renewal runs within 24 hours before expiry. Offline devices are checked when reconnected. Expired authorization requires sign-in again.",
-  "iosSetupSignOut": "Sign out (keep signing credentials)",
+  "iosSetupSignOut": "Sign out",
   "iosSetupUnknown": "The existing iPhone component’s state could not be confirmed. Close other mirroring clients. If the previous run ended unexpectedly, restart your iPhone and retry.",
-  "iosSetupReauthorize": "Sign in again (keep signing credentials)"
+  "iosSetupManageAccount": "Manage Apple ID",
+  "iosSetupKeepCredentials": "Signing credentials are kept for both actions.",
+  "iosSetupReauthorize": "Sign in again"
 }

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict')
+const { load: loadRenderer } = require('./helpers/workspace-renderer.cjs')
 const { test } = require('node:test')
 const { readFileSync } = require('node:fs')
 const path = require('node:path')
@@ -158,6 +159,9 @@ async function fixture(
       document,
       window,
       require(id) {
+        if (id.startsWith('share/renderer/dialog/')) {
+          return loadRenderer('src/' + id + '.tsx', { '../../common/i18n': { t: key => key } })
+        }
         if (id in mocks) return mocks[id]
         if (id === '../../../lib/util') return load('src/renderer/lib/util.ts')
         if (id === '../workspace/ConfirmDialog') return load('src/renderer/main/components/workspace/ConfirmDialog.tsx')

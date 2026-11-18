@@ -22,7 +22,7 @@ const main = {
   getMemStore: async key => key==='targets' ? (process.env.UI_EMPTY?[]:[target]) : null,
   setMemStore: async () => {},
   on: (event, callback) => { if (!listeners.has(event)) listeners.set(event, []); listeners.get(event).push(callback); return () => { listeners.set(event, listeners.get(event).filter(fn => fn !== callback)) } },
-  getOverview: async () => guarded({ name: target.name, brand:'Example vendor',model:'Development model',serialNum:target.key,kernelVersion:'Linux 5.10 (sample)',processor:'Example processor',abi:'arm64',physicalResolution:'360x720',memTotal:12884901888 }),
+  getDeviceOverview: async () => guarded({ name: target.name, brand:'Example vendor',model:'Development model',serialNum:target.key,kernelVersion:'Linux 5.10 (sample)',processor:'Example processor',abi:'arm64',physicalResolution:'360x720',memTotal:12884901888 }),
   getBundles: async (_,system) => guarded(infos.filter(x=>system||!x.system).map(x=>x.bundleName)),
   getBundleInfos: async (_,names) => guarded(process.env.UI_METADATA_EMPTY ? [] : infos.filter(x=>names.includes(x.bundleName) && (!process.env.UI_PARTIAL || x.bundleName !== 'com.example.notes'))),
   startBundle: async () => {},stopBundle:async()=>{},cleanBundleCache:async()=>{},cleanBundleData:async()=>{},uninstallBundle:async()=>{},

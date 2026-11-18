@@ -58,7 +58,11 @@ export default observer(function Toolbar({ mode, busy, connected, onVideo, onHom
           {t(transitioning ? 'plusSessionStarting' : mode === 'video' ? 'plusIosStopVideo' : 'plusIosStartVideo')}
         </button>
         <button type="button" disabled={transitioning || !connected} onClick={onHome}>{t('plusIosHome')}</button>
-        <button type="button" onClick={() => { setExpanded(false); onSetup() }}>{t('iosSetupTitle')}</button>
+        <button type="button" onClick={() => {
+          toggle.current?.focus()
+          setExpanded(false)
+          onSetup()
+        }}>{t('iosSetupTitle')}</button>
         <span className={Style.mode}>{t(transitioning ? 'plusSessionStarting' : mode === 'video' ? 'plusIosVideoMode' : mode === 'video-error' ? 'plusIosVideoFailed' : 'plusIosScreenshotMode')}</span>
         <p className={Style.hint}>{t('plusIosBroadcastHint')}</p>
       </div>

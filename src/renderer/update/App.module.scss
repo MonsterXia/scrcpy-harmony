@@ -27,23 +27,8 @@
 
   h1 { margin: 0; font-size: 13px; line-height: 16px; font-weight: 700; }
   p { margin: 9px 0 0; font-size: 13px; line-height: 16px; overflow-wrap: anywhere; }
-  button {
-    -webkit-app-region: no-drag;
-    border: 0;
-    border-radius: 20px;
-    height: 28px;
-    padding: 0 14px;
-    color: var(--panel-text);
-    background: var(--button-background);
-    font: inherit;
-    font-weight: 500;
-    cursor: default;
-    &:hover { filter: brightness(1.15); }
-    &:active { filter: brightness(.9); }
-    &:focus-visible { outline: 2px solid #65b1ff; outline-offset: 2px; }
-    &:disabled { opacity: .6; }
-  }
-  button.primary { color: white; background: #007aff; }
+  .actions { margin: 0; padding: 0; border: 0; -webkit-app-region: no-drag; }
+
 }
 
 .iconPicture { display: contents; }
@@ -60,9 +45,8 @@
   }
   .content { display: flex; gap: 8px; padding: 3px 19px 0; }
   section { flex: 1; padding-top: 11px; min-width: 0; }
-  .icon { width: 64px; height: 64px; }
-  .actions { position: absolute; bottom: 19px; right: 19px; }
-  button { min-width: 100px; }
+  .icon { width: 56px; height: 56px; }
+  .actions { position: absolute; bottom: 15px; left: 15px; right: 15px; }
 }
 .progress {
   height: 8px;
@@ -84,7 +68,7 @@
   .content { padding: 19px 21px 0; height: calc(100% - var(--action-space, 58px)); display: flex; flex-direction: column; }
   section { min-height: 0; overflow-y: auto; -webkit-app-region: no-drag; }
   .icon { width: 64px; height: 64px; margin-left: -1px; margin-bottom: 18px; }
-  .actions { display: flex; flex-direction: column; gap: 8px; position: absolute; bottom: 15px; left: 15px; right: 15px; }
+  .actions { position: absolute; bottom: 15px; left: 15px; right: 15px; }
 }
 .with-secondary { --action-space: 94px; }
 @keyframes check-progress { from { transform: translateX(-100%); } to { transform: translateX(340%); } }

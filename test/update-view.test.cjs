@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict')
+const { load: loadRenderer } = require('./helpers/workspace-renderer.cjs')
 const { test } = require('node:test')
 const { JSDOM } = require('jsdom')
 const { transformSync } = require('esbuild')
@@ -14,7 +15,10 @@ test('update view ignores stale initial state, supports keyboard action and unsu
   vm.runInNewContext(transformSync(fs.readFileSync('src/renderer/update/App.tsx','utf8'),{loader:'tsx',jsx:'automatic',format:'cjs'}).code,{
     module,exports:module.exports,PRODUCT_NAME:'Scrcpy Harmony',VERSION:'1.0.4-dev.0',
     main:{on:(_event,cb)=>{receive=cb;return()=>unsubscribed++},getUpdateState:()=>new Promise(resolve=>initial=resolve),updateAction:async value=>actions.push(value)},
-    require(id){
+    require(id) {
+      if (id.startsWith('share/renderer/dialog/')) {
+        return loadRenderer('src/' + id + '.tsx')
+      }
       if(id==='common/util')return{t:key=>key}
       if(id.endsWith('.png'))return 'icon.png'
       if(id.endsWith('.scss'))return {panel:'panel',checking:'checking',result:'result'}

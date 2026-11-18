@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite'
 import { useEffect, useRef, useState } from 'react'
 import type { IosSetupAction, IosSetupState } from 'common/iosProvisioning'
 import { t } from 'common/util'
+import { Dialog, DialogFooter } from 'share/renderer/dialog/Dialog'
 import Style from './App.module.scss'
 import StatusStyle from '../components/MirrorStatus.module.scss'
 const phases = {
@@ -40,8 +41,19 @@ export default observer(function IosSetup({ onReady, onClose }: { onReady: () =>
   }
   const pending=['checking','authenticating','challenge','signing','installing','mounting','starting'].includes(state.phase)
   const showLogin=!pending && (!state.authenticated || state.phase==='login')
-  return <section className={`${StatusStyle.statusCard} ${Style.setupCard}`} aria-labelledby="ios-setup-title">
-    <h2 id="ios-setup-title">{t('iosSetupTitle')}</h2>
+  return <Dialog title={t('iosSetupTitle')} size="compact" contentClassName={Style.setupCard}
+    onDismiss={pending ? undefined : onClose} footer={<DialogFooter secondary={!pending && state.authenticated && <details className={Style.accountDetails}>
+        <summary>{t('iosSetupManageAccount')}</summary>
+        <div className={Style.accountActions} role="group" aria-describedby="ios-setup-credentials">
+          <button type="button" disabled={working} onClick={() => void send({action:'reauthorize'})}>{t('iosSetupReauthorize')}</button>
+          <button type="button" disabled={working} onClick={() => void send({action:'logout'})}>{t('iosSetupSignOut')}</button>
+        </div>
+        <p id="ios-setup-credentials">{t('iosSetupKeepCredentials')}</p>
+      </details>}>
+      <button type="button" onClick={pending ? () => void send({action:'cancel'}) : onClose}>
+        {pending ? t('cancel') : t('close')}
+      </button>
+    </DialogFooter>}>
     <p role="status">{phases[state.phase]()}</p>
     {state.error && <p role="alert">{(errors[state.error] || (() => t('iosSetupGenericError')))()}</p>}
     {state.expiresAt && <p>{t('iosSetupExpires')}: {new Date(state.expiresAt).toLocaleString()}</p>}
@@ -67,11 +79,6 @@ export default observer(function IosSetup({ onReady, onClose }: { onReady: () =>
       <p className={Style.setupHelp}>{t('iosSetupRenewal')}</p>
     </>}
     <details className={StatusStyle.setupDetails}><summary>{t('plusIosSetupChecklist')}</summary><ol><li>{t('plusIosSetupTrust')}</li><li>{t('plusIosSetupDeveloper')}</li><li>{t('iosSetupDeveloperTrust')}</li></ol></details>
-    <div className={Style.setupLinks}>
-      {pending && <button onClick={()=>void send({action:'cancel'})}>{t('cancel')}</button>}
-      {!pending && <button onClick={onClose}>{t('close')}</button>}
-      {!pending && state.authenticated && <button disabled={working} onClick={()=>void send({action:'reauthorize'})}>{t('iosSetupReauthorize')}</button>}
-      {!pending && state.authenticated && <button disabled={working} onClick={()=>void send({action:'logout'})}>{t('iosSetupSignOut')}</button>}
-    </div>
-  </section>
+
+  </Dialog>
 })
