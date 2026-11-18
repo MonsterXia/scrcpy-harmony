@@ -8,10 +8,10 @@
 
 ## 本机复现
 
-已有可用 Developer ID Application 私钥/证书及有效公证 profile 后，在仓库根目录执行：
+准备好 Developer ID Application 身份和公证 profile 后，在仓库根目录执行以下命令。同一工作区的构建共用 `dist/`，请等本次打包结束后再启动下一次构建。
 
 ```sh
-npm run build
+npm run build && \
 APPLE_KEYCHAIN_PROFILE='<钥匙串中的公证配置名>' \
   CSC_NAME='<签名身份的名称（团队 ID）>' \
   npm run pack -- --no-publish
@@ -30,7 +30,7 @@ spctl --assess --type execute --verbose=4 '/path/to/Scrcpy Plus.app'
 
 验收应包含从最终 DMG 复制的 app，以及隔离用户配置的启动检查；不能只检查 staging app。DMG 自身的签名/公证/装订与 app 分开记录。保留 DMG SHA-256，避免把旧未公证包误作新包。
 
-本次另外复制 electron-builder DMG 为独立的 `*-signed.dmg`，执行 `codesign --sign <证书指纹> --timestamp <DMG>`、`xcrun notarytool submit <DMG> --keychain-profile '<钥匙串中的公证配置名>'`，确认 `Accepted` 后运行 `xcrun stapler staple <DMG>`。随后验证 DMG 的签名和票据，并运行 `spctl --assess --type open --context context:primary-signature --verbose=4 <DMG>`。对独立副本的签名和装订会改变文件字节，**不得配用原构建目录的更新 YAML/hash/blockmap**；本次仅交付独立手动安装包，后续自动更新发行须重新生成并验证相应元数据。
+如需复现本次独立 DMG 验收，将 electron-builder DMG 复制为 `*-signed.dmg`，执行 `codesign --sign <证书指纹> --timestamp <DMG>`、`xcrun notarytool submit <DMG> --wait --keychain-profile '<钥匙串中的公证配置名>'`，确认 `Accepted` 后运行 `xcrun stapler staple <DMG>`。随后验证 DMG 的签名和票据，并运行 `spctl --assess --type open --context context:primary-signature --verbose=4 <DMG>`。对独立副本的签名和装订会改变文件字节，**不得配用原构建目录的更新 YAML/hash/blockmap**；本次仅交付独立手动安装包，后续自动更新发行须重新生成并验证相应元数据。
 
 ## 证据与下一步
 
