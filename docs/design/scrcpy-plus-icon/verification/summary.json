@@ -12,7 +12,8 @@
     "src/share/renderer/about/App.tsx": "7e2861c64fc972ad3f4c30a7b6288cfb9d421a23e668ddf1f94e2b652d9b253e",
     "src/share/common/langs/en-US.json": "dd4bf467a9df750d8a61644e24202cb7f426a1aba6596b8b517f3790ec73d7bd",
     "src/share/common/langs/zh-CN.json": "4ec21a126ea826ed71b7adb7fde870e0f9d2c473e2669cd7f45ec61989075bdb",
-    "script/compile-mac-app-icon.mjs": "94cd03741c21699a51038bc56fd2fa4f69f0c64191fa2a54dac8ed90152fa2c0"
+    "script/compile-mac-app-icon.mjs": "79646b3af9189bda128818766d777865e29f91f8585e70810e2e821392c7aaa5",
+    "script/lib/app-icon-manifest.mjs": "840906c7428696fe103eb54307dc8f3343e74abcacdc874df1380a3995f3a315"
   },
   "checks": {
     "fullBuild": "passed",

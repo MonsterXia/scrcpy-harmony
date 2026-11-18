@@ -1,4 +1,5 @@
 import fs from 'fs-extra'
+import { verifyIconSet } from './lib/app-icon-manifest.mjs'
 import { execFileSync } from 'node:child_process'
 import { vendorNotices } from './lib/vendor-notices.mjs'
 import path from 'node:path'
@@ -27,6 +28,8 @@ pkg.scripts = {
 }
 pkg.main = 'main/index.js'
 
+const iconManifest = await fs.readJson('build/mac-icon/manifest.json')
+await verifyIconSet(iconManifest)
 runNpm('run', 'build:backends')
 await validatePlatformBackends('resources')
 runNpm('run', 'build:main')
@@ -41,6 +44,7 @@ const distRoot = await fs.realpath('dist')
 if (!distRoot.startsWith(workspaceRoot + path.sep)) throw new Error('Build output escaped workspace')
 await fs.remove('dist/build')
 await fs.copy('build', 'dist/build', { filter: file => !['native-airplay', 'android-server', 'ios-wda'].includes(path.relative('build', file).split(path.sep)[0]) })
+await verifyIconSet(iconManifest, true)
 await fs.copy('resources/android', 'dist/resources/android')
 await fs.copy('resources/airplay', 'dist/resources/airplay')
 await fs.copyFile('resources/platform-backends.json', 'dist/resources/platform-backends.json')

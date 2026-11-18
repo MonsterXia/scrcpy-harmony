@@ -1,8 +1,9 @@
 // Regenerate the two native resources on a Mac with Icon Composer support.
 import { execFileSync } from 'node:child_process'
-import { cp, copyFile, mkdtemp, mkdir, rm } from 'node:fs/promises'
+import { cp, copyFile, mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { iconHashes } from './lib/app-icon-manifest.mjs'
 import { prepareMacIconToolchain } from './lib/mac-icon-toolchain.mjs'
 
 prepareMacIconToolchain()
@@ -19,6 +20,7 @@ try {
   await mkdir('build/mac-icon', { recursive: true })
   await copyFile(path.join(output, 'Assets.car'), 'build/mac-icon/Assets.car')
   await copyFile(path.join(output, 'Icon.icns'), 'build/mac-icon/icon.icns')
+  await writeFile('build/mac-icon/manifest.json', JSON.stringify(await iconHashes(), null, 2) + '\n')
 } finally {
   await rm(temporary, { recursive: true, force: true })
 }

@@ -1,0 +1,19 @@
+{
+  "build/icon.png": "2cb5808289f8e084d64cab7dfd9b967c1f2cf32926914b01945976cb44b6665e",
+  "build/icon.ico": "511ab09257711dfe8c3faf522443c0d9f7e7a072d87deca0790981608029bff8",
+  "build/mac-icon/Assets.car": "5a442397ff5b49b125696c8642853037c5b3c484d6c039a0550fa23ccbff7fa7",
+  "build/mac-icon/icon.icns": "c841c8496da9b4e6e693540e2d048da7da0e4af92b77c7b869eeec05fa29db6c",
+  "build/ScrcpyPlus.icon/icon.json": "e9d4d3b344a855eccd4b85cafb8383eb1b3b5e9f0edee1b54d66bae0de4e84cb",
+  "build/ScrcpyPlus.icon/Assets/front.svg": "af56042225c20867cde22f22a6b70fe2431a1b9ca4becdef92df00d7513cafd8",
+  "build/ScrcpyPlus.icon/Assets/rear.svg": "1a624a69590ec88449e3ace6ddc27a0fef5b63ee330e9fa7ed41fe16c13ca8d4",
+  "build/ScrcpyPlus.icon/Assets/plus.svg": "f96e2b8c6315776d4d5170d4e8548df53dc6dafe68c039d980d31f5c57535452",
+  "build/app-icons/light.svg": "20eb006449b9b845b607dc29af36333ec5b0e5641d8206079b48a973125ba41a",
+  "build/app-icons/light.png": "2cb5808289f8e084d64cab7dfd9b967c1f2cf32926914b01945976cb44b6665e",
+  "build/app-icons/dark.svg": "cd1fb18692a9000d9c00724875e0c1ca85df13fee9a8396ba7eff778df02b935",
+  "build/app-icons/dark.png": "2428c6e2da6dd8ce3038b61377caf77e7b3e2c1cef79bfbd98179f202650a969",
+  "build/app-icons/mono.svg": "99c89cad871e3862f7468b40df4c55502018241578ecf44808d26f4ccdad966e",
+  "build/app-icons/mono.png": "31ba9b154652ee02c19f6c0b63700bad900b04d0c04d0b3cd6defe162bf0dd03",
+  "src/renderer/assets/icon.png": "19b6b8a0fcf40e2b72ced1f846f9caaa81117ba7f006f4a7526f0450e667994b",
+  "src/renderer/assets/icon-dark.png": "1f7ebe896682b9bb4596cb948f0b2c7bf8de0c2646b0e5dc9ec6b87eee8a9198",
+  "src/renderer/assets/icon-mono.png": "b652e610c705cc7eb28e87a5eef79111c17f90a2c6e4ad08bdd40a453632579d"
+}

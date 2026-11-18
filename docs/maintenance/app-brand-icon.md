@@ -6,7 +6,7 @@
 
 关于窗口随已有 MobX 主题切换；更新窗口使用与其背景一致的 `prefers-color-scheme`，通过 picture 选择图标。关于窗口旧的“鸿蒙设备桌面工具”说明同步改为中英文三端投屏说明。
 
-`node script/compile-mac-app-icon.mjs` 用 actool 编译分层源。已验证的 Assets.car 和 ICNS 存放在 `build/mac-icon/`。打包在签名前嵌入两份资源并设置 `CFBundleIconName=Icon`，CI 从 DMG 安装后按字节比对两份资源。首次 PR CI 中 Xcode 26.3 的 AssetCatalogAgent 在编译时退出，因此改为在资源生成阶段编译。资源编译进程自动寻找 Xcode 26+；尊重显式 `DEVELOPER_DIR`，不修改全局 xcode-select。背景/前景原生外观由系统管理，没有用 `app.dock.setIcon` 覆盖系统图标，也不会因用户强制应用窗口深浅色而覆盖系统图标风格。
+`node script/compile-mac-app-icon.mjs` 用 actool 编译分层源。已验证的 Assets.car 和 ICNS 存放在 `build/mac-icon/`。打包在签名前嵌入两份资源并设置 `CFBundleIconName=Icon`，编译后同时生成整套图标的哈希清单。构建前校验源文件，复制后校验 renderer 输入与 dist 中的打包资源，CI 从 DMG 安装后按字节比对两份原生资源。首次 PR CI 中 Xcode 26.3 的 AssetCatalogAgent 在编译时退出，因此改为在资源生成阶段编译。资源编译进程自动寻找 Xcode 26+；尊重显式 `DEVELOPER_DIR`，不修改全局 xcode-select。背景/前景原生外观由系统管理，没有用 `app.dock.setIcon` 覆盖系统图标，也不会因用户强制应用窗口深浅色而覆盖系统图标风格。
 
 macOS 的系统窗口外观和“图标与小组件样式”是独立设置。支持系统默认、深色、透明与着色外观及相应自动策略，不强制把用户选定的默认图标改成深色。旧系统保留静态 ICNS；Windows 使用 16/24/32/48/64/128/256 多尺寸 ICO。
 
