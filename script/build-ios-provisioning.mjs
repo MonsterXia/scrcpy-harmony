@@ -11,6 +11,10 @@ async function files(dir,prefix='') {
  for(const item of await fs.readdir(dir,{withFileTypes:true})) {
   const relative=prefix+item.name, full=path.join(dir,item.name)
   if(item.isDirectory()) result.push(...await files(full,relative+'/'))
+  // Python.framework includes Versions/Current -> 3.x directory aliases.
+  // Preserve these links in the bundle; hash files at their canonical paths
+  // without trying to read a directory or recursing through alias cycles.
+  else if(item.isSymbolicLink() && (await fs.stat(full)).isDirectory()) continue
   else result.push(relative)
  }
  return result

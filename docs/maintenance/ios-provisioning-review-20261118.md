@@ -26,3 +26,7 @@
 master 使用严格最新基线要求；必需检查为 test、lint、windows-package、macos-package-arm64，管理员同样受保护。不得绕过门禁。准备提交并创建 PR；未合入或发布。远端结果以 PR 最终提交为准。
 
 Windows 的实际 native 编译/安装由 PR CI 验证；干净 Mac/DDI、真实经过七天的续签与长期连接仍待验收。Python lock 的 Windows 专用传递依赖尚未全部固定，不能标记为完全可复现环境。加载卡片静态/状态回归通过，新的双语深浅窄窗口视觉验收仍待补；此前本地 file URL 浏览器预览被策略拒绝，未绕过。
+
+## PR CI 首轮修正
+
+Run `44241775885` 的 test、lint、unsigned WDA 通过；两平台均完成原生 helpers 编译，但资源收尾失败：macOS 将 Python.framework 的目录符号链接作为文件读取，产生 `EISDIR`；Windows 许可证汇总采用默认 cp1252 编码，产生 `UnicodeEncodeError`。现在保留框架目录链接、仅对实际文件及文件链接计算摘要，且许可证读取与输出明确使用 UTF-8。新增框架链接/缓存复用/损坏重建回归，已复现原始失败后通过；新增模拟 Windows 默认编码的 Unicode 许可证回归通过。最终平台打包与安装 smoke 仍以 PR 后续 CI 为准。

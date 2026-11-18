@@ -9,8 +9,8 @@ for d in sorted(metadata.distributions(),key=lambda d:d.metadata.get('Name',''))
         p=Path(f)
         if p.name.upper().startswith(('LICENSE','COPYING','NOTICE')):
             absolute=Path(d.locate_file(f))
-            if absolute.is_file(): out.append(absolute.read_text(errors='replace')+'\n')
+            if absolute.is_file(): out.append(absolute.read_text(encoding='utf-8', errors='replace')+'\n')
 out.append('\nPython runtime license\n')
 for p in [Path(sys.base_prefix)/'LICENSE.txt',Path(sys.base_prefix)/'lib/python3.13/LICENSE.txt']:
-    if p.exists(): out.append(p.read_text())
-Path(sys.argv[1]).write_text(''.join(out))
+    if p.exists(): out.append(p.read_text(encoding='utf-8', errors='replace'))
+Path(sys.argv[1]).write_text(''.join(out), encoding='utf-8')
