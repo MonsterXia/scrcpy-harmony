@@ -5,3 +5,8 @@ vendor/native-video/** whitespace=cr-at-eol
 
 # Unified patch context lines intentionally contain a single space.
 vendor/ios-wda/*.patch whitespace=-blank-at-eol
+
+# These generated text inputs are byte-checked against the native icon manifest.
+build/ScrcpyPlus.icon/icon.json text eol=lf
+build/ScrcpyPlus.icon/Assets/*.svg text eol=lf
+build/app-icons/*.svg text eol=lf
