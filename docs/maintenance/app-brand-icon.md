@@ -51,4 +51,4 @@ node script/check-macos-app-icon.mjs 'release/app-icon-20261118/mac-arm64/Scrcpy
 SCRCPY_PLUS_PACK_OUTPUT="$PWD/release/app-icon-20261118" node script/smoke-app.mjs "$PWD/release/app-icon-20261118/mac-arm64/Scrcpy Plus.app/Contents/MacOS/Scrcpy Plus"
 ```
 
-生成资源已跟踪，普通构建无需 Chrome；macOS 打包需要完整 Xcode 26+。当前源码、候选包和日常安装均已替换图标，Dock/Finder 实际切换已验证；其他工作区运行中的试用包保持原状。Windows 安装、旧系统回退及全局透明样式仍需另验。对外分发仍重新签名、公证；历史公证票据不适用于新包。
+生成资源已跟踪，普通构建无需 Chrome；macOS 打包需要完整 Xcode 26+，单独导出 26/27 两代渲染图的检查使用 Xcode 27 Icon Composer。当前源码、候选包和日常安装均已替换图标，Dock/Finder 实际切换已验证；其他工作区运行中的试用包保持原状。Windows 安装、旧系统回退及全局透明样式仍需另验。对外分发仍重新签名、公证；历史公证票据不适用于新包。

@@ -30,8 +30,11 @@ const developerDir = process.env.DEVELOPER_DIR || execFileSync('xcode-select', [
 const ictool = path.resolve(developerDir, '../Applications/Icon Composer.app/Contents/Executables/ictool')
 const renditions = ['Default', 'Dark', 'TintedLight', 'TintedDark', 'ClearLight', 'ClearDark']
 const rendered = []
+const help = execFileSync(ictool, ['--help'], { encoding: 'utf8' })
+assert.ok(help.includes('--export-image') && help.includes('--design-generation'),
+  'The two-generation preview check requires Icon Composer from Xcode 27. Packaging only requires Xcode 26.')
 const toolVersion = JSON.parse(execFileSync(ictool, ['--version'], { encoding: 'utf8' }))['short-bundle-version']
-const generations = parseInt(toolVersion, 10) >= 27 ? [26, 27] : [26]
+const generations = [26, 27]
 for (const generation of generations) for (const rendition of renditions) {
   const filename = `macos-${generation}-${rendition}.png`
   execFileSync(ictool, ['build/ScrcpyPlus.icon', '--export-image', '--output-file', path.join(output, filename),

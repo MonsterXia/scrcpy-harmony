@@ -7,7 +7,7 @@
     "script/pack.mjs": "489dfc67aa12a077b35c14de2d39dc445b1a5975ae02003c6f4c0e4db52b804a",
     "script/smoke-app.mjs": "4eb21c8083307ea0199bac9a5935202e2e24147baec7c4cb2b23820af48ec196",
     "script/check-app-icon-ui.mjs": "b5a18ff4191e35ad629126b6604777d501f4a97d3603cb0863ed5980ebf25baa",
-    "script/check-macos-app-icon.mjs": "a40e67c1d10880bfb258d7b45e8b074a78fc37b85e2bf8a07fcee4d0ea1024be",
+    "script/check-macos-app-icon.mjs": "e7c7d9e29faf7b3925dd4134398a5691150a110210794dee3cf652c6fedc074f",
     "src/renderer/update/App.tsx": "2ba90f20887111e370348193203ebd2c998e86f63e055cc6f3e82395778efd2c",
     "src/share/renderer/about/App.tsx": "7e2861c64fc972ad3f4c30a7b6288cfb9d421a23e668ddf1f94e2b652d9b253e",
     "src/share/common/langs/en-US.json": "dd4bf467a9df750d8a61644e24202cb7f426a1aba6596b8b517f3790ec73d7bd",
