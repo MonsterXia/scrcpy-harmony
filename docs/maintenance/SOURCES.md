@@ -294,3 +294,5 @@
 - 2026-11-16 用户追加授权更新已安装应用并打开 iPhone 概览：完整构建/打包、备份、签名和安装后启动校验，以及真实安装版界面观察见 [安装记录](ios-overview.md#用户授权更新安装版) 和 [安装证据](../scrcpy-plus/evidence/ios-overview-2026-11-16/local-install.json)。
 
 - 2026-11-18：用户要求正式出包自动签名、公证，同时保持 PR 快速检查。来源为既有本机 Developer ID 公证验证、electron-builder 26 锁定源码和 GitHub environment 实际配置；实现与验证状态见 [CI 分发签名](macos-release-ci.md)。
+
+- 2026-11-18 CI 签名验收：PR #100 与首次 master Release Build 均成功，下载产物独立复验通过；运行链接、哈希、App/DMG 公证及 Gatekeeper 结果见 [结构化证据](evidence/macos-release-ci-20261118.json)。未公开发行。

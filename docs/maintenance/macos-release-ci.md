@@ -2,7 +2,7 @@
 
 ## 范围与状态
 
-2026-11-18，按用户要求保留普通 PR 的快速打包检查，单独配置发行构建。实现、本地回归与独立审查完成；首次 GitHub Release Build 和下载产物复验尚待运行，不将本机历史公证结果当作 CI 成功。
+2026-11-18，按用户要求保留普通 PR 的快速打包检查，单独配置发行构建。实现经独立审查与四项必需 PR 门禁后由 [PR #100](https://github.com/MonsterXia/scrcpy-plus/pull/100) 合入。首次 [Release Build #31](https://github.com/MonsterXia/scrcpy-plus/actions/runs/44268063532) 在主干 `a9648e7` 上全部成功；下载产物的本机复验也通过，结构化结果见 [验证证据](evidence/macos-release-ci-20261118.json)。
 
 - `.github/workflows/ci.yml` 不变：`test`、`lint`、`windows-package`、`macos-package-arm64` 四项必需检查；Mac 使用 ad-hoc，不接触签名凭据，不执行公证。
 - `.github/workflows/build.yml` 改为手动 **Release Build**，只接受受保护的 `master`，分别生成 Windows x64 和 macOS arm64 产物。Mac job 时限 120 分钟，签名公证步骤时限 100 分钟；不创建或更新公开 GitHub Release。
@@ -51,7 +51,12 @@
 - actionlint 1.7.12 校验 release 与 PR workflow 通过；`git diff --check` 通过。
 - GitHub 配置：5 项 Environment secrets 名称已确认，部署分支规则为 master；不读取/记录 secret 值。
 - 独立审查：1 项 Windows 解包目录误上传问题已修复并复核；上传范围同时收窄为版本目录顶层文件，避免夹带 staging app 内部 YAML。
-- 待完成：PR 必需门禁、master Release Build、下载 DMG 的系统签名/公证及元数据复验。
+- [PR CI](https://github.com/MonsterXia/scrcpy-plus/actions/runs/44265444930)：test、lint、windows-package、macos-package-arm64 全部通过，unsigned WDA 依赖也通过；PR #100 正常合入，没有绕过分支保护。
+- [首次 Release Build](https://github.com/MonsterXia/scrcpy-plus/actions/runs/44268063532)：源 `a9648e71cfc2443f65562fba58c28f718376ebd7`，Windows 和 Mac jobs 全部通过。Mac job 17 分 31 秒，其中 app/DMG 签名公证 9 分 7 秒；信任、元数据和安装启动检查 43 秒。临时公证钥匙串清理步骤通过。
+- 下载复验：DMG 和复制后的 app 均通过 codesign、stapler、Gatekeeper；最终 YAML 的 size/SHA-512 与 blockmap 完整性通过，SHA-256 与 CI 报告一致。未替换本机安装版或触碰用户 HDC 服务。
+- DMG：192999790 字节，SHA-256 `8db9d9162daf656167abfd3ea5e607f16b194f0a898204383185d76de087553d`。本机副本位于 `release/ci-macos-signing-20261118/1.0.5-dev.2/`。
+- 首次 artifact 还包含不用于分发的 `builder-debug.yml`；后续已增加明确排除，actionlint 与使用实际下载文件名的 glob 校验通过。该调整不改变签名、公证或安装验证链路。
+- 下一步：以后版本使用上述 Release Build 出包；公开 Release 和另一台 Mac 的实际下载体验按发行任务单独验收。当前记录不声称完成真机投屏或所有 macOS 版本兼容性验证。
 
 ## 参考
 

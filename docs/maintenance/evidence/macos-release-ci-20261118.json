@@ -1,0 +1,97 @@
+{
+  "checkedAt": "2026-11-18T08:58:43.107Z",
+  "runUrl": "https://github.com/MonsterXia/scrcpy-plus/actions/runs/44268063532",
+  "sourceCommit": "a9648e71cfc2443f65562fba58c28f718376ebd7",
+  "version": "1.0.5-dev.2",
+  "architecture": "arm64",
+  "installer": "Scrcpy Plus-1.0.5-dev.2-mac-arm64.dmg",
+  "sha256": "8db9d9162daf656167abfd3ea5e607f16b194f0a898204383185d76de087553d",
+  "sha512": "n98OprbsJW17WEtt0OnSKOhxg7jN1Ndn+OtWjoIF5k1MxaJZ2gWbu+BBKkBShDZlofVB0WGrqnqBH2T7WkzgZw==",
+  "size": 192999790,
+  "metadata": [
+    "latest-mac.yml"
+  ],
+  "teamId": "2DMND6RL8D",
+  "ci": {
+    "developerIdSignature": "passed",
+    "appNotarization": "passed",
+    "dmgNotarization": "passed",
+    "gatekeeper": "passed",
+    "installationAndStartup": "passed"
+  },
+  "downloadedArtifact": {
+    "appSignature": "passed",
+    "appTicket": "passed",
+    "appGatekeeper": "passed",
+    "dmgSignature": "passed",
+    "dmgTicket": "passed",
+    "dmgGatekeeper": "passed",
+    "updateMetadata": "passed",
+    "blockmap": "passed"
+  },
+  "scope": "GitHub-hosted installed-app smoke; independent local downloaded artifact verification. No physical-device testing or public release.",
+  "releaseRunConclusion": "success",
+  "releaseJobs": [
+    {
+      "name": "release-source",
+      "conclusion": "success",
+      "startedAt": "2026-11-18T08:33:52Z",
+      "completedAt": "2026-11-18T08:33:55Z"
+    },
+    {
+      "name": "ios-wda / wda",
+      "conclusion": "success",
+      "startedAt": "2026-11-18T08:33:58Z",
+      "completedAt": "2026-11-18T08:36:14Z"
+    },
+    {
+      "name": "macos-release",
+      "conclusion": "success",
+      "startedAt": "2026-11-18T08:36:22Z",
+      "completedAt": "2026-11-18T08:53:53Z"
+    },
+    {
+      "name": "windows-release",
+      "conclusion": "success",
+      "startedAt": "2026-11-18T08:36:16Z",
+      "completedAt": "2026-11-18T08:47:00Z"
+    }
+  ],
+  "dmgNotarization": {
+    "id": "03f1ea02-5e4a-4551-9e70-86f74c88ab1a",
+    "status": "Accepted",
+    "message": "Processing complete"
+  },
+  "pullRequest": "https://github.com/MonsterXia/scrcpy-plus/pull/100",
+  "pullRequestCI": "https://github.com/MonsterXia/scrcpy-plus/actions/runs/44265444930",
+  "localTests": {
+    "application": {
+      "passed": 1260,
+      "skipped": 2
+    },
+    "liciaProduction": {
+      "passed": 606,
+      "pending": 4
+    },
+    "liciaFallback": {
+      "passed": 606,
+      "pending": 4
+    },
+    "focusedPassed": 15,
+    "lint": "passed",
+    "actionlint": "passed"
+  },
+  "releaseEnvironment": {
+    "name": "macos-release",
+    "allowedBranches": [
+      "master"
+    ],
+    "secretNames": [
+      "APPLE_ID",
+      "APPLE_TEAM_ID",
+      "APPLE_APP_SPECIFIC_PASSWORD",
+      "CSC_LINK",
+      "CSC_KEY_PASSWORD"
+    ]
+  }
+}
