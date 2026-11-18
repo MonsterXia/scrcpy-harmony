@@ -29,7 +29,7 @@ node dist/cli/index.cjs devices capabilities --device '<devices list 返回的 k
 ```sh
 npm pack ./dist/cli
 # 在你自己的目标目录安装上一步生成的 tgz：
-npm install --prefix /absolute/path/to/client ./scrcpy-plus-cli-1.0.5-dev.2.tgz
+npm install --prefix /absolute/path/to/client ./scrcpy-plus-cli-1.0.5-dev.3.tgz
 /absolute/path/to/client/node_modules/.bin/scrcpy-plus --help
 ```
 

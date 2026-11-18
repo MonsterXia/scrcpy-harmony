@@ -12,6 +12,10 @@ Scrcpy Plus 作为本项目的正式延续，仓库已迁移至 `MonsterXia/scrc
 
 开发版自动化已提供共享本地服务、独立 Node CLI 与 [MCP stdio](docs/scrcpy-plus/automation/mcp.md)，支持会话、截图、输入和现有 Harmony 工具。参见[使用指南](docs/scrcpy-plus/automation/README.md)与 [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md)。本机模拟流程通过，真机自动化及 Windows 自动化端到端验收仍待完成。
 
+## 1.0.5-dev.3 发行候选
+
+正在准备下一个开发预发布：包含应用内 iPhone 准备与 WDA 续签、iOS 重连修复、Plus 自适应图标、公共弹窗及迁移后的 Plus 更新源。Mac arm64 发行包必须完成 Developer ID 签名和 Apple 公证，Windows x64 仍未签名。当前验证与设备限制见[发行记录](docs/releases/1.0.5-dev.3.md)。稳定 Latest 保持 1.0.4。
+
 ## 1.0.5-dev.2 开发预发布
 
 **[Scrcpy Plus 1.0.5-dev.2 已公开](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.2)。** 源码、附件校验和验收范围见[发行记录](docs/releases/1.0.5-dev.2.md)。稳定 Latest 保持 **Scrcpy Harmony 1.0.4**。

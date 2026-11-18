@@ -12,6 +12,10 @@ The local development candidate adds in-app Apple ID sign-in, WDA preparation an
 
 Development automation: the shared local service, standalone Node CLI and [MCP stdio adapter](docs/scrcpy-plus/automation/mcp.md) expose sessions, screenshots, input and existing Harmony tools. See the [automation guide](docs/scrcpy-plus/automation/README.md) and [Agent skill](.agents/skills/scrcpy-plus-automation/SKILL.md). Local simulated workflows pass; physical-device automation and Windows automation end-to-end acceptance remain pending.
 
+## 1.0.5-dev.3 release candidate
+
+The next development prerelease is being prepared. It adds in-app iPhone preparation and WDA renewal, iOS reconnect fixes, adaptive Plus icons, shared dialogs, and the migrated Plus update source. Mac arm64 release packages require Developer ID signing and Apple notarization; Windows x64 packages remain unsigned. See the [release record](docs/releases/1.0.5-dev.3.md) for current validation and device limitations. Stable Latest stays 1.0.4.
+
 ## 1.0.5-dev.2 development prerelease
 
 **[Scrcpy Plus 1.0.5-dev.2 is available](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.2).** See the [release record](docs/releases/1.0.5-dev.2.md) for source, artifact checks and acceptance boundaries. Stable Latest remains **Scrcpy Harmony 1.0.4**.

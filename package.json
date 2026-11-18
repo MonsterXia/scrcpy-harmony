@@ -2,7 +2,7 @@
   "name": "scrcpy-plus",
   "productName": "Scrcpy Plus",
   "appId": "io.scrcpyplus.desktop",
-  "version": "1.0.5-dev.2",
+  "version": "1.0.5-dev.3",
   "description": "Android, HarmonyOS and iOS device mirroring",
   "main": "dist/main/index.js",
   "engines": {
