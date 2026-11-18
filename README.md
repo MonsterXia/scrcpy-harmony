@@ -54,12 +54,13 @@ Scrcpy Harmony is a graphical HDC desktop tool for HarmonyOS devices, bringing t
 
 ### Download and installation
 
-Visit [Releases](https://github.com/MonsterXia/scrcpy-plus/releases/latest) and choose the installer for your operating system and processor:
+Visit [Scrcpy Harmony 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4) and choose the installer for your operating system and processor:
 
 | Platform | Installer suffix | Installation |
 | --- | --- | --- |
 | Windows x64 | `win-x64.exe` | Run the installer and follow the prompts |
 | macOS Apple Silicon | `mac-arm64.dmg` | Open the disk image and drag the app into Applications |
+| macOS Intel | `mac-x64.dmg` | Open the disk image and drag the app into Applications |
 
 macOS requires **version 13 or later**. Linux installers are not currently available.
 
@@ -69,7 +70,7 @@ Installers include HDC and the required device resources; Node.js is not needed 
 
 **[1.0.4 is now available as the stable Latest release](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4).** Three-platform installation and direct upgrade/update checks passed; signing and device-validation limitations remain documented in the release report.
 
-The following describes the historical Harmony **1.0.5-dev.1** pre-release. It retains the 1.0.4 features: H.264 mirroring with JPEG fallback, keyboard/IME and clipboard input, HAP drag-and-drop installation, guarded recovery of idle mirroring sessions, bounded app-store requests, English/Chinese language selection, and visible **Beta Update: On/Off** state with aligned menu labels. Choose [stable 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/latest) or [development 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1) to upgrade; settings use the same application directory. Beta Update is in the application menu, defaults to off and is required to discover development releases. See the [release evidence and limitations](docs/releases/1.0.5-dev.1.md).
+The following describes the historical Harmony **1.0.5-dev.1** pre-release. It retains the 1.0.4 features: H.264 mirroring with JPEG fallback, keyboard/IME and clipboard input, HAP drag-and-drop installation, guarded recovery of idle mirroring sessions, bounded app-store requests, English/Chinese language selection, and visible **Beta Update: On/Off** state with aligned menu labels. Choose [stable 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4) or [development 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1) to upgrade; settings use the same application directory. Beta Update is in the application menu, defaults to off and is required to discover development releases. See the [release evidence and limitations](docs/releases/1.0.5-dev.1.md).
 
 Version **1.0.3** remains available as the recovery version before dependency source migration. If switching from ECHO, configure settings again: its separate configuration directory is not migrated automatically. Device compatibility and pending validation are listed in the release report; include your version and commit when reporting a problem.
 

@@ -54,12 +54,13 @@ Scrcpy Harmony 是面向鸿蒙设备的 HDC 图形化桌面工具，集成投屏
 
 ### 下载安装
 
-前往 [Releases](https://github.com/MonsterXia/scrcpy-plus/releases/latest)，按电脑系统和处理器选择安装包：
+前往 [Scrcpy Harmony 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4)，按电脑系统和处理器选择安装包：
 
 | 平台 | 安装包后缀 | 安装方式 |
 | --- | --- | --- |
 | Windows x64 | `win-x64.exe` | 运行安装程序，按提示完成安装 |
 | macOS Apple Silicon | `mac-arm64.dmg` | 打开镜像，将应用拖入“应用程序”目录 |
+| macOS Intel | `mac-x64.dmg` | 打开镜像，将应用拖入“应用程序”目录 |
 
 macOS 需要 **13 或更新版本**。当前未提供 Linux 安装包。
 
@@ -69,7 +70,7 @@ macOS 需要 **13 或更新版本**。当前未提供 Linux 安装包。
 
 **[1.0.4 已作为正式 Latest 发布](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4)。** 三平台安装与直接升级/更新检查通过；签名限制和未补测真机范围继续在发布记录中明确列出。
 
-以下为历史 Harmony **1.0.5-dev.1** 开发预发布说明，保留 1.0.4 的功能，包括 H.264 投屏与 JPEG 回退、键盘/IME 和文本粘贴、HAP 拖入安装、空闲投屏残留的受限恢复、商店请求有限等待、中英文选择，以及清楚显示开启/关闭、文字对齐的 **Beta Update／接收预发布更新** 菜单。升级可选择[稳定版 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/latest)或[开发版 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1)；应用配置目录保持不变。Beta Update 位于应用菜单，默认关闭，发现开发预发布需开启；[发行证据与限制](docs/releases/1.0.5-dev.1.md)另行记录。
+以下为历史 Harmony **1.0.5-dev.1** 开发预发布说明，保留 1.0.4 的功能，包括 H.264 投屏与 JPEG 回退、键盘/IME 和文本粘贴、HAP 拖入安装、空闲投屏残留的受限恢复、商店请求有限等待、中英文选择，以及清楚显示开启/关闭、文字对齐的 **Beta Update／接收预发布更新** 菜单。升级可选择[稳定版 1.0.4](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.4)或[开发版 1.0.5-dev.1](https://github.com/MonsterXia/scrcpy-plus/releases/tag/v1.0.5-dev.1)；应用配置目录保持不变。Beta Update 位于应用菜单，默认关闭，发现开发预发布需开启；[发行证据与限制](docs/releases/1.0.5-dev.1.md)另行记录。
 
 **1.0.3** 保留为依赖源码迁移前的恢复版本。从 ECHO 切换时需要重新配置设置，其独立配置目录不会自动迁移。设备兼容和待验收范围见发布记录；反馈问题时请附版本和提交号。
 
