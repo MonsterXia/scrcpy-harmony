@@ -87,6 +87,7 @@ async function main() {
           const background = await accept.evaluate(button => getComputedStyle(button).backgroundColor)
           await accept.hover()
           assert.equal(await accept.evaluate(button => getComputedStyle(button).backgroundColor), background)
+          assert.notEqual(await accept.evaluate(button => getComputedStyle(button).filter), 'none')
           await page.screenshot({ path: path.join(output, `${language}-${theme}-confirm.png`) })
           await page.locator('[data-confirm-cancel]').click()
           await confirm.waitFor({ state: 'hidden' })
