@@ -1,3 +1,4 @@
+import { Dialog } from 'share/renderer/dialog/Dialog'
 import { observer } from 'mobx-react-lite'
 import { t } from 'common/util'
 import Style from './Layout.module.scss'
@@ -32,7 +33,6 @@ export default observer(function Layout() {
   const [compact, setCompact] = useState(true)
   const [properties, setProperties] = useState(false)
   const surface = useRef<HTMLDivElement>(null)
-  const dialog = useRef<HTMLElement>(null)
   const propertiesButton = useRef<HTMLButtonElement>(null)
   const session = useRef<{ active: boolean; busy: boolean } | null>(null)
   const { layout } = store
@@ -67,14 +67,6 @@ export default observer(function Layout() {
     observer.observe(surface.current)
     return () => observer.disconnect()
   }, [])
-  useEffect(() => {
-    if (!properties) return
-    dialog.current?.querySelector<HTMLButtonElement>('button')?.focus()
-    return () => {
-      propertiesButton.current?.focus()
-    }
-  }, [properties])
-
   async function refresh() {
     const current = session.current
     if (!key || !current?.active || current.busy || store.target?.key !== key)
@@ -338,55 +330,16 @@ export default observer(function Layout() {
         </div>
       </div>
       {compact && properties && (
-        <div
-          className={Style.overlay}
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setProperties(false)
-          }}
+        <Dialog
+          size="drawer"
+          title={t('layoutProperties')}
+          closeLabel={t('close')}
+          onDismiss={() => setProperties(false)}
+          restoreFocus={() => propertiesButton.current?.focus()}
+          contentClassName={Style.drawerBody}
         >
-          <aside
-            ref={dialog}
-            role="dialog"
-            aria-modal="true"
-            aria-label={t('layoutProperties')}
-            className={Style.drawer}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') {
-                event.stopPropagation()
-                setProperties(false)
-              }
-              if (event.key !== 'Tab') return
-              const controls = Array.from(
-                dialog.current?.querySelectorAll<HTMLElement>(
-                  'button:not(:disabled), [tabindex="0"]',
-                ) || [],
-              )
-              const first = controls[0],
-                last = controls.at(-1)
-              if (event.shiftKey && document.activeElement === first) {
-                event.preventDefault()
-                last?.focus()
-              } else if (!event.shiftKey && document.activeElement === last) {
-                event.preventDefault()
-                first?.focus()
-              }
-            }}
-          >
-            <header>
-              <h2>{t('layoutProperties')}</h2>
-              <button
-                type="button"
-                aria-label={t('close')}
-                onClick={() => setProperties(false)}
-              >
-                ×
-              </button>
-            </header>
-            <div className={Style.drawerBody}>
-              <Detail selected={selected} />
-            </div>
-          </aside>
-        </div>
+          <Detail selected={selected} />
+        </Dialog>
       )}
     </div>
   )

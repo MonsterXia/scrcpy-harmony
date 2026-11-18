@@ -1,5 +1,9 @@
 # Scrcpy Plus 跨平台改造（2026-11-03）
 
+## 公共弹窗与底部操作（2026-11-18）
+
+桌面弹窗、抽屉和升级窗口的底部操作共用组件，开发与审查入口见[通用 UI 样式规范](.agents/skills/scrcpy-harmony-project/references/ui-style.md)。本地独立审查发现的悬停对比度与 iPhone 设置关闭后的焦点恢复均已修复并复验。应用测试 1249 项通过、2 项跳过，lint 与 renderer 构建通过。Electron 使用模拟设备完成中英文、深浅主题四种组合的应用卸载确认与取消验收。后续 PR 复审、CI 和合入状态以 PR 为准。
+
 ## iPhone 集成 PR 审查（2026-11-18）
 
 用户授权独立审查、创建 PR、复审及 CI 全绿后合入。首轮确认的账号互斥、窗口取消、预约恢复、签名私钥保留、WDA 缓存及后台启动机制问题已修复，完整本地构建与整批独立复审已通过、无剩余 P0–P2；交付进入 [PR #97](https://github.com/MonsterXia/scrcpy-plus/pull/97)，最终 CI/复审/合入结果以 PR 为准。详情、门禁与下一步见[审查记录](docs/maintenance/ios-provisioning-review-20261118.md)。

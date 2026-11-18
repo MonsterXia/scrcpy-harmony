@@ -1,4 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict')
+const { load: loadRenderer } = require('./helpers/workspace-renderer.cjs')
 const fs=require('node:fs'),vm=require('node:vm'),{transformSync}=require('esbuild'),{JSDOM}=require('jsdom')
 test('login shows progress immediately while IPC is pending and displays a returned failure',async()=>{
  const dom=new JSDOM('<div id="root"></div>')
@@ -8,7 +9,10 @@ test('login shows progress immediately while IPC is pending and displays a retur
  const module={exports:{}};let finish
  const main={iosSetup:async action=>action.action==='status'?{phase:'idle'}:new Promise(r=>{finish=r})}
  vm.runInNewContext(transformSync(fs.readFileSync('src/renderer/native-mirror/IosSetup.tsx','utf8'),{loader:'tsx',format:'cjs',jsx:'automatic'}).code,{
-  module,exports:module.exports,main,setInterval:()=>0,clearInterval:()=>{},require(id){
+  module,exports:module.exports,main,setInterval:()=>0,clearInterval:()=>{},require(id) {
+   if (id.startsWith('share/renderer/dialog/')) {
+     return loadRenderer('src/' + id + '.tsx')
+   }
    if(id==='common/util')return {t:key=>key}
    if(id.endsWith('.scss'))return {}
    return require(id)

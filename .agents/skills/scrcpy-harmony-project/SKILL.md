@@ -1,6 +1,6 @@
 ---
 name: scrcpy-harmony-project
-description: Use when analyzing, developing, debugging, reviewing, or building this scrcpy-harmony repository, the Scrcpy Harmony Electron desktop app for HarmonyOS HDC, including screencast, touch input, device tools, IPC, and packaging.
+description: Use when analyzing, developing, debugging, reviewing, or building this scrcpy-harmony repository, the Scrcpy Plus Electron desktop app, including shared UI styles and dialogs, device mirroring, HarmonyOS HDC, IPC, and packaging.
 ---
 
 # Scrcpy Harmony 项目基础
@@ -20,6 +20,7 @@ description: Use when analyzing, developing, debugging, reviewing, or building t
 | 投屏、触摸坐标 | `src/renderer/screencast/lib/ScreencastClient.ts`、`src/main/lib/hdc/uitest.ts` |
 | 构建、资源、打包 | `package.json`、`vite*.ts`、`script/` |
 | 本地依赖二次适配 | `vendor/README.md`、`vendor/packages/*/src/`、`script/lib/` |
+| 新增、修改或审查弹窗、确认框、抽屉、弹窗按钮 | 先读[通用 UI 样式规范](references/ui-style.md)，复用 `share/renderer/dialog` 下的组件 |
 | 国际化、界面文案与语言切换 | [国际化开发流程](references/internationalization.md)、`src/common/langs/`、`src/share/common/langs/` |
 
 ## 按需读取

@@ -12,14 +12,13 @@ async function main() {
   try {
     for (const language of ['en-US', 'zh-CN']) {
       for (const theme of ['light', 'dark']) {
-        const env = { ...process.env, UI_LANGUAGE: language, UI_THEME: theme, UI_PAGE: 'application', UI_WIDTH: '960' }
+        const env = { ...process.env, UI_LANGUAGE: language, UI_THEME: theme, UI_PAGE: 'overview', UI_WIDTH: '960' }
         delete env.ELECTRON_RUN_AS_NODE
         const app = await electron.launch({ executablePath: require('electron'), args: [path.join(__dirname, 'ui-preview/main.cjs')], env })
         let profile
         try {
           profile = await app.evaluate(({ app }) => app.getPath('userData'))
           const page = await app.firstWindow()
-          await page.locator('summary').click()
           const refresh = page.locator('[data-action="refresh-devices"]')
           await refresh.click()
           await page.locator('.luna-notification-item').waitFor()
@@ -60,7 +59,6 @@ async function main() {
             }
           })
           await page.waitForFunction(() => [...document.querySelectorAll('.luna-notification-item')].every(card => card.dataset.feedbackFixture))
-          await page.locator('summary').click()
           await page.screenshot({ path: path.join(output, `${language}-${theme}-variants.png`) })
           const variants = await page.evaluate(() => [...document.querySelectorAll('[data-feedback-fixture]')].map(card => {
             const r = card.getBoundingClientRect()
@@ -78,12 +76,17 @@ async function main() {
           assert.equal(unscopedRadius, '4px', 'main-window styles must not leak to mirroring/update windows')
           await page.evaluate(() => document.querySelectorAll('[data-feedback-fixture]').forEach(card => card.remove()))
           // Existing application confirmations keep their workspace style and cancel behavior.
+          await page.locator('[data-navigation="application"]').click()
           await page.locator('[data-application-item]').first().locator('td').first().click()
           const dialog = page.locator('[role="dialog"]')
           await dialog.getByRole('button', { name: language === 'en-US' ? 'Uninstall' : '卸载', exact: true }).click()
           const confirm = page.getByRole('alertdialog')
           await confirm.waitFor()
           assert.ok(await confirm.evaluate(node => parseFloat(getComputedStyle(node).borderRadius) >= 10))
+          const accept = confirm.locator('[data-confirm-accept]')
+          const background = await accept.evaluate(button => getComputedStyle(button).backgroundColor)
+          await accept.hover()
+          assert.equal(await accept.evaluate(button => getComputedStyle(button).backgroundColor), background)
           await page.screenshot({ path: path.join(output, `${language}-${theme}-confirm.png`) })
           await page.locator('[data-confirm-cancel]').click()
           await confirm.waitFor({ state: 'hidden' })

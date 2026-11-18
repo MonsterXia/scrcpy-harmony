@@ -1,0 +1,178 @@
+.dialog,
+.footer {
+  --dialog-bg: var(
+    --mirror-surface,
+    var(--workspace-surface, var(--panel-background, Canvas))
+  );
+  --dialog-text: var(
+    --mirror-text,
+    var(--workspace-text, var(--panel-text, CanvasText))
+  );
+  --dialog-line: var(
+    --mirror-line,
+    var(--workspace-line, color-mix(in srgb, currentColor 14%, transparent))
+  );
+  --dialog-hover: var(
+    --mirror-tint,
+    var(--workspace-hover, var(--button-background, ButtonFace))
+  );
+  --dialog-accent: var(--mirror-accent, var(--workspace-accent, #326bc4));
+}
+.dialog {
+  container-type: inline-size;
+  box-sizing: border-box;
+  width: min(440px, calc(100% - 32px));
+  max-height: calc(100% - 48px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--dialog-line);
+  border-radius: 16px;
+  background: var(--dialog-bg);
+  color: var(--dialog-text);
+  box-shadow: 0 12px 44px #0003;
+  font: inherit;
+  &::backdrop {
+    background: #0004;
+  }
+  &[data-size='wide'] {
+    width: min(720px, calc(100% - 32px));
+  }
+  &[data-size='compact'] {
+    width: min(320px, calc(100% - 24px));
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  &[data-size='drawer'] {
+    margin: 0 0 0 auto;
+    width: min(400px, 100%);
+    height: 100%;
+    max-height: 100%;
+    border-radius: 14px 0 0 14px;
+    .surface {
+      height: 100%;
+      max-height: 100%;
+    }
+  }
+  :focus-visible {
+    outline: 2px solid var(--dialog-accent);
+    outline-offset: -2px;
+  }
+}
+.surface {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 50px);
+}
+.heading {
+  flex: none;
+  padding: 18px 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  h2 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  button {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    color: inherit;
+    background: transparent;
+    font-size: 20px;
+  }
+  button:hover {
+    background: var(--dialog-hover);
+  }
+}
+.body {
+  min-height: 0;
+  padding: 12px 20px 18px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+}
+.footer {
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 12px 0 0;
+  margin: 0 20px 16px;
+  border-top: 1px solid var(--dialog-line);
+  &.footer > button {
+    min-height: 32px;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    padding: 5px 12px;
+    border: 0;
+    border-radius: 999px;
+    color: var(--dialog-text);
+    background: var(--button-background, color-mix(in srgb, currentColor 8%, transparent));
+    font: inherit;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+    &:not([data-tone]):hover:not(:disabled) {
+      background: var(--dialog-hover);
+    }
+    &:disabled {
+      opacity: 0.5;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--dialog-accent);
+      outline-offset: 2px;
+    }
+    &[data-tone='danger'] {
+      --dialog-action-bg: #b8303a;
+    }
+    &[data-tone='primary'] {
+      --dialog-action-bg: #326bc4;
+    }
+    &[data-tone],
+    &[data-tone]:hover:not(:disabled) {
+      background: var(--dialog-action-bg);
+      color: white;
+    }
+    &[data-tone]:hover:not(:disabled) {
+      filter: brightness(0.92);
+    }
+  }
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  padding: 16px;
+  background: #0004;
+  box-sizing: border-box;
+  > .dialog {
+    position: relative;
+    inset: auto;
+    margin: 0;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    .surface {
+      min-height: 0;
+    }
+  }
+  &[data-drawer='true'] {
+    padding: 0;
+    z-index: 20;
+    justify-items: end;
+  }
+}
