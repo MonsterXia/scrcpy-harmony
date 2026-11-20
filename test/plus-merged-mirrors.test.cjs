@@ -1,58 +1,194 @@
-const{test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm')
-const{EventEmitter}=require('node:events'),{transformSync}=require('esbuild')
-function fixture(){let nextSource=0;const handlers=new Map(),created=[];const module={exports:{}};
- vm.runInNewContext(transformSync(fs.readFileSync('src/main/window/mergedMirrors.ts','utf8'),{loader:'ts',format:'cjs'}).code,{module,exports:module.exports,require(id){if(id==='electron')return{ipcMain:{handle:(key,fn)=>handlers.set(key,fn)}};if(id==='share/main/lib/window')return{create(){const w=new EventEmitter();w.webContents={mainFrame:{}};w.isDestroyed=()=>false;w.show=w.focus=()=>{};w.close=()=>{};created.push(w);return w},loadPage(){}};return require(id)}})
- const source=platform=>{const contents={throttled:true,isDestroyed:()=>false,getBackgroundThrottling(){return this.throttled},setBackgroundThrottling(v){this.throttled=v},async executeJavaScript(code){assert.match(code,/querySelector\('canvas'\)/);assert.match(code,/toBlob/);assert.doesNotMatch(code,/toDataURL/);return{image:'data:image/jpeg;base64,fixture',width:100,height:200}}};const window=new EventEmitter();Object.assign(window,{id:++nextSource,visible:true,isDestroyed:()=>false,isMinimized:()=>false,webContents:contents,hide(){this.visible=false},show(){this.visible=true;this.emit('show')}});return{platform,window}}
- return{...module.exports,handlers,created,source,invoke(event){return handlers.get('getMergedMirrorFrames')(event||{sender:created.at(-1).webContents,senderFrame:created.at(-1).webContents.mainFrame})}}
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const { EventEmitter } = require('node:events')
+const load = require('./helpers/load-automation.cjs')
+
+function fixture() {
+  let id = 0,
+    host
+  const children = () => {
+    const all = new Set()
+    return {
+      all,
+      addChildView(view) {
+        assert.equal(view.parent, undefined)
+        view.parent = this
+        all.add(view)
+      },
+      removeChildView(view) {
+        assert.ok(all.delete(view))
+        view.parent = undefined
+      },
+    }
+  }
+  function makeWindow() {
+    const win = new EventEmitter()
+    let bounds = { x: 0, y: 0, width: 735, height: 750 }
+    return Object.assign(win, {
+      id: ++id,
+      contentView: children(),
+      visible: true,
+      isDestroyed: () => !!win.destroyed,
+      getBounds: () => bounds,
+      getContentBounds: () => ({
+        width: bounds.width,
+        height: bounds.height - 32,
+      }),
+      getContentSize: () => [bounds.width, bounds.height - 32],
+      setBounds(b) {
+        bounds = b
+        win.emit('resize')
+      },
+      setMinimumSize() {},
+      isAlwaysOnTop: () => !!win.pinned,
+      setAlwaysOnTop: (value) => {
+        win.pinned = value
+      },
+      setTitle() {},
+      isMinimized: () => false,
+      isMaximized: () => false,
+      isFullScreen: () => false,
+      hide() {
+        win.visible = false
+      },
+      show() {
+        win.visible = true
+        win.emit('show')
+      },
+      focus() { win.focused = true },
+      close() {
+        win.emit('close')
+        win.destroyed = true
+        win.emit('closed')
+      },
+    })
+  }
+  const api = load('src/main/window/mergedMirrors.ts', {
+    electron: {
+      screen: {
+        getDisplayMatching: () => ({
+          workArea: { x: 0, y: 0, width: 1280, height: 800 },
+        }),
+      },
+    },
+    'share/main/lib/window': { create: () => (host = makeWindow()) },
+  })
+  function source(platform) {
+    const window = makeWindow(),
+      webContents = Object.assign(new EventEmitter(), {
+        isDestroyed: () => false,
+        focus() { this.focused = true },
+        send(_event, value, inset) {
+          this.label = value
+          this.toolInset = inset
+        },
+      })
+    const view = {
+      webContents,
+      setBounds(rect) {
+        this.rect = rect
+      },
+      setVisible(value) {
+        this.visible = value
+      },
+    }
+    window.mirrorView = view
+    window.mirrorRatio = 0.5
+    window.contentView.addChildView(view)
+    return { window, view, platform, deviceKey: platform + window.id }
+  }
+  return {
+    ...api,
+    source,
+    get host() {
+      return host
+    },
+  }
 }
-const settle=()=>new Promise(resolve=>setImmediate(resolve))
-test('merged mode hides sources immediately, keeps late ready-to-show hidden, and restores them on close',async()=>{
- const f=fixture(),sources=['harmony','android','ios'].map(f.source);f.showMergedMirrors(()=>sources);f.showMergedMirrors(()=>sources);assert.equal(f.created.length,1)
- assert.ok(sources.every(s=>!s.window.visible&&!s.window.webContents.throttled));sources[0].window.show();assert.equal(sources[0].window.visible,false)
- f.invoke();await settle();const frames=f.invoke();assert.deepEqual(Array.from(frames,f=>f.platform),['android','harmony','ios']);assert.ok(frames.every(f=>f.image&&f.width===100))
- f.created[0].emit('closed');assert.ok(sources.every(s=>s.window.webContents.throttled&&s.window.visible));assert.ok(sources.every(s=>s.window.listenerCount('show')===0))
-})
-test('merged capture rejects other windows and subframes',()=>{
- const f=fixture();f.showMergedMirrors(()=>[f.source('android')]);assert.throws(()=>f.invoke({sender:{},senderFrame:{}}),/document/)
- assert.throws(()=>f.invoke({sender:f.created[0].webContents,senderFrame:{}}),/document/)
- f.created[0].emit('closed')
-})
-test('a stalled source never blocks other sources and repeated polls cannot queue captures',async()=>{
- const f=fixture(),android=f.source('android'),ios=f.source('ios');let complete,calls=0
- android.window.webContents.executeJavaScript=()=>{calls++;return new Promise(resolve=>{complete=resolve})}
- f.showMergedMirrors(()=>[android,ios]);for(let i=0;i<20;i++)f.invoke();assert.equal(calls,1)
- await settle();let frames=f.invoke();assert.equal(frames[0].image,'');assert.ok(frames[1].image)
- complete({image:'data:image/jpeg;base64,ok',width:100,height:200});await settle();frames=f.invoke();assert.ok(frames[0].image);assert.ok(frames[1].image)
- f.created[0].emit('closed')
-})
-test('switching merge providers restores excluded windows and prevents late stale frames leaking',async()=>{
- const f=fixture(),android=f.source('android'),ios=f.source('ios');let complete
- ios.window.webContents.executeJavaScript=()=>new Promise(resolve=>{complete=resolve})
- f.showMergedMirrors(()=>[android,ios]);f.invoke();await settle()
- f.showMergedMirrors(()=>[android]);assert.equal(ios.window.visible,true);assert.equal(ios.window.webContents.throttled,true)
- complete({image:'old',width:100,height:200});await settle();const frames=f.invoke();assert.equal(frames.length,1);assert.equal(frames[0].platform,'android')
- f.created[0].emit('closed')
-})
-test('explicit layout close restores sources immediately; an old delayed close cannot affect the new view',async()=>{
- const f=fixture(),source=f.source('android');f.showMergedMirrors(()=>[source]);f.invoke();await settle();f.closeMergedMirrors();assert.equal(source.window.visible,true);assert.equal(source.window.webContents.throttled,true)
- f.showMergedMirrors(()=>[source]);f.created[0].emit('closed');assert.equal(source.window.visible,false);assert.equal(source.window.webContents.throttled,false)
- f.invoke();await settle();assert.ok(f.invoke()[0].image);f.created[1].emit('closed');assert.equal(source.window.visible,true)
-})
-test('a failed export retains the last good picture and retries later',async()=>{
- const f=fixture(),source=f.source('android');f.showMergedMirrors(()=>[source]);f.invoke();await settle();source.window.webContents.executeJavaScript=async()=>{throw Error('temporary')}
- assert.ok(f.invoke()[0].image);await settle();assert.ok(f.invoke()[0].image);f.created[0].emit('closed')
-})
-test('late sources are hidden and pre-existing background policy is preserved',async()=>{
- const f=fixture(),android=f.source('android'),harmony=f.source('harmony');harmony.window.webContents.throttled=false
- const sources=[android];f.showMergedMirrors(()=>sources);sources.push(harmony);f.invoke();await settle();assert.equal(harmony.window.visible,false)
- f.closeMergedMirrors();assert.equal(harmony.window.visible,true);assert.equal(harmony.window.webContents.throttled,false)
+
+test('merge moves each original interactive document, preserves separate same-platform tiles and restores ownership', (t) => {
+  t.mock.timers.enable({ apis: ['setInterval'] })
+  const f = fixture(),
+    sources = ['harmony', 'ios', 'android', 'android'].map(f.source)
+  f.showMergedMirrors(() => sources)
+  assert.equal(f.host.contentView.all.size, 4)
+  for (const s of sources) {
+    assert.equal(s.window.visible, false)
+    s.window.show()
+    assert.equal(s.window.visible, false)
+    assert.equal(s.view.parent, f.host.contentView)
+    assert.equal(s.window.contentView.all.size, 0)
+  }
+  assert.deepEqual(
+    sources.map((s) => s.view.webContents.label),
+    ['HarmonyOS', 'iOS', 'Android', 'Android'],
+  )
+  assert.ok(
+    sources[2].view.rect.x < sources[3].view.rect.x &&
+      sources[3].view.rect.x < sources[0].view.rect.x,
+  )
+  const rects = sources.map(s => s.view.rect).sort((a, b) => a.x - b.x)
+  const [width, height] = f.host.getContentSize()
+  assert.equal(height, Math.round((width - 3 * 12) / 2) + 32)
+  for (const source of sources) assert.equal(source.view.rect.y + source.view.webContents.toolInset, 0)
+  assert.equal(rects[0].x, 0)
+  assert.equal(rects.at(-1).x + rects.at(-1).width, width)
+  assert.ok(rects.every(rect => rect.y + rect.height === height))
+  for (let i = 1; i < rects.length; i++) assert.equal(rects[i].x - rects[i-1].x - rects[i-1].width, 12)
+  const removed = sources.pop()
+  t.mock.timers.tick(250)
+  assert.equal(removed.view.parent, removed.window.contentView)
+  assert.equal(removed.window.visible, true)
+  f.host.close()
+  for (const s of sources) {
+    assert.equal(s.view.parent, s.window.contentView)
+    assert.equal(s.view.webContents.label, '')
+    assert.equal(s.window.visible, true)
+  }
 })
 
-test('every hidden source has its own exported frame even when two sources have the same platform',async()=>{
- const f=fixture(),sources=['android','android','harmony','harmony','ios'].map(f.source)
- f.showMergedMirrors(()=>sources);f.invoke();await settle();const frames=f.invoke()
- assert.equal(frames.length,5);assert.equal(new Set(frames.map(frame=>frame.sourceId)).size,5)
- assert.deepEqual(Array.from(frames,frame=>frame.platform),['android','android','harmony','harmony','ios'])
- assert.ok(frames.every(frame=>frame.image));assert.ok(sources.every(s=>!s.window.visible))
- f.closeMergedMirrors();assert.ok(sources.every(s=>s.window.visible))
+test('aspect changes refit the group and full-screen tools expand only their own view', (t) => {
+  t.mock.timers.enable({ apis: ['setInterval'] })
+  const f = fixture(),
+    a = f.source('ios'),
+    b = f.source('harmony')
+  f.showMergedMirrors(() => [a, b])
+  b.window.setAlwaysOnTop(true)
+  t.mock.timers.tick(250)
+  assert.equal(f.host.isAlwaysOnTop(), true)
+  const oldHeight = f.host.getBounds().height
+  a.window.mirrorRatio = 2
+  t.mock.timers.tick(250)
+  assert.ok(f.host.getBounds().height < oldHeight)
+  a.view.webContents.emit('enter-html-full-screen')
+  assert.equal(b.view.visible, false)
+  assert.equal(a.view.rect.width, f.host.getContentSize()[0])
+  a.view.webContents.emit('leave-html-full-screen')
+  assert.equal(b.view.visible, true)
+  assert.ok(a.view.rect.width < f.host.getContentSize()[0])
+  f.closeMergedMirrors()
+})
+
+test('opening another device focuses its live tile after leaving the previous tile fullscreen', async (t) => {
+  t.mock.timers.enable({ apis: ['setInterval'] })
+  const f = fixture(), first = f.source('harmony'), next = f.source('android')
+  const sources = [first]
+  f.showMergedMirrors(() => sources)
+  first.view.webContents.emit('enter-html-full-screen')
+  sources.push(next)
+  assert.equal(f.getMergedMirrorWindow(next.deviceKey), f.host)
+  assert.equal(next.view.visible, false)
+  let finish
+  first.view.webContents.executeJavaScript = () => new Promise(resolve => { finish = resolve })
+  const focused = next.window.focusMirrorTile()
+  assert.equal(f.host.focused, true)
+  assert.equal(next.view.webContents.focused, undefined)
+  first.view.webContents.emit('leave-html-full-screen')
+  finish()
+  await focused
+  assert.equal(next.view.visible, true)
+  assert.equal(next.view.webContents.focused, true)
+  assert.equal(next.window.visible, false)
+  f.closeMergedMirrors()
+  assert.equal(next.window.focusMirrorTile, undefined)
 })

@@ -29,7 +29,7 @@ export class AutomationController {
   }
   readonly attach: AutomationWindowHooks = source => {
     const { target, window, close } = source
-    const contents = window.webContents
+    const contents = source.contents ?? window.webContents
     let gui = source.gui, restoreMain = gui
     const id = this.sessions.register(target, { close, hide: () => window.hide(), show: () => { window.show(); window.focus() } }, gui)
     this.sources.set(id, source)
@@ -79,6 +79,11 @@ export class AutomationController {
       input: (phase, operation) => this.queue.gui(target.key, phase, operation),
     }
   }
+  private perform(source: Parameters<AutomationWindowHooks>[0], action: InputAction,
+    geometry: { width: number; height: number; rotation?: number } | undefined, context: AutomationContext) {
+    return this.options.perform ? this.options.perform(source, action, geometry, context) :
+      executeInput(action, geometry, this.options.input!(source.target, context), context)
+  }
   async start(deviceKey: string, context: AutomationContext) {
     checkContext(context)
     const found = await this.options.discover()
@@ -98,7 +103,7 @@ export class AutomationController {
       checkContext(context)
       const source = this.source(id)
       try {
-        const result = await this.bridge.request(source.window.webContents, 'capture', context)
+        const result = await this.bridge.request(source.contents ?? source.window.webContents, 'capture', context)
         const frame = this.frames.issue(id, result.metadata, options)
         return { frame, bytes: result.png! }
       } catch (error) {
@@ -116,13 +121,12 @@ export class AutomationController {
     if (info.state !== 'running') throw new AutomationFault('UNAVAILABLE', 'Session has not presented a frame')
     return this.queue.automatic(info.deviceKey, context, async current => {
       this.sessions.requireLease(id, current.clientId); this.source(id)
-      const latest = await this.bridge.request(source.window.webContents, 'metadata', current)
+      const latest = await this.bridge.request(source.contents ?? source.window.webContents, 'metadata', current)
       this.frames.observe(id, latest.metadata)
       const geometry = ['tap','swipe','scroll'].includes(action.type) ? this.frames.geometry(id, frameId || '') : undefined
-      if (this.options.perform) await this.options.perform(source, action, geometry, current)
-      else await executeInput(action, geometry, this.options.input!(source.target, current), current)
+      await this.perform(source, action, geometry, current)
       try {
-        const after = await this.bridge.request(source.window.webContents, 'metadata', current)
+        const after = await this.bridge.request(source.contents ?? source.window.webContents, 'metadata', current)
         return { observationToken: this.frames.barrier(id, after.metadata) }
       } catch { throw new AutomationFault('OUTCOME_UNKNOWN', 'Input completed but its observation barrier could not be established', 'unknown') }
     })

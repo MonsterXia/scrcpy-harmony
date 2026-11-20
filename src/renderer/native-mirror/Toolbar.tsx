@@ -1,16 +1,19 @@
 import { observer } from 'mobx-react-lite'
 import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
+import ToolbarIcon from 'share/renderer/components/ToolbarIcon'
 import { t } from 'common/util'
 import type { MirrorSession } from 'common/types'
 import FloatingStyle from '../screencast/components/Toolbar.module.scss'
+import MirrorToolsPanel, { MirrorToolsSelect } from '../screencast/components/MirrorToolsPanel'
+import ToolbarToggle from '../screencast/components/ToolbarToggle'
 import Style from './App.module.scss'
 
 interface Props {
   mode: MirrorSession['videoMode']
   busy: boolean
   connected: boolean
-  onVideo: () => void
+  onVideo: (enabled: boolean) => void
   onHome: () => void
   onSetup: () => void
 }
@@ -31,8 +34,8 @@ export default observer(function Toolbar({ mode, busy, connected, onVideo, onHom
   return <div className={FloatingStyle.overlay}
     onMouseEnter={() => { setHovered(true) }}
     onMouseLeave={() => setHovered(false)}
-    onPointerDownCapture={() => { keyboardInteraction.current = false; setFocused(false) }}
-    onFocusCapture={() => { setFocused(keyboardInteraction.current) }}
+    onPointerDownCapture={event => { keyboardInteraction.current = false; setFocused((event.target as HTMLElement).matches('select')) }}
+    onFocusCapture={event => setFocused(keyboardInteraction.current || event.target.matches('select'))}
     onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget) && !toggle.current?.contains(event.relatedTarget)) setFocused(false) }}
     onKeyDown={event => {
       keyboardInteraction.current = true; setFocused(true)
@@ -41,31 +44,33 @@ export default observer(function Toolbar({ mode, busy, connected, onVideo, onHom
       }
     }}>
     {createPortal(<div className={`${FloatingStyle.entry} ${Style.toolEntry}`}>
-      <button ref={toggle} type="button" className={`${FloatingStyle.toggle} ${Style.toolToggle}`}
-        data-visible={true}
-        aria-label={t(expanded ? 'hideScreencastTools' : 'showScreencastTools')}
-        title={t(expanded ? 'hideScreencastTools' : 'showScreencastTools')}
-        aria-expanded={expanded} aria-controls="ios-mirror-tools"
-        onClick={() => setExpanded(!expanded)}>
-        <svg viewBox="0 0 20 20" aria-hidden="true">
-          {expanded ? <path d="m5 5 10 10M15 5 5 15" /> : <><path d="M3 6h4m4 0h6M3 14h8m4 0h2" /><circle cx="9" cy="6" r="2" /><circle cx="13" cy="14" r="2" /></>}
-        </svg>
-      </button>
+      <ToolbarToggle ref={toggle} expanded={expanded} visible
+        controls="ios-mirror-tools" onClick={() => setExpanded(!expanded)} />
     </div>, document.body)}
-    <div id="ios-mirror-tools" className={`${FloatingStyle.panel} ${Style.toolPanel}`} data-visible={expanded} aria-hidden={!expanded} inert={!expanded}>
-      <div className={Style.tools}>
-        <button type="button" disabled={transitioning || !connected} onClick={onVideo}>
-          {t(transitioning ? 'plusSessionStarting' : mode === 'video' ? 'plusIosStopVideo' : 'plusIosStartVideo')}
-        </button>
-        <button type="button" disabled={transitioning || !connected} onClick={onHome}>{t('plusIosHome')}</button>
-        <button type="button" onClick={() => {
-          toggle.current?.focus()
-          setExpanded(false)
-          onSetup()
-        }}>{t('iosSetupTitle')}</button>
-        <span className={Style.mode}>{t(transitioning ? 'plusSessionStarting' : mode === 'video' ? 'plusIosVideoMode' : mode === 'video-error' ? 'plusIosVideoFailed' : 'plusIosScreenshotMode')}</span>
-        <p className={Style.hint}>{t('plusIosBroadcastHint')}</p>
-      </div>
-    </div>
+    <MirrorToolsPanel id="ios-mirror-tools" expanded={expanded} footer={<>
+      <span className={FloatingStyle.status} role="status"
+        title={t(mode === 'video' ? 'plusIosVideoMode' : 'plusIosScreenshotMode')}>
+        {transitioning ? t('plusSessionStarting') : mode === 'video' ? 'ReplayKit' : 'WDA'}
+      </span>
+      <MirrorToolsSelect label={t('plusIosMirrorMode')} disabled={transitioning || !connected}
+        value={mode === 'video-starting' ? 'video' : mode || 'screenshot'}
+        onChange={event => {
+          onVideo(event.currentTarget.value === 'video')
+          if (!keyboardInteraction.current) setFocused(false)
+        }}>
+        {mode === 'video-error' && <option value="video-error" disabled>{t('plusIosChooseMode')}</option>}
+        <option value="video">{t('plusIosVideoOption')}</option>
+        <option value="screenshot">{t('plusIosScreenshotOption')}</option>
+      </MirrorToolsSelect>
+      {mode === 'video-error' && <p className={FloatingStyle.modeHint} role="alert">{t('plusIosVideoFailed')}</p>}
+      {mode === 'screenshot' && <p className={FloatingStyle.modeHint}>{t('plusIosBroadcastHint')}</p>}
+    </>}>
+      <ToolbarIcon icon="circle" title={t('plusIosHome')} disabled={transitioning || !connected} onClick={onHome} />
+      <ToolbarIcon icon="setting" title={t('iosSetupTitle')} onClick={() => {
+        toggle.current?.focus()
+        setExpanded(false)
+        onSetup()
+      }} />
+    </MirrorToolsPanel>
   </div>
 })

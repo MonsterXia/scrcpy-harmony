@@ -184,6 +184,16 @@ export class IosMirror {
   private actions(geometry: IosGeometry, points: Array<{ x: number; y: number; at: number }>, releasedAt?: number) {
     const position = (p: { x: number; y: number }) => ({ x: Math.min(geometry.width - 1, p.x * geometry.width), y: Math.min(geometry.height - 1, p.y * geometry.height) })
     const result: Array<Record<string, unknown>> = [{ type: 'pointerDown', ...position(points[0]) }]
+    // A desktop drag can arrive as just a down and an up at different positions.
+    // Give XCTest a sampled path even when the mouse events share a timestamp.
+    if (releasedAt !== undefined && points.length === 2) {
+      const [a, b] = points
+      const distance = Math.hypot((b.x - a.x) * geometry.width, (b.y - a.y) * geometry.height)
+      if (distance >= 10) {
+        const duration = Math.max(120, b.at - a.at)
+        points = [a, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, at: a.at + Math.round(duration / 2) }, { ...b, at: a.at + duration }]
+      }
+    }
     for (let i = 1; i < points.length; i++) result.push({ type: 'pointerMove', ...position(points[i]), duration: Math.max(1, Math.min(10000, points[i].at - points[i-1].at)) })
     const hold = Math.max(points.length === 1 ? 50 : 0, (releasedAt ?? points[points.length - 1].at) - points[points.length - 1].at)
     if (hold) result.push({ type: 'pause', duration: hold })

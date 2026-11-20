@@ -1,4 +1,4 @@
-export type IosSetupPhase = 'idle' | 'checking' | 'login' | 'authenticating' | 'challenge' | 'team' | 'signing' | 'installing' | 'mounting' | 'starting' | 'ready' | 'deferred' | 'error' | 'cancelled'
+export type IosSetupPhase = 'idle' | 'checking' | 'login' | 'authenticating' | 'challenge' | 'verifying' | 'sending' | 'team' | 'signing' | 'installing' | 'mounting' | 'starting' | 'ready' | 'deferred' | 'error' | 'cancelled'
 export interface IosSigningTeam { id: string; name?: string; kind?: string }
 export interface IosSetupState {
   phase: IosSetupPhase
@@ -6,7 +6,7 @@ export interface IosSetupState {
   teams?: IosSigningTeam[]
   expiresAt?: number
   error?: string
-  challenge?: { sms: boolean; unknown: boolean; numbers: Array<{ id: number; lastTwoDigits: string }>; selectedNumberId?: number }
+  challenge?: { sms: boolean; unknown: boolean; retry?: boolean; numbers: Array<{ id: number; lastTwoDigits: string }>; selectedNumberId?: number }
 }
 export type IosSetupAction =
   | { action: 'status' | 'prepare' | 'cancel' | 'logout' | 'reauthorize' }

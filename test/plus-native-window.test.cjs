@@ -7,7 +7,7 @@ const { transformSync } = require('esbuild')
 const loadAutomation = require('./helpers/load-automation.cjs')
 const config = Uint8Array.from([0,0,0,1,0x67,0x42,0,0x1f,0,0,0,1,0x68,0x11])
 const key = Uint8Array.from([0,0,0,1,0x65,1])
-function fixture(provisioning = {}) {
+function fixture(provisioning = {}, clock = Date) {
   const handlers = new Map(), windows = [], backends = []
   class Android {
     constructor(target) { this.target = target; this.closed = false; this.inputs = []; backends.push(this) }
@@ -20,7 +20,7 @@ function fixture(provisioning = {}) {
   function load(file, mocks) {
     const module = { exports: {} }
     vm.runInNewContext(transformSync(fs.readFileSync(file, 'utf8'), { loader: 'ts', format: 'cjs' }).code,
-      { module, exports: module.exports, console, AbortController,
+      { module, exports: module.exports, console, AbortController, Date: clock,
         require: id => Object.hasOwn(mocks, id) ? mocks[id] : require(id) })
     return module.exports
   }
@@ -29,21 +29,29 @@ function fixture(provisioning = {}) {
     electron: { ipcMain: { handle: (key, handler) => handlers.set(key, handler) },
       screen: { getDisplayMatching: () => ({ workArea: { x: 0, y: 0, width: 1440, height: 900 } }) } },
     'share/main/lib/window': {
-      create() {
-        const window = new EventEmitter(); window.webContents = new EventEmitter(); window.webContents.mainFrame = {}
-        window.frames = []; window.webContents.send = (...args) => window.frames.push(args)
+      create(options) {
+        const window = new EventEmitter()
+        window.options = options
+        window.webContents = Object.assign(new EventEmitter(), { mainFrame: {} })
+        const contents = Object.assign(new EventEmitter(), { mainFrame: {} })
+        window.mirrorView = { webContents: contents }
+        window.frames = []; contents.send = (...args) => window.frames.push(args)
         window.isDestroyed = () => window.destroyed === true
+        contents.isDestroyed = window.isDestroyed
         window.destroy = () => { if (!window.destroyed) { window.destroyed = true; window.emit('closed') } }
         window.focus = () => { window.focused = true }; windows.push(window); return window
       },
-      loadPage(window) { window.webContents.emit('did-navigate') }, getWin() {},
+      loadPage(window) { window.mirrorView.webContents.emit('did-navigate') }, getWin() {},
     },
     '../lib/devices/android': { AndroidMirror: Android },
     '../lib/devices/airplay': { AirplayMirror: Ios },
     '../lib/devices/ios': { IosMirror: class extends Android {} },
     '../lib/devices/media': load('src/main/lib/devices/media.ts', {}),
   })
-  const invoke = (name, window, ...args) => Promise.resolve().then(() => handlers.get(name)({ sender: window.webContents, senderFrame: window.webContents.mainFrame }, ...args))
+  const invoke = (name, window, ...args) => Promise.resolve().then(() => {
+    const sender = window.mirrorView.webContents
+    return handlers.get(name)({ sender, senderFrame: sender.mainFrame }, ...args)
+  })
   return { ...api, handlers, windows, backends, invoke, Android }
 }
 const target = (id = 'a') => ({ key: `android:${id}`, connectionId: id, name: 'Same model', platform: 'android' })
@@ -57,6 +65,32 @@ test('closing an iPhone window during backend cleanup cannot start deferred prov
  f.backends[0].close=async()=>{};await f.nativeMirrors.stop(f.nativeMirrors.list()[0].id)
  release();await assert.rejects(pending)
  assert.equal(w.destroyed,true);assert.deepEqual(calls,[])
+})
+test('discovery cannot reopen an iPhone reserved by manual setup', async () => {
+  let started, finish
+  const invoked = new Promise(resolve => { started = resolve })
+  const f = fixture({ iosSetup: async () => {
+    started()
+    return new Promise(resolve => { finish = resolve })
+  } })
+  const phone = usbIphone('01234567')
+  await f.nativeMirrors.start(phone)
+  const win = f.windows[0]
+  await f.invoke('nativeMirrorOpen', win)
+  const pending = f.invoke('iosSetup', win, {action: 'prepare'})
+  await invoked
+  await f.nativeMirrors.reconcileIos([phone])
+  assert.equal(f.backends.length, 1)
+  assert.equal(f.backends[0].closed, true)
+  await assert.rejects(f.invoke('nativeMirrorOpen', win), /setup in progress/)
+  await assert.rejects(f.invoke('iosSetup', win, {action: 'prepare'}), /busy/)
+  finish({phase: 'cancelled'})
+  await pending
+  await f.nativeMirrors.reconcileIos([phone])
+  assert.equal(f.backends.length, 1)
+  await f.invoke('nativeMirrorOpen', win)
+  assert.equal(f.backends.length, 2)
+  await f.nativeMirrors.dispose()
 })
 test('closing a window aborts the lifecycle signal of its active setup call',async()=>{
  let signal,finish
@@ -92,7 +126,6 @@ for (const reason of ['gui', 'force']) test(`native ${reason} stop blocks new au
   f.nativeMirrors.setAutomationHooks(controller.attach)
   await f.nativeMirrors.start(target())
   const win = f.windows[0]
-  win.webContents.isDestroyed = win.isDestroyed
   await f.invoke('nativeMirrorOpen', win)
   const presented = () => f.invoke('automationFrameState', win, { state: 'presented', metadata: { width: 2, height: 3, generation: 1, sequence: 1, rotation: 0, capturedAt: Date.now() } })
   await presented()
@@ -155,7 +188,7 @@ test('native window fits portrait and landscape video within the display, includ
     assert.ok(Math.abs((fitted.width - aspect.inset.width) / (fitted.height - aspect.inset.height) - width / height) < .01)
   }
   await assert.rejects(f.invoke('nativeMirrorFit', win, 0, 2340, 180, 16), /dimensions/)
-  await assert.rejects(Promise.resolve().then(() => f.handlers.get('nativeMirrorFit')({ sender: win.webContents, senderFrame: {} }, 1080, 2340, 180, 16)), /document/)
+  await assert.rejects(Promise.resolve().then(() => f.handlers.get('nativeMirrorFit')({ sender: win.mirrorView.webContents, senderFrame: {} }, 1080, 2340, 180, 16)), /document/)
   await f.nativeMirrors.dispose()
 })
 test('native windows retain device identity and reject input or acknowledgements from other documents', async () => {
@@ -166,7 +199,8 @@ test('native windows retain device identity and reject input or acknowledgements
   assert.equal((await f.invoke('nativeMirrorInfo', f.windows[0])).target.key, 'android:a')
   await f.invoke('nativeMirrorInput', f.windows[0], { type: 'key', keyCode: 4 })
   assert.equal(f.backends[0].inputs.length, 1); assert.equal(f.backends[1].inputs.length, 0)
-  await assert.rejects(Promise.resolve().then(() => f.handlers.get('nativeMirrorInput')({ sender: f.windows[0].webContents, senderFrame: {} }, { type: 'key', keyCode: 4 })), /document/)
+  const shell = f.windows[0].webContents
+  await assert.rejects(Promise.resolve().then(() => f.handlers.get('nativeMirrorInput')({ sender: shell, senderFrame: shell.mainFrame }, { type: 'key', keyCode: 4 })), /document/)
   await assert.rejects(f.invoke('nativeMirrorInput', f.windows[0], { type: 'touch', action: 'down', x: NaN, y: .1 }), /position/)
   f.backends[0].frame({ data: config, config: true, timestamp: 0 })
   f.backends[0].frame({ data: key, timestamp: 1 }); f.backends[0].frame({ data: key, timestamp: 2 })
@@ -424,7 +458,94 @@ test('manual video unknown allocation becomes an explicit error instead of scree
  test('iOS setup IPC is bound to the owning USB window and rejects other frames',async()=>{
  const f=fixture();await f.nativeMirrors.start({key:'ios:01234567',connectionId:'01234567',platform:'ios',transport:'usb',name:'Phone'})
  const w=f.windows[0];assert.equal((await f.invoke('iosSetup',w,{action:'status'})).phase,'idle')
- await assert.rejects(Promise.resolve().then(()=>f.handlers.get('iosSetup')({sender:w.webContents,senderFrame:{}},{action:'login',email:'test@example.com',password:'test'})))
+ await assert.rejects(Promise.resolve().then(()=>f.handlers.get('iosSetup')({sender:w.mirrorView.webContents,senderFrame:{}},{action:'login',email:'test@example.com',password:'test'})))
  await f.nativeMirrors.start(target());await assert.rejects(f.invoke('iosSetup',f.windows[1],{action:'status'}))
  await f.nativeMirrors.dispose()
+})
+
+test('native video windows enable web security for Chromium WebCodecs', async () => {
+  const f = fixture()
+  await f.nativeMirrors.start(target())
+  assert.equal(f.windows[0].options.webSecurity, true)
+})
+
+test('a wedged managed iPhone runner is recovered in the same window before retrying cleanup', async () => {
+  let recovered = false, calls = 0
+  const f = fixture({ recoverManagedIos: async (udid, signal) => {
+    assert.equal(udid, '01234567')
+    assert.equal(signal.aborted, false)
+    recovered = true
+    calls++
+  } })
+  const phone = { key: 'ios:01234567', connectionId: '01234567', platform: 'ios', transport: 'usb', state: 'ready' }
+  await f.nativeMirrors.start(phone)
+  await f.invoke('nativeMirrorOpen', f.windows[0])
+  f.backends[0].close = async () => { if (!recovered) throw Error('status timed out') }
+  f.backends[0].state('disconnected')
+  await Promise.all([f.nativeMirrors.reconcileIos([phone]), f.nativeMirrors.reconcileIos([phone])])
+  assert.equal(calls, 1)
+  assert.equal(f.windows.length, 1)
+  assert.equal(f.backends.length, 2)
+  assert.equal(f.nativeMirrors.list()[0].state, 'running')
+  assert.equal(f.backends[1].videoEnabled, true)
+})
+
+test('ReplayKit retries a confirmed preview fallback after reconnect, and honors the user choosing screenshots', async () => {
+  let now = 1000, starts = 0
+  const f = fixture({}, {now: () => now}), phone = usbIphone('01234567')
+  f.Android.prototype.setVideo = async function(enabled) {
+    if (enabled && ++starts === 2) { this.state('video-error'); throw Error('extension not ready') }
+    this.state(enabled ? 'video' : 'screenshot')
+  }
+  await f.nativeMirrors.start(phone)
+  const win = f.windows[0]
+  await f.invoke('nativeMirrorOpen', win)
+  f.backends[0].state('disconnected')
+  await f.nativeMirrors.reconcileIos([phone])
+  assert.equal(f.nativeMirrors.list()[0].videoMode, 'video-error')
+  await f.nativeMirrors.reconcileIos([phone])
+  assert.equal(starts, 2)
+  now += 6000
+  await Promise.all([f.nativeMirrors.reconcileIos([phone]), f.nativeMirrors.reconcileIos([phone])])
+  assert.equal(starts, 3)
+  assert.equal(f.nativeMirrors.list()[0].videoMode, 'video')
+  await f.invoke('nativeMirrorVideo', win, false, 'decode-error')
+  now += 6000
+  await f.nativeMirrors.reconcileIos([phone])
+  assert.equal(starts, 4)
+  await f.invoke('nativeMirrorVideo', win, false)
+  now += 6000
+  await f.nativeMirrors.reconcileIos([phone])
+  assert.equal(starts, 4)
+  await f.nativeMirrors.dispose()
+})
+
+test('unplugging during a ReplayKit retry closes that backend before reconnecting the same iPhone', async () => {
+  let now = 1000
+  const f = fixture({}, { now: () => now }), phone = usbIphone('01234567')
+  await f.nativeMirrors.start(phone)
+  await f.invoke('nativeMirrorOpen', f.windows[0])
+  f.backends[0].state('disconnected')
+  await f.nativeMirrors.reconcileIos([phone])
+  const backend = f.backends[1]
+  backend.state('video-error')
+  now += 6000
+  let finishVideo, finishClose
+  backend.setVideo = () => new Promise(resolve => { finishVideo = resolve })
+  backend.close = () => new Promise(resolve => { finishClose = resolve })
+  const retry = f.nativeMirrors.reconcileIos([phone])
+  const unplugged = f.nativeMirrors.reconcileIos([])
+  assert.equal(typeof finishClose, 'function')
+  assert.equal(f.nativeMirrors.list()[0].state, 'disconnected')
+  finishVideo()
+  await retry
+  const reappeared = f.nativeMirrors.reconcileIos([phone])
+  assert.equal(f.backends.length, 2)
+  backend.close = async () => {}
+  finishClose()
+  await Promise.all([unplugged, reappeared])
+  await f.nativeMirrors.reconcileIos([phone])
+  assert.equal(f.backends.length, 3)
+  assert.equal(f.nativeMirrors.list()[0].state, 'running')
+  await f.nativeMirrors.dispose()
 })

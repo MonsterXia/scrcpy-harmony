@@ -60,7 +60,7 @@ export async function startSelected(key: string) {
   if (!target) throw new Error('Refresh devices before starting')
   if (target.platform === 'harmony') {
     if (target.state !== 'ready') throw new Error('Device requires authorization')
-    screencast.showWin(target)
+    await screencast.showWin(target)
   }
   else await mirrorSessions.start(target)
 }

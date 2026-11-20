@@ -42,7 +42,7 @@ vm.runInContext(
 )
 const widgets = widgetContext.Widgets
 
-function load(file, mocks, globals = {}) {
+function load(file, mocks, globals = {}, allExports = false) {
   const module = { exports: {} }
   vm.runInNewContext(
     transformSync(
@@ -60,12 +60,10 @@ function load(file, mocks, globals = {}) {
       ...globals,
     },
   )
-  return module.exports.default
+  return allExports ? module.exports : module.exports.default
 }
 // Actual Toolbar, React hooks, MobX observer and installed Luna widgets.
-// The shared icon's presentation-only forwarding is adapted below so this
-// fixture also runs in CI's checkout without submodules. Timers and capture
-// stats are controlled; no device access.
+// Timers and capture stats are controlled.
 async function fixture(
   t,
   { strict = false, target = { key: 'synthetic-a' }, captureClient } = {},
@@ -77,16 +75,16 @@ async function fixture(
     'src/renderer/screencast/components/Toolbar.tsx',
     {
       '../store': store,
+      './ToolbarToggle': load('src/renderer/screencast/components/ToolbarToggle.tsx', {
+        './Toolbar.module.scss': {}, 'common/util': { t: key => key },
+      }),
+      './MirrorToolsPanel': load('src/renderer/screencast/components/MirrorToolsPanel.tsx', {
+        './Toolbar.module.scss': {}, 'luna-toolbar/react': widgets,
+      }, {}, true),
       './Toolbar.module.scss': {},
       'common/util': { t: (key) => key },
       'luna-toolbar/react': widgets,
-      'share/renderer/components/ToolbarIcon': (props) => {
-        return React.createElement(
-          widgets.LunaToolbarButton,
-          { onClick: props.onClick, disabled: props.disabled, state: props.state },
-          React.createElement('span', { className: `icon-${props.icon}` }),
-        )
-      },
+      'share/renderer/components/ToolbarIcon': load('src/share/renderer/components/ToolbarIcon.tsx', {}),
       'licia/fullscreen': {},
       'licia/download': {},
     },
@@ -187,12 +185,16 @@ test('tools start hidden, reveal on demand and Escape restores focus', async (t)
   const f = await fixture(t)
   const toggle = f.container.querySelector('[aria-controls="screencast-tools"]')
   const panel = f.container.querySelector('#screencast-tools')
+  assert.equal(toggle.querySelectorAll('svg circle').length, 2)
   assert.equal(panel.hasAttribute('inert'), true)
   assert.equal(toggle.getAttribute('aria-expanded'), 'false')
   await act(async () => toggle.click())
   assert.equal(panel.hasAttribute('inert'), false)
   assert.equal(toggle.getAttribute('aria-expanded'), 'true')
-  await act(async () => f.button().focus())
+  await act(async () => toggle.focus())
+  await act(async () => toggle.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })))
+  assert.equal(document.activeElement, f.button())
+  assert.equal(panel.querySelector('button[aria-label="alwaysOnTop"]').getAttribute('aria-pressed'), 'false')
   await act(async () => f.button().dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })))
   assert.equal(panel.hasAttribute('inert'), true)
   assert.equal(document.activeElement, toggle)

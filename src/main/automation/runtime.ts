@@ -43,7 +43,7 @@ export function createAutomationRuntime(instanceId: string, version: string) {
         return
       }
       if (source.target.platform !== 'harmony') throw new AutomationFault('UNSUPPORTED', 'Input is not supported on this platform')
-      return withTrustedCaptureInput(source.window.webContents,source.target.key,async (key,signal,lease) => {
+      return withTrustedCaptureInput(source.contents ?? source.window.webContents,source.target.key,async (key,signal,lease) => {
         const current: AutomationContext = { ...context, signal: AbortSignal.any([context.signal,signal]) }
         checkContext(current)
         const size = await waitForRead(current, () => lease.driver.getDisplaySize())

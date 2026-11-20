@@ -1,0 +1,220 @@
+{
+  "date": "2026-11-20",
+  "host": "macOS arm64",
+  "installation": "/Applications/Scrcpy Plus.app",
+  "signature": "ad hoc, verified with codesign --verify --deep --strict",
+  "installedAsarSha256": "ae8f7d37d2155316ec34073e406c5acbd9000b3c28079f01be2693a8b8b4cfe1",
+  "dmgSha256": "7ff655ca5be1650c8c8fca5becc9ca6d89e22322d1d937d6502a7814092d60cc",
+  "physicalDevices": [
+    "Mi 10 Ultra",
+    "Huawei nova 15",
+    "USB iPhone"
+  ],
+  "mergedWindow": {
+    "observations": [
+      "Physical mouse clicks on the two header sliders opened the HarmonyOS and iPhone icon toolbars.",
+      "HarmonyOS quality and iPhone mode used the same picker. The two-line Chinese broadcast hint fit within the iPhone tile.",
+      "Selected Screenshots, tapped the Utilities folder in the iPhone tile and observed the folder open. Selected Video, clicked the Home icon and observed the home screen."
+    ],
+    "wdaBroadcastAfterChoosingScreenshots": {
+      "state": "connected",
+      "sessions": []
+    },
+    "wdaBroadcastAfterChoosingVideo": {
+      "state": "connected",
+      "sessions": [
+        {
+          "source": "replaykit",
+          "codec": "h264",
+          "clients": 1,
+          "width": 780,
+          "height": 1688
+        }
+      ]
+    },
+    "sessionStates": [
+      {
+        "platform": "harmony",
+        "state": "running"
+      },
+      {
+        "platform": "android",
+        "state": "running"
+      },
+      {
+        "platform": "ios",
+        "state": "running"
+      }
+    ]
+  },
+  "automatedChecks": {
+    "appTests": {
+      "passed": 1259,
+      "skipped": 2,
+      "failed": 0
+    },
+    "lintAndI18n": "passed",
+    "electronSimulatedDevice": {
+      "scope": "Real Electron production React renderer; simulated device IPC, no physical iPhone",
+      "cases": [
+        {
+          "locale": "en-US",
+          "png": true,
+          "tapMetadata": true,
+          "home": true,
+          "videoToggle": true,
+          "edgeToEdge": true,
+          "floatingToolsDoNotResizeCanvas": true,
+          "connectionErrorDoesNotResizeCanvas": true,
+          "staleFrameDimmed": true,
+          "recoveryClearsError": true,
+          "inputErrorNonBlocking": true,
+          "explicitReconnectRestoresInput": true
+        },
+        {
+          "locale": "zh-CN",
+          "png": true,
+          "tapMetadata": true,
+          "home": true,
+          "videoToggle": true,
+          "edgeToEdge": true,
+          "floatingToolsDoNotResizeCanvas": true,
+          "connectionErrorDoesNotResizeCanvas": true,
+          "staleFrameDimmed": true,
+          "recoveryClearsError": true,
+          "inputErrorNonBlocking": true,
+          "explicitReconnectRestoresInput": true
+        }
+      ],
+      "designCases": [
+        {
+          "locale": "en-US",
+          "theme": "light",
+          "width": 280,
+          "setupDisclosure": true,
+          "canvasGeometryUnchanged": true,
+          "rightAlignedTools": true
+        },
+        {
+          "locale": "en-US",
+          "theme": "light",
+          "width": 460,
+          "setupDisclosure": true,
+          "canvasGeometryUnchanged": true,
+          "rightAlignedTools": true
+        },
+        {
+          "locale": "en-US",
+          "theme": "dark",
+          "width": 280,
+          "setupDisclosure": true,
+          "canvasGeometryUnchanged": true,
+          "rightAlignedTools": true
+        },
+        {
+          "locale": "en-US",
+          "theme": "dark",
+          "width": 460,
+          "setupDisclosure": true,
+          "canvasGeometryUnchanged": true,
+          "rightAlignedTools": true
+        },
+        {
+          "locale": "zh-CN",
+          "theme": "light",
+          "width": 280,
+          "setupDisclosure": true,
+          "canvasGeometryUnchanged": true,
+          "rightAlignedTools": true
+        },
+        {
+          "locale": "zh-CN",
+          "theme": "light",
+          "width": 460,
+          "setupDisclosure": true,
+          "canvasGeometryUnchanged": true,
+          "rightAlignedTools": true
+        },
+        {
+          "locale": "zh-CN",
+          "theme": "dark",
+          "width": 280,
+          "setupDisclosure": true,
+          "canvasGeometryUnchanged": true,
+          "rightAlignedTools": true
+        },
+        {
+          "locale": "zh-CN",
+          "theme": "dark",
+          "width": 460,
+          "setupDisclosure": true,
+          "canvasGeometryUnchanged": true,
+          "rightAlignedTools": true
+        }
+      ],
+      "h264WebCodecs": true,
+      "pngFallback": true,
+      "rotationMetadata": true,
+      "errors": []
+    },
+    "toolbarStyleCases": [
+      {
+        "locale": "en-US",
+        "theme": "light",
+        "width": 250,
+        "height": "28px",
+        "overflow": 0
+      },
+      {
+        "locale": "en-US",
+        "theme": "light",
+        "width": 420,
+        "height": "28px",
+        "overflow": 0
+      },
+      {
+        "locale": "en-US",
+        "theme": "dark",
+        "width": 250,
+        "height": "28px",
+        "overflow": 0
+      },
+      {
+        "locale": "en-US",
+        "theme": "dark",
+        "width": 420,
+        "height": "28px",
+        "overflow": 0
+      },
+      {
+        "locale": "zh-CN",
+        "theme": "light",
+        "width": 250,
+        "height": "28px",
+        "overflow": 0
+      },
+      {
+        "locale": "zh-CN",
+        "theme": "light",
+        "width": 420,
+        "height": "28px",
+        "overflow": 0
+      },
+      {
+        "locale": "zh-CN",
+        "theme": "dark",
+        "width": 250,
+        "height": "28px",
+        "overflow": 0
+      },
+      {
+        "locale": "zh-CN",
+        "theme": "dark",
+        "width": 420,
+        "height": "28px",
+        "overflow": 0
+      }
+    ],
+    "toolbarStyleAssertions": "Both production panels have matching computed button style, no horizontal overflow, and fully visible screenshot instructions. Home and both mode selections dispatched the expected actions."
+  }
+}

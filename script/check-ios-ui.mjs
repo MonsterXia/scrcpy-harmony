@@ -15,6 +15,7 @@ let application
 try {
   await build({ stdin: { contents: `
     import React from 'react'; import {createRoot} from 'react-dom/client';
+    import 'luna-toolbar/css'; import './src/renderer/icon.css';
     import App from './src/renderer/native-mirror/App'; import {i18n} from './src/common/util';
     const listeners = new Map(); window.inputs=[]; window.acks=[]; window.states=[]; window.videos=[]; window.opens=[]; window.failInput=false;
     window.emit=(name,data)=>listeners.get(name)?.(data);
@@ -42,8 +43,8 @@ try {
   for(const locale of ['en-US','zh-CN']) for(const theme of ['light','dark']) for(const width of [280,460]) {
     const dictionary=JSON.parse(await fs.readFile(path.join(root,'src/common/langs',`${locale}.json`),'utf8'))
     await page.evaluate(locale=>{window.language(locale);window.emit('nativeMirrorState',{id:'ios:test',state:'running',videoMode:'video-starting'})},locale)
-    await page.waitForFunction(()=>document.querySelector('#ios-mirror-tools button')?.disabled===true)
-    assert.equal(await page.locator('#ios-mirror-tools button').first().textContent(),dictionary.plusSessionStarting)
+    await page.waitForFunction(()=>document.querySelector('#ios-mirror-tools select')?.disabled===true)
+    assert.equal(await page.locator('#ios-mirror-tools [role=status]').textContent(),dictionary.plusSessionStarting)
     await page.setViewportSize({width,height:740})
     await page.evaluate(({locale,theme})=>{
       window.language(locale);document.body.classList.toggle('-theme-with-dark-background',theme==='dark');
@@ -51,6 +52,9 @@ try {
       document.body.style.setProperty('--color-text',theme==='dark'?'#f1f3f7':'#222733');
       window.emit('nativeMirrorState',{id:'ios:test',state:'error',connectionIssue:'ios-wda'});
     },{locale,theme})
+    const setupDialog=page.getByRole('dialog')
+    await setupDialog.waitFor()
+    await page.keyboard.press('Escape')
     const card=page.getByRole('alert')
     await card.getByRole('heading',{name:dictionary.plusIosNotReady,exact:true}).waitFor()
     for (const [issue,key] of [['ios-wda-update','plusIosWdaUpdateRequired'],['ios-cleanup-unknown','plusIosCleanupUnknown']]) {
@@ -58,6 +62,8 @@ try {
       await card.getByText(dictionary[key],{exact:true}).waitFor()
     }
     await page.evaluate(()=>window.emit('nativeMirrorState',{id:'ios:test',state:'error',connectionIssue:'ios-wda'}))
+    await setupDialog.waitFor()
+    await page.keyboard.press('Escape')
     await card.getByRole('heading',{name:dictionary.plusIosNotReady,exact:true}).waitFor()
     const before=await page.locator('canvas').boundingBox()
     const box=await card.boundingBox();assert.ok(box.x>=0&&box.x+box.width<=width&&box.width<=320)
@@ -108,9 +114,12 @@ try {
     assert.deepEqual(await page.locator('canvas').boundingBox(),bounds)
     await page.evaluate(()=>window.emit('nativeMirrorFrame',{sessionId:'ios:test',sequence:10,timestamp:10,format:'png',rotation:0,data:window.png}))
     await page.waitForFunction(()=>window.states.at(-1).state==='presented')
-    await page.locator('[aria-controls="ios-mirror-tools"]').focus()
-    await page.getByRole('button',{name:dictionary.showScreencastTools,exact:true}).click()
-    await page.getByRole('button',{name:dictionary.plusIosStartVideo,exact:true}).waitFor()
+    const toggle=page.getByRole('button',{name:dictionary.showScreencastTools,exact:true})
+    await toggle.press('Enter')
+    await page.keyboard.press('Tab')
+    assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute('aria-label')),dictionary.plusIosHome)
+    const mode=page.getByRole('combobox',{name:dictionary.plusIosMirrorMode,exact:true})
+    await mode.waitFor()
     assert.deepEqual(await page.locator('canvas').boundingBox(), bounds)
     await page.locator('canvas').click({position:{x:220,y:300}})
     const inputs=await page.evaluate(()=>window.inputs.slice(-2))
@@ -118,11 +127,15 @@ try {
     await page.getByRole('button',{name:dictionary.plusIosHome,exact:true}).click()
     assert.equal(await page.evaluate(()=>window.inputs.at(-1).keyCode),3)
     await page.screenshot({path:path.join(evidence,`${locale}-screenshot.png`)})
-    await page.getByRole('button',{name:dictionary.plusIosStartVideo,exact:true}).click()
-    await page.getByRole('button',{name:dictionary.plusIosStopVideo,exact:true}).waitFor()
-    await page.getByRole('button',{name:dictionary.plusIosStopVideo,exact:true}).click()
+    await mode.selectOption('video')
+    await page.locator('#ios-mirror-tools').getByText('ReplayKit',{exact:true}).waitFor()
+    await page.evaluate(()=>window.emit('nativeMirrorState',{id:'ios:test',state:'running',videoMode:'video-error'}))
+    await page.getByRole('alert').getByText(dictionary.plusIosVideoFailed,{exact:true}).waitFor()
+    await mode.selectOption('screenshot')
+    await page.locator('#ios-mirror-tools').getByText(dictionary.plusIosBroadcastHint,{exact:true}).waitFor()
+    assert.deepEqual(await page.evaluate(()=>window.videos.slice(-2)),[true,false])
     await page.getByRole('button',{name:dictionary.hideScreencastTools,exact:true}).click()
-    await page.getByRole('button',{name:dictionary.plusIosStartVideo,exact:true}).waitFor({state:'hidden'})
+    await mode.waitFor({state:'hidden'})
     await page.waitForFunction(()=>getComputedStyle(document.getElementById('ios-mirror-tools')).visibility==='hidden')
     await page.screenshot({path:path.join(evidence,`${locale}-collapsed.png`)})
     await page.evaluate(()=>{window.failInput=true})

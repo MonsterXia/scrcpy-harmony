@@ -1,11 +1,11 @@
 import {
   BrowserWindow,
   BrowserWindowConstructorOptions,
+  WebContentsView,
   screen,
 } from 'electron'
 import types from 'licia/types'
 import defaults from 'licia/defaults'
-import remove from 'licia/remove'
 import each from 'licia/each'
 import path from 'path'
 import { attachTitlebarToWindow } from 'custom-electron-titlebar/main'
@@ -26,16 +26,26 @@ const logger = log('window')
 
 const store = getWindowStore()
 
+export interface MirrorWindow extends BrowserWindow {
+  mirrorView?: WebContentsView
+  mirrorHost?: BrowserWindow
+  mirrorRatio?: number
+  focusMirrorTile?: () => Promise<void>
+}
+
 interface IWinOptions {
+  detachable?: boolean
   name: string
   maximized?: boolean
   titlebar?: boolean
+  acceptFirstMouse?: boolean
   customTitlebar?: boolean
   minWidth?: number
   minHeight?: number
   width?: number
   height?: number
   preload?: boolean
+  webSecurity?: boolean
   menu?: boolean
   x?: number
   y?: number
@@ -43,9 +53,7 @@ interface IWinOptions {
   resizable?: boolean
 }
 
-const visibleWins: BrowserWindow[] = []
-const wins: types.PlainObj<BrowserWindow> = {}
-let focusedWin: BrowserWindow | null = null
+const wins: types.PlainObj<MirrorWindow> = {}
 
 const defaultOptions: Partial<IWinOptions> = {
   titlebar: true,
@@ -90,6 +98,7 @@ export function create(opts: IWinOptions) {
     minWidth: winOptions.minWidth,
     minHeight: winOptions.minHeight,
     show: false,
+    acceptFirstMouse: opts.acceptFirstMouse,
     resizable: winOptions.resizable,
   }
   if (!options.resizable) {
@@ -130,7 +139,7 @@ export function create(opts: IWinOptions) {
   if (winOptions.preload) {
     options.webPreferences = {
       preload: path.join(__dirname, '../preload/index.js'),
-      webSecurity: false,
+      webSecurity: opts.webSecurity ?? false,
       sandbox: false,
     }
   }
@@ -145,7 +154,26 @@ export function create(opts: IWinOptions) {
   }
 
   logger.debug('create', opts.name, options)
-  const win = new BrowserWindow(options)
+  const preferences = options.webPreferences
+  if (opts.detachable) delete options.webPreferences
+  const win: MirrorWindow = new BrowserWindow(options)
+  if (opts.detachable) {
+    const view = new WebContentsView({ webPreferences: preferences })
+    const contents = view.webContents
+    win.mirrorView = view
+    win.contentView.addChildView(view)
+    const resize = () => {
+      if (!win.mirrorHost) {
+        const [width, height] = win.getContentSize()
+        view.setBounds({ x: 0, y: 0, width, height })
+      }
+    }
+    resize()
+    win.on('resize', resize)
+    win.on('focus', () => { if (!win.mirrorHost) contents.focus() })
+    contents.on('page-title-updated', (_event, title) => { if (!win.isDestroyed()) win.setTitle(title) })
+    win.once('closed', () => { if (!contents.isDestroyed()) contents.close() })
+  }
   ;(win as any).customTitlebar =
     winOptions.titlebar && winOptions.customTitlebar
   if (!winOptions.menu) {
@@ -175,14 +203,9 @@ export function create(opts: IWinOptions) {
   // Make sure the window is shown even if the ready-to-show event is not emitted
   setTimeout(() => readyAndShow(), 1000)
 
-  win.on('show', () => visibleWins.push(win))
-  win.on('focus', () => {
-    focusedWin = win
-    win.webContents.send('focusWin')
-  })
-  win.on('hide', () => remove(visibleWins, (window) => window === win))
+  win.on('focus', () => pageContents(win).send('focusWin'))
   win.on('closed', () => {
-    delete wins[opts.name]
+    if (wins[opts.name] === win) delete wins[opts.name]
   })
   wins[opts.name] = win
 
@@ -200,21 +223,21 @@ export function setDefaultOptions(opts: Partial<IWinOptions>) {
 
 export function sendAll(channel: string, ...args: any[]) {
   each(wins, (win) => {
-    win.webContents.send(channel, ...args)
+    pageContents(win).send(channel, ...args)
   })
-}
-
-export function sendFocused(channel: string, ...args: any[]) {
-  if (focusedWin) {
-    focusedWin.webContents.send(channel, ...args)
-  }
 }
 
 export function sendTo(name: string, channel: string, ...args: any[]) {
   const win = getWin(name)
   if (win) {
-    win.webContents.send(channel, ...args)
+    pageContents(win).send(channel, ...args)
   }
+}
+
+export function pageContents(win: MirrorWindow) { return win.mirrorView?.webContents ?? win.webContents }
+
+export function mirrorOwner(contents: Electron.WebContents) {
+  return Object.values(wins).find((win: MirrorWindow) => win.mirrorView?.webContents === contents)
 }
 
 export function loadPage(win: BrowserWindow, q: types.PlainObj<string> = {}) {
@@ -223,9 +246,9 @@ export function loadPage(win: BrowserWindow, q: types.PlainObj<string> = {}) {
     if (!isEmpty(q)) {
       url += `?${query.stringify(q)}`
     }
-    win.loadURL(url)
+    pageContents(win).loadURL(url)
   } else {
-    win.loadFile(path.resolve(__dirname, '../renderer/index.html'), {
+    pageContents(win).loadFile(path.resolve(__dirname, '../renderer/index.html'), {
       query: q,
     })
   }
@@ -233,10 +256,6 @@ export function loadPage(win: BrowserWindow, q: types.PlainObj<string> = {}) {
 
 export function getWin(name: string) {
   return wins[name]
-}
-
-export function getFocusedWin() {
-  return focusedWin
 }
 
 export function savePos(

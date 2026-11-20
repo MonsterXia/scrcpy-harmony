@@ -1,0 +1,49 @@
+{
+  "test": "Suspend the bound iPhone WDA during live USB mirroring. Observe the same desktop session without reconnect commands.",
+  "beforePixels": [
+    780,
+    1688
+  ],
+  "transitions": [
+    {
+      "seconds": 0.3,
+      "session": "running",
+      "replacementRunner": false
+    },
+    {
+      "seconds": 11.2,
+      "session": "disconnected",
+      "replacementRunner": false
+    },
+    {
+      "seconds": 20.2,
+      "session": "error",
+      "replacementRunner": false
+    },
+    {
+      "seconds": 44.2,
+      "session": "error",
+      "replacementRunner": true
+    },
+    {
+      "seconds": 48.0,
+      "session": "running",
+      "replacementRunner": true
+    }
+  ],
+  "sameDesktopSession": true,
+  "afterPixels": [
+    1170,
+    2532
+  ],
+  "recoverySeconds": 48.2,
+  "newRunnerProcess": true,
+  "newRendererFrame": true,
+  "continuedPresenting": true,
+  "mergedWindowDuringFault": "iOS pane displayed 暂时无法连接",
+  "mergedWindowAfterRecovery": "iPhone home screen visible; tapping 实用工具 opened that folder",
+  "settledImageMode": "WDA screenshot polling; ReplayKit broadcast status idle, zero capture sessions",
+  "packageSha256": "1c1111dce554f76a56b968b52d1bb7560277208d9388a7945050dc33aec5233b",
+  "signature": "macOS arm64 ad hoc",
+  "desktopVersion": "1.0.5-dev.3"
+}

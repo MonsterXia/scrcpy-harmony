@@ -7,4 +7,4 @@ export interface AutomationWindowObserver {
   guiOpened(show?: boolean): void
   input<T>(phase: 'down' | 'move' | 'up' | undefined, operation: () => Promise<T>): Promise<T>
 }
-export type AutomationWindowHooks = (attachment: { target: ITarget; window: BrowserWindow; gui: boolean; close(): Promise<void> }) => AutomationWindowObserver
+export type AutomationWindowHooks = (attachment: { target: ITarget; window: BrowserWindow; contents?: Electron.WebContents; gui: boolean; close(): Promise<void> }) => AutomationWindowObserver

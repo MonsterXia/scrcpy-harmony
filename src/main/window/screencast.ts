@@ -1,5 +1,5 @@
 import type { AutomationWindowHooks, AutomationWindowObserver } from '../automation/windowHooks'
-import { BrowserWindow, ipcMain, screen } from 'electron'
+import { ipcMain, screen } from 'electron'
 import * as window from 'share/main/lib/window'
 import { getScreencastStore } from '../lib/store'
 import once from 'licia/once'
@@ -12,8 +12,8 @@ const store = getScreencastStore()
 
 let automationHooks: AutomationWindowHooks | undefined
 export function setAutomationHooks(hooks: AutomationWindowHooks) { automationHooks = hooks }
-const windows = new Map<string, { win: BrowserWindow; target: ITarget; automation?: AutomationWindowObserver }>()
-export function isCaptureWindow(win: unknown) { return [...windows.values()].some(entry => entry.win === win) }
+const windows = new Map<string, { win: window.MirrorWindow; contents: Electron.WebContents; target: ITarget; automation?: AutomationWindowObserver }>()
+export function isCaptureDocument(contents: Electron.WebContents) { return [...windows.values()].some(entry => entry.contents === contents) }
 export function hasWindows() { return windows.size > 0 }
 export function getWindows() { return [...windows.values()].map(entry => entry.win).filter(win => !win.isDestroyed()) }
 export function getSources() { return [...windows.values()].filter(entry => !entry.win.isDestroyed())
@@ -29,8 +29,8 @@ export function closeSession(id: string, force = false) {
   return false
 }
 function senderWindow(event: Electron.IpcMainInvokeEvent) {
-  const entry = [...windows.values()].find(({ win }) => win.webContents === event.sender)
-  if (!entry || event.senderFrame !== entry.win.webContents.mainFrame) throw new Error('Invalid capture document')
+  const entry = [...windows.values()].find(({ contents }) => contents === event.sender)
+  if (!entry || event.senderFrame !== entry.contents.mainFrame) throw new Error('Invalid capture document')
   return entry
 }
 
@@ -38,6 +38,10 @@ export function showWin(target: ITarget, gui = true) {
   const existing = windows.get(target.key)
   if (existing) {
     if (gui) {
+      if (existing.win.focusMirrorTile) {
+        existing.automation?.guiOpened(false)
+        return existing.win.focusMirrorTile()
+      }
       if (existing.automation) existing.automation.guiOpened()
       else existing.win.focus()
     }
@@ -48,14 +52,16 @@ export function showWin(target: ITarget, gui = true) {
 
   const win = window.create({
     name: `screencast-${encodeURIComponent(target.key)}`,
+    detachable: true,
     minWidth: 320,
     minHeight: 320,
     width: 500,
     height: 640,
   })
-  const automation = automationHooks?.({ target: { ...target, platform: 'harmony' }, window: win, gui, close: async () => { await closeCaptureWindow(win.webContents); win.destroy() } })
-  windows.set(target.key, { win, target: { ...target }, automation })
-  const releaseCapture = registerCaptureWindow(win.webContents)
+  const contents = win.mirrorView?.webContents ?? win.webContents
+  const automation = automationHooks?.({ target: { ...target, platform: 'harmony' }, window: win, contents, gui, close: async () => { await closeCaptureWindow(contents); win.destroy() } })
+  windows.set(target.key, { win, contents, target: { ...target }, automation })
+  const releaseCapture = registerCaptureWindow(contents)
   // BrowserWindow closed may precede webContents destroyed. Detach locally
   // before destroy on close, with closed as the direct-destroy fallback.
   win.on('close', event => {
@@ -108,7 +114,8 @@ const initIpc = once(() => {
       !Number.isFinite(verticalInset) || verticalInset < 0 || verticalInset > 512) {
       throw new Error('Invalid screencast dimensions')
     }
-    if (win.isMaximized() || win.isFullScreen()) return
+    win.mirrorRatio = frameWidth / frameHeight
+    if (win.mirrorHost || win.isMaximized() || win.isFullScreen()) return
     const bounds = win.getBounds()
     const content = win.getContentBounds()
     const area = screen.getDisplayMatching(bounds).workArea

@@ -1,18 +1,13 @@
 import { observer } from 'mobx-react-lite'
 import { createPortal } from 'react-dom'
-import LunaToolbar, {
-  LunaToolbarSelect,
-  LunaToolbarSeparator,
-  LunaToolbarSpace,
-  LunaToolbarText,
-} from 'luna-toolbar/react'
+import { LunaToolbarSeparator } from 'luna-toolbar/react'
 import ToolbarIcon from 'share/renderer/components/ToolbarIcon'
+import MirrorToolsPanel, { MirrorToolsSelect } from './MirrorToolsPanel'
 import { t } from 'common/util'
 import Style from './Toolbar.module.scss'
+import ToolbarToggle from './ToolbarToggle'
 import store from '../store'
 import download from 'licia/download'
-import toStr from 'licia/toStr'
-import toNum from 'licia/toNum'
 import fullscreen from 'licia/fullscreen'
 import { useEffect, useRef, useState } from 'react'
 
@@ -132,125 +127,96 @@ export default observer(function Toolbar() {
     >
       {createPortal(
         <div className={Style.entry}>
-          <button
-            ref={toggle}
-            type="button"
-            className={Style.toggle}
-            data-visible={expanded || buttonVisible}
-            aria-label={t(
-              expanded ? 'hideScreencastTools' : 'showScreencastTools',
-            )}
-            title={t(expanded ? 'hideScreencastTools' : 'showScreencastTools')}
-            aria-expanded={expanded}
-            aria-controls="screencast-tools"
-            onClick={() => setExpanded(!expanded)}
-          >
-            <span aria-hidden="true">{expanded ? '×' : '⋯'}</span>
-          </button>
+          <ToolbarToggle ref={toggle} expanded={expanded} visible={expanded || buttonVisible}
+            controls="screencast-tools" onClick={() => setExpanded(!expanded)} />
         </div>,
         document.body,
       )}
-      <div
-        id="screencast-tools"
-        data-visible={expanded}
-        aria-hidden={!expanded}
-        inert={!expanded}
-        className={Style.panel}
-      >
-        <LunaToolbar className={Style.container}>
-          <ToolbarIcon
-            icon="power"
-            title={t('power')}
-            onClick={inputKey(KEYCODE_POWER)}
-          />
-          <ToolbarIcon
-            icon="volume"
-            title={t('volumeUp')}
-            onClick={inputKey(KEYCODE_VOLUME_UP)}
-          />
-          <ToolbarIcon
-            icon="volume-down"
-            title={t('volumeDown')}
-            onClick={inputKey(KEYCODE_VOLUME_DOWN)}
-          />
-          <LunaToolbarSeparator />
-          <ToolbarIcon
-            icon="back"
-            title={t('back')}
-            onClick={inputKey(KEYCODE_BACK)}
-          />
-          <ToolbarIcon
-            icon="circle"
-            title={t('home')}
-            onClick={inputKey(KEYCODE_HOME)}
-          />
-          <LunaToolbarSeparator />
-          <ToolbarIcon
-            icon="camera"
-            title={t('screenshot')}
-            onClick={captureScreenshot}
-          />
-          <LunaToolbarSeparator />
-          <ToolbarIcon
-            icon="pin"
-            title={t('alwaysOnTop')}
-            state={store.alwaysOnTop ? 'hover' : ''}
+      <MirrorToolsPanel id="screencast-tools" expanded={expanded} footer={<>
+        <span
+          className={Style.status}
+          data-capture-status
+          title={t('screencastStatusHint')}
+        >
+          <span>{captureStatus.codec || t('screencastWaiting')}</span>
+          <span>
+            {captureStatus.fps === null
+              ? '—'
+              : captureStatus.fps.toFixed(1)}{' '}
+            FPS
+          </span>
+        </span>
+        {captureStatus.codec === 'JPEG' && (
+          <button
+            type="button"
+            className={Style.retryVideo}
+            disabled={!captureStatus.canRetryVideo}
+            title={t('screencastRetryVideoHint')}
             onClick={() => {
-              store.setAlwaysOnTop(!store.alwaysOnTop)
+              void screencastClient.retryVideo()
+              setCaptureStatus(status => ({ ...status, ...screencastClient.getCaptureStats() }))
             }}
-          />
-          <ToolbarIcon
-            icon="fullscreen"
-            title={t('fullscreen')}
-            onClick={toggleFullscreen}
-          />
-          <LunaToolbarSpace />
-          <div className={Style.details}>
-            <span
-              className={Style.status}
-              data-capture-status
-              title={t('screencastStatusHint')}
-            >
-              <span>{captureStatus.codec || t('screencastWaiting')}</span>
-              <span>
-                {captureStatus.fps === null
-                  ? '—'
-                  : captureStatus.fps.toFixed(1)}{' '}
-                FPS
-              </span>
-            </span>
-            {captureStatus.codec === 'JPEG' && (
-              <button
-                type="button"
-                className={Style.retryVideo}
-                disabled={!captureStatus.canRetryVideo}
-                title={t('screencastRetryVideoHint')}
-                onClick={() => {
-                  void screencastClient.retryVideo()
-                  setCaptureStatus(status => ({ ...status, ...screencastClient.getCaptureStats() }))
-                }}
-              >
-                {t(captureStatus.upgrading ? 'screencastSwitchingVideo' : 'screencastRetryVideo')}
-              </button>
-            )}
-            <LunaToolbarText text={t('scale') + ':'} />
-            <LunaToolbarSelect
-              className={Style.resolution}
-              keyName="scale"
-              onChange={(val) => {
-                store.setScale(toNum(val))
-                if (!keyboardInteraction.current) setEditing(false)
-              }}
-              title={t('screencastScaleHint')}
-              value={toStr(store.scale)}
-              options={{
-                [t('screencastOriginalScale')]: '1',
-                [t('screencastSmoothScale')]: '0.5',
-              }}
-            />
-          </div>
-        </LunaToolbar>
-      </div>
+          >
+            {t(captureStatus.upgrading ? 'screencastSwitchingVideo' : 'screencastRetryVideo')}
+          </button>
+        )}
+        <MirrorToolsSelect label={t('scale')} title={t('screencastScaleHint')} value={store.scale}
+          onChange={event => {
+            store.setScale(Number(event.currentTarget.value))
+            if (!keyboardInteraction.current) setEditing(false)
+          }}>
+          <option value="1">{t('screencastOriginalScale')}</option>
+          <option value="0.5">{t('screencastSmoothScale')}</option>
+        </MirrorToolsSelect>
+      </>}>
+        <ToolbarIcon
+          icon="power"
+          title={t('power')}
+          onClick={inputKey(KEYCODE_POWER)}
+        />
+        <ToolbarIcon
+          icon="volume"
+          title={t('volumeUp')}
+          onClick={inputKey(KEYCODE_VOLUME_UP)}
+        />
+        <ToolbarIcon
+          icon="volume-down"
+          title={t('volumeDown')}
+          onClick={inputKey(KEYCODE_VOLUME_DOWN)}
+        />
+        <LunaToolbarSeparator />
+        <ToolbarIcon
+          icon="back"
+          title={t('back')}
+          onClick={inputKey(KEYCODE_BACK)}
+        />
+        <ToolbarIcon
+          icon="circle"
+          title={t('home')}
+          onClick={inputKey(KEYCODE_HOME)}
+        />
+        <LunaToolbarSeparator />
+        <ToolbarIcon
+          icon="camera"
+          title={t('screenshot')}
+          onClick={captureScreenshot}
+        />
+        <LunaToolbarSeparator />
+        <ToolbarIcon
+          icon="pin"
+          title={t('alwaysOnTop')}
+          pressed={store.alwaysOnTop}
+          state={store.alwaysOnTop ? 'hover' : ''}
+          onClick={() => {
+            store.setAlwaysOnTop(!store.alwaysOnTop)
+          }}
+        />
+        <ToolbarIcon
+          icon="fullscreen"
+          title={t('fullscreen')}
+          onClick={toggleFullscreen}
+        />
+      </MirrorToolsPanel>
     </div>
   )
 })

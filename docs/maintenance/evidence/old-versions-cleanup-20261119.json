@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-19",
+  "removedFromOriginalLocations": 154,
+  "movedToTrash": true,
+  "logicalBytes": 21959920050,
+  "onlyInstalledApplicationVersion": "1.0.5-dev.3",
+  "latestReleaseFilesVerified": 12,
+  "configurationAndCredentialsPreserved": true,
+  "latestApplicationSignature": "passed",
+  "latestApplicationStillRunning": true,
+  "scope": "Old installed/backup/staged Scrcpy applications, old release packages and duplicate latest packages; source and verification records retained. Trash not emptied."
+}

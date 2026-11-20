@@ -98,7 +98,7 @@ export default observer(function App() {
       console.error('Native video decode failed', error)
       if (active && epoch === generation) {
         display.current = undefined; frames.reset('error'); setError('plusNativeDecodeError')
-        if (usbInput) void main.nativeMirrorVideo(false).catch(() => {})
+        if (usbInput) void main.nativeMirrorVideo(false, 'decode-error').catch(() => {})
       }
     })
     }
@@ -153,6 +153,7 @@ export default observer(function App() {
         const value = await main.nativeMirrorInfo()
         if (!active) return
         id = value.id; usbInput = value.target.platform === 'ios' && value.target.transport === 'usb'; setInfo(value); setStatus(value.state); setConnectionIssue(value.connectionIssue)
+        setVideoMode(value.videoMode || 'screenshot')
         await main.nativeMirrorOpen()
       } catch { if (active) setStatus('error') }
     })()
@@ -194,7 +195,11 @@ export default observer(function App() {
   function releasePointer(event: React.PointerEvent<HTMLCanvasElement>) {
     if (!touching.current || pointer.current !== event.pointerId) return
     touching.current = false; pointer.current = null
-    lastPoint.current = point(event, true) || lastPoint.current
+    const end = point(event, true) || lastPoint.current
+    if (!iosUsb && event.type === 'pointerup' && (end.x !== lastPoint.current.x || end.y !== lastPoint.current.y)) {
+      send({ type: 'touch', action: 'move', ...end })
+    }
+    lastPoint.current = end
     send({ type: 'touch', action: iosUsb && event.type !== 'pointerup' ? 'cancel' : 'up', ...lastPoint.current })
   }
   const failed = status === 'error' || status === 'disconnected'
@@ -218,9 +223,9 @@ export default observer(function App() {
       <span>{t('plusNativeInputError')}</span>
       <button className={StatusStyle.retryButton} type="button" onClick={() => void reconnect(true)}>{t('plusReconnectControl')}</button>
     </div>}
-    {iosUsb && <Toolbar mode={videoMode} busy={videoBusy} connected={status === 'running'} onVideo={() => {
+    {iosUsb && <Toolbar mode={videoMode} busy={videoBusy} connected={status === 'running'} onVideo={enabled => {
         setVideoBusy(true)
-        void main.nativeMirrorVideo(videoMode !== 'video').catch(() => setVideoMode('video-error')).finally(() => setVideoBusy(false))
+        void main.nativeMirrorVideo(enabled).catch(() => setVideoMode('video-error')).finally(() => setVideoBusy(false))
       }} onHome={() => send({ type: 'key', keyCode: 3 })} onSetup={() => setSetupOpen(true)} />}
     <canvas ref={canvas} width={480} height={800} className={Style.canvas} data-unavailable={status !== 'running'} tabIndex={interactive ? 0 : -1}
       aria-label={t(interactive ? 'plusInteractiveScreen' : 'plusViewOnly')}

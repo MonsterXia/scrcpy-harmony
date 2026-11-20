@@ -7,6 +7,9 @@ app.commandLine.appendSwitch(
 app.whenReady().then(() => {
   const actual = screen.getPrimaryDisplay()
   const workArea = JSON.parse(process.env.DISPLAY_WORK_AREA)
+  // Keep the simulated area clear of native reserved regions (e.g. the macOS menu).
+  workArea.x += actual.workArea.x
+  workArea.y += actual.workArea.y
   const simulated = {
     ...actual,
     workArea,
@@ -27,6 +30,9 @@ app.whenReady().then(() => {
   global.displayWindowData = JSON.parse(
     process.env.DISPLAY_SAVED_BOUNDS || '{}',
   )
-  require('../../../dist/display/main/index.cjs').showWin()
+  const capture = require('../../../dist/display/main/index.cjs')
+  capture.showWin({ key: 'synthetic', name: 'Synthetic' })
+  // Playwright waits for the host's first navigation before returning the app.
+  capture.getWindows()[0].loadURL('about:blank')
 })
 app.on('window-all-closed', () => app.quit())

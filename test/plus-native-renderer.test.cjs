@@ -2,26 +2,32 @@ const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const { setup, load, React } = require('./helpers/workspace-renderer.cjs')
 const createRoot = setup(), { act } = React
-async function fixture(t, platform = 'android', transport, extraGlobals = {}) {
+async function fixture(t, platform = 'android', transport, extraGlobals = {}, initialSession) {
   const listeners = new Map(), inputs = [], acks = [], decoded = [], outputs = [], fits = []
   const frameStates = [], decoderErrors = [], videos = []
   const main = {
     automationFrameState: async state => frameStates.push(state),
     automationFrameResult: async () => {},
     on: (name, fn) => { listeners.set(name, fn); return () => listeners.delete(name) },
-    nativeMirrorInfo: async () => ({ id: 'owned-session', target: { platform, transport, name: 'Phone' }, state: 'starting' }),
-    nativeMirrorOpen: async () => {}, nativeMirrorVideo: async enabled => videos.push(enabled), nativeMirrorInput: async input => inputs.push(input),
+    nativeMirrorInfo: async () => ({ id: 'owned-session', target: { platform, transport, name: 'Phone' }, state: 'starting', ...initialSession }),
+    nativeMirrorOpen: async () => {}, nativeMirrorVideo: async (...args) => videos.push(args), nativeMirrorInput: async input => inputs.push(input),
     nativeMirrorAck: async sequence => acks.push(sequence),
     nativeMirrorFit: async (...args) => fits.push(args),
   }
   const App = load('src/renderer/native-mirror/App.tsx', {
     'common/util': { t: key => key },
+    'share/renderer/components/ToolbarIcon': load('src/share/renderer/components/ToolbarIcon.tsx').default,
+    'luna-toolbar/react': {
+      __esModule: true,
+      default: ({ children }) => React.createElement('div', null, children),
+      LunaToolbarSpace: () => null,
+    },
     '../screencast/lib/H264Decoder': class { constructor(output, error) { outputs.push(output); decoderErrors.push(error) } push(...args) { decoded.push(args) } destroy() {} },
   }, { main, preload: { setTitle() {} }, ...extraGlobals }).default
   const host = document.body.appendChild(document.createElement('div')), root = createRoot(host)
   await act(async () => root.render(React.createElement(App)))
   t.after(async () => { await act(async () => root.unmount()); host.remove() })
-  await act(async () => listeners.get('nativeMirrorState')({ id: 'owned-session', state: 'running' }))
+  if (!initialSession) await act(async () => listeners.get('nativeMirrorState')({ id: 'owned-session', state: 'running' }))
   return { host, listeners, inputs, acks, decoded, outputs, fits, frameStates, decoderErrors, videos, main }
 }
 test('decoded dimensions fit the window once and again on screen rotation', async t => {
@@ -53,7 +59,7 @@ test('native Android canvas maps content coordinates and ignores another pointer
   await act(async () => pointer(canvas, 'pointermove', 10, 10, 2))
   assert.equal(f.inputs.length, 1)
   await act(async () => pointer(canvas, 'pointerup', 150, 300))
-  assert.equal(f.inputs[1].action, 'up'); assert.equal(f.inputs[1].x, 1); assert.equal(f.inputs[1].y, 1)
+  assert.deepEqual(f.inputs.slice(1).map(input => [input.action, input.x, input.y]), [['move', 1, 1], ['up', 1, 1]])
 })
 test('only owned frames are decoded and acknowledged', async t => {
   const f = await fixture(t)
@@ -93,7 +99,7 @@ test('USB iOS video decoder failure requests screenshot fallback', async t => {
   const f=await fixture(t,'ios','usb')
   await act(async()=>f.listeners.get('nativeMirrorFrame')({sessionId:'owned-session',sequence:1,timestamp:0,data:new Uint8Array([1])}))
   await act(async()=>f.decoderErrors[0](Error('unsupported video')))
-  assert.deepEqual(f.videos,[false])
+  assert.deepEqual(f.videos, [[false, 'decode-error']])
 })
 
 test('USB iOS always releases a GUI gesture when display metadata disappears mid-gesture', async t => {
@@ -158,4 +164,34 @@ test('pending old PNG must not become a fresh frame after reconnect starts',asyn
   await act(async()=>f.listeners.get('automationFrameRequest')({requestId:'r',method:'metadata'}))
   assert.equal(draws.length,0)
   assert.equal(afterReset.some(r=>r.state==='presented'),false)
+})
+
+test('USB iPhone mode picker sends explicit requests and reflects backend state', async t => {
+  const f = await fixture(t, 'ios', 'usb', {}, { state: 'running', videoMode: 'video' })
+  const picker = f.host.querySelector('#ios-mirror-tools select')
+  const state = (videoMode, state = 'running') => act(async () => {
+    f.listeners.get('nativeMirrorState')({ id: 'owned-session', state, videoMode })
+  })
+  const select = value => act(async () => {
+    picker.value = value
+    picker.dispatchEvent(new window.Event('change', { bubbles: true }))
+  })
+  assert.equal(picker.value, 'video')
+  await select('screenshot')
+  await state('screenshot')
+  assert.equal(picker.value, 'screenshot')
+  await select('video')
+  await state('video-starting')
+  assert.equal(picker.disabled, true)
+  await state('video-error')
+  assert.equal(picker.disabled, false)
+  assert.equal(picker.selectedOptions[0].disabled, true)
+  await select('screenshot')
+  await state('screenshot')
+  await state('video-error')
+  await select('video')
+  await state('video')
+  assert.deepEqual(f.videos, [[false], [true], [false], [true]])
+  await state('video', 'disconnected')
+  assert.equal(picker.disabled, true)
 })

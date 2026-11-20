@@ -1,6 +1,6 @@
 .page { position: relative; height: 100%; min-height: 0; display: flex; flex-direction: column; padding: 8px; gap: 8px; background: var(--color-bg-container); color: var(--color-text); overflow: hidden;
   header { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; span { font-size: 12px; line-height: 1.5; opacity: .75; } }
-  button { font: inherit; color: inherit; background: transparent; border: 1px solid #8888; border-radius: 6px; padding: 6px 10px; }
+  button:where(:not(:global(.luna-toolbar) button)) { font: inherit; color: inherit; background: transparent; border: 1px solid #8888; border-radius: 6px; padding: 6px 10px; }
   button { cursor: pointer; } button:disabled { opacity: .45; cursor: default; }
 }
 .canvas { min-height: 0; width: 100%; flex: 1; object-fit: contain; background: #080808; touch-action: none; outline-offset: -2px; }
@@ -21,22 +21,6 @@
   left: 8px; right: auto; width: 32px;
   :global(.platform-mac) & { left: auto; right: 8px; }
 }
-.toolToggle.toolToggle {
-  display: grid; place-items: center;
-  svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
-  &:hover svg, &[aria-expanded='true'] svg { opacity: 1; }
-}
-.toolPanel {
-  width: min(320px, 100%);
-  :global(.platform-mac) & { margin-left: auto; }
-}
-.tools {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 14px; font-size: 12px;
-  button { min-height: 30px; border-radius: 7px; padding: 5px 10px; border-color: var(--mirror-line); background: var(--mirror-surface); }
-  button:hover:not(:disabled) { background: var(--mirror-tint); }
-}
-.mode { flex-basis: 100%; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--mirror-line); font-size: 11px; font-weight: 500; }
-.hint { flex-basis: 100%; margin: 0; font-size: 11px; line-height: 1.6; opacity: .65; }
 @media (max-width: 320px) {
   .inputNotice { flex-wrap: wrap; left: 10px; right: 10px; gap: 8px; button { margin-left: auto; } }
 }
@@ -51,6 +35,21 @@
 .setupHelp { font-size: 12px; line-height: 1.6; opacity: .85; }
 .setupLinks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 .setupLinks button { padding: 6px 9px; border-radius: 6px; }
+.setupCard .codeInput:not([type='checkbox']) {
+  min-width: 0; height: 52px; padding-inline: .55em 0; border: 1px solid var(--dialog-line); border-radius: 10px;
+  text-align: center; font: 600 24px/1 ui-monospace, monospace; font-variant-numeric: tabular-nums; letter-spacing: .55em;
+  background: var(--dialog-hover); &::placeholder { color: var(--mirror-secondary); }
+}
+.challengeForm > button { min-height: 36px; &:disabled { opacity: .48; cursor: default; } }
+.setupCard .deliveryOptions {
+  color: var(--mirror-secondary); summary { padding: 4px 0; cursor: pointer; color: var(--dialog-accent); }
+  button { display: block; width: 100%; margin-top: 4px; padding: 8px 12px; text-align: start; font: inherit; color: var(--dialog-text); border: 0; border-radius: 8px; background: var(--dialog-hover); cursor: pointer; }
+  button:hover { color: var(--dialog-accent); }
+}
+.setupError { border-inline-start: 3px solid #cf5858; padding: 8px 10px; border-radius: 4px; background: color-mix(in srgb, #cf5858 10%, transparent); }
+.setupProgress { display: flex; align-items: center; gap: 8px; &::before { content: ''; flex: none; width: 12px; height: 12px; border: 2px solid var(--dialog-line); border-top-color: var(--dialog-accent); border-radius: 50%; animation: setupSpin .85s linear infinite; } }
+@keyframes setupSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .setupProgress::before { animation: none; } }
 
 .accountDetails {
   summary {

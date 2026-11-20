@@ -121,11 +121,11 @@ async function launch(executablePath, args, env) {
 }
 async function renderer(fn, cast = false) {
   return app.evaluate(({ BrowserWindow }, { source, cast }) => {
-    const win = BrowserWindow.getAllWindows().find(win => {
-      const url = win.webContents.getURL()
+    const contents = BrowserWindow.getAllWindows().map(win => win.mirrorView?.webContents ?? win.webContents).find(page => {
+      const url = page.getURL()
       return cast ? url.includes('page=screencast') : url.includes('index.html') && !url.includes('page=')
     })
-    return win?.webContents.executeJavaScript(`(${source})()`)
+    return contents?.executeJavaScript(`(${source})()`)
   }, { source: fn.toString(), cast })
 }
 async function waitFor(check, timeout = 60000) {
@@ -316,7 +316,7 @@ async function run() {
     assert.ok(stats.draws >= 1, 'Capture must produce a real picture')
     await app.evaluate(({ BrowserWindow }) => {
       for (const win of BrowserWindow.getAllWindows()) {
-        if (win.webContents.getURL().includes('page=screencast')) win.close()
+        if ((win.mirrorView?.webContents ?? win.webContents).getURL().includes('page=screencast')) win.close()
       }
     })
     await delay(2500)

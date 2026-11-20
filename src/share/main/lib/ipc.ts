@@ -101,12 +101,7 @@ export function init() {
   handleEvent('openExternal', <IpcOpenExternal>((url) => {
     shell.openExternal(url)
   }))
-  handleEvent('toggleDevTools', () => {
-    const win = window.getFocusedWin()
-    if (win) {
-      win.webContents.toggleDevTools()
-    }
-  })
+  ipcMain.handle('toggleDevTools', event => event.sender.toggleDevTools())
   handleEvent('sendToWindow', <IpcSendToWindow>((name, channel, ...args) => {
     window.sendTo(name, channel, ...args)
   }))
@@ -118,10 +113,12 @@ export function init() {
     window.sendAll('changeMemStore', name, val)
   })
   ipcMain.handle('showContextMenu', (event, x, y, template) => {
-    const win = BrowserWindow.fromWebContents(event.sender)
+    const owner = window.mirrorOwner(event.sender)
+    const win = owner?.mirrorHost ?? owner ?? BrowserWindow.fromWebContents(event.sender)
     if (win) {
+      const offset = owner?.mirrorView?.getBounds()
       win.focus()
-      contextMenu(x, y, template)
+      contextMenu(win, event.sender, x + (offset?.x ?? 0), y + (offset?.y ?? 0), template)
     }
   })
   handleEvent('relaunch', () => {
@@ -136,7 +133,7 @@ export function init() {
   }))
   handleEvent('openWindow', openWindow)
   ipcMain.handle('isCustomTitlebar', (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender)
+    const win = window.mirrorOwner(event.sender) || BrowserWindow.fromWebContents(event.sender)
 
     if (win) {
       return (win as any).customTitlebar

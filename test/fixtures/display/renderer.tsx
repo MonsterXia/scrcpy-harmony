@@ -1,6 +1,5 @@
 // Synthetic transport only: keep the real client, React components and CSS.
 import { createRoot } from 'react-dom/client'
-import App from '../../../src/renderer/screencast/App'
 import ScreencastClient from '../../../src/renderer/screencast/lib/ScreencastClient'
 import { i18n } from '../../../src/common/util'
 import 'luna-toolbar/css'
@@ -19,6 +18,9 @@ Object.assign(window, {
     createCaptureSession: async () => 'display-session',
     stopCaptureScreen: async () => {},
     startCaptureScreen: async () => {},
+    fitScreencast: async () => {},
+    retryCaptureVideo: async () => false,
+    finishCaptureVideo: async () => {},
     getDisplaySize: async () => displaySize,
     on: (name, callback) => {
       events.set(name, callback)
@@ -42,7 +44,10 @@ state.setAlwaysOnTop = () => {}
 state.screencastClient = new ScreencastClient('synthetic')
 i18n.locale('zh-CN')
 document.body.classList.add('platform-windows')
-createRoot(document.getElementById('app')!).render(<App />)
+// The production context menu subscribes to IPC when its module loads.
+import('../../../src/renderer/screencast/App').then(({ default: App }) => {
+  createRoot(document.getElementById('app')!).render(<App />)
+})
 ;(window as any).displayTest = {
   calls,
   async frame(width, height, scale = 1) {

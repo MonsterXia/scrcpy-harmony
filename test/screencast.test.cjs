@@ -83,7 +83,7 @@ async function fixture({ scale = 1, width = 1084, height = 2412 } = {}) {
     client,
     draw: () => client.draw(new Uint8Array()),
     pointer: (type, x = 185.5, y = 332.5) =>
-      listeners[type]({ clientX: x, clientY: y }),
+      listeners[type]({ type, clientX: x, clientY: y }),
   }
 }
 
@@ -149,6 +149,24 @@ test('clamps a released pointer to the last valid device pixel', async () => {
   assert.deepEqual(f.calls, [
     ['down', 'device', 0, 0],
     ['up', 'device', 1083, 2411],
+  ])
+})
+
+test('a fast drag delivers its final move before release and a cancelled drag releases only once', async () => {
+  const f = await fixture()
+  await f.draw()
+  f.pointer('pointerdown')
+  f.pointer('pointerup', 253.25, 483.25)
+  f.pointer('pointerdown')
+  f.canvas.getBoundingClientRect = () => ({ width: 0, height: 0 })
+  f.pointer('pointercancel')
+  f.pointer('pointerleave')
+  assert.deepEqual(f.calls, [
+    ['down', 'device', 542, 1206],
+    ['move', 'device', 813, 1809],
+    ['up', 'device', 813, 1809],
+    ['down', 'device', 542, 1206],
+    ['up', 'device', 542, 1206],
   ])
 })
 

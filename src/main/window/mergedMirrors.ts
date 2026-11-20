@@ -1,114 +1,246 @@
-import { ipcMain } from 'electron'
-import type { BrowserWindow, WebContents } from 'electron'
-import type { MergedMirrorFrame, MirrorPlatform } from 'common/types'
+import { screen } from 'electron'
+import type { BrowserWindow, WebContents, WebContentsView } from 'electron'
+import type { MirrorPlatform } from 'common/types'
 import * as windows from 'share/main/lib/window'
 
-export interface MirrorSource { window: BrowserWindow; platform: MirrorPlatform; deviceKey: string; claimGui?(): void }
-interface SourceState {
+export interface MirrorSource {
+  window: windows.MirrorWindow
+  platform: MirrorPlatform
+  deviceKey: string
+  claimGui?(): void
+}
+
+interface Tile {
+  id: number
   source: MirrorSource
-  throttled: boolean
+  view: WebContentsView
+  contents: WebContents
   visible: boolean
-  hide: () => void
-  frame?: MergedMirrorFrame
-  pending?: Promise<void>
+  hide(): void
+  label(): void
+  enterFullscreen(): void
+  leaveFullscreen(): void
 }
-let win: BrowserWindow | undefined
+
+const labels = { android: 'Android', harmony: 'HarmonyOS', ios: 'iOS' }
+const order = Object.keys(labels)
+// Keep AppKit’s non-interactive strip above the visible content. The renderer
+// offsets its header by the same amount so its buttons stay inside the hit area.
+const toolInset = process.platform === 'darwin' ? 28 : 0
+const gap = 12,
+  header = 32
+let host: BrowserWindow | undefined
 let sources: () => MirrorSource[] = () => []
-let initialized = false
-const states = new Map<WebContents, SourceState>()
-const platforms: MirrorPlatform[] = ['android', 'harmony', 'ios']
+let interval: ReturnType<typeof setInterval> | undefined
+let layoutKey = ''
+let fullscreenTile: Tile | undefined
+let requestedFocus: Tile | undefined
+const tiles = new Map<number, Tile>()
 
-function release(contents: WebContents, state: SourceState) {
-  states.delete(contents)
-  const window = state.source.window
-  window.removeListener('show', state.hide)
-  if (!contents.isDestroyed()) contents.setBackgroundThrottling(state.throttled)
-  if (!window.isDestroyed() && state.visible) window.show()
-}
-
-function syncSources() {
-  const active = sources().filter(source => !source.window.isDestroyed())
-  const included = new Set(active.map(source => source.window.webContents))
-  for (const [contents, state] of states) if (!included.has(contents)) release(contents, state)
-  for (const source of active) {
-    const window = source.window, contents = window.webContents
-    if (states.has(contents)) continue
-    const state: SourceState = { source, throttled: contents.getBackgroundThrottling(),
-      // Newly created windows have not reached ready-to-show yet. Restore
-      // them too when leaving merged mode, but respect a user's minimization.
-      visible: !window.isMinimized(), hide: () => window.hide() }
-    states.set(contents, state)
-    contents.setBackgroundThrottling(false)
-    window.on('show', state.hide)
-    window.hide()
+function attach(source: MirrorSource, parent: BrowserWindow) {
+  const child = source.window,
+    view = child.mirrorView!
+  const tile: Tile = {
+    id: child.id,
+    source,
+    view,
+    contents: view.webContents,
+    visible: !child.isMinimized(),
+    hide: () => child.hide(),
+    label: () =>
+      view.webContents.send('mergedMirrorLabel', labels[source.platform], toolInset),
+    enterFullscreen: () => {
+      fullscreenTile = tile
+      position()
+    },
+    leaveFullscreen: () => {
+      if (fullscreenTile === tile) fullscreenTile = undefined
+      position()
+    },
   }
-  return active
+  tiles.set(child.id, tile)
+  child.mirrorHost = parent
+  child.focusMirrorTile = async () => {
+    requestedFocus = tile
+    if (parent.isMinimized()) parent.restore()
+    parent.show()
+    parent.focus()
+    if (fullscreenTile && fullscreenTile !== tile) {
+      await fullscreenTile.contents.executeJavaScript(
+        'document.fullscreenElement && document.exitFullscreen()',
+      )
+    }
+    if (requestedFocus === tile && !tile.contents.isDestroyed()) tile.contents.focus()
+  }
+  child.on('show', tile.hide)
+  view.webContents.on('did-finish-load', tile.label)
+  view.webContents.on('enter-html-full-screen', tile.enterFullscreen)
+  view.webContents.on('leave-html-full-screen', tile.leaveFullscreen)
+  child.contentView.removeChildView(view)
+  parent.contentView.addChildView(view)
+  child.hide()
+  tile.label()
 }
 
-function refresh(state: SourceState) {
-  if (state.pending) return
-  const contents = state.source.window.webContents
-  // Encoding runs asynchronously in Chromium, rather than blocking the video
-  // decoder with full-size synchronous PNG compression. Only one export per
-  // source can be outstanding; a stalled renderer cannot build an IPC queue.
-  state.pending = contents.executeJavaScript(`new Promise(resolve => {
-    const canvas = document.querySelector('canvas');
-    if (!canvas || !canvas.width || !canvas.height) return resolve(null);
-    const width = canvas.width, height = canvas.height;
-    canvas.toBlob(blob => {
-      if (!blob) return resolve(null);
-      const reader = new FileReader();
-      reader.onload = () => resolve({ image: reader.result, width, height });
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    }, 'image/jpeg', 0.95);
-  })`).then(frame => {
-    if (frame && states.get(contents) === state) state.frame = { sourceId: state.source.window.id, platform: state.source.platform, ...frame }
-  }).catch(() => {}).finally(() => { state.pending = undefined })
+function release(tile: Tile) {
+  const { window: child } = tile.source
+  tiles.delete(tile.id)
+  if (fullscreenTile === tile) fullscreenTile = undefined
+  if (requestedFocus === tile) requestedFocus = undefined
+  child.removeListener('show', tile.hide)
+  const { view, contents } = tile
+  contents.removeListener('did-finish-load', tile.label)
+  contents.removeListener('enter-html-full-screen', tile.enterFullscreen)
+  contents.removeListener('leave-html-full-screen', tile.leaveFullscreen)
+  const parent = child.mirrorHost
+  child.mirrorHost = undefined
+  child.focusMirrorTile = undefined
+  if (parent && !parent.isDestroyed()) parent.contentView.removeChildView(view)
+  if (child.isDestroyed() || contents.isDestroyed()) return
+  view.setVisible(true)
+  child.contentView.addChildView(view)
+  const [width, height] = child.getContentSize()
+  view.setBounds({ x: 0, y: 0, width, height })
+  contents.send('mergedMirrorLabel', '')
+  if (tile.visible) child.show()
 }
 
-function capture(): MergedMirrorFrame[] {
-  const active = syncSources()
-  return platforms.flatMap(platform => active.filter(source => source.platform === platform).map(source => {
-    const state = states.get(source.window.webContents)!
-    refresh(state)
-    // Return each source separately, including multiple devices of one OS.
-    // Every window hidden by syncSources must have a column in the merged view.
-    return state.frame || { sourceId: source.window.id, platform, image: '', width: 0, height: 0 }
-  }))
+function sortedTiles() {
+  return [...tiles.values()].sort(
+    (a, b) =>
+      order.indexOf(a.source.platform) - order.indexOf(b.source.platform),
+  )
+}
+function ratio(tile: Tile) {
+  return tile.source.window.mirrorRatio || 9 / 19.5
+}
+
+function position() {
+  if (!host || host.isDestroyed()) return
+  const [width, height] = host.getContentSize()
+  const sorted = sortedTiles()
+  const total = sorted.reduce((sum, tile) => sum + ratio(tile), 0)
+  const available = Math.max(1, width - (sorted.length - 1) * gap)
+  let sum = 0
+  sorted.forEach((tile, i) => {
+    if (tile.contents.isDestroyed()) return
+    const left = Math.round((available * sum) / total)
+    sum += ratio(tile)
+    const visible = !fullscreenTile || fullscreenTile === tile
+    tile.view.setVisible(visible)
+    if (visible)
+      tile.view.setBounds(
+        fullscreenTile
+          ? { x: 0, y: 0, width, height }
+          : {
+              x: i * gap + left,
+              y: -toolInset,
+              width: Math.max(1, Math.round((available * sum) / total) - left),
+              height: Math.max(1, height) + toolInset,
+            },
+      )
+  })
+}
+
+function sync() {
+  if (!host || host.isDestroyed()) return
+  const active = sources().filter(
+    (s) => !s.window.isDestroyed() && s.window.mirrorView,
+  )
+  const ids = new Set(active.map((s) => s.window.id))
+  for (const [id, tile] of tiles) if (!ids.has(id)) release(tile)
+  for (const source of active)
+    if (!tiles.has(source.window.id)) attach(source, host)
+  if (!tiles.size) {
+    closeMergedMirrors()
+    return
+  }
+  const pinned = active.some((source) => source.window.isAlwaysOnTop())
+  if (host.isAlwaysOnTop() !== pinned) host.setAlwaysOnTop(pinned)
+  const sorted = sortedTiles()
+  const key = sorted
+    .map((tile) => [tile.source.window.id, ratio(tile)].join('/'))
+    .join(',')
+  if (key === layoutKey) return
+  layoutKey = key
+  if (!host.isFullScreen() && !host.isMaximized()) {
+    const frame = host.getBounds(),
+      content = host.getContentBounds()
+    const area = screen.getDisplayMatching(frame).workArea
+    const total = sorted.reduce((sum, tile) => sum + ratio(tile), 0)
+    const horizontal =
+      frame.width - content.width + (sorted.length - 1) * gap
+    const vertical = frame.height - content.height + header
+    const picture = Math.max(
+      1,
+      Math.min(
+        frame.width - horizontal,
+        area.width - horizontal,
+        (area.height - vertical) * total,
+      ),
+    )
+    const width = Math.round(picture + horizontal),
+      height = Math.round(picture / total + vertical)
+    host.setMinimumSize(Math.min(320, width), Math.min(200, height))
+    host.setBounds({
+      x: Math.max(area.x, Math.min(frame.x, area.x + area.width - width)),
+      y: Math.max(area.y, Math.min(frame.y, area.y + area.height - height)),
+      width,
+      height,
+    })
+  }
+  position()
 }
 
 export function getMergedMirrorWindow(deviceKey?: string) {
-  if (!win || win.isDestroyed()) return undefined
-  if (deviceKey && !sources().some(source => source.deviceKey === deviceKey && !source.window.isDestroyed())) return undefined
-  return win
+  if (!host || host.isDestroyed()) return undefined
+  if (deviceKey) {
+    sync()
+    if (![...tiles.values()].some(tile => tile.source.deviceKey === deviceKey)) return undefined
+  }
+  return host
+}
+
+function detachAll(parent: BrowserWindow) {
+  if (host !== parent) return
+  clearInterval(interval)
+  host = undefined
+  for (const tile of tiles.values()) release(tile)
+  layoutKey = ''
 }
 
 export function closeMergedMirrors() {
-  const closing = win
-  win = undefined
-  for (const [contents, state] of states) release(contents, state)
-  if (closing && !closing.isDestroyed()) closing.close()
+  const parent = host
+  if (parent) {
+    detachAll(parent)
+    if (!parent.isDestroyed()) parent.close()
+  }
 }
 
 export function showMergedMirrors(provider: () => MirrorSource[]) {
   sources = provider
-  syncSources()
-  if (win && !win.isDestroyed()) { win.show(); win.focus(); return }
-  if (!initialized) {
-    initialized = true
-    ipcMain.handle('getMergedMirrorFrames', event => {
-      if (!win || win.isDestroyed() || event.sender !== win.webContents || event.senderFrame !== win.webContents.mainFrame)
-        throw new Error('Invalid merged mirror document')
-      return capture()
-    })
+  if (host && !host.isDestroyed()) {
+    sync()
+    host?.show()
+    host?.focus()
+    return
   }
-  win = windows.create({ name: 'merged-mirrors', width: 1200, height: 850, minWidth: 600, minHeight: 400, customTitlebar: false })
-  const created = win
-  win.on('closed', () => {
-    if (win !== created) return
-    win = undefined
-    for (const [contents, state] of states) release(contents, state)
+  const parent = windows.create({
+    name: 'merged-mirrors',
+    width: 1200,
+    height: 850,
+    minWidth: 320,
+    minHeight: 200,
+    customTitlebar: false,
+    acceptFirstMouse: true,
+    preload: false,
   })
-  windows.loadPage(win, { page: 'merged-mirror' })
+  parent.setTitle('Scrcpy Plus')
+  host = parent
+  parent.on('resize', position)
+  parent.on('close', () => detachAll(parent))
+  parent.on('closed', () => detachAll(parent))
+  interval = setInterval(sync, 250)
+  sync()
+  if (host) parent.show()
 }

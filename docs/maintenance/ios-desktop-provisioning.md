@@ -92,3 +92,7 @@ IPA 打包排除 AppleDouble 元数据、拒绝 embedded.mobileprovision，将 X
 三部分独立审查确认并修复：退出登录与登录/准备并发、窗口销毁或初始化等待后的迟到安装、旧预约清理后误报其他客户端空闲、退出登录删除唯一签名私钥、WDA 补丁升级复用旧源码/Runner 缓存。新增交错回归先失败再通过；完整记录见[本轮审查](ios-provisioning-review-20261118.md)。
 
 启动链改为 DVT ProcessControl `ActivateSuspended: true`，并显式 `kill_existing=False`；新开发者镜像下 XCTest 前台启动限制参照 [Appium 官方修复](https://github.com/appium/appium-ios-remotexpc/commit/9785fa9)及[指南](https://appium.github.io/appium-xcuitest-driver/latest/guides/run-preinstalled-wda/)。这修复启动机制缺口，但不能仅凭代码改动认定先前真机超时的根因或恢复结果；真机和远端 CI 结果按审查记录继续更新。
+
+预安装 Runner 使用设备开发者镜像里的 XCTest 运行库。制作 unsigned IPA 时排除主包 `Frameworks/XC*.framework`，验证外部 IPA 时也拒绝这些内嵌副本；保留测试 bundle、WebDriverAgentLib 和广播扩展。安装和主程序签名验证通过不代表 XCTest 已就绪：启动后还须核对 WDA 身份、HTTP 状态及桌面首帧。信任被拒绝与服务启动超时应分别提示，均不要求重新输入 Apple ID。
+
+2026-11-19：旧包的两份真机崩溃报告在内嵌 XCTestCore 的 `XCTRunnerDaemonSession.sharedSession` 处触发 SIGABRT。重新安装不带这些框架的组件后，在 iOS 26.4.2 上使用 CoreDevice 启动（不替换已有进程），系统服务记录了等待用户认证以及启用自动化模式成功。随后核对 Runner 身份、USB HTTP 就绪、桌面 running 状态并取得新鲜的 780 × 1688 帧。开发版对 iOS 26 使用此路径，其他版本保留原后台启动方式；等待就绪的轮询窗口延长至 90 秒。该轮不是所有 iOS 版本或持续视频帧率验收。

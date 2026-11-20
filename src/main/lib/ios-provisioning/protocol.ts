@@ -1,4 +1,4 @@
-export const setupErrors = new Set(['runner-mismatch','status-unknown','protocol','auth-required','team-unavailable','no-team','device-unavailable','certificate-limit','keychain-unavailable','signing-failed','busy','not-installed','developer-mode','start-timeout','developer-trust','device-locked','trust-computer','timeout','device-error','profile-invalid','helper-unavailable','cancelled'])
+export const setupErrors = new Set(['invalid-credentials','runner-mismatch','status-unknown','protocol','auth-required','team-unavailable','no-team','device-unavailable','certificate-limit','keychain-unavailable','signing-failed','busy','not-installed','developer-mode','start-timeout','developer-trust','launch-failed','device-locked','trust-computer','timeout','device-error','profile-invalid','helper-unavailable','cancelled'])
 export class HelperProtocol {
   private buffer = ''
   private terminal = false
@@ -18,7 +18,7 @@ export class HelperProtocol {
       else if (value.event === 'challenge') {
         const c = value.challenge
         if (!c || !Array.isArray(c.numbers) || c.numbers.length > 20) throw Error('protocol')
-        value.challenge = { sms: c.sms === true, unknown: c.unknown === true, selectedNumberId: c.selectedNumberId,
+        value.challenge = { sms: c.sms === true, unknown: c.unknown === true, retry: c.retry === true || !!c.lastError, selectedNumberId: c.selectedNumberId,
           numbers: c.numbers.map((n: any) => {
             if (!Number.isSafeInteger(n.id) || n.id < 0 || typeof n.lastTwoDigits !== 'string' || !/^\d{2}$/.test(n.lastTwoDigits)) throw Error('protocol')
             return { id: n.id, lastTwoDigits: n.lastTwoDigits }

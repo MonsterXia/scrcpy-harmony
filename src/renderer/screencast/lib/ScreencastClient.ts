@@ -460,6 +460,7 @@ export default class ScreencastClient {
       },
     )
 
+    let lastPointer: { pointerX: number; pointerY: number } | undefined
     const onTouchStart = (e: PointerEvent) => {
       if (this.destroyed) return
       if (e.button !== undefined && e.button !== 0) return
@@ -468,6 +469,7 @@ export default class ScreencastClient {
         return
       }
       const { pointerX, pointerY } = pointer
+      lastPointer = pointer
       void Promise.resolve(main.touchDown(this.connectKey, pointerX, pointerY)).catch(console.error)
       this.isTouching = true
     }
@@ -480,6 +482,7 @@ export default class ScreencastClient {
         return
       }
       const { pointerX, pointerY } = pointer
+      lastPointer = pointer
       void Promise.resolve(main.touchMove(this.connectKey, pointerX, pointerY)).catch(console.error)
     }
     const onTouchEnd = (e: PointerEvent) => {
@@ -487,22 +490,28 @@ export default class ScreencastClient {
         return
       }
       this.isTouching = false
-      const pointer = this.getPointer(e)
+      const pointer = (e.type === 'pointercancel' ? null : this.getPointer(e)) || lastPointer
       if (!pointer) {
         return
       }
       const { pointerX, pointerY } = pointer
+      if (e.type === 'pointerup' && lastPointer && (lastPointer.pointerX !== pointerX || lastPointer.pointerY !== pointerY)) {
+        void Promise.resolve(main.touchMove(this.connectKey, pointerX, pointerY)).catch(console.error)
+      }
+      lastPointer = undefined
       void Promise.resolve(main.touchUp(this.connectKey, pointerX, pointerY)).catch(console.error)
     }
     canvas.addEventListener('pointerdown', onTouchStart)
     canvas.addEventListener('pointermove', onTouchMove)
     canvas.addEventListener('pointerup', onTouchEnd)
     canvas.addEventListener('pointerleave', onTouchEnd)
+    canvas.addEventListener('pointercancel', onTouchEnd)
     this.offPointerEvents = () => {
       canvas.removeEventListener('pointerdown', onTouchStart)
       canvas.removeEventListener('pointermove', onTouchMove)
       canvas.removeEventListener('pointerup', onTouchEnd)
       canvas.removeEventListener('pointerleave', onTouchEnd)
+      canvas.removeEventListener('pointercancel', onTouchEnd)
     }
   }
 }

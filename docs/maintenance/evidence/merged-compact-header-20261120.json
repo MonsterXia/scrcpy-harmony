@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-20",
+  "version": "1.0.5-dev.3",
+  "system": "macOS arm64",
+  "installedApp": "/Applications/Scrcpy Plus.app",
+  "signature": "ad hoc, deep and strict verification passed",
+  "dmgSha256": "f78fde3d37bad7489fd885ef25fa1cd84ce1fc234959ebf4ae9135c297f88d78",
+  "installedAsarSha256": "545a4f9711e87d7a2b48f1cb6f1b8cd4f7997f66205610495b1465873fe609b8",
+  "layout": {
+    "previousHeaderDIP": 60,
+    "currentHeaderDIP": 32,
+    "observedOnRetina": "Native titlebar ended at y=64 px; all three phone pictures began at y=128 px. Only the two internal separators were visible."
+  },
+  "connectedDevices": [
+    {
+      "device": "Mi 10 Ultra",
+      "observation": "Android header aligned; lock screen visible after wake."
+    },
+    {
+      "device": "nova 15",
+      "observation": "Native mouse click on slider icon showed the HarmonyOS quality selector; second click collapsed it."
+    },
+    {
+      "device": "USB iPhone",
+      "observation": "Native mouse click on matching slider icon showed the video-mode and Home buttons; click near the top of the same button collapsed it."
+    }
+  ],
+  "applicationTests": {
+    "passed": 1258,
+    "skipped": 2,
+    "failed": 0,
+    "liciaNativeAndFallbackEach": {
+      "passed": 606,
+      "pending": 4
+    },
+    "lint": "passed"
+  },
+  "simulatedToolbarLocales": [
+    {
+      "locale": "en-US",
+      "hit": {
+        "x": 422,
+        "y": 32,
+        "width": 28,
+        "height": 24
+      },
+      "openClose": true
+    },
+    {
+      "locale": "zh-CN",
+      "hit": {
+        "x": 422,
+        "y": 32,
+        "width": 28,
+        "height": 24
+      },
+      "openClose": true
+    }
+  ],
+  "otherCheck": "The broader simulated iOS setup check timed out waiting for the English WDA Runner update instructions. The dedicated toolbar check ran separately and passed in both locales."
+}
