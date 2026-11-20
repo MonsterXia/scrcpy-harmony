@@ -25,6 +25,7 @@ function fixture(provisioning = {}, clock = Date) {
     return module.exports
   }
   const api = load('src/main/window/nativeMirror.ts', {
+    '../lib/ios-provisioning/manager': require('./helpers/load-ios.cjs')('src/main/lib/ios-provisioning/manager.ts'),
     '../lib/ios-provisioning': { setIosProvisioningBusy() {}, prepareManagedIos: async () => {}, cancelIosSetup() {}, iosSetup: async (_udid, action) => ({phase:'idle', action:action.action}), ...provisioning },
     electron: { ipcMain: { handle: (key, handler) => handlers.set(key, handler) },
       screen: { getDisplayMatching: () => ({ workArea: { x: 0, y: 0, width: 1440, height: 900 } }) } },
@@ -66,6 +67,30 @@ test('closing an iPhone window during backend cleanup cannot start deferred prov
  release();await assert.rejects(pending)
  assert.equal(w.destroyed,true);assert.deepEqual(calls,[])
 })
+test('cancelling a login waiting on mirror startup prevents deferred credential submission', async () => {
+  const actions = []
+  let finishStartup
+  const f = fixture({
+    prepareManagedIos: () => new Promise(resolve => { finishStartup = resolve }),
+    iosSetup: async (_udid, request) => {
+      actions.push(request.action)
+      return { phase: request.action === 'cancel' ? 'cancelled' : 'team' }
+    },
+  })
+  await f.nativeMirrors.start(usbIphone('01234567'))
+  const win = f.windows[0]
+  const starting = f.invoke('nativeMirrorOpen', win)
+  await new Promise(setImmediate)
+  const login = f.invoke('iosSetup', win, { action: 'login', email: 'a@example.test', password: 'test' })
+  assert.equal((await f.invoke('iosSetup', win, { action: 'cancel' })).phase, 'cancelled')
+  assert.equal((await login).phase, 'cancelled')
+  finishStartup()
+  await starting
+  assert.deepEqual(actions, ['cancel'])
+  assert.equal(f.backends[0].closed, false)
+  await f.nativeMirrors.dispose()
+})
+
 test('discovery cannot reopen an iPhone reserved by manual setup', async () => {
   let started, finish
   const invoked = new Promise(resolve => { started = resolve })

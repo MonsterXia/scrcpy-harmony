@@ -27,6 +27,7 @@ export default observer(function IosSetup({ onReady, onClose }: { onReady: () =>
   const [email,setEmail] = useState(''), [password,setPassword] = useState(''), [code,setCode] = useState('')
   const [consent,setConsent] = useState(false), [working,setWorking] = useState(false)
   const active = useRef(true), completed = useRef(false), revision = useRef(0)
+  const actionGeneration = useRef(0)
   const receive = (next: IosSetupState) => { if (active.current) setState(next) }
   useEffect(() => {
     active.current = true
@@ -44,6 +45,7 @@ export default observer(function IosSetup({ onReady, onClose }: { onReady: () =>
   },[])
   async function send(action: IosSetupAction) {
     const challenge = ['code','sms','devices','resend'].includes(action.action)
+    const generation = challenge ? actionGeneration.current : ++actionGeneration.current
     revision.current++
     if (challenge) {
       setCode('')
@@ -52,12 +54,14 @@ export default observer(function IosSetup({ onReady, onClose }: { onReady: () =>
     if (!challenge) setWorking(true)
     if (action.action === 'login') setState(current => ({ ...current, phase: 'authenticating', error: undefined }))
     try {
-      const next=await main.iosSetup(action);revision.current++;receive(next)
+      const next=await main.iosSetup(action)
+      if (generation !== actionGeneration.current) return
+      revision.current++;receive(next)
       if (active.current && next.phase==='ready' && ['login','team','prepare'].includes(action.action) && !completed.current) {completed.current=true;onReady()}
-    } catch { revision.current++;receive({phase:'error',error:'device-error'}) }
-    finally { if (active.current && !challenge) setWorking(false) }
+    } catch { if (generation === actionGeneration.current) { revision.current++;receive({phase:'error',error:'device-error'}) } }
+    finally { if (active.current && !challenge && generation === actionGeneration.current) setWorking(false) }
   }
-  const pending=['checking','authenticating','verifying','sending','challenge','signing','installing','mounting','starting'].includes(state.phase)
+  const pending=working || ['checking','authenticating','verifying','sending','challenge','signing','installing','mounting','starting'].includes(state.phase)
   const showLogin=!pending && (!state.authenticated || state.phase==='login')
   return <Dialog title={t('iosSetupTitle')} size="compact" contentClassName={Style.setupCard}
     onDismiss={pending ? undefined : onClose} footer={<DialogFooter secondary={!pending && state.authenticated && <details className={Style.accountDetails}>

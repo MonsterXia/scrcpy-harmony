@@ -93,6 +93,11 @@ function fixture() {
       },
     }
     window.mirrorView = view
+    window.syncMirrorTitlebar = () => {
+      assert.equal(view.parent, window.contentView)
+      assert.equal(window.mirrorHost, undefined)
+      window.syncedTitlebar = true
+    }
     window.mirrorRatio = 0.5
     window.contentView.addChildView(view)
     return { window, view, platform, deviceKey: platform + window.id }
@@ -139,11 +144,13 @@ test('merge moves each original interactive document, preserves separate same-pl
   t.mock.timers.tick(250)
   assert.equal(removed.view.parent, removed.window.contentView)
   assert.equal(removed.window.visible, true)
+  assert.equal(removed.window.syncedTitlebar, true)
   f.host.close()
   for (const s of sources) {
     assert.equal(s.view.parent, s.window.contentView)
     assert.equal(s.view.webContents.label, '')
     assert.equal(s.window.visible, true)
+    assert.equal(s.window.syncedTitlebar, true)
   }
 })
 

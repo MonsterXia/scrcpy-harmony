@@ -103,6 +103,7 @@ function release(tile: Tile) {
   view.setBounds({ x: 0, y: 0, width, height })
   contents.send('mergedMirrorLabel', '')
   if (tile.visible) child.show()
+  child.syncMirrorTitlebar?.()
 }
 
 function sortedTiles() {

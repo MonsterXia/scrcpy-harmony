@@ -1,4 +1,5 @@
 import { iosSetup, prepareManagedIos, recoverManagedIos, setIosProvisioningBusy } from '../lib/ios-provisioning'
+import { waitForSetup } from '../lib/ios-provisioning/manager'
 import type { IosSetupAction } from 'common/iosProvisioning'
 import type { AutomationWindowHooks, AutomationWindowObserver } from '../automation/windowHooks'
 import { ipcMain, screen } from 'electron'
@@ -10,6 +11,8 @@ import { IosMirror } from '../lib/devices/ios'
 import type { InputAction } from '../automation/input'
 import { AirplayMirror } from '../lib/devices/airplay'
 import { FrameGate } from '../lib/devices/media'
+
+const manualSetupCancelled = new Error('cancelled')
 
 interface Session {
   info: MirrorSession
@@ -299,6 +302,7 @@ class NativeMirrors {
     ipcMain.handle('iosSetup', async (event, action: IosSetupAction) => {
       const session = this.owner(event)
       if (session.target.platform !== 'ios' || session.target.transport !== 'usb' || !session.target.connectionId) throw Error('device-unavailable')
+      if (action?.action === 'cancel') session.manualSetup?.abort(manualSetupCancelled)
       const prepares = ['login','team','prepare'].includes(action?.action)
       if (prepares && session.manualSetup) throw Error('busy')
       const call = new AbortController()
@@ -306,20 +310,23 @@ class NativeMirrors {
       if (prepares) session.manualSetup = call
       try {
         if (prepares) {
-          if (session.recovery) await session.recovery.catch(() => {})
-          if (session.starting) await session.starting.catch(() => {})
+          if (session.recovery) await waitForSetup(session.recovery.catch(() => {}), call.signal)
+          if (session.starting) await waitForSetup(session.starting.catch(() => {}), call.signal)
           call.signal.throwIfAborted()
           if (session.backend) {
             await session.backend.close()
-            call.signal.throwIfAborted()
             session.backend = undefined
             this.state(session, 'disconnected'); session.gate.reset()
+            call.signal.throwIfAborted()
           }
           // The setup dialog opens the mirror once preparation succeeds.
           session.reconnectPending = false
         }
         call.signal.throwIfAborted()
         return await iosSetup(session.target.connectionId, action, call.signal)
+      } catch (error) {
+        if (error === manualSetupCancelled) return { phase: 'cancelled' }
+        throw error
       } finally {
         if (session.manualSetup === call) session.manualSetup = undefined
         session.setupCalls.delete(call)

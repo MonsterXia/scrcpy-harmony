@@ -31,6 +31,7 @@ export interface MirrorWindow extends BrowserWindow {
   mirrorHost?: BrowserWindow
   mirrorRatio?: number
   focusMirrorTile?: () => Promise<void>
+  syncMirrorTitlebar?: () => void
 }
 
 interface IWinOptions {
@@ -210,11 +211,32 @@ export function create(opts: IWinOptions) {
   wins[opts.name] = win
 
   if (winOptions.titlebar && winOptions.customTitlebar) {
-    attachTitlebarToWindow(win)
+    if (win.mirrorView) attachMirrorTitlebar(win, win.mirrorView.webContents)
+    else attachTitlebarToWindow(win)
     win.setMinimumSize(winOptions.minWidth, winOptions.minHeight)
   }
 
   return win
+}
+
+function attachMirrorTitlebar(win: MirrorWindow, contents: Electron.WebContents) {
+  // custom-electron-titlebar's standard attachment sends to the empty shell.
+  const send = (channel: string, value: boolean) => {
+    if (!win.mirrorHost && !win.isDestroyed() && !contents.isDestroyed()) contents.send(channel, value)
+  }
+  win.on('enter-full-screen', () => send('window-fullscreen', true))
+  win.on('leave-full-screen', () => send('window-fullscreen', false))
+  win.on('maximize', () => send('window-maximize', true))
+  win.on('unmaximize', () => send('window-maximize', false))
+  win.on('focus', () => send('window-focus', true))
+  win.on('blur', () => send('window-focus', false))
+  win.syncMirrorTitlebar = () => {
+    if (win.isDestroyed()) return
+    send('window-fullscreen', win.isFullScreen())
+    send('window-maximize', win.isMaximized())
+    send('window-focus', win.isFocused())
+  }
+  contents.on('did-finish-load', win.syncMirrorTitlebar)
 }
 
 export function setDefaultOptions(opts: Partial<IWinOptions>) {
