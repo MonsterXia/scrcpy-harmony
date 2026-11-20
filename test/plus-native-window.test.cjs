@@ -67,27 +67,41 @@ test('closing an iPhone window during backend cleanup cannot start deferred prov
  release();await assert.rejects(pending)
  assert.equal(w.destroyed,true);assert.deepEqual(calls,[])
 })
-test('cancelling a login waiting on mirror startup prevents deferred credential submission', async () => {
-  const actions = []
-  let finishStartup
-  const f = fixture({
-    prepareManagedIos: () => new Promise(resolve => { finishStartup = resolve }),
-    iosSetup: async (_udid, request) => {
-      actions.push(request.action)
-      return { phase: request.action === 'cancel' ? 'cancelled' : 'team' }
+test('cancelling a queued login preserves the managed-device inspection that owns mirror startup', async () => {
+  const phone = usbIphone('01234567')
+  const revision = 'a'.repeat(64)
+  const binding = { teamId: 'TEAM123456', bundleId: 'io.scrcpyplus.unsigned.WebDriverAgentRunner.xctrunner.TEAM123456', revision }
+  const operations = []
+  let finishInspection
+  const provisioning = require('./helpers/load-ios.cjs')('src/main/lib/ios-provisioning/index.ts', {
+    electron: { app: { getPath: () => '/synthetic', getAppPath: () => '/synthetic' } },
+    'node:fs/promises': {
+      readFile: async file => JSON.stringify(file.endsWith('manifest.json')
+        ? { files: [{ file: 'WDA.ipa', sha256: revision }] }
+        : { devices: { [phone.connectionId]: binding } }),
+      mkdir: async () => {}, writeFile: async () => {}, rename: async () => {},
     },
+    './helper': { IosHelper: class {
+      async run(_kind, request) {
+        operations.push(request.op)
+        if (request.op === 'account') return { authenticated: true, teams: [] }
+        assert.equal(request.op, 'inspect')
+        return new Promise(resolve => { finishInspection = resolve })
+      }
+    } },
   })
-  await f.nativeMirrors.start(usbIphone('01234567'))
+  const f = fixture(provisioning)
+  await f.nativeMirrors.start(phone)
   const win = f.windows[0]
   const starting = f.invoke('nativeMirrorOpen', win)
   await new Promise(setImmediate)
   const login = f.invoke('iosSetup', win, { action: 'login', email: 'a@example.test', password: 'test' })
   assert.equal((await f.invoke('iosSetup', win, { action: 'cancel' })).phase, 'cancelled')
   assert.equal((await login).phase, 'cancelled')
-  finishStartup()
+  finishInspection({ ready: true, installed: true, expiresAt: Date.now() + 7 * 86400000 })
   await starting
-  assert.deepEqual(actions, ['cancel'])
-  assert.equal(f.backends[0].closed, false)
+  assert.deepEqual(operations, ['account', 'inspect'])
+  assert.equal(f.nativeMirrors.list()[0].state, 'running')
   await f.nativeMirrors.dispose()
 })
 

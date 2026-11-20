@@ -302,7 +302,11 @@ class NativeMirrors {
     ipcMain.handle('iosSetup', async (event, action: IosSetupAction) => {
       const session = this.owner(event)
       if (session.target.platform !== 'ios' || session.target.transport !== 'usb' || !session.target.connectionId) throw Error('device-unavailable')
-      if (action?.action === 'cancel') session.manualSetup?.abort(manualSetupCancelled)
+      if (action?.action === 'cancel' && session.manualSetup) {
+        // A queued caller can stop waiting while automatic preparation continues.
+        session.manualSetup.abort(manualSetupCancelled)
+        return { phase: 'cancelled' }
+      }
       const prepares = ['login','team','prepare'].includes(action?.action)
       if (prepares && session.manualSetup) throw Error('busy')
       const call = new AbortController()
