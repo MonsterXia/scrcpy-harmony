@@ -3,6 +3,7 @@
   top: 8px;
   right: 8px;
   left: 8px;
+  bottom: 8px;
   z-index: 10;
   pointer-events: none;
 }
@@ -29,7 +30,10 @@
 }
 
 .toggle {
-  display: block;
+  display: grid;
+  place-items: center;
+  svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
+  &:hover svg, &[aria-expanded='true'] svg { opacity: 1; }
   width: 28px;
   height: 24px;
   padding: 0;
@@ -64,6 +68,9 @@
 
 .panel {
   max-width: 640px;
+  max-height: 100%;
+  overflow-y: auto;
+  :global(.platform-mac) & { margin-left: auto; }
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -116,7 +123,7 @@
   flex-shrink: 0;
 
   span:last-child {
-    min-width: 59px;
+    min-width: 48px;
     text-align: right;
   }
 }
@@ -125,7 +132,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  flex-shrink: 0;
+  max-width: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -151,6 +158,8 @@
   border-radius: inherit;
 
   :global(.luna-toolbar-item-button) button {
+    color: inherit;
+    font: inherit;
     height: 28px;
     margin-top: 0;
     margin-bottom: 0;
@@ -206,12 +215,10 @@
   &:disabled { opacity: 0.55; cursor: default; }
 }
 
-// Scope this to screencast so other Luna selects retain their existing look.
-.container:global(.luna-toolbar) .resolution::after {
-  // Luna's triangle would otherwise overlap Chromium's picker icon.
-  content: none;
-}
+.resolution { display: inline-flex; align-items: center; gap: 5px; }
+.modeHint { flex-basis: 100%; min-width: 0; margin: 4px; line-height: 1.4; white-space: normal; overflow-wrap: anywhere; }
 
+// Both mirrors use the same native picker in the floating toolbar.
 .container:global(.luna-toolbar) .resolution select {
   appearance: base-select;
   display: inline-flex;
@@ -304,4 +311,9 @@
       backdrop-filter: none;
     }
   }
+}
+
+:global(html[data-mirror-label]) {
+  .entry.entry { right: 8px; left: auto; top: calc(2px + var(--mirror-tool-inset)); height: 28px; width: 32px; }
+  .entry .toggle { opacity: 1; pointer-events: auto; }
 }

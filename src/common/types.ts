@@ -43,7 +43,7 @@ export interface NativeMirrorFrame {
 }
 export type IpcNativeMirrorInfo = () => Promise<NativeMirrorInfo>
 export type IpcNativeMirrorOpen = (restart?: boolean) => Promise<void>
-export type IpcNativeMirrorVideo = (enabled: boolean) => Promise<void>
+export type IpcNativeMirrorVideo = (enabled: boolean, reason?: 'decode-error') => Promise<void>
 export type IpcNativeMirrorInput = (input: NativeMirrorInput) => Promise<void>
 export type IpcNativeMirrorAck = (sequence: number) => Promise<void>
 export type IpcNativeMirrorFit = (width: number, height: number, verticalInset: number, horizontalInset: number) => Promise<void>
@@ -56,9 +56,7 @@ export interface MirrorLayoutRequest { layout: MirrorLayout; deviceKeys?: string
 export type IpcGetMirrorLayout = () => Promise<MirrorLayout>
 export type IpcFocusMirror = (deviceKey: string) => Promise<void>
 export type IpcApplyMirrorLayout = (request: MirrorLayoutRequest) => Promise<void>
-export interface MergedMirrorFrame { sourceId: number; platform: MirrorPlatform; image: string; width: number; height: number }
 export type IpcShowMergedMirrors = () => Promise<void>
-export type IpcGetMergedMirrorFrames = () => Promise<MergedMirrorFrame[]>
 export type IpcStopMirrorSession = (id: string) => Promise<void>
 
 export interface IBundleInfo {

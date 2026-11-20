@@ -2,6 +2,14 @@
 mod tests {
     use super::*;
     #[test]
+    fn distinguishes_rejected_credentials_from_other_login_failures() {
+        for status in [-20101, -22406] {
+            let error:Report = report!(isideload::SideloadError::AuthWithMessage(status,"redacted".into())).context("login failed").into_dynamic();
+            assert_eq!(code(&error), "invalid-credentials");
+        }
+        assert_ne!(code(&report!("network timeout")), "invalid-credentials");
+    }
+    #[test]
     fn rejects_unknown_ops_and_unscoped_storage() {
         assert!(validate(&serde_json::json!({"op":"exec","scope":"a".repeat(64)})).is_err());
         assert!(validate(&serde_json::json!({"op":"account","scope":"iloader"})).is_err());
@@ -47,7 +55,7 @@ use serde_json::{json,Value};
 use rootcause::prelude::*;
 use isideload::{
     anisette::{AnisetteClientInfo,remote_v3::RemoteV3AnisetteProvider},
-    auth::apple_account::{AppleAccount,AppToken,TwoFactorCallbackResponse},
+    auth::apple_account::{AppleAccount,AppToken,TwoFactorCallbackParams,TwoFactorCallbackResponse},
     dev::{developer_session::{DeveloperSession,TeamsApi,DevicesApi},teams::DeveloperTeam},
     sideload::{SideloaderBuilder,TeamSelection,builder::{MaxCertsBehavior,ExtensionsBehavior,ExtensionsBehaviorSelection}},
     util::{device::IdeviceInfo,callbacks::{MaxCertsCallbackBox,ExtensionsBehaviorCallbackBox},storage::SideloadingStorage,keyring_storage::KeyringStorage},
@@ -124,8 +132,9 @@ async fn operate(mut v:Value)->Result<Value,Report>{
         if email.len()>254 || !email.contains('@'){bail!("protocol")}
         let mut password=v["password"].take().as_str().ok_or_else(||report!("protocol"))?.to_owned();
         let mut acc=account(&email,&scope).await?;
-        let result=acc.login(&password,async |params| {
-            emit(json!({"event":"challenge","challenge":params}));
+        let result=acc.login(&password,async |params: TwoFactorCallbackParams| {
+            let numbers:Vec<_>=params.numbers.iter().map(|number|json!({"id":number.id,"lastTwoDigits":number.last_two_digits})).collect();
+            emit(json!({"event":"challenge","challenge":{"numbers":numbers,"retry":params.last_error.is_some(),"sms":params.sms,"unknown":params.unknown,"selectedNumberId":params.selected_number_id}}));
             let response=read()?;
             let action=text(&response,"action")?;
             Ok(match action {
@@ -182,6 +191,11 @@ async fn operate(mut v:Value)->Result<Value,Report>{
     Ok(json!({"bundleId":format!("{PREFIX}.{team}")}))
 }
 fn code(e:&Report)->&'static str {
+    for cause in e.iter_reports() {
+        if let Some(isideload::SideloadError::AuthWithMessage(-20101 | -22406, _)) = cause.downcast_current_context::<isideload::SideloadError>() {
+            return "invalid-credentials";
+        }
+    }
     let s=format!("{e:?}").to_lowercase();
     for code in ["protocol","auth-required","team-unavailable","no-team","device-unavailable"]{if s.contains(code){return code}}
     if s.contains("maximum")&&s.contains("certificate"){return "certificate-limit"}

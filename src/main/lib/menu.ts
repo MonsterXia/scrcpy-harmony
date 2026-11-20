@@ -1,5 +1,5 @@
 import pkg from '../../../package.json'
-import { Menu, MenuItemConstructorOptions, app, shell } from 'electron'
+import { Menu, MenuItemConstructorOptions, app, shell, webContents } from 'electron'
 import type { BaseWindow, MenuItem } from 'electron'
 import * as window from 'share/main/lib/window'
 import * as terminal from 'share/main/window/terminal'
@@ -11,7 +11,7 @@ import isWindows from 'licia/isWindows'
 import { getUserDataPath, handleEvent } from 'share/main/lib/util'
 import * as updater from 'share/main/lib/updater'
 import { isDev } from 'share/common/util'
-import { isCaptureWindow } from '../window/screencast'
+import { isCaptureDocument } from '../window/screencast'
 import { editWindow } from './screencastEdit'
 import { getSettingsStore } from './store'
 
@@ -104,12 +104,12 @@ function getTemplate(): MenuItemConstructorOptions[] {
       },
       {
         label: t('delete'),
-        click: (_item: MenuItem, focused: BaseWindow | undefined) => editWindow('delete', focused, isCaptureWindow(focused) ? focused as Electron.BrowserWindow : undefined),
+        click: (_item: MenuItem, focused: BaseWindow | undefined) => editWindow('delete', webContents.getFocusedWebContents() ?? (focused as Electron.BrowserWindow | undefined)?.webContents, isCaptureDocument),
       },
       {
         label: t('selectAll'),
         accelerator: 'CommandOrControl+A',
-        click: (_item: MenuItem, focused: BaseWindow | undefined) => editWindow('selectAll', focused, isCaptureWindow(focused) ? focused as Electron.BrowserWindow : undefined),
+        click: (_item: MenuItem, focused: BaseWindow | undefined) => editWindow('selectAll', webContents.getFocusedWebContents() ?? (focused as Electron.BrowserWindow | undefined)?.webContents, isCaptureDocument),
       },
     ],
   }

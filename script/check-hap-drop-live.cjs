@@ -227,10 +227,15 @@ async function drop(page, files, selector = 'canvas', point) {
     await run('main fullscreen toolbar', mainPage, [upgrade], 1, 0, packages[1].versionName, toolbarDropSelector)
     await mainPage.bringToFront()
     await mainPage.evaluate(() => document.fullscreenElement ? document.exitFullscreen() : undefined)
-    const newWindow = app.waitForEvent('window')
+    const newWindow = app.context().waitForEvent('page', {
+      predicate: async page => {
+        await page.waitForURL(url => url.searchParams.get('page') === 'screencast')
+        return true
+      },
+    })
     await mainPage.evaluate(() => main.showScreencast())
     const cast = await newWindow; await cast.locator('canvas').waitFor(); await observe(cast)
-    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => w.webContents.getURL().includes('page=screencast')).setSize(370, 818))
+    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => (w.mirrorView?.webContents ?? w.webContents).getURL().includes('page=screencast')).setSize(370, 818))
     await run('screencast ordinary drop', cast, [upgrade], 1, 0, packages[1].versionName, 'canvas')
     // Back-to-back drops in different windows must not be mistaken for one drop,
     // and neither window may consume the other's completion notification.

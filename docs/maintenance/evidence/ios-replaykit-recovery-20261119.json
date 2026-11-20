@@ -1,0 +1,105 @@
+{
+  "before": {
+    "source": "replaykit",
+    "codec": "h264",
+    "size": [
+      780,
+      1688
+    ]
+  },
+  "transitions": [
+    [
+      0.3,
+      "running",
+      false,
+      null,
+      false
+    ],
+    [
+      11.0,
+      "disconnected",
+      false,
+      null,
+      false
+    ],
+    [
+      20.7,
+      "error",
+      false,
+      null,
+      false
+    ],
+    [
+      43.6,
+      "error",
+      true,
+      null,
+      false
+    ],
+    [
+      46.6,
+      "starting",
+      true,
+      "idle",
+      false
+    ],
+    [
+      48.2,
+      "running",
+      true,
+      "idle",
+      false
+    ],
+    [
+      66.4,
+      "running",
+      true,
+      "connected",
+      true
+    ]
+  ],
+  "recoverySeconds": 66.4,
+  "sameDesktopSession": true,
+  "newRunnerProcess": true,
+  "after": {
+    "source": "replaykit",
+    "codec": "h264",
+    "clients": 1,
+    "size": [
+      780,
+      1688
+    ]
+  },
+  "continuousFrameSamples": 5,
+  "presentationSampleIntervalMs": 12457,
+  "fault": "Suspended only the bound WDA during confirmed ReplayKit H.264 video in the three-device merged window.",
+  "transitionsColumns": [
+    "seconds since suspension",
+    "desktop session state",
+    "replacement WDA process observed",
+    "broadcast state",
+    "ReplayKit capture with client observed"
+  ],
+  "firstBroadcastAttempt": "HTTP 408 while iOS still reported a previous screen capture; owned capture stopped before automatic retry",
+  "postClickHeartbeatSamples": [
+    {
+      "heartbeatMs": 1795072331330,
+      "encodedFrames": 1239,
+      "encodedPerSec": 31.3
+    },
+    {
+      "heartbeatMs": 1795072333345,
+      "encodedFrames": 1302,
+      "encodedPerSec": 31.3
+    },
+    {
+      "heartbeatMs": 1795072337325,
+      "encodedFrames": 1421,
+      "encodedPerSec": 29
+    }
+  ],
+  "mergedWindowClick": "Tapped the Utilities folder on the iPhone home screen and observed the folder open in the same merged window.",
+  "desktopVersion": "1.0.5-dev.3",
+  "signature": "macOS arm64 ad hoc",
+  "packageSha256": "da150a42f934b3f1b3633670d8bc0902b1eee88deb312a9a9a87332d62df1904"
+}

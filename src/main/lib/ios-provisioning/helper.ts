@@ -9,7 +9,7 @@ import { HelperProtocol } from './protocol'
 import type { HelperEvent } from './manager'
 export class IosHelper {
   private verified?: Promise<void>
-  private auth?: ChildProcessWithoutNullStreams
+  private auth?: { child: ChildProcessWithoutNullStreams; waitingForServer: () => void }
   constructor(private root: string, private scope: string, private verifyNative = true, private journalDirectory?: string) {}
   private journal(udid: string): ReservationJournal {
     if(!this.journalDirectory || !/^[a-fA-F0-9-]{8,64}$/.test(udid))throw Error('protocol')
@@ -45,8 +45,9 @@ export class IosHelper {
     return this.verified
   }
   reply(value: Record<string, unknown>) {
-    if (!this.auth || this.auth.killed) throw Error('auth-required')
-    this.auth.stdin.write(JSON.stringify(value) + '\n')
+    if (!this.auth || this.auth.child.killed) throw Error('auth-required')
+    this.auth.waitingForServer()
+    this.auth.child.stdin.write(JSON.stringify(value) + '\n')
   }
   async run(kind: 'sign' | 'device', payload: Record<string, unknown>, event: (event: HelperEvent) => void, signal: AbortSignal): Promise<any> {
     await this.verify(); signal.throwIfAborted()
@@ -59,13 +60,16 @@ export class IosHelper {
     env.TMPDIR = temporary; env.TMP = temporary; env.TEMP = temporary
     return new Promise((resolve,reject) => {
       const child = spawn(executable, [], { stdio: 'pipe', env, windowsHide: true })
-      if (payload.op === 'login') this.auth = child
       let release: (() => Promise<void>) | undefined, guarding = false
       let guardWork: Promise<void> | undefined
       let result: unknown, failure: string | undefined, stderrBytes = 0, force: ReturnType<typeof setTimeout> | undefined
       const stop = (code: string) => { failure ||= code; child.kill(); force ||= setTimeout(() => child.kill('SIGKILL'),2000) }
       const abort = () => stop('cancelled')
-      const timeout = setTimeout(() => stop('timeout'), payload.op === 'inspect' ? 30000 : 300000)
+      let timeout: ReturnType<typeof setTimeout>
+      const deadline = (ms: number) => { clearTimeout(timeout); timeout = setTimeout(() => stop('timeout'), ms) }
+      if (payload.op === 'login') {
+        this.auth = { child, waitingForServer: () => deadline(60000) }; this.auth.waitingForServer()
+      } else deadline(payload.op === 'inspect' ? 30000 : 300000)
       signal.addEventListener('abort',abort,{once:true})
       const protocol = new HelperProtocol(value => {
         if (value.error) failure = value.error
@@ -83,7 +87,10 @@ export class IosHelper {
             if (child.killed || child.exitCode !== null) throw Error('cancelled')
             child.stdin.end(JSON.stringify({action:'install'})+'\n')
           })().catch(error=>stop(error.message === 'busy' ? 'busy' : 'status-unknown'))
-        } else event(value)
+        } else {
+          if (value.event === 'challenge' && payload.op === 'login') deadline(300000)
+          event(value)
+        }
       })
       child.stdout.setEncoding('utf8')
       child.stdout.on('data',chunk => { try { protocol.push(chunk) } catch { stop('protocol') } })
@@ -106,7 +113,7 @@ export class IosHelper {
         }
         await fs.rm(temporary,{recursive:true,force:true}).catch(() => {})
         clearTimeout(timeout); clearTimeout(force); signal.removeEventListener('abort',abort)
-        if (this.auth === child) this.auth = undefined
+        if (this.auth?.child === child) this.auth = undefined
         if (failure || code !== 0 || result === undefined) reject(Error(failure || 'protocol'))
         else resolve(result)
       })

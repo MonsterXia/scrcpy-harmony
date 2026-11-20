@@ -14,8 +14,9 @@ test('native edit commands route to the screencast but keep other windows native
   const cast = { webContents: { send: (...args) => calls.push(args) } }
   const local = { webContents: { selectAll: () => calls.push('all'), delete: () => calls.push('delete') } }
   const edit = module.exports.editWindow
-  edit('selectAll', cast, cast); edit('delete', cast, cast)
-  edit('selectAll', local, cast); edit('delete', local, cast)
-  edit('selectAll', undefined, cast)
+  const isCapture = contents => contents === cast.webContents
+  edit('selectAll', cast.webContents, isCapture); edit('delete', cast.webContents, isCapture)
+  edit('selectAll', local.webContents, isCapture); edit('delete', local.webContents, isCapture)
+  edit('selectAll', undefined, isCapture)
   assert.deepEqual(calls, [['screencastEdit', 'selectAll'], ['screencastEdit', 'delete'], 'all', 'delete'])
 })

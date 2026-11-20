@@ -72,7 +72,7 @@ npm start
 
 三端可以同时投屏：安卓与鸿蒙保持各自 USB／HDC 连接，iPhone 通过同一局域网 AirPlay 连接。2026-11-05 三台真机同时出图与安卓独立重开的历史后端证据见 [并发证据](evidence/three-platform/live.json)；本次 UI 改造的模拟验收不替代新的真机验证。
 
-「合并」将每台活动设备的画面放入一个窗口，按 Android／HarmonyOS／iOS 排列，同系统多设备各占一栏，顶部仅保留系统名称。参与组合的单端窗口隐藏并保持后台解码，切换为独立／并排、关闭组合窗口或排除某端时恢复原显示与后台节流策略，不重建设备连接。组合模式用于查看和截图；需触控时切回单端／并排。每端独立异步导出原尺寸 JPEG（质量 0.95），每端最多一个未完成任务；组合窗口约每 66ms 读取最新完成帧，不等待其他端，不累积队列。临时失败保留上一帧，源退出后移除对应列。IPC 只接受组合窗口主文档。实现入口为 `src/main/window/mergedMirrors.ts` 和 `src/renderer/merged-mirror/`。三台真机旧实现证据见 [live.json](evidence/merged-view/live.json)；本次安卓＋鸿蒙窗口隐藏、模式切换和持续刷新检查见 [验证记录](evidence/merged-refresh-2026-11-05/verification.json)。
+「合并」把每个独立窗口正在使用的 Electron `WebContentsView` 移入同一个窗口。Android、HarmonyOS、iOS 按此顺序共用画面高度，同系统多台设备各占一栏。视图贴齐内容区左、右和下边缘，相邻设备之间留 12 个逻辑像素。设备首帧、方向或数量变化时按实际比例调整窗口。每栏保留原解码器、输入焦点和平台工具栏，支持该连接在独立窗口中已有的点按、拖动、滚轮和键盘操作；AirPlay 仍仅支持查看。三个平台的标题栏高 32 个逻辑像素。鸿蒙和 USB iPhone 共用右侧的双滑杆按钮，点按展开对应的工具面板，再点关闭。两端展开后使用鸿蒙风格的图标工具栏。鸿蒙可以选择画质，USB iPhone 可以从「模式」下拉框切换 ReplayKit 视频和 WDA 截图，圆圈和齿轮分别用于返回主屏幕和打开 iPhone 设置。切回独立、并排或关闭合并窗口时，原视图回到对应窗口，会话继续运行。实现见 `src/main/window/mergedMirrors.ts` 和 `src/share/main/lib/window.ts`。见[三机真机验证](../maintenance/evidence/merged-live-controls-20261119.json)。
 
 安卓设备开启 USB 调试，插入后自动列出；选择设备并打开投屏窗口，在手机上确认首次 RSA 授权。主机私钥以受限权限持久化于应用配置目录，写完临时文件后原子发布，避免两台手机首次同时授权时读取到半写入密钥。直接 USB 接口不可被多进程同时占用。若在认证前遇到 ACCESS/BUSY，且 USB 序列号明确，应用释放自己的 USB 句柄并尝试复用本机 127.0.0.1:5037 已运行的 ADB 服务；严格匹配唯一在线序列号并固定 transport ID，仅关闭自己的连接，不启动/停止服务或 detach 设备。无匹配服务、未授权、序列号缺失或非接口占用错误不会选择其他设备或重放操作。回退仍失败时通过固定 connectionIssue 显示 USB 提示。2026-11-16用户报告的接口占用和授权恢复见[专项记录](../maintenance/agent-automation-android-codex-2026-11-16.md)。
 

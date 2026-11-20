@@ -20,6 +20,7 @@ export function focusMirror(deviceKey: string, provider: () => MirrorSource[]) {
   if (!source) throw new Error('No active mirror')
   source.claimGui?.()
   const window = getMergedMirrorWindow(deviceKey) || source.window
+  if (source.window.focusMirrorTile) return source.window.focusMirrorTile()
   if (window.isMinimized()) window.restore()
   window.show(); window.focus()
 }

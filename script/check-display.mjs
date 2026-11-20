@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { build as bundle } from 'esbuild'
 import { build } from 'vite'
+import { commonjsInclude } from './lib/vendor-vite.mjs'
 import react from '@vitejs/plugin-react'
 import { _electron as electron } from 'playwright-core'
 
@@ -27,8 +28,8 @@ await build({
       load(id) {
         if (id.replaceAll('\\', '/').endsWith('/screencast/store.ts'))
           return 'export default (globalThis.displayStore = {})'
-        if (id.replaceAll('\\', '/').endsWith('/renderer/lib/util.ts'))
-          return 'export async function installBundles() { throw new Error("Device operations forbidden in display fixture") }'
+        if (id.replaceAll('\\', '/').endsWith('/src/renderer/lib/util.ts'))
+          return 'export async function installDroppedBundles() { throw new Error("Device operations forbidden in display fixture") }'
       },
     },
   ],
@@ -43,6 +44,7 @@ await build({
     preprocessorOptions: { scss: { api: 'modern' } },
   },
   build: {
+    commonjsOptions: { include: commonjsInclude },
     outDir: path.join(root, 'dist/display/renderer'),
     emptyOutDir: true,
   },
@@ -65,7 +67,10 @@ await bundle({
       setup(b) {
         b.onLoad({ filter: /main[/\\]lib[/\\]store\.ts$/ }, () => ({
           contents:
-            'const store = { get: (key) => key === "screencast" ? global.displayWindowData : undefined, set() {} }; export const getWindowStore = () => store; export const getScreencastStore = () => store;',
+            'const store = { get: (key) => key === "screencast-synthetic" ? global.displayWindowData : undefined, set() {} }; export const getWindowStore = () => store; export const getScreencastStore = () => store;',
+        }))
+        b.onLoad({ filter: /hdc[/\\]captureSessions\.ts$/ }, () => ({
+          contents: 'export const registerCaptureWindow = () => () => {}; export async function closeCaptureWindow() {}',
         }))
         b.onLoad({ filter: /share[/\\]main[/\\]lib[/\\]util\.ts$/ }, () => ({
           contents:
@@ -84,6 +89,10 @@ const sourceFiles = [
   'src/renderer/screencast/components/Toolbar.module.scss',
   'src/renderer/screencast/components/Screencast.module.scss',
   'src/renderer/screencast/lib/ScreencastClient.ts',
+  'src/share/main/lib/window.ts',
+  'src/renderer/screencast/components/MirrorToolsPanel.tsx',
+  'test/fixtures/display/main.cjs',
+  'test/fixtures/display/renderer.tsx',
   'script/check-display.mjs',
 ]
 const sourceHashes = Object.fromEntries(
@@ -147,7 +156,15 @@ for (const pixels of [
         env,
       })
       try {
-        const page = await application.firstWindow()
+        const context = application.context()
+        context.setDefaultTimeout(15000)
+        context.on('weberror', error => console.error(error.error()))
+        context.on('console', message => { if (message.type() === 'error') console.error(message.text()) })
+        const isDisplayPage = page => page.waitForURL('**/display/renderer/index.html*', { timeout: 15000 }).then(() => page)
+        const page = await Promise.any([
+          ...context.pages().map(isDisplayPage),
+          context.waitForEvent('page', { predicate: isDisplayPage, timeout: 15000 }),
+        ])
         await page.waitForFunction(() => window.displayTest)
         const evidence = await application.evaluate(({ BrowserWindow }) => ({
           ...global.displayEvidence,
@@ -183,12 +200,14 @@ for (const pixels of [
               )
               await page.locator('canvas').waitFor()
               await page.evaluate(() => document.fonts.ready)
+              const toggle = page.locator('[aria-controls="screencast-tools"]')
+              if (await toggle.getAttribute('aria-expanded') === 'false') await toggle.press('Enter')
               await page
-                .locator('.luna-toolbar')
+                .locator('#screencast-tools')
                 .evaluate((el) => el.scrollTo(0, 0))
               const metrics = await page.evaluate(() => {
                 const canvas = document.querySelector('canvas')
-                const toolbar = document.querySelector('.luna-toolbar')
+                const toolbar = document.querySelector('#screencast-tools')
                 const rect = (el) => {
                   const r = el.getBoundingClientRect()
                   return {
@@ -258,21 +277,22 @@ for (const pixels of [
                 [width - 1, height - 1],
                 [width / 2, height / 2],
               ]
+              const workArea = evidence.simulatedWorkArea
               const checks = {
                 // Forced Chromium scale on a differently scaled Windows host can
                 // round native bounds by up to 2 DIP. Preserve raw measurements.
                 fitsWorkArea:
-                  bounds.x >= area.x - 2 &&
-                  bounds.y >= area.y - 2 &&
-                  bounds.x + bounds.width <= area.x + area.width + 2 &&
-                  bounds.y + bounds.height <= area.y + area.height + 2,
+                  bounds.x >= workArea.x - 2 &&
+                  bounds.y >= workArea.y - 2 &&
+                  bounds.x + bounds.width <= workArea.x + workArea.width + 2 &&
+                  bounds.y + bounds.height <= workArea.y + workArea.height + 2,
                 canvasVisible:
                   metrics.canvas.width > 0 &&
                   metrics.canvas.height > 0 &&
                   metrics.canvas.x >= -1 &&
                   metrics.canvas.right <= metrics.viewport[0] + 1 &&
                   metrics.canvas.bottom <= metrics.viewport[1] + 1 &&
-                  metrics.canvas.y >= metrics.toolbar.bottom - 1,
+                  metrics.canvas.y >= 30,
                 aspectPreserved:
                   Math.abs(
                     metrics.canvas.width / metrics.canvas.height -
@@ -305,7 +325,7 @@ for (const pixels of [
               await page.screenshot({ path: path.join(output, filename) })
               // Check real wheel reachability, not just programmatic scrolling.
               const toolbarReachability = []
-              const toolbarLocator = page.locator('.luna-toolbar')
+              const toolbarLocator = page.locator('#screencast-tools')
               const controls = toolbarLocator.locator('button,select')
               for (let index = 0; index < (await controls.count()); index++) {
                 const control = controls.nth(index)
@@ -313,7 +333,7 @@ for (const pixels of [
                 for (let attempt = 0; attempt < 8; attempt++) {
                   position = await control.evaluate((el) => {
                     const r = el.getBoundingClientRect()
-                    const toolbar = el.closest('.luna-toolbar')
+                    const toolbar = el.closest('#screencast-tools')
                     const t = toolbar.getBoundingClientRect()
                     const x = r.x + r.width / 2,
                       y = r.y + r.height / 2

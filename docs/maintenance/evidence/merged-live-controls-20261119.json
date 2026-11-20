@@ -1,0 +1,122 @@
+{
+  "date": "2026-11-19",
+  "appVersion": "1.0.5-dev.3",
+  "host": "macOS arm64",
+  "installedAt": "/Applications/Scrcpy Plus.app",
+  "signature": "ad hoc, codesign --verify --deep --strict passed",
+  "dmgSha256": "2d6636351f9a50043743a7c0a31d7dcc85e82055868769bc69c4fea0a903f52c",
+  "installedAsarSha256": "28d32e471a684bf421b78cfec0ee285f835040960e2a487cc3d45cf39e2e41da",
+  "finalLayout": {
+    "order": [
+      "Android",
+      "HarmonyOS",
+      "iOS"
+    ],
+    "internalGapDIP": 12,
+    "outerMarginsDIP": {
+      "left": 0,
+      "right": 0,
+      "bottom": 0
+    },
+    "observation": "Native macOS window screenshot showed two 24-pixel separators at 2x display scale. The first and last tiles reached the content edges and all three reached the bottom."
+  },
+  "finalInstalledChecks": [
+    "Opened HarmonyOS and iPhone original toolbars with native mouse clicks.",
+    "Fast native mouse drag changed iPhone home pages. After automatic WDA recovery, a native mouse drag returned to the previous home page and a tap opened the Utilities folder.",
+    "Waking the sleeping Android phone produced its lock screen. A later fresh-capture request timed out after the phone slept again."
+  ],
+  "sameSessionImplementationChecksBeforeFinalSpacingChange": [
+    "Mi 10 Ultra, unlocked: an upward drag scrolled the detail page to its comments.",
+    "nova 15: dragging scrolled the feed, toolbar Home displayed the launcher, quality selection changed and was restored, fullscreen expanded the selected document to 1728 × 1084.",
+    "USB iPhone: toolbar Home returned to SpringBoard.",
+    "Independent, side-by-side and merged round trip preserved all three session IDs and renderer time origins."
+  ],
+  "finalInstalledReplayKitRecovery": {
+    "before": {
+      "source": "replaykit",
+      "codec": "h264",
+      "size": [
+        780,
+        1688
+      ]
+    },
+    "transitions": [
+      [
+        0.3,
+        "running",
+        false,
+        null,
+        false
+      ],
+      [
+        11.2,
+        "disconnected",
+        false,
+        null,
+        false
+      ],
+      [
+        20.6,
+        "error",
+        false,
+        null,
+        false
+      ],
+      [
+        45.0,
+        "error",
+        true,
+        null,
+        false
+      ],
+      [
+        46.5,
+        "error",
+        true,
+        "idle",
+        false
+      ],
+      [
+        48.1,
+        "running",
+        true,
+        "idle",
+        false
+      ],
+      [
+        70.4,
+        "running",
+        true,
+        "connected",
+        true
+      ]
+    ],
+    "recoverySeconds": 70.5,
+    "sameDesktopSession": true,
+    "newRunnerProcess": true,
+    "after": {
+      "source": "replaykit",
+      "codec": "h264",
+      "clients": 1,
+      "size": [
+        780,
+        1688
+      ]
+    },
+    "continuousFrameSamples": 5,
+    "presentationSampleIntervalMs": 12440
+  },
+  "tests": {
+    "application": {
+      "passed": 1258,
+      "skipped": 2,
+      "failed": 0
+    },
+    "liciaEachOfNativeAndFallback": {
+      "passed": 606,
+      "pending": 4
+    },
+    "lint": "passed"
+  },
+  "coverage": "Representative controls tested on the three connected phones. AirPlay and other desktop systems were outside the physical-device run."
+}

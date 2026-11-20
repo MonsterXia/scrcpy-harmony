@@ -86,7 +86,7 @@ test('main window forwards settings changes once and retains existing invoke han
     '../lib/devices': { startSelected() {}, mirrorSessions: { list: () => [] } },
     './screencast': { showWin() {}, closeWin() {} },
     'share/common/log': () => ({ info() {} }),
-  })
+  }, { process: { platform: process.platform } })
   api.showWin()
   api.showWin()
   assert.equal(listeners.length, 1)

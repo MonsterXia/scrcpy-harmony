@@ -74,11 +74,13 @@ export async function iosSetup(udid: string, value: IosSetupAction, signal?: Abo
     else if (value.action === 'cancel') m.cancel(udid)
     else if (value.action !== 'status') {
       if (!m.canReply(udid)) throw Error('auth-required')
-      helper!.reply(value); m.challengeSubmitted(udid)
+      helper!.reply(value); m.challengeSubmitted(udid,value.action)
     }
   } catch (error) {
     const code = signal?.aborted ? 'cancelled' : (error as Error).message
-    return { ...m.status(udid), phase: code === 'cancelled' ? 'cancelled' : code === 'auth-required' ? 'login' : 'error', error: setupErrors.has(code) ? code : 'device-error' }
+    const status = m.status(udid), errorCode = setupErrors.has(code) ? code : 'device-error'
+    if (status.phase === 'login' && status.error === errorCode) return status
+    return { ...status, phase: code === 'cancelled' ? 'cancelled' : code === 'auth-required' ? 'login' : 'error', error: errorCode }
   }
   return m.status(udid)
 }
@@ -86,6 +88,10 @@ export async function prepareManagedIos(udid: string, signal?: AbortSignal) {
   signal?.throwIfAborted()
   const m = await waitForSetup(getManager(), signal); signal?.throwIfAborted()
   if (m.managed(udid) || m.preparing(udid)) await m.prepare(udid,false,signal)
+}
+export async function recoverManagedIos(udid: string, signal: AbortSignal) {
+  const m = await waitForSetup(getManager(), signal)
+  return m.recoverRunner(udid, signal)
 }
 export async function renewIos(online: string[]) { const m = await getManager(); await m.renew(online) }
 export function cancelIosSetup(udid: string) { manager?.cancel(udid) }

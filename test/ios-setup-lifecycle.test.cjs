@@ -7,6 +7,24 @@ function fixture(run, data) {
   './helper':{IosHelper:class {async run(_kind,request,_event,signal){return run(request,signal)}}},
  })
 }
+test('rejected credentials stay visible on the login form across status polls',async()=>{
+ const api=fixture(async request=>{if(request.op==='account')return {authenticated:false};throw Error('invalid-credentials')})
+ const result=await api.iosSetup('01234567',{action:'login',email:'test@example.com',password:'synthetic'})
+ assert.equal(result.phase,'login');assert.equal(result.error,'invalid-credentials')
+ assert.deepEqual(await api.iosSetup('01234567',{action:'status'}),result)
+})
+test('preparation errors stay redacted across subsequent status polls',async()=>{
+ const teamId='TEAM123456'
+ const binding={teamId,bundleId:'io.scrcpyplus.unsigned.WebDriverAgentRunner.xctrunner.'+teamId}
+ const api=fixture(async request=>{
+  if(request.op==='account')return {authenticated:true,teams:[{id:teamId}]}
+  throw Error('internal file or device diagnostic')
+ },{team:binding,devices:{'01234567':binding}})
+ const result=await api.iosSetup('01234567',{action:'prepare'})
+ assert.equal(result.error,'device-error')
+ const polled=await api.iosSetup('01234567',{action:'status'})
+ assert.equal(polled.phase,'error');assert.equal(polled.error,result.error)
+})
 test('window cancellation while restoring account prevents later login',async()=>{
  let restore;const calls=[]
  const api=fixture(async request=>{calls.push(request.op);if(request.op==='account')return new Promise(r=>restore=r);return {authenticated:true,teams:[]}})

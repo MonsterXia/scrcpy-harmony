@@ -231,9 +231,15 @@ Canvas pointer 事件
 
 原生投屏失败的 `MirrorSession/NativeMirrorInfo.connectionIssue` 为固定分类，不承载原始异常：Android ACCESS/BUSY通过nativeMirrorState/info IPC给renderer双语提示；重试/恢复清除。直接 USB 仍由后端独占，不自动 detach 其他 ADB；认证前 ACCESS/BUSY 可经 `devices/androidServer.ts` 复用已运行的本机 ADB，按 USB 序列号匹配并固定 transport ID，关闭只回收自己的 socket。共享window.ts的延迟位置保存及ready兜底必须先核对窗口存活。真实Codex宿主探针为 `script/check-automation-codex.mjs`，其结果与SDK模拟测试分开。
 
-投屏来源的 `claimGui` 回调在仅聚焦现有窗口时声明 GUI 所有权，不重启后端，也不显示合并视图中隐藏的来源窗口；自动化最后一个 lease 释放不会关闭用户已接管的会话。Android 临时概览连接单独保留清理所有权，关闭失败后必须重试释放，其他读取或投屏连接才能再次取得 USB。
+合并投屏由 `main/window/mergedMirrors.ts` 把各独立窗口原有的 `mirrorView` 移入同一个 BrowserWindow，并按设备比例与 32 个逻辑像素的可见标题高度设置 bounds。macOS 将各视图顶边向上移 28 个逻辑像素，文档内部等量下移标题和按钮，AppKit 的标题栏命中区域落在可见内容外；HTML 全屏时视图填满宿主。独立与合并始终使用同一个 WebContents 绑定会话、解码、工具栏和输入队列。布局改变时只更新各视图父级、标题和尺寸。原生菜单回调发回打开菜单的文档，菜单坐标包含设备视图在宿主窗口内的偏移。
+
+投屏来源的 `claimGui` 回调在聚焦现有窗口时声明 GUI 所有权。选择合并中的设备会恢复宿主、退出其他设备的 HTML 全屏，再将键盘焦点交给所选设备的 WebContents。F12 直接打开触发快捷键的文档的开发者工具。自动化最后一个 lease 释放后，GUI 已接管的会话继续运行。iPhone 手动准备期间，同一设备的自动重连暂停，准备成功后由设置对话框重新打开会话。Android 临时概览连接单独保留清理所有权，关闭失败后必须重试释放，其他读取或投屏连接才能再次取得 USB。
 
 ## iOS USB WDA / ReplayKit
+
+iPhone 设置的 Apple 登录由 `src/main/lib/ios-provisioning/manager.ts` 维护状态，窗口轮询 `iosSetup(status)`。登录请求持续到认证结束；验证码、重发及切换渠道通过独立 IPC 回复同一个签名进程。`challenge` 等待用户，`verifying` / `sending` 等待服务；`helper.ts` 分别计时。认证失败保留可重试的登录态，只向界面传已知错误码，不传服务端原文。
+
+Android、USB iOS 和 AirPlay 共用的 `native-mirror` 窗口显式启用 Electron 的 `webSecurity`，以便本地页面使用 WebCodecs 解码 H.264。
 
 USB iOS 的 `ios:<UDID>` 与 `ios:airplay-receiver` 分开。`ios-usbmux.connectIos` 每次用 UDID 查找当前 USB DeviceID，返回暂停且保留尾随数据的 socket。`ios-wda.WdaClient` 用独立 USB socket 发送有界 HTTP 请求，不重试写入；`ios.IosMirror` 管理专用 WDA session、PNG 预览与逻辑点输入；`ios-video.IosVideo` 管理自有 capture ID 和 scrcpy H.264 数据流，不停止全局广播。
 
@@ -241,7 +247,7 @@ USB iOS 的 `ios:<UDID>` 与 `ios:airplay-receiver` 分开。`ios-usbmux.connect
 
 `nativeMirrorVideo` 为单一窗口 owner 可调用的布尔 IPC，通过原自动化输入队列互斥；`NativeMirrorFrame.format=png` 与 H.264 共用 FrameGate。USB GUI 输入附 `display`（实际显示的尺寸/方向）；自动化走完整批次 `iosInput`，不模拟 GUI pointer 事件。`AutomationFrameSource` 保留方向用于拒绝过期坐标。AirPlay 不提供输入。源码构建脚本与使用限制见 [USB 文档](../../../../docs/scrcpy-plus/ios-usb-wda.md)。
 
-USB iOS 原生投屏的运行画面与 Android 共用无内边距布局，不常驻设备名/连接状态。`native-mirror/Toolbar.tsx` 复用 Harmony 的浮层样式，以标题栏右侧 portal 调节图标作为常驻入口，收纳 Home、视频切换、模式和录屏提示；展开不改变 Canvas 布局或窗口 fit inset。错误/断连提示仍保留。
+USB iOS 原生投屏的运行画面与 Android 共用无内边距布局，不常驻设备名/连接状态。`native-mirror/Toolbar.tsx` 与 Harmony 共用 `screencast/components/MirrorToolsPanel.tsx` 的操作区、状态区及样式，以标题栏右侧 portal 调节图标作为常驻入口，提供 Home 和设置图标，在状态区通过下拉框显式选择 ReplayKit 视频或 WDA 截图；展开不改变 Canvas 布局或窗口 fit inset。错误/断连提示仍保留。
 
 原生交互式投屏的连接中/失败/断连提示采用绝对定位浮层，不参与 Canvas fit inset；断连旧帧变暗。iOS 只读观察最多连续失败三次后停止，恢复不重放写入。旧 WDA session 清理失败时，必须由 GET status 确认 ready 且旧 session 已消失后才能释放归属，无法确认则继续保留失败。
 
@@ -255,6 +261,6 @@ USB iOS GUI 的 `NativeInputFlow` 在 renderer 保持一个在途输入 IPC，�
 
 USB iPhone 概览由 `devices/ios-usbmux.getIosOverview` 处理，仅通过 lockdown 获取固定字段，8 秒总超时，和 WDA/投屏生命周期独立。Store 恢复和选择允许 USB iPhone，Android/iOS 的鸿蒙专用导航均禁用；实际未返回的字段显示未知，不猜测硬件参数。
 
-USB iOS 曾经连接成功后，即使 USB 发现始终在线，后端 disconnected/error 也标记 reconnectPending；设备轮询串行重建并保留 videoRequested。首次 WDA 准备失败不自动重复创建会话。该路径恢复客户端会话，不负责启动或签名 WDA Runner。
+USB iOS 曾经连接成功后，即使 USB 发现始终在线，后端 disconnected/error 也标记 reconnectPending；设备轮询串行重建并保留 videoRequested。首次 WDA 准备失败不自动重复创建会话。已绑定的专用 WDA 在旧会话清理失败或连接准备返回状态未知时，由 nativeMirror 调用 ios-provisioning 的 recoverRunner。设备 helper 通过 USB 再次探测状态，仅在持续无响应时按设备绑定精确重启 Runner；普通巡检不触发替换。恢复仍需确认旧资源清理，再在同一窗口重建投屏。USB 投屏重建后，若请求了视频且后端已清理失败的 capture 并恢复截图，设备轮询可间隔至少五秒串行重试 ReplayKit，最多三次。nativeMirrorVideo IPC 的 decode-error 原因保留用户的视频选择；手动关闭视频则取消重试。
 
 WDA 使用固定源码加 `vendor/ios-wda/session-ownership.patch`：串行 session 创建入口原子拒绝已有会话，status 返回协议版本及进程 UUID，创建请求绑定该 UUID。`ios-ownership.WdaAllocation` 在分配请求发送前记录未知结果；响应丢失时 close 保留归属，只有 ready 的新 Runner UUID 可证明原资源已消失，不通过猜测 ID 删除资源。旧 Runner 被明确拒绝。`IosMirror.report` 在 disconnected/error 统一取消本代 GUI 输入，包括视频关闭和截图回退失败；每个 GUI 操作入队时捕获取消信号。

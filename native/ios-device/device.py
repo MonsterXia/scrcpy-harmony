@@ -9,14 +9,14 @@ from datetime import timezone
 PREFIX = 'io.scrcpyplus.unsigned.WebDriverAgentRunner.xctrunner.'
 
 def validate_request(r):
-    if not isinstance(r, dict) or r.get('op') not in ('inspect', 'start'):
+    if not isinstance(r, dict) or r.get('op') not in ('inspect', 'start', 'recover'):
         raise ValueError('protocol')
     if not isinstance(r.get('udid'), str) or not re.fullmatch(r'[a-fA-F0-9-]{8,64}', r['udid']):
         raise ValueError('protocol')
     bid = r.get('bundleId')
     if bid is not None and (not isinstance(bid, str) or not re.fullmatch(re.escape(PREFIX)+r'[A-Z0-9]{10}', bid)):
         raise ValueError('protocol')
-    if r['op'] == 'start' and not bid:
+    if r['op'] in ('start','recover') and not bid:
         raise ValueError('protocol')
 
 def select_runner(apps, expected):
@@ -38,28 +38,35 @@ def emit(value):
 
 async def wda_status(udid):
     from pymobiledevice3.service_connection import ServiceConnection
+    waiting_for_first_byte = False
     async def read():
+        nonlocal waiting_for_first_byte
         async with await ServiceConnection.create_using_usbmux(udid, 8100, connection_type='USB') as c:
+            waiting_for_first_byte = True
             await c.sendall(b'GET /status HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n')
             data = b''
             while len(data) < 1024*1024:
                 part = await c.recv_any()
                 if not part: break
+                waiting_for_first_byte = False
                 data += part
                 if b'\r\n\r\n' in data:
                     header, body = data.split(b'\r\n\r\n',1)
                     lengths = [int(x.split(b':',1)[1]) for x in header.split(b'\r\n') if x.lower().startswith(b'content-length:')]
                     if lengths and len(body) >= lengths[0]: break
+            if not data: raise EOFError('empty response')
             header, body = data.split(b'\r\n\r\n',1)
             if not header.startswith(b'HTTP/1.1 200'): raise ValueError('status')
+            if not body: raise EOFError('empty status')
             result = json.loads(body)
             value = result.get('value', {})
             return {'ready': value.get('ready') is True and value.get('scrcpyPlusProtocolVersion') == 1,
                     'busy': bool(result.get('sessionId')), 'runnerBundleId':value.get('scrcpyPlusBundleId'), 'reachable': True, 'availability': 'available'}
     try: return await asyncio.wait_for(read(), 5)
     except Exception as e:
-        from pymobiledevice3.exceptions import ConnectionFailedError
-        return {'ready':False, 'busy':False, 'reachable':False, 'availability':'absent' if type(e) is ConnectionFailedError else 'unknown'}
+        from pymobiledevice3.exceptions import ConnectionFailedError, ConnectionTerminatedError
+        return {'ready':False, 'busy':False, 'reachable':False, 'availability':'absent' if type(e) is ConnectionFailedError else 'unknown',
+                'unresponsive': waiting_for_first_byte and isinstance(e, (TimeoutError, EOFError, ConnectionResetError, BrokenPipeError, ConnectionTerminatedError))}
 
 async def ensure_developer_image(lockdown):
     from pymobiledevice3.services.mobile_image_mounter import auto_mount
@@ -90,7 +97,8 @@ async def operate(r):
             status = {**status, 'ready':False, 'availability':'unknown'}
         result = {**status, 'installed':bool(bid), 'expiresAt':expires, 'developerMode':bool(mode)}
         if r['op'] == 'inspect': return result
-        if status['availability'] == 'unknown': raise ValueError('status-unknown')
+        recovering = r['op'] == 'recover'
+        if status['availability'] == 'unknown' and not (recovering and status.get('unresponsive')): raise ValueError('status-unknown')
         if status['busy']: raise ValueError('busy')
         if status['ready']: return result
         if not bid: raise ValueError('not-installed')
@@ -98,35 +106,69 @@ async def operate(r):
         emit({'event':'phase','phase':'mounting'})
         await ensure_developer_image(lockdown)
     emit({'event':'phase','phase':'starting'})
-    return {**result, **await start_runner(r['udid'], bid)}
+    return {**result, **await start_runner(r['udid'], bid, recovering)}
 
-async def start_runner(udid, bid):
+async def start_runner(udid, bid, recovering=False):
     from pymobiledevice3.remote.userspace_tunnel import UserspaceRsdTunnel
-    from pymobiledevice3.services.dvt.instruments.dvt_provider import DvtProvider
-    from pymobiledevice3.services.dvt.instruments.process_control import ProcessControl
     async with UserspaceRsdTunnel(serial=udid,autopair=False,remotepairing_fallback=False) as rsd:
-        async with DvtProvider(rsd) as dvt, ProcessControl(dvt) as process:
-            # Recheck after mount/tunnel setup; never replace another client's process.
-            status = await wda_status(udid)
-            if status['availability'] == 'unknown': raise ValueError('status-unknown')
+        status = await wda_status(udid)
+        for attempt in range(3 if recovering else 1):
+            if (status.get('reachable') or status['ready']) and status.get('runnerBundleId') != bid: raise ValueError('runner-mismatch')
             if status['busy']: raise ValueError('busy')
-            if status['ready'] and status.get('runnerBundleId') != bid: raise ValueError('runner-mismatch')
             if status['ready']: return status
-            # XCTest Runners must activate in the background with newer developer
-            # images. A foreground CoreDevice launch can leave HTTP unstarted.
-            # ActivateSuspended is distinct from StartSuspendedKey (debugger wait).
-            await process.launch(bid, kill_existing=False,
-                environment={'USE_IP':'127.0.0.1','USE_PORT':'8100'},
-                extra_options={'ActivateSuspended':True})
-            for _ in range(40):
+            if status['availability'] != 'absent' and not (recovering and status.get('unresponsive')):
+                raise ValueError('status-unknown')
+            if recovering and attempt < 2:
+                await asyncio.sleep(1)
                 status = await wda_status(udid)
-                if status['ready'] and status.get('runnerBundleId') != bid: raise ValueError('runner-mismatch')
-                if status['ready']: return status
-                await asyncio.sleep(.5)
-            raise ValueError('start-timeout')
+        environment = {'USE_IP':'127.0.0.1','USE_PORT':'8100'}
+        if rsd.product_version.split('.')[0] == '26':
+            from pymobiledevice3.exceptions import CoreDeviceError
+            from pymobiledevice3.remote.core_device.app_service import AppServiceService
+            async with AppServiceService(rsd) as service:
+                try:
+                    await service.launch_application(bid, kill_existing=recovering, environment=environment)
+                except CoreDeviceError as error:
+                    reason = core_launch_error(error)
+                    if reason: raise ValueError(reason) from error
+                    raise
+        else:
+            from pymobiledevice3.services.dvt.instruments.dvt_provider import DvtProvider
+            from pymobiledevice3.services.dvt.instruments.process_control import ProcessControl
+            async with DvtProvider(rsd) as dvt, ProcessControl(dvt) as process:
+                await process.launch(bid, kill_existing=recovering, environment=environment, extra_options={'ActivateSuspended':True})
+        deadline = asyncio.get_running_loop().time() + 90
+        while asyncio.get_running_loop().time() < deadline:
+            status = await wda_status(udid)
+            if (status.get('reachable') or status['ready']) and status.get('runnerBundleId') != bid: raise ValueError('runner-mismatch')
+            if status.get('busy'): raise ValueError('busy')
+            if status['ready']: return status
+            await asyncio.sleep(.5)
+        raise ValueError('start-timeout')
+
+def core_launch_error(error):
+    if error.code != 10002: return None
+    info = error.user_info
+    for _ in range(8):
+        if not isinstance(info, dict): break
+        reason = info.get('BSErrorCodeDescription')
+        detail = str(info.get('NSLocalizedFailureReason', '')).lower()
+        if reason == 'Security' or 'not been explicitly trusted' in detail: return 'developer-trust'
+        if reason == 'Locked' or 'device is locked' in detail: return 'device-locked'
+        inner = info.get('NSUnderlyingError')
+        if not isinstance(inner, dict): break
+        info = inner.get('userInfo', inner)
+    return 'launch-failed'
 
 def error_code(e):
-    if isinstance(e, ValueError) and str(e) in ('protocol','runner-mismatch','status-unknown','busy','not-installed','developer-mode','start-timeout'): return str(e)
+    if isinstance(e, ValueError) and str(e) in ('protocol','runner-mismatch','status-unknown','busy','not-installed','developer-mode','start-timeout','developer-trust','device-locked','launch-failed'): return str(e)
+    cause = getattr(e, 'error', None)
+    for _ in range(8):
+        info = getattr(cause, 'user_info', None)
+        if not isinstance(info, dict): break
+        if getattr(cause, 'domain', None) == 'FBSOpenApplicationErrorDomain' and info.get('BSErrorCodeDescription') == 'Security':
+            return 'developer-trust'
+        cause = info.get('NSUnderlyingError')
     text = str(e).lower()
     if 'security' in text or 'not been explicitly trusted' in text: return 'developer-trust'
     if 'locked' in text: return 'device-locked'

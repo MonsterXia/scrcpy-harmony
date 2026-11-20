@@ -42,6 +42,14 @@ test('iOS starts with PNG, maps normalized tap to points and only deletes its ow
   await f.mirror.close()
   assert.deepEqual(f.calls.filter(c => c.method === 'DELETE').map(c => c.path), ['/session/our-session'])
 })
+test('desktop swipe with no intermediate mouse event reaches XCTest with a sampled path', async t => {
+  const f = fixture(t); await f.start()
+  await f.mirror.input({ type: 'touch', action: 'down', x: .8, y: .5 }, { width: 390, height: 844, rotation: 0 })
+  await f.mirror.input({ type: 'touch', action: 'up', x: .2, y: .5 })
+  const moves = f.calls.find(c => c.path.includes('/actions')).body.filter(a => a.type === 'pointerMove')
+  assert.deepEqual(Array.from(moves, a => a.x), [195, 78])
+  assert.ok(moves[0].duration + moves[1].duration >= 120)
+})
 test('iOS refuses to replace another WDA session', async t => {
   const f = fixture(t, { busy: true })
   await assert.rejects(f.start(), /already in use/)

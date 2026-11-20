@@ -12,6 +12,10 @@ def package(app, output):
     with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED) as z:
         for p in files:
             relative=p.relative_to(app)
+            if relative.match('Frameworks/XC*.framework') or (
+                len(relative.parts) >= 3 and relative.parts[0] == 'Frameworks'
+                and relative.parts[1].startswith('XC') and relative.parts[1].endswith('.framework')
+            ): continue
             if p.is_symlink(): raise ValueError('WDA symlink is not allowed')
             if not p.is_file() or any(x.startswith('._') or x in ('__MACOSX','_CodeSignature') for x in relative.parts): continue
             data=p.read_bytes()

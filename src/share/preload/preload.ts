@@ -42,6 +42,22 @@ async function updateTheme() {
   }
 }
 
+mainObj.on('mergedMirrorLabel', (label: string, toolInset = 0) => {
+  const root = document.documentElement
+  const heading = document.getElementById('merged-mirror-label')
+  // The host resends the label on did-finish-load when attaching during navigation.
+  if (!heading) return
+  heading.textContent = label
+  heading.hidden = !label
+  if (label) {
+    root.dataset.mirrorLabel = label
+    root.style.setProperty('--mirror-tool-inset', toolInset + 'px')
+  } else {
+    delete root.dataset.mirrorLabel
+    root.style.removeProperty('--mirror-tool-inset')
+  }
+})
+
 mainObj.on('refreshMenu', () => {
   if (titleBar) {
     titleBar.refreshMenu()

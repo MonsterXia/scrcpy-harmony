@@ -56,10 +56,6 @@ function renderApp() {
       App = lazy(() => import('./native-mirror/App.js') as Promise<any>)
       title = () => ''
       break
-    case 'merged-mirror':
-      App = lazy(() => import('./merged-mirror/App.js') as Promise<any>)
-      title = () => ''
-      break
     case 'screencast':
       App = lazy(() => import('./screencast/App.js') as Promise<any>)
       title = () => t('screencast')

@@ -75,7 +75,11 @@ test('submitted 2FA disables duplicate replies until a new challenge arrives',as
  const m=new IosProvisioning({now:()=>0,isBusy:()=>false,save:async()=>{},run:async(k,p,event)=>{emit=event;return new Promise(r=>finish=r)}},{devices:{}},()=>{})
  const pending=m.login('01234567','test@example.com','not-a-real-password');emit({event:'challenge',challenge:{sms:false,unknown:false,numbers:[]}})
  assert.equal(m.canReply('01234567'),true);assert.equal(m.canReply('01234568'),false)
- m.challengeSubmitted('01234567');assert.equal(m.canReply('01234567'),false)
+ m.challengeSubmitted('01234567','code');assert.equal(m.canReply('01234567'),false)
+ assert.equal(m.status('01234567').phase,'verifying')
+ emit({event:'challenge',challenge:{sms:false,unknown:false,numbers:[],retry:true}})
+ assert.equal(m.status('01234567').error,'invalid-code')
+ m.challengeSubmitted('01234567','devices');assert.equal(m.status('01234567').phase,'sending')
  finish({authenticated:true,teams:[]});await pending
 })
 test('logout excludes account and device work until its helper and persistence finish',async()=>{
@@ -114,4 +118,35 @@ test('closing a waiter does not cancel the existing background renewal',async()=
  finish({installed:true,expiresAt:9e12,ready:true,busy:false,developerMode:true})
  await rejected;await renewal
  assert.equal(operationSignal.aborted,false);assert.equal(f.manager.status('01234567').phase,'ready')
+})
+
+test('runner recovery uses the saved device binding without signing or adopting other devices', async () => {
+ const f=fixture({run:async(kind,payload)=>{
+   assert.equal(kind,'device')
+   assert.equal(payload.bundleId,f.binding.bundleId)
+   return {ready:true,runnerBundleId:payload.bundleId}
+ }})
+ const signal=new AbortController().signal
+ await assert.rejects(f.manager.recoverRunner('12345678',signal),/not-installed/)
+ await f.manager.recoverRunner('01234567',signal)
+ assert.deepEqual(f.calls,[['device','recover']])
+})
+
+test('preparation requested during recovery still checks the installed artifact and profile', async () => {
+ let finishRecovery
+ const f=fixture({run:async(_kind,request)=>{
+   if(request.op==='recover') return new Promise(resolve=>{finishRecovery=resolve})
+   return {installed:true,expiresAt:9e12,ready:true,busy:false,developerMode:true}
+ }})
+ const recovery=f.manager.recoverRunner('01234567',new AbortController().signal)
+ const preparation=f.manager.prepare('01234567')
+ finishRecovery({ready:true,runnerBundleId:f.binding.bundleId})
+ await Promise.all([recovery,preparation])
+ assert.deepEqual(f.calls.map(([,op])=>op),['recover','inspect'])
+ assert.equal(f.manager.status('01234567').phase,'ready')
+})
+
+test('recovery preserves a busy result from the final reservation reinspection', async () => {
+ const f=fixture({run:async(_kind,request)=>({ready:true,busy:true,runnerBundleId:request.bundleId})})
+ await assert.rejects(f.manager.recoverRunner('01234567',new AbortController().signal),/busy/)
 })

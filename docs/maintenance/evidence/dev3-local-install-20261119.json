@@ -1,0 +1,18 @@
+{
+  "version": "1.0.5-dev.3",
+  "previousVersion": "1.0.5-dev.2",
+  "dmgSha256": "ec7dd5cc7d47883ea5e3921a9170988786e4b9d93f40540d15ae884679bae8e5",
+  "profileFilesVerified": 74,
+  "configurationUnchangedBeforeLaunch": true,
+  "signatureTicketGatekeeper": "passed",
+  "installedSmoke": "passed",
+  "normalLaunch": "passed",
+  "mainWindow": "visible and rendered",
+  "originalProfile": "retained",
+  "coreConfigurationUnchanged": true,
+  "storedSigningAndClientDataUnchanged": true,
+  "applicationLeftRunning": true,
+  "scope": "Local installation and startup only; no device mirroring test",
+  "date": "2026-11-19",
+  "backupAvailable": true
+}

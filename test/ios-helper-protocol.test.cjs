@@ -1,6 +1,12 @@
 const {test}=require('node:test'),assert=require('node:assert/strict')
 const load=require('./helpers/load-ios.cjs')
 const {HelperProtocol}=load('src/main/lib/ios-provisioning/protocol.ts')
+test('challenge retry information survives without exposing provider errors',()=>{
+ const messages=[],protocol=new HelperProtocol(value=>messages.push(value))
+ protocol.push('{"event":"challenge","challenge":{"numbers":[],"retry":true}}\n{"error":"invalid-credentials"}\n')
+ assert.equal(messages[0].challenge.retry,true)
+ assert.equal(messages[1].error,'invalid-credentials')
+})
 test('fragmented output resolves only bounded result and sanitizes errors',()=>{
  const messages=[],p=new HelperProtocol(x=>messages.push(x))
  p.push('{"res');p.push('ult":{"ready":true}}\n');assert.equal(messages[0].result.ready,true)

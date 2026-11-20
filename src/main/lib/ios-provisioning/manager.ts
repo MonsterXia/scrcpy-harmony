@@ -1,4 +1,5 @@
 import type { IosSetupState, IosSigningTeam } from 'common/iosProvisioning'
+import { setupErrors } from './protocol'
 export interface Binding { teamId: string; bundleId: string; revision?: string }
 export interface SetupData { team?: Binding; devices: Record<string, Binding> }
 interface Inspection { installed: boolean; expiresAt?: number; ready: boolean; busy: boolean; developerMode: boolean; availability?: 'available' | 'absent' | 'unknown' }
@@ -24,7 +25,7 @@ export function waitForSetup<T>(work: Promise<T>, signal?: AbortSignal): Promise
 }
 export class IosProvisioning {
   private states = new Map<string, IosSetupState>()
-  private jobs = new Map<string, { controller: AbortController; work: Promise<void> }>()
+  private jobs = new Map<string, { kind: 'prepare' | 'recover'; controller: AbortController; work: Promise<void> }>()
   private nextCheck = new Map<string, number>()
   private account: { authenticated: boolean; teams: IosSigningTeam[] } = { authenticated: false, teams: [] }
   private authJob?: { udid: string; controller: AbortController }
@@ -38,12 +39,15 @@ export class IosProvisioning {
   private event(udid: string, signal: AbortSignal) {
     return (event: HelperEvent) => {
       if (signal.aborted) return
-      if (event.event === 'challenge') this.set(udid, { phase: 'challenge', challenge: event.challenge })
+      if (event.event === 'challenge') {
+        const error = event.challenge?.retry ? (this.status(udid).phase === 'verifying' ? 'invalid-code' : 'delivery-failed') : undefined
+        this.set(udid, { phase: 'challenge', challenge: event.challenge, error })
+      }
       else if (['installing','mounting','starting'].includes(event.phase || '')) this.set(udid, { phase: event.phase as IosSetupState['phase'] })
     }
   }
   canReply(udid: string) { return this.authJob?.udid === udid && this.status(udid).phase === 'challenge' }
-  challengeSubmitted(udid: string) { if (this.authJob?.udid === udid) this.set(udid,{phase:'authenticating'}) }
+  challengeSubmitted(udid: string, action: 'code' | 'sms' | 'resend' | 'devices') { if (this.canReply(udid)) this.set(udid,{phase:action === 'code' ? 'verifying' : 'sending'}) }
   async restore() {
     const epoch = this.accountEpoch
     const result = await this.adapter.run('sign', { op: 'account' }, () => {}, new AbortController().signal)
@@ -61,7 +65,10 @@ export class IosProvisioning {
       signal.throwIfAborted()
       this.account = { authenticated: result.authenticated === true, teams: result.teams || [] }
       this.set(udid, { phase: 'team' })
-    } catch (e) { this.set(udid, signal.aborted ? { phase: 'cancelled' } : { phase: 'error', error: (e as Error).message }); throw e }
+    } catch (e) {
+      const code = (e as Error).message
+      this.set(udid, signal.aborted ? { phase: 'cancelled' } : { phase: 'login', error: setupErrors.has(code) ? code : 'device-error' }); throw e
+    }
     finally { this.authJob = undefined }
   }
   async selectTeam(udid: string, teamId: string, caller?: AbortSignal) {
@@ -78,7 +85,11 @@ export class IosProvisioning {
   }
   prepare(udid: string, interactive = true, caller?: AbortSignal): Promise<void> {
     if (caller?.aborted) return Promise.reject(caller.reason)
-    const pending = this.jobs.get(udid); if (pending) return waitForSetup(pending.work, caller)
+    const pending = this.jobs.get(udid)
+    if (pending) {
+      const done = waitForSetup(pending.work, caller)
+      return pending.kind === 'recover' ? done.then(() => this.prepare(udid, interactive, caller)) : done
+    }
     if (this.disposed || !/^[a-fA-F0-9-]{8,64}$/.test(udid)) return Promise.reject(Error('device-unavailable'))
     if (this.authJob || this.logoutJob || this.jobs.size || this.selection) return Promise.reject(Error('busy'))
     const binding = interactive ? this.data.team || this.data.devices[udid] : this.data.devices[udid]
@@ -114,10 +125,27 @@ export class IosProvisioning {
       }
       this.set(udid, { phase: 'ready', expiresAt: info.expiresAt })
     })().catch(error => {
-      this.set(udid, signal.aborted ? { phase: 'cancelled' } : { phase: error.message === 'auth-required' ? 'login' : 'error', error: error.message })
+      const code = setupErrors.has(error.message) ? error.message : 'device-error'
+      this.set(udid, signal.aborted ? { phase: 'cancelled' } : { phase: code === 'auth-required' ? 'login' : 'error', error: code })
       throw error
     }).finally(() => { this.jobs.delete(udid); this.nextCheck.set(udid, this.adapter.now() + 15 * 60000) })
-    this.jobs.set(udid, { controller, work }); return work
+    this.jobs.set(udid, { kind: 'prepare', controller, work }); return work
+  }
+  async recoverRunner(udid: string, signal: AbortSignal) {
+    signal.throwIfAborted()
+    const binding = this.data.devices[udid]
+    if (!binding) throw Error('not-installed')
+    if (this.disposed || this.jobs.size || this.authJob || this.logoutJob || this.selection) throw Error('busy')
+    const controller = new AbortController()
+    const recoverySignal = AbortSignal.any([signal, controller.signal])
+    const work = this.adapter.run('device', { op: 'recover', udid, bundleId: binding.bundleId },
+      () => {}, recoverySignal).then(result => {
+      recoverySignal.throwIfAborted()
+      if (result.busy) throw Error('busy')
+      if (!result.ready || result.runnerBundleId !== binding.bundleId) throw Error('runner-mismatch')
+    }).finally(() => { this.jobs.delete(udid) })
+    this.jobs.set(udid, { kind: 'recover', controller, work })
+    return work
   }
   async renew(online: string[]) {
     for (const udid of Object.keys(this.data.devices)) {

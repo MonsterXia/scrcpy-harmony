@@ -34,3 +34,16 @@
   height: 100%;
   overflow-y: auto;
 }
+
+// Each merged tile is the same live document used in its independent window.
+html[data-mirror-label] {
+  .cet-titlebar { display: none !important; }
+  .cet-container { top: 0 !important; }
+  #app { top: calc(32px + var(--mirror-tool-inset)); }
+  #merged-mirror-label {
+    position: absolute; inset: var(--mirror-tool-inset) 36px auto; height: 32px; line-height: 32px;
+    margin: 0; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+    text-align: center; font-size: 16px; font-weight: 600; color: var(--color-text);
+    pointer-events: none; z-index: 1;
+  }
+}
